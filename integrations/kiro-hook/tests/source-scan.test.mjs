@@ -21,6 +21,9 @@ const GATE_ENTRY = `${HOOK}ghost-gate.mjs`;
 const GHOST_STORE = `${HOOK}lib/store/ghost-store.mjs`;
 const STORE_DIR = `${HOOK}lib/store/`;
 const GATE_DIR = `${HOOK}lib/gate/`;
+const MCP_SERVER = 'integrations/mcp/src/server.mjs';
+const MCP_GHOST_RUN = 'integrations/mcp/src/tools/ghost_run.mjs';
+const MCP_POWER_LINK = 'integrations/mcp/scripts/power-link.mjs';
 const ALLOWED_ENV = new Set(['GHOST_RUN_WARDS_FILE', 'GHOST_RUN_SEANCE_BASE']);
 
 /** Exemptions. The probe is exempt from the Date and child_process checks
@@ -29,9 +32,9 @@ const ALLOWED_ENV = new Set(['GHOST_RUN_WARDS_FILE', 'GHOST_RUN_SEANCE_BASE']);
  *  is retired and only the "nobody imports it" rule applies to it. */
 const EXEMPT = {
   child_process: (/** @type {string} */ p) => p === PBT_RUN || p === PROBE || p === WATCHDOG,
-  date: (/** @type {string} */ p) => p.startsWith(STORE_DIR) || p === GATE_MAIN || p === PROBE,
-  bareEnv: (/** @type {string} */ p) => p === PBT_RUN,
-  ghostRunWrite: (/** @type {string} */ p) => p === GHOST_STORE || p === PROBE,
+  date: (/** @type {string} */ p) => p.startsWith(STORE_DIR) || p === GATE_MAIN || p === PROBE || p === MCP_GHOST_RUN,
+  bareEnv: (/** @type {string} */ p) => p === PBT_RUN || p === MCP_SERVER,
+  ghostRunWrite: (/** @type {string} */ p) => p === GHOST_STORE || p === PROBE || p === MCP_POWER_LINK,
   wholeFile: (/** @type {string} */ p) => p === EXP_B,
 };
 

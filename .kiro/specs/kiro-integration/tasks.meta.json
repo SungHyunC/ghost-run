@@ -3,6 +3,10 @@
     "8.6 Write property test that the verdict is independent of provenance [no-docker]": {
       "status": "passed",
       "lastRunTimestamp": 1794996216325
+    },
+    "14.6 Write property test that `wards_check` is static [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1795000101418
     }
   },
   "executionHistory": {
@@ -903,6 +907,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045622
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1794999549090
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1794999604268
       }
     ],
     "14.2 Implement the server core: `src/server.mjs`, `src/schemas.mjs`, `src/result.mjs`, `src/confine.mjs`, `bin/ghost-run-mcp.mjs`": [
@@ -910,6 +924,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045624
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1794999607526
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1794999789794
       }
     ],
     "14.3 Implement the tools `ghost_run`, `ghost_diff`, and `ghost_trace`": [
@@ -917,6 +941,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045626
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1794999789806
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000020445
       }
     ],
     "14.4 Implement the tools `wards_check` and `blacklight`": [
@@ -924,6 +958,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045629
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1794999789818
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000020461
       }
     ],
     "14.5 Write property test for MCP input validation and result bounds [no-docker]": [
@@ -931,6 +975,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045631
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000025546
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000158843
       }
     ],
     "14.6 Write property test that `wards_check` is static [no-docker]": [
@@ -938,6 +992,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045634
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000025560
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000158854
       }
     ],
     "14.7 Write property test for path confinement [no-docker]": [
@@ -945,6 +1009,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045636
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000025569
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000159062
       }
     ],
     "14.8 Write the MCP stdio integration test": [
@@ -952,6 +1026,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045638
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000159518
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000319451
       }
     ],
     "15.1 Create the power files": [
@@ -959,6 +1043,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045640
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000159827
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000319483
       }
     ],
     "15.2 Add the single-file server bundle script and build the committed bundle": [
@@ -966,6 +1060,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045643
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000319726
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000454787
       }
     ],
     "15.3 Write the power tests [no-docker]": [
@@ -973,6 +1077,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045645
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000458547
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000538715
       }
     ],
     "15.4 Implement the link helper fallback `pnpm power:link`": [
@@ -980,6 +1094,26 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045647
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000459205
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000538728
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000552448
+      },
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000788077
       }
     ],
     "16.1 Write the repository hygiene tests [no-docker]": [
@@ -1127,6 +1261,20 @@
         "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
         "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
         "timestamp": 1794999301327
+      }
+    ],
+    "14. MCP server `ghost-run`": [
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000319458
+      }
+    ],
+    "15. Kiro power": [
+      {
+        "executionId": "7e673c0d-3bb2-4b7a-8b19-4f4d63d93cbc",
+        "chatSessionId": "sess_e11a8bea-d8b8-432e-a972-192aec75a41f",
+        "timestamp": 1795000538731
       }
     ]
   }

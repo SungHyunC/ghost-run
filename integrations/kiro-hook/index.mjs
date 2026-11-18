@@ -1,6 +1,6 @@
 // Public export of @ghost-run/kiro-hook for the MCP server and the apps.
 export { resolveWardsFile, loadWardsForHook } from './lib/wards-file.mjs';
-export { classifySafe } from './lib/gate/safe-list.mjs';
+export { classifySafe, buildGrammar, buildSecretMatcher } from './lib/gate/safe-list.mjs';
 export { decisionFromRunResult, diffSummary } from './lib/gate/output.mjs';
 export { buildGraveEntry, readGraveyard } from './lib/gate/grave.mjs';
 export { summarizeStats, formatStatsTable, statsLine } from './lib/store/stats.mjs';

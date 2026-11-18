@@ -149,7 +149,9 @@ Task 7.7. Script: `worlds/drawer-arm/scripts/measure-budget.mjs` (run `node scri
 
 ## Determinism golden hash
 
-unmeasured
+- 2026-11-18 (KST), Node.js 20.20.2, Apple M1 Mac (Reference_Machine), `@mujoco/mujoco` 4.0.1.
+- Trajectory_Hash of `reference-plan-v1` (REFERENCE_PLAN) on the Base_World, two fresh worlds, both equal: `2cf8283de204eae50fbc4db3660e57d6b19b799cbc557ad31af56ba14e191d9f`.
+- Stored in `worlds/drawer-arm/tests/golden.json` (without a `chrome` field; task 17.1 adds it after Chrome reproduces the hash). Test: `worlds/drawer-arm/tests/golden-hash.test.ts`.
 
 ## Demo scenario numbers
 
@@ -675,7 +677,7 @@ Shape check against the existing worlds: `drawer-arm/world.config.ts` and `playg
 
 ## contract-pbt save-time run (task 11)
 
-Measured on Apple M1 (8 cores), macOS 26.6.2, Node v20.20.2, vitest 3.2.7, 2026-11-19. The hook ran as a process (`node integrations/kiro-hook/contract-pbt.mjs`) with a `PostFileSave` event on STDIN (`cwd` and `file_path` as the CLI sends them). One run per path, warm caches, no Docker started.
+Measured on Apple M1 (8 cores), macOS 26.6.2, Node v20.20.2, vitest 3.2.7, 2026-11-18. The hook ran as a process (`node integrations/kiro-hook/contract-pbt.mjs`) with a `PostFileSave` event on STDIN (`cwd` and `file_path` as the CLI sends them). One run per path, warm caches, no Docker started.
 
 | Saved path (STDIN `file_path`) | Suites run | Tests passed / skipped | Wall clock | Exit code |
 |---|---|---|---|---|
@@ -703,7 +705,7 @@ Run counts come from the owning test configurations, not from the hook. The hook
 
 STDOUT of a file-event hook does not reach the agent in the CLI (probe, CLI 3.4.0), so `last.json` is the channel there. IDE result pending: recheck after IDE confirmation (task 1.4).
 
-## ghost-log latency (task 10.2, 2026-11-19)
+## ghost-log latency (task 10.2, 2026-11-18)
 
 Measured on an Apple M1 class Mac (macOS, Node v20.20.2), `node integrations/kiro-hook/ghost-log.mjs` as a child process with the Hook_Event on STDIN, a temporary workspace with the Ghost Shell wards file and one canary `.env`, packages built. Three single runs, not the Median_Of_5 of task 16.2.
 
@@ -724,10 +726,18 @@ Recorded on macOS (Apple Silicon, Node 20.20.2) with `corepack pnpm`.
 - Likely cause: `verifyWorld` at 10,000 runs keeps per-run data (snapshots and traces of the 1,206-row project) in memory for the whole call. Not investigated; the world and the test were not changed.
 - Short_Run for comparison (100 runs): `verifyWorld` took 22.6 s in the final checkpoint run (under the 45 s guard), and the whole world suite took 24 s wall clock.
 
-## kiro-integration task 13: blacklight-steering sample run (2026-11-19)
+## kiro-integration task 13: blacklight-steering sample run (2026-11-18)
 
 - Setup: temporary workspace, `.kiro/steering/rule.md` with one zero-width space (written from bytes E2 80 8B), `.kiro/steering/ok.md` plain text. Event on STDIN: `{"hook_event_name":"PostFileSave","file_path":".kiro/steering/<name>.md"}`. Command: `node integrations/kiro-hook/blacklight-steering.mjs`, Node 20+, macOS.
 - Hidden file: exit code 1, 75 ms wall clock including process start. STDOUT and STDERR both hold the report (2 lines: one finding line `zero-width U+200B`, then `outcome=findings findings=1 files=1`). `.ghost-run/blacklight/last.txt` holds the same text.
 - Clean file: exit code 0, 61 ms. STDOUT `outcome=clean findings=0 files=1`, STDERR empty, `last.txt` holds the same line.
 - Limits: CLI 3.4.0 does not pass file-event STDOUT to the agent, so `last.txt` is the reliable channel. IDE result pending (task 1.4): recheck after IDE confirmation. A file saved by a shell command fires no file event, so this hook does not see it.
 - Hook file `.kiro/hooks/blacklight-steering.json` is created with `enabled: false` (enabled by task 19.1).
+
+## Task 12.12: verifyWorld contract test (2026-11-18, Node v20.20.2, Apple M1)
+
+`worlds/drawer-arm/tests/contract.test.ts` runs `verifyWorld` with `numRuns` = `shortRuns` (35) on the Base_World and on a sampled variant (seed 42, index 0). Both calls passed with the default state comparison (no `stateEquals`). Elapsed per call: 6.0 s to 11.4 s (base) and 6.3 s to 7.5 s (variant) over several runs; whole test file 12.8 s to 14.0 s. The contract-pbt hook command, run by hand (world suite plus core judgment-engine suite), took 14.6 s and 15.9 s. `deterministic: true` is limited to the Tested_Environments.
+
+## Ghost Hand checkpoint 13 (2026-11-18, Node v20.20.2, Apple M1)
+
+The "Demo scenario numbers" section above still reads `unmeasured`; the demo numbers are in "Ghost Hand demo plans, tuned scene, and re-measured budget (task 11.5)" (fast pull: block, 7 of 8 variants succeed; slow pull, strong grip: pass, 8 of 8). The current budget is `shortRuns` 35 (`worlds/drawer-arm/tests/pbt-budget.json`); the 36 in the "Short-run budget" section is the value before the scene tuning. The golden hash is in "Determinism golden hash". Contract test, two consecutive runs: base world 5.4 s and 6.8 s, variant world 5.7 s and 6.1 s (numRuns 35).

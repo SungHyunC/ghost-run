@@ -118,6 +118,9 @@ The Mirror world hides the value of any field whose key name contains `secret`, 
 | typescript-eslint | 8.73.0 | Dev dependency of `apps/ghost-hand` and `worlds/drawer-arm`, TypeScript lint rules | MIT |
 | yaml (eemeli) | 2.9.1 | Runtime dependency of `wards-config`, YAML 1.2 parser with source ranges for `wards.yaml` | ISC |
 | sql.js | 1.16.0 | Runtime dependency of `apps/ghost-shell` and `worlds/playground-shell`, SQLite compiled to WebAssembly for the playground database | MIT |
+| @modelcontextprotocol/sdk | 1.32.2 | Runtime dependency of `integrations/mcp`, MCP server and stdio transport for the `ghost-run` server (Node.js 18 or later) | MIT |
+| zod | 4.6.7 | Runtime dependency of `integrations/mcp`, input schemas of the MCP tools (SDK peer range `^3.25 || ^4.0`) | MIT |
+| esbuild | 0.28.2 | Dev dependency of `integrations/mcp`, builds the single-file server bundle of the Kiro power (`pnpm --filter @ghost-run/mcp bundle`; the bundle is committed). Published 2026-08-08, license read from the installed `package.json` on 2026-11-18 | MIT |
 | shell-quote | 1.12.0 | Runtime dependency of `ghost-runner`, shell command parsing | MIT |
 | @types/shell-quote | 1.7.5 | Dev dependency of `ghost-runner`, shell-quote type definitions | MIT |
 | Node.js (base image `node:20-bookworm-slim`) | v20.20.2 | Box package of `ghost-runner`, in-box recorder runtime (not shipped on the host) | MIT |
@@ -150,7 +153,7 @@ Notes for the wards-config rows:
 Notes for the Ghost Shell rows:
 
 - `apps/ghost-shell` (the playground page) and `worlds/playground-shell` (the world it runs) are static and need no server, no API key, and no runtime LLM call. The page runs the bundled scenarios and your own plan files against an in-memory virtual project and an in-browser SQLite database (`sql.js`), then shows the verdict as a candle. It runs no real command and touches no real file. It claims P2 only as "the diff computed from the action record equals the diff of the ghost run", not as equality with a real shell.
-- Versions and licenses were read from the installed `package.json` files on 2026-11-20.
+- Versions and licenses were read from the installed `package.json` files on 2026-11-18.
 - Runtime dependencies of `apps/ghost-shell`: `sql.js` 1.16.0 (MIT), `react` 19.3.1 (MIT), `react-dom` 19.3.1 (MIT). `yaml` 2.9.1 (ISC) reaches the page through `@ghost-run/wards-config`. The workspace packages `@ghost-run/core`, `@ghost-run/ui`, `@ghost-run/wards-config`, and `@ghost-run/playground-shell` are MIT and part of this repository.
 - Development dependencies of `apps/ghost-shell`, all listed in the table above at the installed versions: `typescript` 5.9.3 (Apache-2.0), `eslint` 10.15.0, `typescript-eslint` 8.73.0, `@types/node` 20.19.43, `vite` 7.3.8, `@vitejs/plugin-react` 5.2.0, `vitest` 3.2.7, `fast-check` 4.10.2, `jsdom` 26.1.0, `@testing-library/react` 16.3.3, `@testing-library/dom` 10.4.2, `@testing-library/user-event` 14.6.12, `@types/react` 19.3.0, `@types/react-dom` 19.3.0, `@eslint-react/eslint-plugin` 5.30.3, and `eslint-plugin-react-hooks` 7.1.1 (all MIT unless noted).
 - Development dependencies of `worlds/playground-shell`: `@ghost-run/wards-config` (workspace), `@types/node`, `eslint`, `fast-check`, `jsdom`, `typescript`, `typescript-eslint`, and `vitest`, at the same installed versions.

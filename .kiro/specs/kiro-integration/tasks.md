@@ -463,21 +463,21 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - `tests/blacklight-hook.test.mjs`: the outcome `findings` for a `.kiro` markdown file with a hidden character built from an escape, exit code 1, and the report on STDOUT and STDERR; the outcome `clean` for an ordinary file; a path outside `.kiro/` is ignored.
     - _Requirements: 2.1, 2.2, 2.3, 2.7, 17.1, 17.3, 23.4_
 
-- [ ] 14. MCP server `ghost-run`
-  - [~] 14.1 Scaffold the `@ghost-run/mcp` package and check the dependency licenses
+- [x] 14. MCP server `ghost-run`
+  - [x] 14.1 Scaffold the `@ghost-run/mcp` package and check the dependency licenses
     - Create `integrations/mcp/package.json` (`name: "@ghost-run/mcp"`, `private`, `type: "module"`, `engines.node >= 20`, `bin: { "ghost-run-mcp": "bin/ghost-run-mcp.mjs" }`, dependencies `@modelcontextprotocol/sdk` 1.32.2, `zod` 4.6.7, `@ghost-run/core`, `@ghost-run/ghost-runner`, `@ghost-run/wards-config`, `@ghost-run/kiro-hook` (all `workspace:*`), dev dependencies `vitest`, `typescript`, `eslint`), `tsconfig.json` (same strict `checkJs` setup), `eslint.config.mjs` (same bans as task 2.1), and the folders `bin/`, `src/`, `src/tools/`, `tests/`. Run `pnpm install`.
     - Check the license of `@modelcontextprotocol/sdk` 1.32.2 (expect MIT, Node.js 18 or later) and of `zod` 4.6.7 (expect MIT; the SDK peer range is `^3.25 || ^4.0`) from the installed `package.json` files on the day they are added, and add a row for each (name, version, license) to the dependency table of the repository `README.md`. Also add `esbuild` (MIT, dev dependency of task 15.2) when it is added. Do not merge without the rows.
     - **Dependency note:** `@ghost-run/mcp` imports `@ghost-run/kiro-hook` through its `index.mjs` only (created in task 8.2).
     - _Requirements: 1.1, 1.2, 1.3, 1.8, 18.1_
 
-  - [~] 14.2 Implement the server core: `src/server.mjs`, `src/schemas.mjs`, `src/result.mjs`, `src/confine.mjs`, `bin/ghost-run-mcp.mjs`
+  - [x] 14.2 Implement the server core: `src/server.mjs`, `src/schemas.mjs`, `src/result.mjs`, `src/confine.mjs`, `bin/ghost-run-mcp.mjs`
     - **Depends on task 8.2** (the `index.mjs` exports). Verify the SDK import subpaths and the `registerTool(name, { description, inputSchema, annotations }, handler)` signature against the installed 1.32.2 before writing the server (design O16); the design fixes behavior and not SDK spelling.
     - `server.mjs`: an `McpServer` named `ghost-run` over `StdioServerTransport`, registering exactly the five tools (registered by tasks 14.3 and 14.4 through `src/tools/`), with the annotations the SDK supports: `blacklight`, `ghost_diff`, `ghost_trace`, and `wards_check` read-only; `ghost_run` not read-only and not destructive.
     - `schemas.mjs`: the zod schemas of the design table (`plan` of 1 to 50 objects `{ command: string 1 to 4,096 code points, cwd?: string }`; `id` matching `^[A-Za-z0-9_-]{1,64}$`; optional `session` with the same pattern; `path` of 1 to 200 strings). `result.mjs`: every handler returns `{ content: [{ type: 'text', text }], structuredContent, isError? }`; a result over 64 KiB is cut at a line boundary with the marker `[truncated]` and `structuredContent.truncated = true`; every untrusted string passes `sanitizeJudgeText`; no payload byte and no `secretValues`. `confine.mjs`: `confinePath(root, p)` with `path.resolve`, `fs.realpath`, and a check that the real path equals the real workspace root or starts with it plus a separator.
     - STDOUT carries protocol messages only; diagnostics go to STDERR with command text cut to 120 code points; the server makes no network call and calls no LLM. Input outside a schema gives an `isError: true` result that names the field and does not call the runner. The workspace root is `process.cwd()`; the Wards_File is resolved with `resolveWardsFile`, and a config error gives an error result with at most 5 `formatConfigError` strings and no verdict.
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7, 18.9, 19.12_
 
-  - [~] 14.3 Implement the tools `ghost_run`, `ghost_diff`, and `ghost_trace`
+  - [x] 14.3 Implement the tools `ghost_run`, `ghost_diff`, and `ghost_trace`
     - `ghost_run(plan)`: load the wards, call `runPlan(plan, { original: root, wardSet, pipelineDeadlineSec: 55 })` (there is no 60 s hook limit in the MCP process), write the Run_Record and, for `warn` or `block`, the Grave_Entry (the same builder and the same `decisionFromRunResult` message path as the gate), and return `{ runId, graveId?, verdict, rehearsed, isolation: { mode, p1Claimed, p5Claimed, p6Claimed }, exitCodes, message, diffSummary, truncated }`. In Plan_B it returns `rehearsed: false`, the exact line `P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only.`, a verdict of at least `warn`, and no claim. The tool descriptions state that the tools are advisory and that calling `ghost_run` does not make a command safe.
     - `ghost_diff(id)`: accepts a Run_Id or a Grave_Id (a leading `g-` is stripped), returns the `Change[]` per step, the diff summary, and the `isolation` claims; an unknown id or a removed record gives `unknown run id` and never a guess.
     - `ghost_trace(id, session?)`: runs `collectNeedles` on the report of the Run_Record and `traceRedThread` against the Provenance_Log of the session (the most recently modified session folder when `session` is absent); with no provenance it returns `not-found` links and `No provenance recorded.`; it states that the red thread finds literal occurrences only and that `not-found` does not mean safe; it changes no verdict.
@@ -485,52 +485,52 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Write example tests with a `runPlan` double: the result shape, the Run_Record and Grave_Entry writes, Plan_B, an unknown id, a Grave_Id lookup, and `ghost_trace` on a README with a destination hidden in Tag_Characters (`hidden` equal to `true`). The `ghost_run` Docker test reports `skipped (docker unavailable)` when Docker is absent.
     - _Requirements: 18.8, 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.12, 23.4_
 
-  - [~] 14.4 Implement the tools `wards_check` and `blacklight`
+  - [x] 14.4 Implement the tools `wards_check` and `blacklight`
     - `wards_check(plan)`: load the Wards_File, return the validation strings (at most 50), the ward ids and kinds, for each action whether `classifySafe` says it is a Safe_Command, and the static findings of the `ghost-runner` Static_Analyzer; start no container, execute no action, return `rehearsed: false` with no P1, P5, or P6 claim, state that it is a static check and not a rehearsal, and omit any `verdict` field.
     - `blacklight(path)`: confine every path with `confinePath` (a path that fails, or does not exist, gives a per-path error and the other paths are still scanned); a directory is scanned recursively up to 1,000 files and the result reports the cap; symbolic links inside the tree are not followed (`lstat` and skip, counted); call `scanFiles` only with confined real paths; return `{ outcome, files, totalFindings, text }` plus the per-path errors; never write, rename, or delete any file.
     - Write example tests for both tools: `wards_check` for a safe, an unsafe, and a secret-reading command; `blacklight` for a clean file, a file with a hidden character built from an escape, a path with `..`, an absolute path elsewhere, and a symbolic link to the outside.
     - _Requirements: 19.7, 19.8, 19.9, 19.10, 18.7, 18.8_
 
-  - [~] 14.5 Write property test for MCP input validation and result bounds [no-docker]
+  - [x] 14.5 Write property test for MCP input validation and result bounds [no-docker]
     - `integrations/mcp/tests/prop-17-input-validation.test.mjs`. Generators: inputs outside the schemas (plans of length 0 or over 50, commands of length 0 or over 4,096 code points, wrong types, ids outside the pattern, more than 200 paths) and tool results of generated sizes with hidden code points built from code points. Check: the tool returns `isError: true` with a sanitized message naming the field and the runner double is not called; every serialized result is at most 64 KiB and a truncated result carries the `[truncated]` marker and the flag.
     - **Property 17: MCP input validation and result bounds**
     - **Validates: Requirements 18.2, 18.4, 18.5, 19.1, 19.4**
     - _Requirements: 18.2, 18.4, 18.5, 19.1, 19.4_
 
-  - [~] 14.6 Write property test that `wards_check` is static [no-docker]
+  - [x] 14.6 Write property test that `wards_check` is static [no-docker]
     - `integrations/mcp/tests/prop-18-wards-check-static.test.mjs`. Generators: plans of 1 to 50 generated commands (safe, unsafe, secret-reading). Check: `wards_check` makes no `runPlan` call and starts no container (spy on the runner double and `child_process`), returns `rehearsed: false` and no `verdict` field, and reports for each action the same `safe` flag as the gate classifier.
     - **Property 18: wards_check is static**
     - **Validates: Requirements 19.7, 19.8**
     - _Requirements: 19.7, 19.8_
 
-  - [~] 14.7 Write property test for path confinement [no-docker]
+  - [x] 14.7 Write property test for path confinement [no-docker]
     - `integrations/mcp/tests/prop-08-path-confinement.test.mjs` (KI-P8). Generators: path strings with `..` segments, absolute paths, empty strings, non-existent paths, and symbolic links to outside paths in a temporary workspace. Check: no `readFile` or `open` call of the file-system spy receives a real path outside the workspace root, and the other paths of the same call are still scanned.
     - **Property 8: Path confinement**
     - **Validates: Requirements 19.9, 19.10, 19.11**
     - _Requirements: 19.9, 19.10, 19.11_
 
-  - [~] 14.8 Write the MCP stdio integration test
+  - [x] 14.8 Write the MCP stdio integration test
     - `integrations/mcp/tests/stdio.test.mjs`: start the server over stdio with the SDK client, list exactly the five tools, call `wards_check` and `blacklight` without Docker, and check that STDOUT holds protocol messages only (a spy outside the transport). The `ghost_run` test reports `skipped (docker unavailable)` when Docker is unavailable. Add an end-to-end check that no canary appears in any result or STDERR of these calls, and a determinism check (equal inputs, store, and wards give equal results except ids and timestamps).
     - _Requirements: 18.1, 18.3, 18.10, 19.12, 23.3_
 
-- [ ] 15. Kiro power
-  - [~] 15.1 Create the power files
+- [x] 15. Kiro power
+  - [x] 15.1 Create the power files
     - Create `integrations/power/plugin.json` (`$schema` `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`, `name` `ghost-run`, `version` `0.1.0`, `description`, `author` `{ "name": "Ghost Run+" }`, `keywords` `delete`, `drop table`, `migration`, `deploy`, `rm -rf`, `destructive`, `ghost run`, `secret`, `.env`, `truncate`, `force push`), `integrations/power/mcp.json` (`$schema` `https://agent-plugins.org/schemas/1.0.0/mcp.schema.json`, `mcpServers` with one server `ghost-run`: `type` `stdio`, `command` `node`, `args` `["server/ghost-run-mcp.mjs"]`, `env` `{}`), `integrations/power/skills/ghost-run/SKILL.md`, and `integrations/power/README.md`.
     - `SKILL.md` starts with the front matter `name: ghost-run` and a one-line `description`, and its body states: when to call `wards_check` and then `ghost_run` (before a delete, a database change, a migration, a deploy, or a command that reads secret files); how to read `pass`, `warn`, `block` and the claims `p1Claimed`, `p5Claimed`, `p6Claimed`; that a `block` is to be answered with a different plan and not the same effect through another command; that a `warn` needs a human; that the tools are advisory and only the Ghost_Gate enforces a verdict; that a `pass` is not an approval. No hidden character, no HTML comment opener, no real host, no secret. The power folder holds no hook file and no steering file.
     - The power `README.md` states that a project that installs only the power has the advisory tools and the skill and not the enforcing Ghost_Gate, and that without Docker and the built box image `ghost_run` returns the Plan_B result. The prefixed tool names are added by task 17.4 (design O3).
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.9, 18.8_
 
-  - [~] 15.2 Add the single-file server bundle script and build the committed bundle
+  - [x] 15.2 Add the single-file server bundle script and build the committed bundle
     - Add `esbuild` (MIT; check its license from the installed `package.json` and add the row to the repository README table) as a dev dependency of `@ghost-run/mcp` and the script `bundle` (`pnpm --filter @ghost-run/mcp bundle`) that builds `integrations/power/server/ghost-run-mcp.mjs` as one ES-module file for Node 20 that includes the workspace packages. The bundle is committed because a power installed from a GitHub repository is not built on install.
     - Build the bundle once and commit it. The `env` of `mcp.json` stays empty.
     - **Dependency note:** needs the built `core`, `ghost-runner`, and `wards-config` and the finished tools (tasks 14.3 and 14.4).
     - _Requirements: 20.4, 1.8_
 
-  - [~] 15.3 Write the power tests [no-docker]
+  - [x] 15.3 Write the power tests [no-docker]
     - `integrations/mcp/tests/power.test.mjs`: parse `plugin.json` and `mcp.json` and require the fields of Requirement 20 criteria 2 and 4 and the `SKILL.md` front matter of criterion 3, with no network call (the schema URLs are not fetched); rebuild the bundle into a temporary folder and require equal bytes to the committed file; run the possession scan over `integrations/power/` and expect `clean`; require that the folder holds no hook or steering file and that `env` has no value that looks like a secret.
     - _Requirements: 20.7, 20.9, 20.5, 22.2_
 
-  - [~] 15.4 Implement the link helper fallback `pnpm power:link`
+  - [x] 15.4 Implement the link helper fallback `pnpm power:link`
     - Add the script `power:link` (design D6 fallback, used only if task 17.4 shows that the host does not start the server with the power folder as the working directory): it writes the git-ignored `integrations/power/mcp.local.json` with the absolute path of `server/ghost-run-mcp.mjs` for the developer to copy into the power install. The file is listed in `.gitignore` (task 2.4). Write a test that the helper writes only that file, only inside `integrations/power/`, and that its output holds no secret.
     - _Requirements: 20.4, 12.1_
 

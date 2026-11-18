@@ -1,0 +1,37 @@
+{
+  "name": "@ghost-run/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Run+ MCP server (ghost_run, ghost_diff, ghost_trace, wards_check, blacklight)",
+  "type": "module",
+  "bin": {
+    "ghost-run-mcp": "bin/ghost-run-mcp.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "bundle": "node scripts/bundle.mjs",
+    "power:link": "node scripts/power-link.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@ghost-run/core": "workspace:*",
+    "@ghost-run/ghost-runner": "workspace:*",
+    "@ghost-run/kiro-hook": "workspace:*",
+    "@ghost-run/wards-config": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "esbuild": "0.28.2",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.7"
+  }
+}

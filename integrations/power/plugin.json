@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ghost-run",
+  "version": "0.1.0",
+  "description": "Rehearse risky agent actions in a sealed copy before they run. Advisory MCP tools and a skill for Ghost Run+.",
+  "author": { "name": "Ghost Run+ contributors" },
+  "keywords": ["delete", "drop table", "migration", "deploy", "rm -rf", "destructive", "ghost run", "secret", ".env", "truncate", "force push"]
+}
