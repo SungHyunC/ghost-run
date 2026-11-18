@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["*.mjs", "lib/**/*.mjs", "tests/**/*.mjs", "vitest.config.ts"],
+  "exclude": ["node_modules", "exp-b-gate.mjs"]
+}

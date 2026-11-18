@@ -239,6 +239,61 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
 
+  apps/ghost-shell:
+    dependencies:
+      '@ghost-run/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ghost-run/playground-shell':
+        specifier: workspace:*
+        version: link:../../worlds/playground-shell
+      '@ghost-run/wards-config':
+        specifier: workspace:*
+        version: link:../../wards-config
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      sql.js:
+        specifier: 1.16.0
+        version: 1.16.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: ^5.2.0
+        version: 5.2.0(vite@7.3.8(@types/node@20.19.43)(lightningcss@1.33.0)(yaml@2.9.1))
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
+      jsdom:
+        specifier: ^26.1.0
+        version: 26.1.0
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.73.0
+        version: 8.73.0(eslint@10.15.0)(typescript@5.9.3)
+      vite:
+        specifier: ^7.3.8
+        version: 7.3.8(@types/node@20.19.43)(lightningcss@1.33.0)(yaml@2.9.1)
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
+
   core:
     devDependencies:
       '@types/node':
@@ -287,6 +342,34 @@ importers:
       typescript-eslint:
         specifier: ^8.73.0
         version: 8.73.0(eslint@10.15.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
+
+  integrations/kiro-hook:
+    dependencies:
+      '@ghost-run/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ghost-run/ghost-runner':
+        specifier: workspace:*
+        version: link:../../ghost-runner
+      '@ghost-run/wards-config':
+        specifier: workspace:*
+        version: link:../../wards-config
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
@@ -401,6 +484,37 @@ importers:
       fast-check:
         specifier: ^4.10.2
         version: 4.10.2
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.73.0
+        version: 8.73.0(eslint@10.15.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
+
+  worlds/playground-shell:
+    dependencies:
+      '@ghost-run/core':
+        specifier: workspace:*
+        version: link:../../core
+      sql.js:
+        specifier: 1.16.0
+        version: 1.16.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
+      jsdom:
+        specifier: ^26.1.0
+        version: 26.1.0
       typescript:
         specifier: ^5.9.0
         version: 5.9.3
@@ -1820,6 +1934,9 @@ packages:
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
+
+  sql.js@1.16.0:
+    resolution: {integrity: sha512-q/JOZuJfmVh8Zf8Eo+cMJvtxAWeWBqTfJ6AQYGXZmcaLGHMwhA2niH3fQYHrBtPeOss1ttzHec07K5+rHaMRMw==}
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -3475,6 +3592,8 @@ snapshots:
   siginfo@2.0.0: {}
 
   source-map-js@1.2.2: {}
+
+  sql.js@1.16.0: {}
 
   stackback@0.0.2: {}
 

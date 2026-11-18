@@ -1,0 +1,120 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create the minimal Hook_Package skeleton that the probe lives in": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985648246
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985684746
+      }
+    ],
+    "2.4 Add `.ghost-run/` to `.gitignore` and test the entry [no-docker]": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985649041
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985688040
+      }
+    ],
+    "3.1 Disable the experiment B hook files": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985649459
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985688050
+      }
+    ],
+    "1.2 Create the probe script and the probe hook files": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985688062
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985791490
+      }
+    ],
+    "2.1 Complete the Hook_Package configuration and the test harness": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985688067
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794986148246
+      }
+    ],
+    "2.3 Update `.kiro/steering/structure.md` for the new dependency direction": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985688071
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985791510
+      }
+    ],
+    "1.3 Write unit tests for the probe script [no-docker]": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985795651
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794986148236
+      }
+    ],
+    "2.5 Write the source-scan tests [no-docker]": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985795661
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794986148704
+      }
+    ],
+    "3.2 Write the hook file format tests and the exp-b retirement test [no-docker]": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794985795897
+      },
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794986149749
+      }
+    ],
+    "3. Retirement of the experiment B hooks and hook file format tests": [
+      {
+        "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
+        "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
+        "timestamp": 1794986149751
+      }
+    ]
+  }
+}

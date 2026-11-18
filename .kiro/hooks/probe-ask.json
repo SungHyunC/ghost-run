@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Probe: ask test",
+      "description": "Answers ask only for the fixed command echo ghost-run-ask-probe. A human enables it in task 17.2.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --ask-test" },
+      "timeout": 10,
+      "enabled": false
+    }
+  ]
+}

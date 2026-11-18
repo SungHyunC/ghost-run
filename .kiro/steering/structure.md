@@ -50,11 +50,12 @@ ghost-run/
 ## Dependency Direction
 
 - `apps/*` and `integrations/*` may depend on `core/` and `ui/`.
-- `apps/*` may depend on `worlds/*`.
-- `worlds/*` may depend on `core/` and on the engine package of the world only (for example `@mujoco/mujoco`, `sql.js`).
+- `apps/*` may depend on `worlds/*`, `ui/`, `wards-config/`, and `core/`.
+- `worlds/*` may depend on `core/` only, plus the runtime libraries of the world itself (for example `@mujoco/mujoco`, `sql.js`).
 - `ui/` may depend on `core/`.
 - `ghost-runner/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only (`ghost-runner -> core`), through the public entry point of `@ghost-run/core`.
 - `wards-config/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only, through the public entry point `@ghost-run/core`.
+- `integrations/*` may also depend on `ghost-runner/` and `wards-config/`, only through their public entry points. `integrations/mcp` may depend on `integrations/kiro-hook` only through its `index.mjs`.
 - `core/` must not import `ghost-runner/` or `wards-config/` (enforced by an ESLint `no-restricted-imports` rule).
 - `core/` must not depend on any other folder in this repository.
 

@@ -1,0 +1,89 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Probe: Pre Tool Use facts",
+      "description": "Records field names and paths of every Pre Tool Use event.",
+      "trigger": "PreToolUse",
+      "matcher": "*",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: deny test",
+      "description": "Exits 2 only for the fixed command echo ghost-run-block-probe.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --deny-test" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: Post Tool Use facts",
+      "description": "Records field names and paths of every Post Tool Use event.",
+      "trigger": "PostToolUse",
+      "matcher": "*",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: file save",
+      "description": "Records the file-save event.",
+      "trigger": "PostFileSave",
+      "matcher": ".*",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: file create",
+      "description": "Records the file-create event.",
+      "trigger": "PostFileCreate",
+      "matcher": ".*",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: file delete",
+      "description": "Records the file-delete event.",
+      "trigger": "PostFileDelete",
+      "matcher": ".*",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: stdout test",
+      "description": "Prints a fixed marker on STDOUT to see whether file-event output reaches the agent.",
+      "trigger": "PostFileSave",
+      "matcher": "probe-scratch/",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --stdout-test" },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "Probe: timeout test (entry level)",
+      "description": "Records start, sleeps 3 s, records end. Timeout 1 s at entry level.",
+      "trigger": "PostFileSave",
+      "matcher": "probe-scratch/",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --timeout-test=entry" },
+      "timeout": 1,
+      "enabled": true
+    },
+    {
+      "name": "Probe: timeout test (action level)",
+      "description": "Records start, sleeps 3 s, records end. Timeout 1 s inside action.",
+      "trigger": "PostFileSave",
+      "matcher": "probe-scratch/",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/probe-host-facts.mjs --timeout-test=action",
+        "timeout": 1
+      },
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@ghost-run/kiro-hook",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Run+ Kiro hook scripts and shared Ghost_Store module",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:nightly": "GHOST_PBT_MODE=nightly vitest --run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@ghost-run/core": "workspace:*",
+    "@ghost-run/ghost-runner": "workspace:*",
+    "@ghost-run/wards-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.7"
+  }
+}

@@ -33,3 +33,7 @@ box/ca/
 apps/ghost-hand/dist
 apps/ghost-hand/dist-node
 worlds/drawer-arm/dist
+
+# Ghost Run runtime data and local MCP config
+.ghost-run/
+integrations/power/mcp.local.json

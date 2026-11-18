@@ -261,3 +261,47 @@ Recorded on macOS (Apple Silicon) with `corepack pnpm`.
 - Property-based tests in short mode run `NUM_RUNS=100` per property. The parse-safety test with a 256 KiB list runs 20 times. The engine-determinism property also passed in the nightly mode at 10,000 runs per property.
 - Property 13 found one bug in `core/src/wards.ts` `checkPath`. When two spellings of one protected path appeared in a single step, the displayed spelling depended on the order of the changes. Counterexample: `data/a.txt` and `DATA/A.TXT` in one step. The fix keeps the smallest code-point spelling. The regression test is kept.
 - Open Item 16 is closed. The default `safe_commands` list is `ls`, `pwd`, `cat`, `git status`, `git diff`.
+
+## Ghost-shell task 3.1: sql.js facts
+
+Recorded on macOS (Apple Silicon), Node v20.20.2, with `corepack pnpm exec vitest run` in `worlds/playground-shell`. Installed versions read from the packages: `sql.js` 1.16.0, `vitest` 3.2.7, `jsdom` 26.1.0. The real `sql.js` wasm build is used (no mock), loaded with `locateFile` returning the path of `sql.js/dist/sql-wasm.wasm`.
+
+- Files: `worlds/playground-shell/tests/sql-smoke.test.ts` (node) and `tests/sql-smoke-jsdom.test.ts` (`// @vitest-environment jsdom`). Both pass: 2 files, 12 tests.
+- Claim 1: `initSqlJs` loads the wasm file and answers `SELECT 1` under Node and under jsdom. Holds.
+- Claim 2: an empty `new SQL.Database().export()` returns 4096 bytes (non-zero) in both environments. The rule "create the file only when the export is non-empty" is therefore wrong. Fallback (Unverified item 2): create the file only when a statement wrote.
+- Claim 3: a database built twice from the same fixed SQL (a `WITH RECURSIVE` insert of 1,206 rows into one table, plus a second table with 2 rows) exports byte-equal results (24,576 bytes each). Holds in both environments.
+- Claim 4: `crypto.subtle.digest('SHA-256', ...)` returns 32 bytes in the jsdom test with `tests/support/setup.ts` loaded. Holds.
+- Claim 5: `ArrayBuffer.isView(new Uint8Array(4))` is true in jsdom, and also true for the `structuredClone` result. `instanceof Uint8Array` differs across realms: under Node it is true for both values; under jsdom it is true for the value created in the test and false for the `structuredClone` result. Code must use `ArrayBuffer.isView`, not `instanceof Uint8Array`, for values that may cross a clone.
+- Claim 6: `PRAGMA page_size` returns 4096. `PRAGMA max_page_count` returns 4294967294 by default, and `PRAGMA max_page_count = 64` returns 64. Inserting 200 rows of `zeroblob(4096)` after that limit fails with the message `database or disk is full`. Holds in both environments.
+
+## Ghost-shell task 3.2: worker_threads watchdog
+
+Recorded on macOS (Apple Silicon), Node v20.20.2, `sql.js` 1.16.0, `vitest` 3.2.7, with `corepack pnpm exec vitest run tests/worker-threads-spike.test.ts` in `worlds/playground-shell`. Files: `tests/support/sql-worker.mjs` (plain JavaScript worker, real `sql.js`, answers `{ id, request }` with `{ id, response }` using `db.exec`) and `tests/worker-threads-spike.test.ts`.
+
+- A worker running `WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM c) SELECT count(*) FROM c;` never answers. A real `setTimeout` of 300 ms wins the race, and `worker.terminate()` resolves while the worker is still inside the wasm call.
+- Measured real time from sending the query to the resolved `terminate()` promise: 304.4 ms (300 ms timer plus about 4 ms for terminate). The whole test, including spawning two workers, took 369 ms.
+- A fresh worker spawned after the termination answers `SELECT 1` with the value 1. Terminate-and-respawn works with real `sql.js`; task 5.2 can reuse `sql-worker.mjs`.
+
+## Ghost-shell task 3.3: Vite build and yaml browser build
+
+Recorded on macOS (Apple Silicon), Node v20.20.2, with `corepack pnpm --filter @ghost-run/ghost-shell build` and `test`. Resolved versions read from the installed packages: `vite` 7.3.8, `@vitejs/plugin-react` 5.2.0, `vitest` 3.2.7, `jsdom` 26.1.0, `sql.js` 1.16.0, `react` 19.3.1, `yaml` 2.9.1 (through `@ghost-run/wards-config`).
+
+- Build: 131 modules, about 0.8 s. Output in `dist/`: `index.html`, `_headers`, `assets/index-D8hRYLyh.js` (336.92 kB, gzip 105.68 kB), `assets/worker-entry-GW3ZIgk6.js` (42.73 kB), `assets/sql-wasm-CXIAVl5-.wasm` (688,197 bytes, gzip 337.16 kB).
+- `?url` pattern: works as designed. `import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url'` makes Vite emit the hashed wasm file under `assets/`, and the worker chunk references `sql-wasm-CXIAVl5-.wasm`. No fallback (copy into `public/`) was needed. The worker chunk also contains the strings `sql-wasm-browser.wasm` (the default name inside sql.js, replaced by `locateFile`).
+- Worker: `new Worker(new URL('./worker-entry.ts', import.meta.url), { type: 'module' })` is bundled as a separate chunk (`worker-entry-*.js`) with `worker.format: 'es'`.
+- yaml browser build: `parseWards` from the default entry `@ghost-run/wards-config` bundles for the browser. The main chunk contains the `yaml` parser (`YAMLParseError`, `Unresolved alias`) and the bundled `wards.yaml` text. No JS file contains a quoted `node:` specifier.
+- Deviation: `@types/react` and `@types/react-dom` (`^19.3.0`, listed in the design table) were missing from `apps/ghost-shell/package.json`, so `tsc` failed on JSX. They were added and installed once from the existing store (no new package versions downloaded).
+- Deviation: the build-smoke test sets `NODE_ENV=production` for its build, because Vitest sets `NODE_ENV=test` and the main chunk then grew to 544,404 bytes (React development build).
+- CSP in `public/_headers` is the text of the design; the build-smoke test asserts `default-src 'none'` and `connect-src 'self'`.
+- `apps/ghost-shell/wards.yaml` already existed (created by another session) and was used unchanged.
+
+## Ghost-shell task 3.4: dist check
+
+Recorded on macOS (Apple Silicon), Node v20.20.2, with `corepack pnpm --filter @ghost-run/ghost-shell build && node scripts/check-dist.mjs` on the build of task 3.3 (`index-D8hRYLyh.js`, `worker-entry-GW3ZIgk6.js`, `sql-wasm-CXIAVl5-.wasm`). The first run flagged eight strings in the JS chunks and no HTML or CSS finding. Each was reviewed once and added to `scripts/dist-url-allowlist.json` as an exact string with a reason (Unverified item 3). After that the check exits 0.
+
+- `https://react.dev/errors/` (main chunk): prefix of the React production error message; shown as text, never fetched.
+- `http://www.w3.org/2000/svg`, `http://www.w3.org/1998/Math/MathML`, `http://www.w3.org/1999/xlink`, `http://www.w3.org/XML/1998/namespace` (main chunk): XML namespace identifiers used by React as names. `http://www.w3.org/1999/xhtml` is allowed too but did not appear in this build.
+- `https://github.com/sql-js/sql.js/pull/647` (worker chunk): link inside a `sql.js` warning message text.
+- `http://[` (main chunk): prefix string in the host-parsing code of the egress judge (`new URL("http://[" + host + "]")` to validate a bracketed IPv6 literal). The URL is parsed, not fetched.
+
+Host allowlist: the suffixes `.example`, `.test`, `.localhost`, `.invalid`, and `registry.npmjs.org`; none of them occurs in the build. No `node:` specifier, no non-relative worker URL, and no protocol-relative URL was found. The `.wasm` name is referenced from the worker chunk, and `_headers` is present.
