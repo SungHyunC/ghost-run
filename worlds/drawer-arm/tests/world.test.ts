@@ -230,9 +230,9 @@ describe('effectsOutside (Requirement 3.12)', () => {
 });
 
 describe('registration (Requirement 3.13)', () => {
-  it('is deterministic: false until the registration gate passes', () => {
+  it('is deterministic: true after the registration gate passed (tests/contract.test.ts, Tested_Environments only)', () => {
     expect(config.id).toBe('drawer-arm');
-    expect(config.deterministic).toBe(false);
+    expect(config.deterministic).toBe(true);
   });
 });
 

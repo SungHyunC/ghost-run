@@ -1,5 +1,5 @@
 // World registration (kiro-integration convention): default export { id, deterministic, wardsFile, create }.
-// `deterministic` stays false until the registration gate passes (task 12.12).
+// `deterministic: true` was set after tests/contract.test.ts passed (task 12.12). The flag is limited to the Tested_Environments.
 import { createGhostHandWorld } from './src/world.js';
 import type { GhostHandWorld } from './src/world.js';
 
@@ -12,7 +12,7 @@ export interface DrawerArmWorldConfig {
 
 const config: DrawerArmWorldConfig = {
   id: 'drawer-arm',
-  deterministic: false,
+  deterministic: true,
   wardsFile: './wards.yaml',
   create: () => createGhostHandWorld(),
 };

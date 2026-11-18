@@ -24,6 +24,50 @@
     "11.3 Write the property test for the run result order": {
       "status": "passed",
       "lastRunTimestamp": 1794997262909
+    },
+    "12.3 Write the property test for no carried state": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999678045
+    },
+    "12.2 Write the property test for bit-exact snapshot reuse": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999687667
+    },
+    "12.1 Write the property test for ghost isolation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999724078
+    },
+    "12.6 Write the property test for the Scene": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999797978
+    },
+    "12.4 Write the property test for invalid actions": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999803094
+    },
+    "12.5 Write the property test for the diff": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999816750
+    },
+    "12.7 Write the property test for the fingerprint": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999886510
+    },
+    "12.8 Write the property test for plan limits": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999927156
+    },
+    "12.9 Write the property test for frame decimation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794999939088
+    },
+    "12.10 Write the property test for the ghost diff against the reference diff": {
+      "status": "passed",
+      "lastRunTimestamp": 1795000010118
+    },
+    "12.13 Write the property test for variant determinism and partition independence": {
+      "status": "passed",
+      "lastRunTimestamp": 1795000043767
     }
   },
   "executionHistory": {
@@ -880,6 +924,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248934
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999580009
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999737579
       }
     ],
     "12.2 Write the property test for bit-exact snapshot reuse": [
@@ -887,6 +941,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248937
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999580025
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999737590
       }
     ],
     "12.3 Write the property test for no carried state": [
@@ -894,6 +958,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248940
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999580040
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999737859
       }
     ],
     "12.4 Write the property test for invalid actions": [
@@ -901,6 +975,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248943
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999738424
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999826767
       }
     ],
     "12.5 Write the property test for the diff": [
@@ -908,6 +992,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248945
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999739231
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999826776
       }
     ],
     "12.6 Write the property test for the Scene": [
@@ -915,6 +1009,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248946
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999739579
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999827247
       }
     ],
     "12.7 Write the property test for the fingerprint": [
@@ -922,6 +1026,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248949
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999827796
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999952588
       }
     ],
     "12.8 Write the property test for plan limits": [
@@ -929,6 +1043,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248951
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999828600
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999952598
       }
     ],
     "12.9 Write the property test for frame decimation": [
@@ -936,6 +1060,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248953
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999829023
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999952609
       }
     ],
     "12.10 Write the property test for the ghost diff against the reference diff": [
@@ -943,6 +1077,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248955
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999953340
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000057233
       }
     ],
     "12.11 Record the Golden_Hash": [
@@ -950,6 +1094,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248957
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999954439
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000057243
       }
     ],
     "12.12 Add the `verifyWorld` contract test and register `deterministic: true`": [
@@ -957,6 +1111,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248959
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000058533
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000357587
       }
     ],
     "12.13 Write the property test for variant determinism and partition independence": [
@@ -964,6 +1128,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248961
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1794999955061
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000057915
       }
     ],
     "13. Checkpoint - world properties and demo": [
@@ -971,6 +1145,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248964
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000360950
+      },
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000500804
       }
     ],
     "14.1 Build the React screens": [
@@ -1139,6 +1323,13 @@
         "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
         "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
         "timestamp": 1794997761227
+      }
+    ],
+    "12. Engine-bound property tests and the registration gate": [
+      {
+        "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
+        "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
+        "timestamp": 1795000357589
       }
     ]
   }

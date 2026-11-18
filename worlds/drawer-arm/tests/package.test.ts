@@ -87,8 +87,14 @@ describe('worlds/drawer-arm import scan', () => {
     expect(bad.map((b) => b.rel)).toEqual([]);
   });
 
-  it('imports @ghost-run/core only through its public entry point', () => {
-    const bad = imports.filter(({ spec }) => spec.startsWith('@ghost-run/core') && spec !== '@ghost-run/core');
+  it('imports @ghost-run/core only through its public entry point (the contract test also uses the verify subpath)', () => {
+    // verifyWorld is exported by the `./verify` subpath of core, not by its index. Only the contract test may use it.
+    const bad = imports.filter(
+      ({ rel, spec }) =>
+        spec.startsWith('@ghost-run/core') &&
+        spec !== '@ghost-run/core' &&
+        !(spec === '@ghost-run/core/verify' && rel === 'tests/contract.test.ts'),
+    );
     expect(bad).toEqual([]);
   });
 

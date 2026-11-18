@@ -316,162 +316,162 @@ Decisions reflected in this plan:
     - **Depends on PR-2 only through the message path (the provisional note appears while PR-2 has not landed).** `tests/model/demo.test.ts` on the pure pipeline in Node without a browser: the first plan gives `block`, the message names `gentle-hands`, at least one Variant_Result has `success: false`; the revised plan gives `pass`, every Variant_Result has `success: true`, and the maximum `contactForceN` is at most `max_contact_force_n`; both plans open the drawer in the Base_World; the failed-variant count is derived from the results and never hard-coded; the Plan of each demo scenario equals the actions of its Plan_File; the revised file's `revisionOf` names the first plan; the P4-direction example: a copy of the WardSet whose `max_contact_force_n` is set below the maximum `contactForceN` read from the results gives a verdict not lower than the original, and the threshold is derived from the measured values.
     - _Requirements: 9.5, 9.11, 11.4, 12.2, 12.3, 12.4, 12.5_
 
-- [ ] 12. Engine-bound property tests and the registration gate
-  - [~] 12.1 Write the property test for ghost isolation
+- [x] 12. Engine-bound property tests and the registration gate
+  - [x] 12.1 Write the property test for ghost isolation
     - **Property 10: A ghost run leaves reality unchanged (contract P1)**
     - **Validates: Requirements 3.3, 3.4, 3.5, 8.2, 8.9, 8.10, 17.4, 17.8**
     - File: `worlds/drawer-arm/tests/p10-isolation.test.ts` and `apps/ghost-hand/tests/model/p10-pipeline-isolation.test.ts`. Generators: plans of 1 to 50 valid actions, and a generated prefix that moves the live Reference_State first. Assert the fingerprint hash of the live Reference_State after `ghostRun`, after every variant run, and after `runGhostHand` equals the hash before; run the same plan with `Date.now` and `Math.random` replaced by functions that throw and require equal results. Claim scope: per run for the in-memory Reference_State; no hardware, Docker, or untracked state.
 
-  - [~] 12.2 Write the property test for bit-exact snapshot reuse
+  - [x] 12.2 Write the property test for bit-exact snapshot reuse
     - **Property 11: A reused snapshot reproduces a run bit for bit (contract P3)**
     - **Validates: Requirements 3.4, 6.6, 17.5**
     - File: `tests/p11-restore.test.ts`. Generators: plans, prefixes, and Variant_Params from the sampler. Assert `step` leaves the input snapshot structurally unchanged (every typed array element, `-0` and `0` distinguished) and two `ghostRun` calls from the same snapshot end in element-equal states including the integration vector, the PRNG state, and the delay buffer.
 
-  - [~] 12.3 Write the property test for no carried state
+  - [x] 12.3 Write the property test for no carried state
     - **Property 12: No state is carried between runs**
     - **Validates: Requirements 3.14, 3.15, 17.9**
     - File: `tests/p12-no-carry.test.ts`. Assert equal reports (states, `Change[]`, results) from a fresh world and from a long-lived world that already ran other plans including failing ones; add one fixed-plan example that the WebAssembly heap size after run 40 equals the size after run 1.
 
-  - [~] 12.4 Write the property test for invalid actions
+  - [x] 12.4 Write the property test for invalid actions
     - **Property 13: Invalid actions fail without clamping or throwing**
     - **Validates: Requirements 3.6, 5.2**
     - File: `tests/p13-invalid-actions.test.ts`. Generators: valid action types with at least one value outside its range, not a number, or not finite, and valid actions. Assert `validateAction` is not ok and changes nothing; `step` returns `success: false`, a non-empty `error`, an equal state, and does not throw; a valid action keeps all values.
 
-  - [~] 12.5 Write the property test for the diff
+  - [x] 12.5 Write the property test for the diff
     - **Property 14: Diff is complete, pure, and ordered**
     - **Validates: Requirements 3.8, 3.9**
     - File: `tests/p14-diff.test.ts`. Generators: states reached by generated plans, a state against itself and a copy. Assert empty if and only if the states are equal under `Object.is` per element in every field, sorted by `kind` then `field`, equal results on a second call, and no input mutation.
 
-  - [~] 12.6 Write the property test for the Scene
+  - [x] 12.6 Write the property test for the Scene
     - **Property 15: Scene is JSON-safe**
     - **Validates: Requirements 3.10**
     - File: `tests/p15-scene.test.ts`. Assert `JSON.parse(JSON.stringify(render(s)))` is recursively equal to `render(s)`, every number finite, no `-0`, and no typed array.
 
-  - [~] 12.7 Write the property test for the fingerprint
+  - [x] 12.7 Write the property test for the fingerprint
     - **Property 16: Fingerprint is sensitive and stable**
     - **Validates: Requirements 3.11**
     - File: `tests/p16-fingerprint.test.ts`. Assert a single flipped bit in any tracked resource changes that manifest entry and the total hash, equal states give equal fingerprints, and every manifest value is a 64-character lowercase hex string.
 
-  - [~] 12.8 Write the property test for plan limits
+  - [x] 12.8 Write the property test for plan limits
     - **Property 17: Valid plans complete within the declared limits**
     - **Validates: Requirements 5.4, 5.5, 3.12**
     - File: `tests/p17-limits.test.ts`. Generators: plans of 1 to 50 valid actions including plans that start with `pull` or `release`, repeat `grasp`, or ask for moves that cannot finish in time. Assert no throw through `ghostRun`, the total simulated time of successful steps never exceeds the per-plan limit, a step over a limit fails with the limit error and an unchanged state, and `pull` without a hold leaves the drawer unchanged and reports `success`.
 
-  - [~] 12.9 Write the property test for frame decimation
+  - [x] 12.9 Write the property test for frame decimation
     - **Property 18: Recorded frames respect the decimation limit**
     - **Validates: Requirements 8.11**
     - File: `tests/p18-frames.test.ts`. Assert frames per simulated second never exceed 60 and consecutive actions concatenate without a gap larger than the stride. Frames never enter the Trajectory_Hash.
 
-  - [~] 12.10 Write the property test for the ghost diff against the reference diff
+  - [x] 12.10 Write the property test for the ghost diff against the reference diff
     - **Property 20: The ghost diff equals the reference diff (contract P2)**
     - **Validates: Requirements 10.6, 17.3, 3.13**
     - File: `tests/p20-ghost-vs-reference.test.ts`. Assert the flattened `Change[]` of `ghostRun` on the Base_World deep-equals the `Change[]` of the reference execution of the same plan and that the final states are equal, by the same engine build in the same environment. Claim scope: the Tested_Environments only; variant runs excluded; the test says nothing about hardware. The page text for this property stays hidden until task 18.2.
 
-  - [~] 12.11 Record the Golden_Hash
+  - [x] 12.11 Record the Golden_Hash
     - **Run on the Reference_Machine.** Compute the Trajectory_Hash of `REFERENCE_PLAN` on the Base_World in Node.js 20.20.2, run it twice, and require both hashes to be equal. Write `worlds/drawer-arm/tests/golden.json` with `{ planId, hash, recordedWith: { node, machine } }` (the `chrome` field is added by task 17.1 only after Chrome reproduces the hash). A test requires the Node hash to equal `golden.json` and fails otherwise. Never overwrite a differing hash automatically.
     - Append the hash, Node version, and machine to the `Determinism golden hash` section of `docs/measurements.md`.
     - _Requirements: 10.7, 17.7, 17.8_
 
-  - [~] 12.12 Add the `verifyWorld` contract test and register `deterministic: true`
+  - [x] 12.12 Add the `verifyWorld` contract test and register `deterministic: true`
     - **Depends on the `kiro-integration` implementation:** the `contract-pbt` hook runs this test on every save in `worlds/**` and must finish within 60 s. Create `worlds/drawer-arm/tests/contract.test.ts`: `verifyWorld(world, { id: 'drawer-arm', deterministic: true, wardSet, testAdapter, actionArb, numRuns: shortRuns })` on the Base_World and a second call on a world whose start state is `applyVariant(initial, sampleVariant(<fixed seed>, 0, config))`, with the `Wards_File` as `wardSet`, a `testAdapter` built on `referenceExecute` with its own engine, and an `actionArb` that generates only valid actions. Both calls must resolve without `VerificationError`, each under a 45 s time guard that prints the elapsed time.
     - Only after both calls pass, set `deterministic: true` in `worlds/drawer-arm/world.config.ts`. The README and the world README state that the flag is limited to the Tested_Environments (task 18.4 writes the README sentence).
     - _Requirements: 3.13, 17.1, 17.2, 17.3, 17.11_
 
-  - [~] 12.13 Write the property test for variant determinism and partition independence
+  - [x] 12.13 Write the property test for variant determinism and partition independence
     - **Property 5: Variant determinism and partition independence (GH-P4)**
     - **Validates: Requirements 6.5, 8.7, 8.3, 17.6**
     - File: `apps/ghost-hand/tests/model/p05-determinism.test.ts`. Generators: seeds, counts 1 to 20, valid plans, worker counts 1 to 4, permutations of completion order, run through the inline executor and a simulated pool (a scheduler that completes jobs in the generated order). Assert equal Variant_Params, Variant_Results, Trajectory_Hashes, and `GhostRun` for every distribution. Claim scope (P8): Node.js 20.20.2 and Chrome 157 on an Apple M1 Mac only. The real-Worker leg runs in task 17.1.
 
-- [~] 13. Checkpoint - world properties and demo
+- [x] 13. Checkpoint - world properties and demo
   - Run after all tasks of waves 10 to 13 are complete. Run the full test suites of both packages, `typecheck`, and `lint`. Confirm: Properties 5, 10 to 18, 20, and 22 pass; the contract test passes twice and `deterministic` is `true`; `golden.json` and `pbt-budget.json` exist; both demo scenarios give the verdicts of Requirement 12 with derived numbers only; `docs/measurements.md` holds the demo numbers, the budget, and the golden hash; no test contains a measured pass count. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 14. Screen composition and Node entry point
-  - [~] 14.1 Build the React screens
+  - [ ] 14.1 Build the React screens
     - **Depends on the `ui-kit` implementation (Candle with Claim_Banner, Graveyard, Seance_View, Lights_Toggle, `escapeForDisplay`; read `ui/src/index.ts` for the exact exported names), on the `wards-config` implementation, on PR-3 only through `caps.bannerNotApplicable` (the banner shows P5 and P6 as not claimed until PR-3 lands), and on tasks 8.7, 8.9, 9.2, 11.1, and 11.5.**
     - `apps/ghost-hand/src/main.tsx`, `App.tsx`, and `components/` (`PlanPanel`, `SeedInput`, `VariantTable`, `OverlayView`, `ClaimsPanel`): layout from top to bottom as in the design (Candle with Claim_Banner, claim and scope texts, plan panel, overlay with two camera preset buttons and a frame slider, variant table, the `Message the agent receives` panel, controls, Graveyard with Seance_View, Lights_Toggle starting in the Theme `dark`). The shell takes an injected `clock` and is the only place that reads time. The Mirror_World is not used and the Seance_View keeps `changes not recorded`. Every string from a Plan_File, a wards error, or the variant table passes through the Display_Escaper. The page shows the texts of `texts.ts`: P1 failure alert, P5 and P6 line, Docker line, determinism check lines, P8 scope line, unknown-ward-entry status, no-physics-ward status, the joint-limit status text and the provisional-wording note while their capabilities are missing, the WebGL fallback, the engine start failure alert, and the secure-context alert. No P2 text is rendered (the flag is off). The variant table has one row per variant and one for `base` with `variantId`, the Variant_Params, the final drawer displacement, the maximum contact force, whether the vase was touched, and a `passed` or `failed` status with an icon, in a monospace font. The 3D canvas has an accessible name that points to the table. Seed input uses `parseSeedInput`. A polite live region announces the Candle state and the number of failed variants. No element hides a number, identifier, or status behind an effect; no sound; no analytics; no storage; no external origin. The app uses the words `sealed` and `isolated` in no fixed text.
     - _Requirements: 2.8, 4.7, 6.7, 6.9, 9.7, 9.8, 9.9, 10.1, 10.3, 10.4, 10.5, 10.8, 10.11, 11.5, 13.7, 13.11, 13.13, 14.1, 14.2, 14.3, 14.10, 14.11, 15.1, 15.2, 15.3, 15.4, 15.7, 15.8, 15.9, 15.10_
 
-  - [~] 14.2 Add plan controls, the reference execution, and `Play demo`
+  - [ ] 14.2 Add plan controls, the reference execution, and `Play demo`
     - In the same app files, after task 14.1: the controls `Load plan file` (read in the browser, never uploaded), `Download plan file`, `Run ghost`, `Clear plan`, the scenarios `fast pull` and `slow pull, strong grip`, `Execute on reference arm` (enabled only while the last run is `pass` and the plan is unchanged), `Reset reference arm`, and `Play demo` (runs the first plan, shows the block, loads the revised plan, runs it, shows the pass, enables the execute control, every step also on its own button for keyboard use). Each `parsePlanFile` error is shown as `<field>: [<code>] <message>` in a `role="alert"` element through the Display_Escaper while the previous plan is kept. The Plan_Origin text (`Recorded plan: replayed here, not decided by an LLM in this page.` or `Scripted plan: not decided by an LLM in this page.`) is shown beside the plan, and the revised plan always shows it. `Execute on reference arm` calls `world.referenceExecute(plan)`, animates the result, shows the final drawer displacement, shows `The "real" arm here is a reference simulation, not hardware.` wherever the Reference_Arm is named or executed, and computes the diff comparison. The P2 check line is rendered only when `P2_TEXT_ENABLED` is true and the self-check passed; until task 18.2 it is not rendered. `Reset reference arm` restores the Reference_State and clears the P2 check text.
     - A recorded-plan hand-off note: the recorded revised plan is produced by a real Kiro session through `ghost-hand-run` (task 14.3); this task only ensures that a recorded Plan_File loads and shows the recorded text.
     - _Requirements: 10.6, 10.9, 10.10, 11.5, 11.6, 11.7, 11.10, 12.1, 12.7, 12.8, 12.9, 12.10, 12.11, 14.4, 14.8_
 
-  - [~] 14.3 Implement the Node entry point
+  - [ ] 14.3 Implement the Node entry point
     - **Depends on the `wards-config` implementation (default entry point `parseWards` and `formatConfigError`; the file is read with `node:fs/promises` and parsed from text).** `apps/ghost-hand/src/cli/main.ts` (not in the browser import graph), built by a `build:node` script to `apps/ghost-hand/dist-node/cli.js`: `ghost-hand-run <plan.json> --wards <wards.yaml> [--seed <uint32>] [--variants <n>] [--variant-config <file>] [--json]` and `ghost-hand-run validate <plan.json>`. It reads only the paths it is given, runs `runGhostHand` with an inline executor, prints the `renderMessage` message to standard output (with `--json` it first prints one JSON line `{ verdict, wardIds, failedVariants }` without file content), and reports the self-check result as information on standard error with no P1 claim. Exit codes: `0` pass, `1` warn, `2` block, `64` usage error, `65` invalid plan, wards, or variant file (each error as `<field>: [<code>] <message>`), `70` internal error. It calls no network or LLM API and prints no Canary or file content other than the message.
     - _Requirements: 11.8, 11.9_
 
-  - [~] 14.4 Write the Node entry point tests
+  - [ ] 14.4 Write the Node entry point tests
     - `apps/ghost-hand/tests/cli/cli.test.ts`: spawn `dist-node/cli.js` with fixture plans and the Wards_File: exit `0` for a passing plan, `2` for the blocked first plan, `64` for bad arguments, `65` for an invalid plan and for an invalid wards file; stdout equals the message; `validate` exits `0` or `65` and prints nothing else; no file content appears in any output; a unit test of the verdict-to-exit-code mapping covers `1` for `warn`.
     - _Requirements: 11.8, 11.9, 18.4_
 
-  - [~] 14.5 Write the DOM behavior tests
+  - [ ] 14.5 Write the DOM behavior tests
     - `apps/ghost-hand/tests/dom/app.test.tsx` (jsdom, role-based queries, no axe dependency): every interactive element is reachable by Tab in DOM order, operable by Enter or Space, with no keyboard trap; a focus indicator of at least 2 px and 3:1 contrast in both themes; every status indicator and control has a non-empty accessible name and decorative icons are hidden from assistive technology; no `infinite` animation count and no animation over 1 s; with `prefers-reduced-motion: reduce` no CSS animation or transition above 0 duration; the live region text; a Plan_File with an unknown field is rejected with its field path and the previous plan is kept; strings with hidden code points pass through the Display_Escaper; the P1 failure alert (forced fingerprint difference); the Candle and the claims in both capability states (fallback texts shown, no claim made); the WebGL fallback text with `getContext` returning `null`; the Graveyard entry of a blocked run opened by keyboard and `Back to graveyard` returning focus to the Tombstone; the 201st entry shows the drop text; `Execute on reference arm` disabled until a pass and after a plan change; the P2 text is absent while `P2_TEXT_ENABLED` is false; the reference-simulation line is shown next to the Reference_Arm.
     - _Requirements: 10.3, 10.6, 10.10, 11.5, 12.7, 13.5, 13.8, 13.11, 14.8, 14.9, 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 18.4_
 
-  - [~] 14.6 Write the network, storage, and start-up failure tests
+  - [ ] 14.6 Write the network, storage, and start-up failure tests
     - `apps/ghost-hand/tests/dom/offline.test.tsx`: with `fetch`, `XMLHttpRequest`, `WebSocket`, and `navigator.sendBeacon` replaced by functions that throw (the single same-origin WebAssembly load is allowed by an allow-list of one URL), run both demo scenarios, the reference execution, and the Graveyard flow without any call; nothing is written to `localStorage`, `sessionStorage`, `IndexedDB`, cookies, or the console; a module-load failure shows `The physics engine could not start in this browser.` in a `role="alert"` element, disables the run controls, and makes no claim; a missing `crypto.subtle` shows the secure-context alert and runs nothing.
     - _Requirements: 2.4, 2.5, 2.8, 20.5_
 
 - [ ] 15. Build output, third-party notices, and hygiene
-  - [~] 15.1 Add the third-party notices build step
+  - [ ] 15.1 Add the third-party notices build step
     - `apps/ghost-hand/notices/` holds the upstream license texts (MuJoCo Apache-2.0, Qhull, and every other component bundled in `mujoco.wasm` that `docs/research.md` lists) copied from the upstream source distribution, with the upstream URL and version of each recorded in `notices/sources.json`; `scripts/gen-notices.mjs` writes `dist/THIRD_PARTY_NOTICES.txt`; add the `notices` script to `package.json` and run it after the build. The Qhull license text must be present because its license requires its notice to travel with the binary. Do not use a license text from memory.
     - _Requirements: 1.11, 1.12_
 
-  - [~] 15.2 Write the source hygiene tests
+  - [ ] 15.2 Write the source hygiene tests
     - `apps/ghost-hand/tests/scan/hygiene.test.ts`: no literal hidden code point and no literal HTML comment opener in `apps/ghost-hand/`, `worlds/drawer-arm/`, and `.kiro/specs/ghost-hand/` (excluding `node_modules` and `dist`), checked by the possession Scan_Entry_Point with the expected outcome `clean`; no `eval`, `new Function`, `dangerouslySetInnerHTML`, `innerHTML`, storage API, or `console.` of plan content; the browser import graph from `index.html` has no `node:` import and no `@ghost-run/wards-config/node`; fixtures use canary secrets and reserved domains only; no call to an LLM API in any source or script; `.gitignore` lists `apps/ghost-hand/dist` and the world build output.
     - _Requirements: 1.4, 1.5, 1.7, 1.13, 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.7_
 
-  - [~] 15.3 Write the build output tests
+  - [ ] 15.3 Write the build output tests
     - `apps/ghost-hand/tests/dist/dist.test.ts` and the script `test:dist` (build, notices, then scan): no `.html`, `.css`, or `.js` reference to another origin (no `<script src>`, `<link href>`, `@import`, `url()`, or `fetch` target outside the page origin); the MuJoCo wasm is a same-origin asset referenced from the JavaScript; the build uses no `SharedArrayBuffer`; no analytics, telemetry, or CDN font; the third-party notices file exists and contains the Qhull license text; the bundle contains no `node:` specifier.
     - _Requirements: 1.11, 2.1, 2.2, 2.3, 2.5_
 
-- [~] 16. Checkpoint - app assembled
+- [ ] 16. Checkpoint - app assembled
   - Run after all tasks of waves 14 to 17 are complete. Run the full test suites of both packages, `typecheck`, `lint`, `build`, and `test:dist`. Confirm: the Node entry point exit codes work; the hygiene scan is `clean`; no P2 text appears in the page; the fallback texts appear while PR-1, PR-2, or PR-3 is missing; the notices file is in `dist`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 17. Browser harness and unmeasured timings
-  - [~] 17.1 Implement the Chrome harness without a new dependency
+  - [ ] 17.1 Implement the Chrome harness without a new dependency
     - `apps/ghost-hand/tests/browser/run-chrome.mjs`: builds a harness page with Vite, serves it with `node:http`, starts the installed Chrome headless through its command line, and receives a JSON result by `POST`. Record `Chrome --version` first; if it is not Chrome 157, record the version and make no Tested_Environments claim from this run. Checks: the Trajectory_Hash of `REFERENCE_PLAN` on the main thread and in a Web Worker equals `golden.json` (a differing hash fails the suite; the hash is never edited), and only then set `recordedWith.chrome` in `golden.json`; Property 5 and Property 10 with real Workers; the page ready time (target 3.0 s) and the Ghost_Run time with 8 variants (target 2.0 s) and with 20 (target 5.0 s, when enabled); the memory growth over repeated runs and the WebAssembly heap size after run 40; and a cross-environment script that compares the Node hash and the two Chrome hashes with `golden.json`. If the harness cannot run on the Reference_Machine, record `harness: failed` with the reason in `docs/measurements.md` and report it for task 17.2.
     - Append the results to the `Browser timings` section of `docs/measurements.md` with the date, Chrome version, and machine. A run outside the Tested_Environments is recorded as additional evidence only.
     - _Requirements: 2.6, 3.14, 8.8, 10.7, 17.7, 17.9, 17.10_
 
-  - [~] 17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)
+  - [ ] 17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)
     - **Run only if task 17.1 recorded `harness: failed`.** If the harness worked, append `Playwright: not needed` to `docs/measurements.md` and mark this task done with no other change. Otherwise add `playwright` (Apache-2.0) as a development dependency of `apps/ghost-hand/`, driving the installed Chrome through the `channel` option and with no browser download (`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`), re-implement the same checks of task 17.1 on top of it, and add a README table row with the exact version and the license read from the installed package on the day it was added.
     - _Requirements: 1.3, 1.12, 17.7_
 
-  - [~] 17.3 Measure the 3D overlay frame time
+  - [ ] 17.3 Measure the 3D overlay frame time
     - **The frame time is unmeasured until this task runs.** Add a frame-time page to the harness and measure, on the Reference_Machine in Chrome, the median frame time of the Ghost_Overlay with 8 Ghost_Arms and with 20 Ghost_Arms. The requirement is a median of at most 33 ms with 8 arms. If it is not met, record the measured values and the cause and stop for the user's decision; do not change the target. Fill the `3D overlay frame time with 8 and 20 ghost arms` section of `docs/measurements.md` with the medians, the date, the Chrome version, and the machine. A test fails if the section still says `unmeasured`.
     - _Requirements: 13.10_
 
 - [ ] 18. Claim scopes, disclosures, and README
-  - [~] 18.1 Write the claim-scope tests
+  - [ ] 18.1 Write the claim-scope tests
     - `apps/ghost-hand/tests/model/claim-scope.test.ts`: the page texts of Requirement 10 are exactly the pinned strings of `texts.ts`; P1 is claimed only from equal fingerprints; P5 and P6 are never claimed; no Docker or physical-arm claim appears; the P8 scope sentence names Node.js 20.20.2 and Chrome 157 on an Apple M1 Mac and is visible; P2 and P8 claim text is absent when the self-check failed or is pending; no P2 text at all while `P2_TEXT_ENABLED` is false; the recorded and scripted plan-origin texts and the reference-simulation line appear where required; no text uses the words `sealed` or `isolated`; no test file contains a measured pass count.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.8, 10.9, 10.10, 10.11, 11.6, 12.12_
 
-  - [~] 18.2 Switch the P2 text on after the steering update
+  - [ ] 18.2 Switch the P2 text on after the steering update
     - **Blocked until task 3.2 has landed and the user confirmed it.** Check that `.kiro/steering/world-contract.md` carries the P2 scope wording of task 3.2. If it does not, stop and report; do not flip anything. If it does, set `P2_TEXT_ENABLED = true` in `texts.ts` (the only edit of that file after task 6.2), render the P2 check line in the page with the scope wording "On the same build and in the tested environments, the ghost run's result equals the reference simulation run's result. Not claimed for physical hardware.", and update the claim-scope tests of task 18.1 to the enabled state. The P2 text is still hidden when the self-check failed.
     - _Requirements: 10.6, 10.9_
 
-  - [~] 18.3 Check the landed state of PR-1, PR-2, and PR-3
+  - [ ] 18.3 Check the landed state of PR-1, PR-2, and PR-3
     - **Depends on PR-1, PR-2, and PR-3 (other specs).** Run the capability probes and compare them with `tests/capabilities.expected.json`. For each prerequisite that has landed: update the expected file, run the post-landing legs of the prerequisite tests (they now report `passed`, not `skipped`), confirm the fallback note or status text for it no longer appears, and only then allow the README to claim the dependent behavior (joint-limit and self-collision ward for PR-1, the message without the lowered-claim line for PR-2, "not applicable" for P5 and P6 for PR-3). For each prerequisite that has not landed: leave the fallback texts in place and the README without the dependent claim. List the result per prerequisite in the final checkpoint report.
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 8.6, 9.9_
 
-  - [~] 18.4 Write the Ghost Hand README section
+  - [ ] 18.4 Write the Ghost Hand README section
     - Edit the README: the claim table of the Introduction (P1 per run for the in-memory page world, P2 for the base ghost against the reference execution within the Tested_Environments and only with the scope wording of task 3.2 and only if task 18.2 ran, P3 for all worlds, P4 as evidence from `core`, P8 within the Tested_Environments only, P5 and P6 not claimed); that the "real" arm is a reference simulation executed by the same engine and no physical robot is involved; that plan revision in the page is a replay of a recorded plan or a scripted plan and which one the shipped revised plan is (the `origin` of `plans/revised.plan.json`), plus the recording procedure of design D18 (run `ghost-hand-run`, read the block message, write the revised Plan_File with `revisionOf` and `recordedWith`, run `validate`, run again); the Tested_Environments, that Firefox, Safari, Linux, and x86 machines were not tested, and that the Determinism_Self_Check is a measurement in one browser and not a proof; macOS and Linux supported, Windows unverified, Chrome 157 the only tested browser; the single-thread build and Web Workers and that no special response headers are needed; the MuJoCo pitfalls (explicit model memory size, views that become empty when the WebAssembly memory grows, the deviation of the package README from the actual API, and `.delete()` of every wrapped object); the licenses (complete the table of task 4.3 and add the notices file and the asset sources); the `deterministic` flag is limited to the Tested_Environments; the variants the shipped seed produces and the measured numbers of the demo runs copied from `docs/measurements.md`, each labelled with the date and environment.
     - Claim the joint-limit and self-collision ward, the message without the lowered-claim line, or the "not applicable" banner only where task 18.3 reported the prerequisite as landed. Claim the possession scenario only if task 21.1 was done.
     - _Requirements: 1.9, 1.10, 1.12, 2.7, 3.13, 12.12, 15.9, 16.8, 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8_
 
-  - [~] 18.5 Write the README consistency tests
+  - [ ] 18.5 Write the README consistency tests
     - `apps/ghost-hand/tests/scan/readme.test.ts`: the Ghost Hand README section contains the claim table rows, the reference-simulation statement, the recorded-or-scripted statement that matches the `origin` of `plans/revised.plan.json`, the Tested_Environments and not-tested list, the pitfalls list, the three license facts (`@mujoco/mujoco` 4.0.1 Apache-2.0 with no LICENSE file in the tarball, `three` 0.187.0 MIT, `@types/three` 0.187.0 MIT) and the Playwright row if and only if `playwright` is in a `package.json`; the README states no P2 claim unless `P2_TEXT_ENABLED` is true; it states the joint-limit ward only when the probe says `jointSelfWard`; every measured number in it appears with a date; no word `sealed` or `isolated` is used for the page.
     - _Requirements: 1.10, 12.12, 19.1, 19.2, 19.3, 19.4, 19.6, 19.8_
 
 - [ ] 19. Cross-package lint bans (isolated task)
-  - [~] 19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`
+  - [ ] 19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`
     - **Isolated task. It must NOT run at the same time as any other task that edits `core/`, `ui/`, or `wards-config/` in this spec or in another spec.** Precondition: the other specs have finished their changes to those packages, their test suites pass, and no other core-editing task is in progress.
     - Add the patterns `@ghost-run/drawer-arm`, `@ghost-run/drawer-arm/**`, `@ghost-run/ghost-hand`, `@ghost-run/ghost-hand/**`, `**/worlds/drawer-arm/**`, and `**/apps/ghost-hand/**` to the `no-restricted-imports` rule of `core/eslint.config.mjs`, `ui/eslint.config.mjs`, and `wards-config/eslint.config.mjs`, next to the existing entries. Change nothing else. Add one lint fixture test per package (a temporary file that imports `@ghost-run/drawer-arm` or `@ghost-run/ghost-hand`, ESLint run programmatically, a `no-restricted-imports` error asserted, the file removed in `finally`).
     - Run the `core`, `ui`, and `wards-config` suites and `pnpm lint`. Confirm `core/package.json` is unchanged.
     - _Requirements: 1.6_
 
-- [~] 20. Final checkpoint
+- [ ] 20. Final checkpoint
   - Run `pnpm --filter @ghost-run/drawer-arm test`, `pnpm --filter @ghost-run/ghost-hand test`, `typecheck`, `lint`, `build`, `test:dist`, and `pnpm lint` for the workspace. Confirm: every property of the design (1 to 23) has a test with at least 100 examples in a Short_Run (engine-bound properties use `shortRuns`, with the written rationale if it is below 100); the Nightly_Run command was run at least once for the world contract tests, or the reason it was not is recorded in `docs/measurements.md`; `docs/measurements.md` has no `unmeasured` section left; the possession scan of the three folders is `clean`; the README license table lists every dependency with its license; the Ghost Hand claims match the landed prerequisites and the steering state; no task wrote to `docs/devlog.md`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 21. Optional: forbidden-contact red thread (last task)
