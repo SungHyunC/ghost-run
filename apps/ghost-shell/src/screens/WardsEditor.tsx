@@ -7,7 +7,6 @@ import {
   WARDS_IN_MEMORY_TEXT,
 } from '../texts';
 import { wardsEditorErrors } from '../wards/wards-editor';
-import { MONO } from './style';
 
 export interface WardsEditorProps {
   readonly state: PageState;
@@ -23,17 +22,17 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
   const gutter: string[] = [];
   for (let n = 1; n <= lineCount; n += 1) gutter.push(errors.lines.includes(n) ? `${n} \u2716` : `${n}`);
   return (
-    <section aria-labelledby="gs-wards-h">
-      <h2 id="gs-wards-h">Wards</h2>
+    <section className="gk-section" aria-labelledby="gs-wards-h">
+      <h2 id="gs-wards-h" className="gk-heading">Wards</h2>
       <p>{WARDS_IN_MEMORY_TEXT}</p>
       {errors.label === undefined ? null : <p data-wards-stale>{errors.label}</p>}
-      <div style={{ display: 'flex', gap: '0.5em' }}>
-        <pre aria-hidden="true" data-wards-gutter style={{ ...MONO, margin: 0, textAlign: 'right' }}>
+      <div className="gs-editor">
+        <pre aria-hidden="true" data-wards-gutter className="gs-gutter">
           {gutter.join('\n')}
         </pre>
         <textarea
           aria-label={WARDS_EDITOR_LABEL}
-          style={{ ...MONO, flex: 1 }}
+          className="gk-textarea gs-mono"
           rows={Math.min(Math.max(lineCount, 4), 30)}
           spellCheck={false}
           value={text}
@@ -43,16 +42,17 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
         />
       </div>
       {errors.messages.length === 0 ? null : (
-        <ul role="alert" aria-label={WARDS_ERRORS_LABEL} style={MONO}>
+        <ul role="alert" aria-label={WARDS_ERRORS_LABEL} className="gs-mono gs-errors">
           {errors.lines.length > 0 ? <li>{`Lines with errors: ${errors.lines.join(', ')}`}</li> : null}
           {errors.messages.map((m, i) => (
             <li key={i}>{m}</li>
           ))}
         </ul>
       )}
-      <div>
+      <div className="gs-actions">
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             dispatch({ type: 'wards', event: { type: 'reset' } });
           }}
@@ -61,6 +61,7 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
         </button>
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             onDownload(text);
           }}

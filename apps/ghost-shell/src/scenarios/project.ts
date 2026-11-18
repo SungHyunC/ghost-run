@@ -33,7 +33,7 @@ export async function buildProject(sql: SqlExecutor): Promise<VirtualProject> {
     'data/sub/c.json': file('[{"id":1,"name":"alpha"}]\n'),
     'data/sub/d.json': file('[{"id":2,"name":"beta"}]\n'),
     build: { kind: 'dir' },
-    'build/out.js': file('console.log("fake bundle");\n'),
+    'build/out.js': file('var bundle = "fake bundle";\n'),
     'app.db': { kind: 'file', bytes: res.dbBytes, tables: { orders: 3, users: 1206 } },
     '.env': file('API_KEY=sk-CANARY-abc123\n'),
     'README.md': file(buildReadme()),

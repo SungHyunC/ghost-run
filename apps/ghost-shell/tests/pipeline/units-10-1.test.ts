@@ -27,7 +27,10 @@ describe('texts', () => {
     expect(texts.SCRIPTED_PLAN_TEXT).toBe('Scripted plan: not decided by an LLM in this page.');
     expect(texts.RECORDED_PLAN_TEXT).toBe('Recorded plan: replayed here, not decided by an LLM in this page.');
     expect(texts.BLACKLIGHT_NO_FINDINGS_TEXT).toBe('No hidden text found by the blacklight.');
-    expect(texts.BLACKLIGHT_DISCLAIMER_TEXT).toBe('Text analysis does not catch every injection.');
+    expect(texts.NO_RUN_TEXT).toBe('No ghost run yet.');
+    expect(texts.APP_TAGLINE).toBe("Let your agent's ghost try it first.");
+    // The Blacklight disclaimer belongs to the ui kit only.
+    expect(Object.values(texts)).not.toContain('Text analysis does not catch every injection.');
   });
 
   it('uses neither "sealed" nor "isolated" and no hidden characters', () => {

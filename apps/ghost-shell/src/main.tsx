@@ -1,4 +1,5 @@
 import '@ghost-run/ui/styles.css';
+import './page.css';
 import { createWatchdogExecutor } from '@ghost-run/playground-shell';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';

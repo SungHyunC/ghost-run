@@ -8,7 +8,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { App } from '../../src/App';
 import type { PageServices } from '../../src/controller';
 import { parsePlanFile } from '../../src/plan/plan-file';
-import { DOCKER_BOX_NOT_USED_TEXT, EMPTY_PLAN_TEXT, MESSAGE_PANEL_LABEL } from '../../src/texts';
+import { APP_TAGLINE, DOCKER_BOX_NOT_USED_TEXT, EMPTY_PLAN_TEXT, MESSAGE_PANEL_LABEL, NO_RUN_TEXT } from '../../src/texts';
 
 let sql: InlineSqlExecutor;
 beforeAll(async () => {
@@ -46,6 +46,23 @@ describe('Ghost Shell app shell', () => {
     const { container } = render(<App services={harness().services} />);
     expect(screen.getByText(DOCKER_BOX_NOT_USED_TEXT)).toBeTruthy();
     expect(container.querySelector('[data-theme]')?.getAttribute('data-theme')).toBe('dark');
+  });
+
+  it('shows the title, the tagline, and only the no-run text before the first run', () => {
+    const { container } = render(<App services={harness().services} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Ghost Shell');
+    expect(screen.getByText(APP_TAGLINE)).toBeTruthy();
+    expect(screen.getByText(NO_RUN_TEXT)).toBeTruthy();
+    expect(container.querySelector('[data-candle-state]')).toBeNull();
+    expect(screen.queryByText(/Isolation status unknown/)).toBeNull();
+  });
+
+  it('uses the ui kit classes on buttons, inputs, and textareas and no inline color', () => {
+    const { container } = render(<App services={harness().services} />);
+    for (const b of container.querySelectorAll('main button:not([role="switch"])')) expect(b.className).toContain('gk-button');
+    for (const i of container.querySelectorAll('main input')) expect(i.className).toContain('gk-input');
+    for (const t of container.querySelectorAll('main textarea')) expect(t.className).toContain('gk-textarea');
+    expect(container.querySelector('main [style]')).toBeNull();
   });
 
   it('runs Scenario 1 to a block verdict, then Apply fixed plan moves the candle to pass', async () => {

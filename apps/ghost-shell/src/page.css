@@ -1,0 +1,136 @@
+/* Page layout of Ghost Shell. Colors come only from the ui kit theme tokens (var(--gk-*)).
+   No animation or transition here: motion lives in the kit and honors prefers-reduced-motion. */
+
+.gs-page {
+  max-width: 80rem;
+  margin-inline: auto;
+}
+
+.gs-title {
+  margin-block-end: 16px;
+}
+
+.gs-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.gs-tagline {
+  margin: 4px 0 0;
+  color: var(--gk-muted);
+}
+
+.gs-notices:empty {
+  display: none;
+}
+
+/* Narrow screens: one column in DOM order. Wide screens: scenarios and plan on the left,
+   the ghost run on the right. */
+.gs-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 16px;
+  align-items: start;
+}
+
+.gs-column {
+  min-width: 0;
+}
+
+@media (min-width: 60rem) {
+  .gs-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.gs-mono {
+  font-family: var(--gk-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.gs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin-block: 8px;
+}
+
+.gs-scenarios {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.gs-scenario {
+  justify-content: flex-start;
+  text-align: start;
+}
+
+/* The selected scenario differs by border style and width, not by color alone. */
+.gs-scenario[aria-pressed='true'] {
+  border-style: double;
+  border-width: 3px;
+  font-weight: 700;
+}
+
+.gs-steps {
+  margin: 8px 0;
+  padding-inline-start: 2.5ch;
+}
+
+.gs-steps > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-block: 4px;
+}
+
+.gs-command {
+  overflow-wrap: anywhere;
+}
+
+.gs-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin-block: 8px;
+}
+
+.gs-field {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: 4px;
+}
+
+.gs-editor {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.gs-gutter {
+  margin: 0;
+  padding: 4px 0;
+  text-align: end;
+  white-space: pre;
+  color: var(--gk-muted);
+}
+
+.gs-editor .gk-textarea {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.gs-errors {
+  margin: 8px 0;
+  padding-inline-start: 2.5ch;
+  color: var(--gk-block);
+}

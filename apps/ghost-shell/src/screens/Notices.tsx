@@ -12,7 +12,7 @@ export interface NoticesProps {
 export function Notices({ state, sqlFailed, dispatch }: NoticesProps) {
   const { notice, planErrors } = state;
   return (
-    <div aria-label="Notices">
+    <div aria-label="Notices" className="gs-notices">
       {sqlFailed ? <p role="alert">{SQL_START_FAILED_TEXT}</p> : null}
       {notice === undefined ? null : (
         <p role={notice === RUN_FAILED_TEXT ? 'alert' : 'status'}>{escapeForDisplay(notice)}</p>
@@ -27,6 +27,7 @@ export function Notices({ state, sqlFailed, dispatch }: NoticesProps) {
       {notice === undefined && planErrors.length === 0 ? null : (
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             dispatch({ type: 'dismissNotice' });
           }}

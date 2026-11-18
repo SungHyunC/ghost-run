@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "build": "vite build",
+    "preview": "vite preview",
     "test:dist": "vite build && node scripts/check-dist.mjs"
   },
   "license": "MIT",

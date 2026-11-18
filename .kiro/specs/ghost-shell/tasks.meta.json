@@ -816,6 +816,105 @@
         "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
         "timestamp": 1794990911630
       }
+    ],
+    "16.1 Write `apps/ghost-shell/README.md`": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998222128
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998228428
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998570137
+      }
+    ],
+    "16.2 Update the repository `README.md` dependency and license table": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998222132
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998228444
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998570149
+      }
+    ],
+    "17.1 Write the repository hygiene tests": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998222134
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998228467
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998570453
+      }
+    ],
+    "17.2 Add the import bans for the playground packages to `core`, `ui`, and `wards-config`": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998222136
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998570978
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998680580
+      }
+    ],
+    "18. Final checkpoint": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998222138
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998681027
+      },
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794999345626
+      }
+    ],
+    "16. Documentation": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998570151
+      }
+    ],
+    "17. Repository hygiene and isolated lint bans": [
+      {
+        "executionId": "e98a8870-954d-4ed3-936c-b1631837425f",
+        "chatSessionId": "sess_fafd204b-accc-4f8d-b83c-a8f6b926305c",
+        "timestamp": 1794998680582
+      }
     ]
   }
 }

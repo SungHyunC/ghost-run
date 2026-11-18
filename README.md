@@ -117,6 +117,7 @@ The Mirror world hides the value of any field whose key name contains `secret`, 
 | eslint | 10.15.0 | Dev dependency of `apps/ghost-hand` and `worlds/drawer-arm`, linter | MIT |
 | typescript-eslint | 8.73.0 | Dev dependency of `apps/ghost-hand` and `worlds/drawer-arm`, TypeScript lint rules | MIT |
 | yaml (eemeli) | 2.9.1 | Runtime dependency of `wards-config`, YAML 1.2 parser with source ranges for `wards.yaml` | ISC |
+| sql.js | 1.16.0 | Runtime dependency of `apps/ghost-shell` and `worlds/playground-shell`, SQLite compiled to WebAssembly for the playground database | MIT |
 | shell-quote | 1.12.0 | Runtime dependency of `ghost-runner`, shell command parsing | MIT |
 | @types/shell-quote | 1.7.5 | Dev dependency of `ghost-runner`, shell-quote type definitions | MIT |
 | Node.js (base image `node:20-bookworm-slim`) | v20.20.2 | Box package of `ghost-runner`, in-box recorder runtime (not shipped on the host) | MIT |
@@ -145,5 +146,18 @@ Notes for the wards-config rows:
 
 - `yaml` is pinned to exactly 2.9.1 in `wards-config/package.json`. Its license field is ISC, confirmed on 2026-11-18 (see `docs/measurements.md`). It has no dependencies of its own.
 - vitest, fast-check, typescript, @types/node, eslint, and typescript-eslint (rows above) are also dev dependencies of `core`, `ghost-runner`, `ui`, and `wards-config`, at the same installed versions.
+
+Notes for the Ghost Shell rows:
+
+- `apps/ghost-shell` (the playground page) and `worlds/playground-shell` (the world it runs) are static and need no server, no API key, and no runtime LLM call. The page runs the bundled scenarios and your own plan files against an in-memory virtual project and an in-browser SQLite database (`sql.js`), then shows the verdict as a candle. It runs no real command and touches no real file. It claims P2 only as "the diff computed from the action record equals the diff of the ghost run", not as equality with a real shell.
+- Versions and licenses were read from the installed `package.json` files on 2026-11-20.
+- Runtime dependencies of `apps/ghost-shell`: `sql.js` 1.16.0 (MIT), `react` 19.3.1 (MIT), `react-dom` 19.3.1 (MIT). `yaml` 2.9.1 (ISC) reaches the page through `@ghost-run/wards-config`. The workspace packages `@ghost-run/core`, `@ghost-run/ui`, `@ghost-run/wards-config`, and `@ghost-run/playground-shell` are MIT and part of this repository.
+- Development dependencies of `apps/ghost-shell`, all listed in the table above at the installed versions: `typescript` 5.9.3 (Apache-2.0), `eslint` 10.15.0, `typescript-eslint` 8.73.0, `@types/node` 20.19.43, `vite` 7.3.8, `@vitejs/plugin-react` 5.2.0, `vitest` 3.2.7, `fast-check` 4.10.2, `jsdom` 26.1.0, `@testing-library/react` 16.3.3, `@testing-library/dom` 10.4.2, `@testing-library/user-event` 14.6.12, `@types/react` 19.3.0, `@types/react-dom` 19.3.0, `@eslint-react/eslint-plugin` 5.30.3, and `eslint-plugin-react-hooks` 7.1.1 (all MIT unless noted).
+- Development dependencies of `worlds/playground-shell`: `@ghost-run/wards-config` (workspace), `@types/node`, `eslint`, `fast-check`, `jsdom`, `typescript`, `typescript-eslint`, and `vitest`, at the same installed versions.
+- Excluded on purpose: `shell-quote` and `@types/sql.js`. The playground uses its own tokenizer and parser instead of `shell-quote`, and `src/sql-js.d.ts` declares only the six `sql.js` APIs that the code uses instead of `@types/sql.js`.
+- Fonts, icons, and other assets of `apps/ghost-shell`: none. The app adds no font and no image. Icons and art come from `@ghost-run/ui` (original SVG paths, MIT, this repository) and the page uses system font stacks. Audio: none.
+- Measured `verifyWorld` run time of the playground world (task 7.6; Apple M1 class Mac, Node 20+, Short_Run with 100 runs per property, default state comparison): 13.8 s and 14.9 s in two runs. The save-time budget is 60 s. Details are in `docs/measurements.md`.
+- Measured wasm size (task 3.3, build output of `apps/ghost-shell`): the `sql.js` wasm file is 688,197 bytes (about 337 kB gzip). It is served from the same origin as the page and no CDN is used. The whole `dist/` folder is about 1.2 MB.
+- Claims: the playground states P1 to P3 and the ward properties for its deterministic in-memory world only. Plan B is a real-mode concept and does not apply to the playground.
 
 License note: every dependency above is under a permissive license (MIT, BSD, ISC, or Apache-2.0) except `axe-core`, which is MPL-2.0 (a file-level copyleft license). It is a dev-only test tool, it is not bundled into any shipped artifact, and it is not modified. The Unicode data rows use the Unicode License v3.

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { scanText } from '@ghost-run/core';
 import type { PageAction, PageState } from '../state/reducer';
-import { BLACKLIGHT_DISCLAIMER_TEXT, CANARY_TEXT, POSSESSION_ACTION_TEXT, PURIFY_LABEL, PURIFY_NOTE_TEXT } from '../texts';
+import { CANARY_TEXT, POSSESSION_ACTION_TEXT, PURIFY_LABEL, PURIFY_NOTE_TEXT } from '../texts';
 import { BlacklightView, RedThreadView, escapeForDisplay } from '../ui-imports';
 import type { BlacklightSource } from '../ui-imports';
 
@@ -24,22 +24,22 @@ export function PossessionPanel({ state, dispatch }: PossessionPanelProps) {
   const sources = useMemo(() => sourcesOf(provenance, readme), [provenance, readme]);
   const actionLabels = useMemo(() => plan.map((a) => escapeForDisplay(a.command)), [plan]);
   return (
-    <section aria-labelledby="gs-possession-h">
-      <h2 id="gs-possession-h">Possession</h2>
+    <section className="gk-section" aria-labelledby="gs-possession-h">
+      <h2 id="gs-possession-h" className="gk-heading">Possession</h2>
       <RedThreadView needles={run?.needles ?? []} links={run?.links ?? []} actionLabels={actionLabels} />
       <BlacklightView sources={sources} />
-      <p>
+      <div className="gs-actions">
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             dispatch({ type: 'purify' });
           }}
         >
           {PURIFY_LABEL}
         </button>
-      </p>
+      </div>
       <p>{PURIFY_NOTE_TEXT}</p>
-      <p>{BLACKLIGHT_DISCLAIMER_TEXT}</p>
       <p>{POSSESSION_ACTION_TEXT}</p>
       <p>{CANARY_TEXT}</p>
     </section>

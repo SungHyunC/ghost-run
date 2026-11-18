@@ -54,6 +54,12 @@ describe('possession panel', () => {
     const thread = screen.getByRole('region', { name: 'Red thread' });
     expect(thread.textContent).toContain('README.md');
 
+    // The hidden sentences stay out of the page until the Blacklight switch is on.
+    expect(screen.getByRole('switch', { name: 'Blacklight' }).getAttribute('aria-checked')).toBe('false');
+    expect(container.querySelector('.gk-marker')).toBeNull();
+    // The disclaimer is shown once, by the ui kit.
+    expect(screen.getAllByText('Text analysis does not catch every injection.')).toHaveLength(1);
+
     await user.click(screen.getByRole('switch', { name: 'Blacklight' }));
     expect(screen.getByRole('switch', { name: 'Blacklight' }).getAttribute('aria-checked')).toBe('true');
     expect(container.querySelector('.gk-marker')).not.toBeNull();

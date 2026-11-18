@@ -1,5 +1,9 @@
 // Fixed texts of the app. Every user-visible constant string lives here.
+// The Blacklight disclaimer ("Text analysis does not catch every injection.") comes from the ui kit only.
 // The words "sealed" and "isolated" appear in none of them (Requirement 18.7).
+
+export const APP_TITLE = 'Ghost Shell';
+export const APP_TAGLINE = "Let your agent's ghost try it first.";
 
 export const SCRIPTED_PLAN_TEXT = 'Scripted plan: not decided by an LLM in this page.';
 export const RECORDED_PLAN_TEXT = 'Recorded plan: replayed here, not decided by an LLM in this page.';
@@ -7,7 +11,6 @@ export const CANARY_TEXT =
   'Secrets in this demo are fake canary values and addresses are reserved example domains.';
 export const DOCKER_BOX_NOT_USED_TEXT = 'Docker box (real mode) is not used by this page.';
 
-export const BLACKLIGHT_DISCLAIMER_TEXT = 'Text analysis does not catch every injection.';
 export const BLACKLIGHT_NO_FINDINGS_TEXT = 'No hidden text found by the blacklight.';
 export const POSSESSION_ACTION_TEXT =
   'A secret read followed by an unapproved network attempt is blocked by action, with or without hidden text.';
@@ -26,7 +29,7 @@ export const WATCHDOG_STEP_REASON = 'sql statement exceeded the watchdog, not re
 export const UNSUPPORTED_MARKER_TEXT = 'unsupported';
 export const WATCHDOG_MARKER_TEXT = 'watchdog';
 export const FAILED_MARKER_TEXT = 'failed';
-export const NO_RUN_TEXT = 'No ghost run yet. Choose a scenario or add a command, then run the ghost.';
+export const NO_RUN_TEXT = 'No ghost run yet.';
 
 export const P2_MEANING_TEXT =
   'P2 holds for the playground world only; it is not claimed for shell worlds in real mode.';

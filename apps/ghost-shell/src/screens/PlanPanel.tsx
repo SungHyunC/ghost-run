@@ -17,7 +17,6 @@ import {
   WATCHDOG_MARKER_TEXT,
 } from '../texts';
 import { escapeForDisplay } from '../ui-imports';
-import { MONO } from './style';
 
 export interface PlanPanelProps {
   readonly state: PageState;
@@ -67,8 +66,8 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
   };
 
   return (
-    <section aria-labelledby="gs-plan-h">
-      <h2 id="gs-plan-h">Plan</h2>
+    <section className="gk-section" aria-labelledby="gs-plan-h">
+      <h2 id="gs-plan-h" className="gk-heading">Plan</h2>
       <p>
         Plan name: <span data-plan-name>{escapeForDisplay(meta.name)}</span>
       </p>
@@ -79,14 +78,14 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
         </p>
       )}
       <p>
-        Project fixture: <span style={MONO}>{escapeForDisplay(meta.projectName)}</span>
+        Project fixture: <span className="gs-mono">{escapeForDisplay(meta.projectName)}</span>
       </p>
-      <ol style={MONO} aria-label="Plan steps">
+      <ol className="gs-mono gs-steps" aria-label="Plan steps">
         {state.plan.map((action, i) => {
           const step = steps?.[i];
           return (
             <li key={i}>
-              <span data-step-command>{escapeForDisplay(action.command)}</span>
+              <span data-step-command className="gs-command">{escapeForDisplay(action.command)}</span>
               {step === undefined ? null : (
                 <>
                   {' '}
@@ -95,6 +94,7 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
               )}{' '}
               <button
                 type="button"
+                className="gk-button"
                 aria-label={`${REMOVE_STEP_LABEL} ${i + 1}`}
                 onClick={() => {
                   dispatch({ type: 'removeStep', index: i });
@@ -107,39 +107,43 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
         })}
       </ol>
       <form
+        className="gs-form"
         onSubmit={(event) => {
           event.preventDefault();
           const next = dispatch({ type: 'addToPlan', command });
           if (next !== undefined && next.plan.length > state.plan.length) setCommand('');
         }}
       >
-        <label>
-          {COMMAND_INPUT_LABEL}{' '}
+        <label className="gs-field">
+          {COMMAND_INPUT_LABEL}
           <input
             type="text"
-            style={MONO}
+            className="gk-input gs-mono"
             value={command}
             onChange={(event) => {
               setCommand(event.currentTarget.value);
             }}
           />
         </label>
-        <button type="submit">{ADD_TO_PLAN_LABEL}</button>
+        <button type="submit" className="gk-button">{ADD_TO_PLAN_LABEL}</button>
       </form>
-      <div>
+      <div className="gs-actions">
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             dispatch({ type: 'clearPlan' });
           }}
         >
           {CLEAR_PLAN_LABEL}
         </button>
-        <label>
-          {LOAD_PLAN_LABEL} <input type="file" accept="application/json,.json" onChange={onFile} />
+        <label className="gs-field">
+          {LOAD_PLAN_LABEL}
+          <input type="file" className="gk-input" accept="application/json,.json" onChange={onFile} />
         </label>
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             dispatch({ type: 'downloadPlanFile' });
           }}

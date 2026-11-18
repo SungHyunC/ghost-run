@@ -420,32 +420,32 @@ The plan follows the implementation order of the design:
     - Run `pnpm --filter @ghost-run/ghost-shell test:dist`. The manual browser smoke checks (CSP directives needed by the kit styles, load time within 3.0 s on the Reference_Machine, the worker in a real browser, Scenario 1 shows `block`) are listed in the README by task 16.1 and are not coding tasks.
     - _Requirements: 2.1, 2.2, 2.4, 2.6, 2.7, 2.8, 15.4_
 
-- [ ] 16. Documentation
-  - [ ] 16.1 Write `apps/ghost-shell/README.md`
+- [x] 16. Documentation
+  - [x] 16.1 Write `apps/ghost-shell/README.md`
     - **Claims table**: P1, P2, P3, P5, and P6 for the playground world within the scopes of the Introduction, and P4 and P7 as evidence from `core`, `wards`, and `possession`.
     - **P2 meaning statement:** the P2 test compares the diff with an independent change derivation from a journal of the actions; it verifies the diff and the copy isolation and is not a test of fidelity to a real shell; P2 is claimed for the playground world only and is not claimed for shell worlds in real mode.
     - **Unclaimed properties and limits:** P5 and P6 are not claimed for a run that contains an unsupported step or a watchdog event; P1 and the Docker-box claims are not made by this page; **Plan B and P1 scope:** this page does not run Plan B and makes no claim for it, and P1 here is claimed for the playground world only, never for the Docker box or for Plan B (which claims no P1); compression, encryption, and DNS exfiltration are outside content inspection and caught by the action criterion only; text analysis does not catch every injection; the playground cannot detect a secret read through an unsupported command; deleting a whole database file is a `file-deleted` Change and not counted as row loss.
     - The playground emulates a subset of a shell (the Supported_Command_Set table), opens no connection (a network attempt is a recorded value), the real mode needs a Docker box, the playground uses the same engine and the same wards file as real mode (and a verdict is not a guarantee for a real repository), the Scenario Plans are scripted, recorded Plan_Files are replayed and not decided by an LLM in the page, the possession Scenario uses fake canary values and reserved example domains, the SQL screening restriction (clock, random, `ATTACH`, and so on), macOS and Linux tested and Windows unverified, redaction of a secret typed into a command is the producer's responsibility, the manual smoke checklist (load the page, run Scenario 1, see `block`; CSP and load time), and the verification gap that the Vite-bundled worker is not run in CI. The words `sealed` and `isolated` are not used in fixed product text.
     - _Requirements: 9.6, 9.7, 10.7, 15.6, 17.7, 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7, 18.8, 2.6, 7.9_
 
-  - [ ] 16.2 Update the repository `README.md` dependency and license table
+  - [x] 16.2 Update the repository `README.md` dependency and license table
     - Add every dependency of `apps/ghost-shell/` and `worlds/playground-shell/` (runtime and development) with name, version, and license, read from the installed `package.json` files on the day of the task: `sql.js` (MIT), `react`, `react-dom`, `yaml` (ISC, via `wards-config`), `typescript`, `eslint`, `typescript-eslint`, `@types/node`, `vite`, `@vitejs/plugin-react`, `vitest`, `fast-check`, `jsdom`, `@testing-library/react`, `@testing-library/dom`, `@testing-library/user-event`, `@types/react`, `@types/react-dom`, `@eslint-react/eslint-plugin`, and `eslint-plugin-react-hooks`. List every font, icon, and other asset with source and license (icons and art come from `@ghost-run/ui`; the app adds no font and no image). Record that `shell-quote` and `@types/sql.js` were excluded on purpose. Add the playground description, the measured `verifyWorld` run time from task 7.6, and the measured wasm size from task 3.3.
     - Keep the file free of hidden Unicode.
     - _Requirements: 1.8, 18.1_
 
-- [ ] 17. Repository hygiene and isolated lint bans
-  - [ ] 17.1 Write the repository hygiene tests
+- [x] 17. Repository hygiene and isolated lint bans
+  - [x] 17.1 Write the repository hygiene tests
     - Create `apps/ghost-shell/tests/scan/hygiene.test.ts` (node): run `scanTexts` or the Scan_Entry_Point of `possession` over the files of `apps/ghost-shell/`, `worlds/playground-shell/`, and `.kiro/specs/ghost-shell/` (excluding `node_modules` and `dist`) and expect the outcome `clean`; the three folders contain no literal Hidden_Display_Code_Point and no literal HTML comment opener; no `eval`, `new Function`, `dangerouslySetInnerHTML`, `innerHTML`, `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, or `console.` in `apps/ghost-shell/src`; no `Date` or `Math.random` in `src/pipeline`, the world, and the interpreter; no call to an LLM API; only Canary secrets and reserved hosts in fixtures, plans, and tests; the `package.json` runtime dependency set of the app is exactly the seven listed in Requirement 1, criterion 3; the installed `vite`, `vitest`, and `jsdom` majors are 7, 3, and 26; no source under `apps/ghost-shell/src` imports `@ghost-run/wards-config/node`, `@ghost-run/ghost-runner`, `three`, `@mujoco/mujoco`, or `integrations/*`; the GS-P labels appear only in the six properties of this spec.
     - _Requirements: 1.3, 1.6, 1.7, 19.1, 19.2, 19.3, 19.4, 19.7, 19.8_
 
-  - [ ] 17.2 Add the import bans for the playground packages to `core`, `ui`, and `wards-config`
+  - [x] 17.2 Add the import bans for the playground packages to `core`, `ui`, and `wards-config`
     - **Isolated task. It must NOT run at the same time as any other task that edits `core/`, `ui/`, or `wards-config/` in this spec or in another spec.** Precondition: the `possession`, `wards`, `ghost-runner`, and `ui-kit` specs have finished all their changes to `core/` (including `ui-kit` task 13.1, which edits `core/eslint.config.mjs`), the `core` suite passes, and no other core-editing task is in progress.
     - Add the patterns `@ghost-run/playground-shell`, `@ghost-run/playground-shell/**`, `@ghost-run/ghost-shell`, `@ghost-run/ghost-shell/**`, `**/worlds/playground-shell/**`, and `**/apps/ghost-shell/**` to the `no-restricted-imports` rule of `core/eslint.config.mjs`, `ui/eslint.config.mjs`, and `wards-config/eslint.config.mjs`, next to the existing entries. Change nothing else.
     - Add one lint fixture test per package (following the pattern of the existing import-ban tests): write a temporary file under the package's `src/` that imports `@ghost-run/playground-shell` or `@ghost-run/ghost-shell`, run ESLint programmatically on it, assert a `no-restricted-imports` error, and remove the file in `finally`.
     - Run the `core`, `ui`, and `wards-config` suites and `pnpm lint`. Confirm `core/package.json` is unchanged and `pnpm lint` fails when a fixture violates the rule.
     - _Requirements: 1.5_
 
-- [ ] 18. Final checkpoint
+- [x] 18. Final checkpoint
   - Run `pnpm --filter @ghost-run/playground-shell test`, `pnpm --filter @ghost-run/ghost-shell test`, `typecheck`, `lint`, `build`, and `test:dist` for both packages, and `pnpm lint` for the workspace. Confirm: every property of the design (1 to 26) has a test with at least 100 runs in the Short_Run; the `verifyWorld` time is recorded in the devlog and the world README and is within the 45 s guard; the Nightly_Run command (`GHOST_PBT_MODE=nightly`) is documented and was run at least once for the world contract tests or the reason it was not is recorded; no hidden Unicode appears literally in the three folders (the hygiene test passes); the README tables list every dependency with its license; `core/package.json` has no `dependencies`; `pnpm-workspace.yaml` lists `apps/*`, `worlds/*`, `wards-config`, and `ui`. Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

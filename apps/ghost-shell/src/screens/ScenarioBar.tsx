@@ -12,13 +12,14 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
   const selected = SCENARIOS.find((s) => s.id === state.selected);
   const canApplyFixed = selected?.fixedPlan !== undefined;
   return (
-    <section aria-labelledby="gs-scenarios-h">
-      <h2 id="gs-scenarios-h">Scenarios</h2>
-      <div role="group" aria-label="Scenario selector">
+    <section className="gk-section" aria-labelledby="gs-scenarios-h">
+      <h2 id="gs-scenarios-h" className="gk-heading">Scenarios</h2>
+      <div role="group" aria-label="Scenario selector" className="gs-scenarios">
         {SCENARIOS.map((s) => (
           <button
             key={s.id}
             type="button"
+            className="gk-button gs-scenario"
             aria-pressed={state.selected === s.id}
             onClick={() => {
               dispatch({ type: 'selectScenario', id: s.id });
@@ -28,9 +29,10 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
           </button>
         ))}
       </div>
-      <div>
+      <div className="gs-actions">
         <button
           type="button"
+          className="gk-button"
           onClick={() => {
             dispatch({ type: 'runGhost' });
           }}
@@ -39,6 +41,7 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
         </button>
         <button
           type="button"
+          className="gk-button"
           disabled={!canApplyFixed}
           onClick={() => {
             dispatch({ type: 'applyFixedPlan' });

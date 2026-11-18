@@ -649,3 +649,85 @@ The Nightly_Run exits with code 1 although all 697 tests pass. Vitest reports 8 
 ### Decisions kept as documented (Q8, Q13, Q14, Q15, Q17)
 
 These stay as written in the design. The limits are listed in the "Known limits" section of `ui/README.md`.
+
+## world-scaffold hook (task 12)
+
+Host facts used (Kiro CLI 3.4.0 probe; the IDE result of task 1.4 is pending, so recheck after IDE confirmation):
+
+| Fact | Value |
+|---|---|
+| Trigger | `PostFileCreate` (a new file fires `PostFileCreate`, then `PostFileSave`) |
+| Path field | STDIN `file_path` |
+| STDOUT of a file-event hook | does not reach the agent context in the CLI; the hook also writes `.ghost-run/scaffold/last.json` |
+| Files created by a shell command | fire no file event, so the hook does not run for them (known limit) |
+| Hook file | `.kiro/hooks/world-scaffold.json`, `enabled: false` until task 19.1, `timeout: 10` |
+
+Sample STDIN run (temporary workspace outside the repository, node 20+, one event for `worlds/sample-world/notes.md`):
+
+| Run | Exit code | Elapsed (process start to exit) | Files created |
+|---|---|---|---|
+| 1 (PostFileCreate) | 0 | about 80 ms | 4 (`world.config.ts`, `tests/contract.test.ts`, `wards.yaml`, `README.md`) plus `.ghost-run/scaffold/last.json` |
+| 2 (same event again) | 0 | about 80 ms | 0 (prints "Nothing to do"; the record file is kept) |
+
+The generated `contract.test.ts` was run with the root `vitest.worlds.config.ts` on the temporary copy. All imports resolved (`@ghost-run/core/verify`, `@ghost-run/wards-config`, `fast-check`). The registration test passed. The `verifyWorld` test failed with the intended placeholder message `implement create() of world sample-world`, because the world is not implemented.
+
+Shape check against the existing worlds: `drawer-arm/world.config.ts` and `playground-shell/world.config.ts` both default-export `{ id, deterministic, wardsFile, create }`, as the template does. `playground-shell` has no `wards.yaml`, `tests/`, or `README.md` yet. The scaffolded `wards.yaml` (`wards: []`) parses with `ok: true` through the installed `parseWards`.
+
+## contract-pbt save-time run (task 11)
+
+Measured on Apple M1 (8 cores), macOS 26.6.2, Node v20.20.2, vitest 3.2.7, 2026-11-19. The hook ran as a process (`node integrations/kiro-hook/contract-pbt.mjs`) with a `PostFileSave` event on STDIN (`cwd` and `file_path` as the CLI sends them). One run per path, warm caches, no Docker started.
+
+| Saved path (STDIN `file_path`) | Suites run | Tests passed / skipped | Wall clock | Exit code |
+|---|---|---|---|---|
+| `worlds/drawer-arm/src/world.ts` | `worlds/drawer-arm` own test folder (no `tests/contract.test.ts` yet), then the `core` judgment-engine files | 265 / 0 | 7.8 s (first run 11.9 s) | 0 |
+| `core/src/index.ts` | all `core` tests, then the own test folder of `drawer-arm` and `playground-shell` | 1039 / 1 | 28.5 s (first run 39.4 s) | 0 |
+
+Both runs are inside the 55 s internal deadline and the 60 s host limit. The one skipped test is `glob step bound (Requirement 3.9)`, which is skipped by design outside the nightly mode; it is labeled `[skipped]`, not `[skipped (docker unavailable)]`.
+
+Run counts come from the owning test configurations, not from the hook. The hook sets only `GHOST_PBT_MODE=short` for `core` and `worlds` suites (the `core` properties then use 100 runs; the engine-bound `drawer-arm` properties use `shortRuns` from `worlds/drawer-arm/tests/pbt-budget.json`, 35 in the file at measurement time). A suite inside `ghost-runner` would get `GHOST_PBT_MODE=save` (20 runs) and `--project unit` only; the default plan starts no `ghost-runner` suite, because `ghost-runner/` is outside the `^(core|worlds)/` prefilter.
+
+`.ghost-run/pbt/last.json` after the `drawer-arm` run (STDOUT printed the same summary as text):
+
+```json
+{
+  "ok": true,
+  "outcome": "passed",
+  "failed": [],
+  "skipped": [],
+  "unfinished": [],
+  "passed": 265,
+  "suites": ["world:drawer-arm", "core:judgment-engine"],
+  "elapsedMs": 7760
+}
+```
+
+STDOUT of a file-event hook does not reach the agent in the CLI (probe, CLI 3.4.0), so `last.json` is the channel there. IDE result pending: recheck after IDE confirmation (task 1.4).
+
+## ghost-log latency (task 10.2, 2026-11-19)
+
+Measured on an Apple M1 class Mac (macOS, Node v20.20.2), `node integrations/kiro-hook/ghost-log.mjs` as a child process with the Hook_Event on STDIN, a temporary workspace with the Ghost Shell wards file and one canary `.env`, packages built. Three single runs, not the Median_Of_5 of task 16.2.
+
+| Measurement | Result | Reference |
+|---|---|---|
+| `web_fetch` event with a 1,000,000-character response (record about 1 MB), wall clock | 0.13 s, 0.12 s, 0.19 s | limit 5 s (Requirement 13) |
+| `read_file` event with a 19-byte response, wall clock | about 0.12 s | none |
+| `runLog` in process, 1,000,000-character `read_file` record | about 0.27 s | limit 5 s |
+
+Host-fact choices used by the script (task 1.7 is not complete for the IDE): the response field is `tool_response` (CLI 3.4.0 measured), with `tool_result` and `response` accepted as candidates; a blocked call fires no Post Tool Use in the CLI, and the D10 duplicate-skip rule is implemented as a fallback for the IDE (a shell event whose command text equals a graveyard entry written within 60 s adds no `executed` event; the graveyard stores no session id or tool_use_id, so the match is on the command text).
+
+## ghost-shell final checkpoint (task 18): Nightly_Run of verifyWorld
+
+Recorded on macOS (Apple Silicon, Node 20.20.2) with `corepack pnpm`.
+
+- Command: `GHOST_PBT_MODE=nightly corepack pnpm exec vitest run tests/verify-world.test.ts` in `worlds/playground-shell`. The package script `test:nightly` runs the same mode for the whole suite.
+- Result: not completed. The test worker ran out of memory after about 165 s (V8 heap near 3.7 GB, "JavaScript heap out of memory"), and vitest then reported `Channel closed`. The exit code was 1. A second run gave the same result.
+- Likely cause: `verifyWorld` at 10,000 runs keeps per-run data (snapshots and traces of the 1,206-row project) in memory for the whole call. Not investigated; the world and the test were not changed.
+- Short_Run for comparison (100 runs): `verifyWorld` took 22.6 s in the final checkpoint run (under the 45 s guard), and the whole world suite took 24 s wall clock.
+
+## kiro-integration task 13: blacklight-steering sample run (2026-11-19)
+
+- Setup: temporary workspace, `.kiro/steering/rule.md` with one zero-width space (written from bytes E2 80 8B), `.kiro/steering/ok.md` plain text. Event on STDIN: `{"hook_event_name":"PostFileSave","file_path":".kiro/steering/<name>.md"}`. Command: `node integrations/kiro-hook/blacklight-steering.mjs`, Node 20+, macOS.
+- Hidden file: exit code 1, 75 ms wall clock including process start. STDOUT and STDERR both hold the report (2 lines: one finding line `zero-width U+200B`, then `outcome=findings findings=1 files=1`). `.ghost-run/blacklight/last.txt` holds the same text.
+- Clean file: exit code 0, 61 ms. STDOUT `outcome=clean findings=0 files=1`, STDERR empty, `last.txt` holds the same line.
+- Limits: CLI 3.4.0 does not pass file-event STDOUT to the agent, so `last.txt` is the reliable channel. IDE result pending (task 1.4): recheck after IDE confirmation. A file saved by a shell command fires no file event, so this hook does not see it.
+- Hook file `.kiro/hooks/blacklight-steering.json` is created with `enabled: false` (enabled by task 19.1).
