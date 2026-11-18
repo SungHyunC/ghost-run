@@ -53,7 +53,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 - **Plan_B**: The static-analysis fallback used when the Box cannot be used.
 - **Hook_Limit**: The 60-second execution limit of the Kiro Pre Tool Use hook.
 - **Median_Of_5**: The median of the durations of 5 consecutive runs of the same measurement on the Reference_Machine. A target stated as a Median_Of_5 is met when the median does not exceed the stated value; a single slower run does not violate it (experiment A: `cp -cR` median 0.78 s, maximum 2.3 s).
-- **Absolute_Limit**: A timeout or deadline that applies to every single run, with no averaging: Docker availability check 2 s, copy 20 s, Box execution 30 s, pipeline 55 s.
+- **Absolute_Limit**: A timeout or deadline that applies to every single run, with no averaging: Docker availability check 2 s, copy 20 s, Box execution 30 s, pipeline 55 s. The pipeline limit is the upper bound of the configurable pipeline deadline (Requirement 7 criterion 5); a caller can lower the deadline but never raise it above 55 s.
 
 ## Requirements
 
@@ -161,8 +161,8 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 2. THE Box_Runner SHALL execute the ShellActions of a Plan sequentially in the same Box, in list order, and SHALL tag every recorded event with the zero-based index of the ShellAction as `stepIndex`.
 3. THE Box_Runner SHALL apply a total Box execution limit to the whole Plan, configurable from 1 s to 30 s, with a default of 25 s; THE Box_Runner SHALL reject a configured value outside that range with an error.
 4. IF the total Box execution limit is reached while an action is running, THEN THE Box_Runner SHALL kill the container, SHALL mark that step's Snapshot with `result: { success: false, error: "timeout after <N> s" }`, SHALL NOT execute the remaining actions, SHALL return the diff computed so far, and SHALL set Runner_Verdict to at least `warn` with `status: "timeout"`.
-5. THE Box_Runner SHALL set an overall pipeline deadline of 55 s, measured from the start of the run to the return of the Run_Result.
-6. IF the overall pipeline deadline is reached, THEN THE Box_Runner SHALL stop the remaining phases, kill and remove the container, return the partial Run_Result with `status: "pipeline-deadline"` and Runner_Verdict at least `warn`, and SHALL return within 60 s of the start of the run.
+5. THE Box_Runner SHALL set an overall pipeline deadline, measured from the start of the run to the return of the Run_Result, that is configurable from 1 s to 55 s with a default of 55 s (the Absolute_Limit, never exceeded); THE Box_Runner SHALL reject a configured value outside that range (including NaN and non-numbers) with an error naming the bound, before any Box is created, and SHALL use the configured value for the deadline, for the time left that bounds every external call, and for the `pipeline-deadline` error text.
+6. IF the overall pipeline deadline is reached, THEN THE Box_Runner SHALL stop the remaining phases, kill and remove the container, return the partial Run_Result with `status: "pipeline-deadline"` and Runner_Verdict at least `warn`, and SHALL return within 5 s after the configured deadline (within 60 s of the start of the run at the default).
 7. WHEN a ShellAction contains a command such as `npm install` that needs network access, THE Box SHALL execute it without network access, and THE Box_Runner SHALL record the resulting network attempts as events (Requirement 8) rather than permitting the access.
 8. THE Box_Runner SHALL record the exit code of every executed action in the Run_Result.
 
@@ -368,7 +368,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 2. THE sum of all phase budgets except `execMs` SHALL be at most 8.6 s, so that a run at the budgets with the maximum `execMs` of 30 s stays below 39 s and leaves more than 20 s of margin below the Hook_Limit; the Absolute_Limits (Docker availability check 2 s, copy 20 s, Box execution 30 s, pipeline 55 s) SHALL bound any single slower run.
 3. FOR each Plan step after the first, THE Box_Runner SHALL add a Median_Of_5 of at most 0.6 s (diff 0.5 s plus step overhead 0.1 s) to the run, and the pipeline deadline of Requirement 7 SHALL bound runs of long Plans.
 4. THE Box_Runner SHALL complete a run of the five scenarios of Requirement 18 with a total time from the start of the copy to the return of the Run_Result of at most 30 s each, as a Median_Of_5 per scenario, on the Reference_Machine.
-5. THE timing measurement task SHALL record the measured values (the Median_Of_5 and the maximum of each phase and scenario) in `docs/devlog.md`; this is a process requirement on the task, not runtime behavior of the Box_Runner.
+5. THE timing measurement task SHALL record the measured values (the Median_Of_5 and the maximum of each phase and scenario) in `docs/measurements.md`; this is a process requirement on the task, not runtime behavior of the Box_Runner.
 6. THE Box_Runner SHALL support macOS and Linux and SHALL document Windows as unverified.
 7. THE Box_Runner SHALL read no `.env` value other than Canary values in tests, demos, and fixtures, and SHALL contain no committed real credential.
 8. THE repository files of the Box_Runner SHALL contain no hidden Unicode characters (U+E0000 to U+E007F, U+200B to U+200D outside emoji sequences, U+2060, U+FEFF, U+202A to U+202E, U+2066 to U+2069); tests that need such characters SHALL build them with escape sequences.
@@ -395,6 +395,6 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 - How the baseline hash of `ctime` candidates is obtained without hashing unchanged files.
 - Whether the Box image is built locally or pulled by digest.
 - Update of `.kiro/steering/structure.md` to list `ghost-runner/` and its dependency direction.
-- For the tasks phase: the timing measurement task (Requirement 19 criterion 5) and the secret-read recording trial (Requirement 9 criteria 5 and 6) record their results in `docs/devlog.md` and `docs/research.md`. Both are task work, not runtime behavior.
+- For the tasks phase: the timing measurement task (Requirement 19 criterion 5) and the secret-read recording trial (Requirement 9 criteria 5 and 6) record their results in `docs/measurements.md` and `docs/research.md`. Both are task work, not runtime behavior.
 - The exact shape of the `secretValues` hand-off type and of the `WardEngine.evaluate` parameter that carries it (Requirement 1 criteria 6 and 7, Requirement 9 criterion 10).
 - The `contract-pbt` hook configuration (`kiro-integration` spec) must select 20 examples per property for the Repo_World on save (Requirement 17 criterion 8).

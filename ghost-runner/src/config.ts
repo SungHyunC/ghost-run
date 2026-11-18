@@ -7,7 +7,9 @@ export const MAX_PLAN_ACTIONS = 50;
 export const MIN_EXEC_LIMIT_SEC = 1;
 export const MAX_EXEC_LIMIT_SEC = 30;
 export const DEFAULT_EXEC_LIMIT_SEC = 25;
+/** Absolute_Limit and default of `RunnerOptions.pipelineDeadlineSec` (Req 7.5). */
 export const PIPELINE_DEADLINE_SEC = 55;
+export const MIN_PIPELINE_DEADLINE_SEC = 1;
 export const COPY_LIMIT_SEC = 20;
 export const MIN_POOL_SIZE = 1;
 export const MAX_POOL_SIZE = 8;
@@ -45,6 +47,8 @@ export interface RunnerOptions {
   readonly excludeDirs?: readonly string[];
   readonly excludedDirMode?: ExcludedDirMode;
   readonly execLimitSec?: number;
+  /** Overall pipeline deadline in seconds, 1 to 55, default 55 (Req 7.5). Never above the Absolute_Limit. */
+  readonly pipelineDeadlineSec?: number;
   readonly pool?: PoolOptions;
   readonly limits?: Partial<ResourceLimits>;
   readonly secretPatterns?: readonly string[];
@@ -154,6 +158,20 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
     throw new ConfigError('execLimitSec', `${MIN_EXEC_LIMIT_SEC}..${MAX_EXEC_LIMIT_SEC}`, execLimitSec);
   }
 
+  const pipelineDeadlineSec = opts.pipelineDeadlineSec ?? PIPELINE_DEADLINE_SEC;
+  if (
+    typeof pipelineDeadlineSec !== 'number' ||
+    !Number.isFinite(pipelineDeadlineSec) ||
+    pipelineDeadlineSec < MIN_PIPELINE_DEADLINE_SEC ||
+    pipelineDeadlineSec > PIPELINE_DEADLINE_SEC
+  ) {
+    throw new ConfigError(
+      'pipelineDeadlineSec',
+      `${MIN_PIPELINE_DEADLINE_SEC}..${PIPELINE_DEADLINE_SEC}`,
+      pipelineDeadlineSec,
+    );
+  }
+
   let pool: PoolOptions | undefined;
   if (opts.pool !== undefined) {
     const size = opts.pool.size;
@@ -183,7 +201,7 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
     excludeDirs: [...excludeDirs],
     excludedDirMode,
     execLimitSec,
-    pipelineDeadlineSec: PIPELINE_DEADLINE_SEC,
+    pipelineDeadlineSec,
     copyLimitSec: COPY_LIMIT_SEC,
     pool,
     limits,

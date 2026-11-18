@@ -409,18 +409,18 @@ Decisions reflected in this plan:
     - Scan `ghost-runner/` and `.kiro/specs/ghost-runner/` for tag characters (U+E0000 to U+E007F), zero-width characters (U+200B to U+200D, U+2060, U+FEFF), and bidi controls (U+202A to U+202E, U+2066 to U+2069); build the character classes from `\u` escapes in the test code. Also assert no real-credential patterns (only canary values).
     - _Requirements: 18.6, 18.7_
 
-- [ ] 15. Measurement tasks (W6, W7)
-  - [ ] 15.1 Run the secret-read recording trial (W6) [docker]
+- [x] 15. Measurement tasks (W6, W7)
+  - [x] 15.1 Run the secret-read recording trial (W6) [docker]
     - Write a script `ghost-runner/scripts/trial-secret-read.mjs` that runs the D1 matrix on the Reference_Repo and Reference_Machine: commands `true` and `npm test`; variants (a) no strace, (b) strace `connect` only, (c) strace `connect+openat` with plain ptrace, (d) strace `connect+openat` with `--seccomp-bpf`; 10 runs per cell; report median and maximum.
     - Apply the decision rule: if (d) minus (a) is at most 0.8 s for both commands, replace the provisional bound with the measured value; otherwise narrow tracing with `-P <path>` for the active wards' patterns or mark secret-read recording off (`p6Claimed: false`, `warn`).
     - Record the results in `docs/research.md` (a new section; keep existing content).
     - _Requirements: 9.5, 9.6, 9.7, 9.8_
 
-  - [ ] 15.2 Run the timing measurement (W7) and record the results [docker]
+  - [x] 15.2 Run the timing measurement (W7) and record the results [docker]
     - Write `ghost-runner/scripts/measure-timing.mjs` that records Median_Of_5 and the maximum of every phase of `PhaseDurations`, each of the five scenarios, and the extra per-step cost for steps after the first; include the Docker Desktop `ctime` propagation check.
     - Measure the fake DNS lookup latency inside the box (requirement 8.1, target at most 0.1 s Median_Of_5) and `npm test` (target below 1.0 s) and report the measured values without changing the criterion.
-    - If the DNS latency median exceeds 0.1 s, write a follow-up item in `docs/devlog.md` titled `Follow-up: correct requirement 8.1 DNS latency` that states the measured value and proposes the corrected number for the requirements owner; do not edit `requirements.md`.
-    - Write all measured values to `docs/devlog.md` as one-line entries with the Reference_Machine description.
+    - If the DNS latency median exceeds 0.1 s, write a follow-up item in `docs/measurements.md` titled `Follow-up: correct requirement 8.1 DNS latency` that states the measured value and proposes the corrected number for the requirements owner; do not edit `requirements.md`.
+    - Write all measured values to `docs/measurements.md` (English; add a section if the file exists). `docs/devlog.md` is written in Korean by Claude Code and is never edited here. With the values, record the machine (chip, core count, memory, Docker Desktop version) and the system load (`sysctl -n vm.loadavg`) at the start and end of the measurement; if the load is high, say so next to the values.
     - _Requirements: 8.1, 8.2, 5.10, 19.1, 19.2, 19.3, 19.4, 19.5_
 
 - [x] 16. Documentation (W8, W10)
@@ -461,7 +461,13 @@ Decisions reflected in this plan:
     - Tests [no-docker]: valid and invalid formats (property test over generated strings), absent id gives a UUID, the given id appears in `RunResult.runId`, the label and the container name, duplicate throws and removes nothing, cleanup by label works after an injected hang with the fake Docker client. Add to Property 7 (configuration bounds) if it fits.
     - _Requirements: 16.3, 16.5, 16.6, 7.1_
 
-- [ ] 17. Final checkpoint - Ensure all tests pass
+  - [x] 18.6 Caller-chosen `pipelineDeadlineSec` and exported run-id label constant (for kiro-integration) [no-docker]
+    - Requirements, design and this file first: add the optional `RunnerOptions.pipelineDeadlineSec` (number, default 55, range 1 to 55, else `ConfigError` naming the bound before any container is created; the Absolute_Limit stays 55 s and is never exceeded). The caller's value replaces the fixed 55 s in the deadline computation, in the remaining-time derivation of every external call, and in the `pipeline-deadline` error text; a run that passes the deadline gives the same `pipeline-deadline` result and the same cleanup as today. Update Requirement 7 criterion 5 (and the Absolute_Limit glossary wording) and the options table and deadline paragraphs in `design.md` (rows near "pipelineDeadlineSec | 55", the "Pipeline deadline (55 s)" bullets, the error table row).
+    - Export `LABEL_RUN_ID` (value `ghost-run.run-id`) from the public entry point `src/index.ts` so callers never write the string. Mention it in `ghost-runner/README.md` only if the options are listed there.
+    - Tests [no-docker] with the fake Docker client and fake clock: default is 55 s; valid and invalid values (0, 56, NaN, non-number, negative) with `ConfigError` before any Docker call; a run with a smaller deadline hits `pipeline-deadline` at that deadline, returns the same result shape, and removes container, volume and Copy; `LABEL_RUN_ID` equals the string used in `buildRunArgs`. Add to Property 7 (configuration bounds) if it fits.
+    - _Requirements: 7.5, 16.3_
+
+- [x] 17. Final checkpoint - Ensure all tests pass
   - Run `pnpm lint`, `pnpm -r build`, the `[no-docker]` tests in `save` and explicit profiles, and, where Docker is available, the `[docker]` tests. Confirm the summary shows `skipped (docker unavailable)` for any skipped Docker suite and that no private-key file is present in the repository. Ask the user if questions arise.
 
 ## Notes
@@ -470,7 +476,7 @@ Decisions reflected in this plan:
 - Profiles: on save 20 examples per property within 60 s; explicit (`test:pbt`) at least 100; nightly (`GHOST_PBT_MODE=nightly`) at least 10,000.
 - Properties 1 to 22 keep the numbering of `design.md`. P2 (core safety property) is not asserted for the Repo_World because it is registered with `deterministic: false`.
 - Task 3 (W0, core type changes) blocks every other remaining task: it is the first wave after the finished tasks 1 and 2, and task 3.4 rebuilds `core/dist` so `ghost-runner` compiles against the new types.
-- Measurement tasks 15.1 and 15.2 produce data (to `docs/research.md` and `docs/devlog.md`), not runtime behavior.
+- Measurement tasks 15.1 and 15.2 produce data (to `docs/research.md` and `docs/measurements.md`), not runtime behavior.
 - This workflow only creates the plan. Open this file and click "Start task" next to a task to begin implementation.
 
 ## Task Dependency Graph

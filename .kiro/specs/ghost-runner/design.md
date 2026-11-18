@@ -22,7 +22,7 @@ Scope boundary: ward rule evaluation, `wards.yaml` parsing, and payload content 
 
 | # | Question | Decision |
 |---|---|---|
-| D1 | Secret-read recording | One `strace -f --seccomp-bpf -e trace=openat,open,openat2,connect,chdir,fchdir` per action, parsed after the step. Path only, never contents. Provisional bound 0.8 s Median_Of_5 (combined with connect tracing), replaced by the trial result. |
+| D1 | Secret-read recording | One `strace -f --seccomp-bpf -e trace=openat,open,openat2,connect,chdir,fchdir` per action, parsed after the step. Path only, never contents. Measured cost (trial W6, `docs/research.md`): +0.03 s median for `npm test` and +0.00 s for `true` over no tracing, so the bound is 0.05 s Median_Of_5 (combined with connect tracing). |
 | D2 | Recorder output location | An anonymous Docker volume mounted at `/ghost-rec` (not a host path, not inside the Copy), read out with `docker cp` after the run. Tamper-resistance is best effort. `tamperResistant: false` is always reported. |
 | D3 | Baseline hashes | Reuse the per-file hashes of the pre-run Original fingerprint. Only ctime candidates are re-hashed in the Copy. No extra hashing pass and no read of Original at diff time. |
 | D4 | Box image | Build locally from a Dockerfile in the repo, base image pinned by digest, packages pinned through a Debian snapshot timestamp. No auto-build in the hook path. |
@@ -226,7 +226,7 @@ export function parseRunResult(json: string): SerializedRunResult;
 | `excludeDirs` | `["node_modules"]` | non-empty names, no `/` | Req 4.3 |
 | `excludedDirMode` | `"omit"` | `"omit"`, `"readonly-mount"` | Req 4.9 |
 | `execLimitSec` | 25 | 1 to 30, else `ConfigError` | Req 7.3 |
-| `pipelineDeadlineSec` | 55 | fixed, not configurable above 55 | Req 7.5 |
+| `pipelineDeadlineSec` | 55 | 1 to 55 (finite number), else `ConfigError` before any container is created; never above the 55 s Absolute_Limit | Req 7.5 |
 | `copyLimitSec` | 20 | fixed | Req 4.8 |
 | `pool.size` | off | integer 1 to 8 | Req 6.1 |
 | `limits` | pids 256, memory 1g (swap 1g), cpus 2, tmp 64 MiB | positive | Req 5.2 |
@@ -412,7 +412,7 @@ Plan B flow (Docker daemon unreachable within 2.0 s, or image missing): no actio
 
 | Option | Sees reads of regular files by any process | Works with `--cap-drop ALL`, no `SYS_PTRACE` | Static binaries / direct syscalls | Cost | Verdict |
 |---|---|---|---|---|---|
-| `strace -f -e trace=openat...` (seccomp-bpf filtered) | Yes, per syscall, all children | Yes (traces own children, confirmed for `connect` in experiment A) | Yes | Provisional 0.1 to 0.8 s | **Chosen** |
+| `strace -f -e trace=openat...` (seccomp-bpf filtered) | Yes, per syscall, all children | Yes (traces own children, confirmed for `connect` in experiment A) | Yes | Measured +0.03 s median (`npm test`), +0.00 s (`true`) | **Chosen** |
 | `inotify` | Needs `IN_ACCESS`/`IN_OPEN` watches per directory; misses mmap reads; watch limits | Yes | Yes | Low | Rejected: coverage gaps, recursive watch setup cost, cannot attribute to a step reliably |
 | `fanotify` | Yes | No (`CAP_SYS_ADMIN`) | Yes | Low | Rejected: needs a forbidden capability |
 | `LD_PRELOAD` shim | Only dynamically linked, libc-using programs | Yes | No (Go, static binaries, raw syscalls bypass it) | Low | Rejected: easy to bypass by accident |
@@ -436,13 +436,13 @@ What is recorded: the syscall name, return value, pid, and the path argument as 
 
 Because `-z` (successful only) is not used (failed `connect` calls to unroutable IPs must still be seen), logs for chatty commands can be large. The collector caps `/ghost-rec` at 64 MiB; exceeding the cap is treated as `recorder-failure`.
 
-Provisional cost bound: 0.8 s Median_Of_5 added for the combined `openat`+`connect` tracing on the Reference_Repo (Req 9.7), with `--seccomp-bpf` expected to be well below the plain-ptrace cost because only the listed syscalls stop the tracee. This is not measured yet. **Trial plan (W6):** on the Reference_Repo and Reference_Machine, 10 runs per cell, report the median and the maximum:
+Cost bound (Req 9.7): 0.05 s Median_Of_5 added for the combined `openat`+`connect` tracing on the Reference_Repo. The provisional bound was 0.8 s; the trial measured (d) minus (a) as a median of 0.001 s for `true` and 0.029 s for `npm test`, and the bound is the larger value rounded up to 0.05 s. Plain ptrace (c) costs +0.17 s for `npm test`, so `--seccomp-bpf` stays. Results: `docs/research.md`. **Trial (W6):** on the Reference_Repo and Reference_Machine, 10 runs per cell, report the median and the maximum:
 
 | Command | Variants |
 |---|---|
 | `true` (no-op) and `npm test` | (a) no strace, (b) strace `connect` only (experiment A baseline), (c) strace `connect+openat` plain ptrace, (d) strace `connect+openat` with `--seccomp-bpf` |
 
-Decision rule: if (d) minus (a) is at most 0.8 s for both commands, keep the design and replace the provisional bound with the measured value. If it is above 0.8 s, narrow tracing with a `-P <path>` list for the exact patterns of the active wards, or tell the user that secret recording is off (then `p6Claimed: false`, `warn`; Req 9.8). Results go to `docs/research.md`.
+Decision rule (outcome: holds, design kept, recording stays on): if (d) minus (a) is at most 0.8 s for both commands, keep the design and replace the provisional bound with the measured value. If it is above 0.8 s, narrow tracing with a `-P <path>` list for the exact patterns of the active wards, or tell the user that secret recording is off (then `p6Claimed: false`, `warn`; Req 9.8). Results go to `docs/research.md`.
 
 ---
 
@@ -647,8 +647,8 @@ Sum of non-exec budgets: 2.0 + 1.0 + 1.0 + 0.8 + 0.8 + 0.5 + 0.5 + 1.0 + 1.0 = 8
 Deadline handling:
 
 - Execution limit reached: `docker kill`, the current step's snapshot gets `result: { success: false, error: "timeout after <N> s" }`, remaining actions are skipped, the diff of the Copy as it stands is computed, the recorder volume is read, status `timeout`, verdict at least `warn`.
-- Pipeline deadline (55 s): remaining phases are skipped, the container is killed and removed, a partial result with status `pipeline-deadline` is returned within 60 s. Cleanup always runs even then, with its own short timeouts.
-- Every external call has a timeout derived from the time left until the 55 s deadline.
+- Pipeline deadline (`pipelineDeadlineSec`, default and maximum 55 s): remaining phases are skipped, the container is killed and removed, a partial result with status `pipeline-deadline` is returned within 60 s. Cleanup always runs even then, with its own short timeouts.
+- Every external call has a timeout derived from the time left until the pipeline deadline (`pipelineDeadlineSec`, default 55 s). `resolveRunnerOptions` validates the value; `runPlan` and `Repo_World` compute `deadlineAt` from it, and the `pipeline-deadline` error text names it. `src/index.ts` also exports `LABEL_RUN_ID` (`ghost-run.run-id`) so callers never write the label string.
 
 ---
 
@@ -799,12 +799,12 @@ Reflection on merged criteria: criteria that share one generator and one asserti
 | Scenario | Behavior |
 |---|---|
 | Docker daemon unreachable, check takes over 2.0 s, or image missing | Plan B (`docker-unavailable` or `box-image-missing`), notice, verdict at least `warn`, no host execution |
-| Plan outside 1 to 50 actions, or `execLimitSec` outside 1 to 30 | `PlanBoundsError` / `ConfigError` naming the bound, before any container is created |
+| Plan outside 1 to 50 actions, or `execLimitSec` outside 1 to 30, or `pipelineDeadlineSec` outside 1 to 55 | `PlanBoundsError` / `ConfigError` naming the bound, before any container is created |
 | Copy exceeds 20 s | Partial Copy removed, `copy-timeout`, `warn`, no Box |
 | Inspect differs from the expected configuration | Container removed, no action runs, `isolation-violation`, `block` |
 | Action exits non-zero | `result: { success: false, error }` on its snapshot, plan continues (the caller decides), exit code recorded |
 | Execution limit reached | `docker kill`, partial diff, recorder read, `timeout`, at least `warn`, remaining actions skipped |
-| Pipeline deadline (55 s) | Remaining phases skipped, container killed and removed, `pipeline-deadline`, returned within 60 s |
+| Pipeline deadline (`pipelineDeadlineSec`, default 55 s) | Remaining phases skipped, container killed and removed, `pipeline-deadline`, returned within 60 s |
 | Recorder files missing, truncated, unparseable, over the cap, or liveness probe failed | Diagnostic `recorder-failure`, `p6Claimed: false`, at least `warn` |
 | Secret-read recording inactive (tool missing, not configured) with an egress ward | `p6Claimed: false`, at least `warn` |
 | SQLite file unreadable after a step | Diagnostic `sqlite-unreadable` (path, `stepIndex`), no `sql-row-count` Change for that file, at least `warn` |
@@ -858,6 +858,7 @@ Fixture repository (at most 50 files, canary `sk-CANARY-abc123` in `.env`, SQLit
 - `verifyWorld(repoWorld, { id: "repo", deterministic: false, wardSet })` from `@ghost-run/core/verify` passes before registration (Req 17.9). With `deterministic: false`, P2 is skipped by core.
 - Port-binding test under the full hardening options (`--cap-drop ALL` and the rest): the recorder binds 53, 80, and 443 (Req 8.13).
 - Timeouts with a fake clock: Docker check 2.0 s, copy 20 s, execution 30 s, pipeline 55 s and return within 60 s.
+- `pipelineDeadlineSec` (`tests/pipeline-deadline-option.test.ts`): default 55, bounds with `ConfigError` before any Docker call, a smaller deadline gives the same `pipeline-deadline` result and cleanup, and `LABEL_RUN_ID` equals the label written by `buildRunArgs`.
 - Pool lifecycle model test (one use per slot, replacement, label sweep with owner liveness).
 - Repository scan test (hidden Unicode characters built from escapes in test code, no real credential patterns).
 
@@ -880,7 +881,7 @@ These are inputs for the tasks phase. Nothing here has been applied.
 | W4 | Core build changes (separate from ghost-runner code): `core/tsconfig.build.json`, `exports` map with `.` and `./verify`, `main`/`types`/`files`, `build` and `clean` scripts, `dist` in `.gitignore`, optional `fast-check` peer dependency, `pnpm -r build` ordering | Depends on W0 so `dist/` contains the extended types. Do not modify core build config before this task |
 | W5 | Confirm with the `wards` spec that the W0 shapes (`eventId`, `SecretValues`, `EvaluateInputs`) are what it expects; payload bytes still travel only in `RunOutput.payloads`, keyed by `eventId` | If wards need a different shape, change W0 before other work |
 | W6 | Secret-read recording trial: matrix of D1 on the Reference_Repo and Reference_Machine, 10 runs per cell, median and maximum; replace the 0.8 s provisional bound; write results to `docs/research.md` | Req 9.5 to 9.7 |
-| W7 | Timing measurement task: Median_Of_5 and maximum of every phase and scenario, including Docker Desktop `ctime` propagation check; write results to `docs/devlog.md` | Req 19.5 |
+| W7 | Timing measurement task: Median_Of_5 and maximum of every phase and scenario, including Docker Desktop `ctime` propagation check; write results to `docs/measurements.md` | Req 19.5 |
 | W8 | `contract-pbt` hook configuration: 20 examples per property on save for the Repo_World, with the 60 s limit. Belongs to the `kiro-integration` spec | Req 17.8 |
 | W9 | Port 53/80/443 binding verification test under the full hardening options, reporting `skipped (docker unavailable)` without Docker | Req 8.13 |
 | W10 | README sections: library and license table, Plan B limitation (no P1/P5/P6 claim), recorder tamper statement, macOS and Linux support, Windows unverified, Docker Desktop license note | Req 1.5, 3.6, 10.2, 19.6 |

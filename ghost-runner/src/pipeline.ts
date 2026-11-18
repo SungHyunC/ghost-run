@@ -8,7 +8,7 @@
  * evaluation, verdict and claims, cleanup in `finally`.
  *
  * Deadlines: Docker check 2.0 s, copy 20 s, execution limit with `docker kill` (in the box),
- * pipeline deadline 55 s. Every external call timeout derives from the time left.
+ * pipeline deadline (default and maximum 55 s). Every external call timeout derives from the time left.
  */
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -31,7 +31,6 @@ import {
   COPY_LIMIT_SEC,
   MAX_SECRET_FILES,
   MAX_SECRET_FILE_BYTES,
-  PIPELINE_DEADLINE_SEC,
   imageFromEnv,
   resolveRunnerOptions,
   validatePlanSize,
@@ -623,7 +622,7 @@ async function execute(c: PipelineCtx, run: Run): Promise<void> {
           error = `timeout after ${String(resolved.execLimitSec)} s`;
         } else {
           run.status = 'pipeline-deadline';
-          error = `pipeline deadline of ${String(PIPELINE_DEADLINE_SEC)} s reached`;
+          error = `pipeline deadline of ${String(resolved.pipelineDeadlineSec)} s reached`;
         }
       }
       const snap: Snapshot<RepoState> = {
@@ -819,7 +818,7 @@ export async function runPlan(plan: Plan, opts: RunPlanOptions): Promise<RunOutp
 
   const clock = opts.clock ?? systemClock;
   const client = opts.client ?? createDockerClient('docker', clock);
-  let deadlineAt = clock.now() + PIPELINE_DEADLINE_SEC * 1000;
+  let deadlineAt = clock.now() + resolved.pipelineDeadlineSec * 1000;
   const runId = resolved.runId ?? randomUUID();
   const phases = NO_PHASES();
 

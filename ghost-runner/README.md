@@ -52,6 +52,9 @@ existing ghost-run container, throws `ConfigError`. When absent, the runner uses
 label `ghost-run.run-id` on the box and its volume and is part of the container name, so a watchdog can find and
 remove the box by label.
 
+`RunnerOptions.pipelineDeadlineSec` is optional (1 to 55, default 55, else `ConfigError`). The package exports
+`LABEL_RUN_ID` (`ghost-run.run-id`) so callers do not write the label string.
+
 ### Cleanup and stale boxes
 
 After the Copier starts, the box, its recorder volume, and the Copy are removed even when an error is thrown or the

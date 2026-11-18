@@ -5,6 +5,7 @@ export * from './result.js';
 export { createRepoWorld } from './world/repo-world.js';
 export type { RepoWorldOptions } from './world/repo-world.js';
 export type { Plan, RepoState, RepoWorld, ShellAction, StepOutcomeKind, StepRecord } from './world/types.js';
+export { LABEL_RUN_ID } from './docker/hardening.js';
 export { runPlan } from './pipeline.js';
 export type { RunPlanOptions } from './pipeline.js';
 export { analyze } from './static/analyzer.js';

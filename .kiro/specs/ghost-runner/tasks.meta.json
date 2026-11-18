@@ -1245,6 +1245,11 @@
         "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
         "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
         "timestamp": 1794973844174
+      },
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794992123236
       }
     ],
     "15.2 Run the timing measurement (W7) and record the results [docker]": [
@@ -1267,6 +1272,16 @@
         "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
         "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
         "timestamp": 1794973844816
+      },
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794993787537
+      },
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794994582277
       }
     ],
     "16.1 Complete `ghost-runner/README.md` and the root README entries (W10)": [
@@ -1353,6 +1368,16 @@
         "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
         "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
         "timestamp": 1794973846967
+      },
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794994585596
+      },
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794995344298
       }
     ],
     "12.8b Write the `secretValues` cap tests [no-docker]": [
@@ -1446,6 +1471,20 @@
         "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
         "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
         "timestamp": 1794988644248
+      }
+    ],
+    "18.6 Caller-chosen `pipelineDeadlineSec` and exported run-id label constant (for kiro-integration) [no-docker]": [
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794991288130
+      }
+    ],
+    "15. Measurement tasks (W6, W7)": [
+      {
+        "executionId": "50e2a7df-3396-4a8d-8b11-9b6bc31f91b9",
+        "chatSessionId": "sess_28e8efdf-21e1-4d7b-9065-2c624df7fa07",
+        "timestamp": 1794994582280
       }
     ]
   }

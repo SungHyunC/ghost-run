@@ -81,6 +81,38 @@ From https://kiroween.devpost.com/rules and https://kiroween.devpost.com/ (fetch
 - The demo video must not include third-party trademarks without permission.
 - South Korea is not on the list of excluded countries.
 
+## 5. Secret-read recording trial (W6, ghost-runner task 15.1)
+
+Question: how much latency does `strace` on `openat` add to one action inside the box (design D1, requirements 9.5 to 9.7)?
+
+Method: `ghost-runner/scripts/trial-secret-read.mjs`. One hardened box (`--network none`, `--cap-drop ALL`, read-only root, copy-only bind mount, in-box fake DNS) with a generated fixture of 3,945 files and a canary `.env`. Each cell ran 10 times after one discarded warm-up, interleaved across variants. The numbers are the wall time of `docker exec` measured on the host, so the fixed `docker exec` overhead is inside every cell and cancels in the difference.
+
+| Command | Variant | Median (s) | Max (s) |
+| --- | --- | --- | --- |
+| `true` | (a) no strace | 0.040 | 0.045 |
+| `true` | (b) strace `connect` only | 0.044 | 0.049 |
+| `true` | (c) strace `connect`+`openat`, plain ptrace | 0.045 | 0.062 |
+| `true` | (d) strace `connect`+`openat`, `--seccomp-bpf` | 0.042 | 0.044 |
+| `npm test` | (a) no strace | 0.177 | 0.189 |
+| `npm test` | (b) strace `connect` only | 0.343 | 0.362 |
+| `npm test` | (c) strace `connect`+`openat`, plain ptrace | 0.346 | 0.808 |
+| `npm test` | (d) strace `connect`+`openat`, `--seccomp-bpf` | 0.206 | 0.282 |
+
+(d) minus (a): `true` +0.001 s median; `npm test` +0.029 s median (+0.093 s maximum against maximum).
+
+Decision: the rule holds (both differences are at most 0.8 s). The design keeps `strace -f --seccomp-bpf` and secret-read recording stays on (`p6Claimed` is not lowered by this trial). The provisional 0.8 s bound is replaced by 0.05 s Median_Of_5 (the larger difference, 0.029 s, rounded up). Plain ptrace (c) is not needed and is not used; it costs about +0.17 s for `npm test` here. Variant (b) is slower than (d) for `npm test` because a `connect`-only filter without `--seccomp-bpf` stops the tracee on every syscall.
+
+Caveats: the `npm test` script in the fixture only prints a line (`node -e`), like the quick 0.3 to 0.6 s `npm test` of experiment A; a test run that opens many more files will cost more. Single machine, one session.
+
+Machine: Apple M1, 8 cores, 16 GiB (17179869184 bytes), Docker Desktop 4.94.0 (Engine 29.8.2), macOS.
+
+| | Time (UTC) | `vm.loadavg` (1, 5, 15 min) |
+| --- | --- | --- |
+| Start | 2026-11-18 09:22:03 | 4.39, 11.67, 14.00 |
+| End | 2026-11-18 09:22:24 | 4.52, 11.22, 13.78 |
+
+The 1-minute load was still about 4.4 at the start (it was decaying from an earlier test run; it was 46 five minutes before the wait ended). The load is moderately high, so absolute times may be slightly pessimistic; the variants were interleaved so that the differences are comparable.
+
 ## Reference links
 
 [cc-sandbox]: https://code.claude.com/docs/en/sandboxing

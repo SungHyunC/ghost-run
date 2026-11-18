@@ -17,7 +17,6 @@ import type {
   World,
 } from '@ghost-run/core';
 import {
-  PIPELINE_DEADLINE_SEC,
   resolveRunnerOptions,
   type ResolvedRunnerOptions,
   type RunnerOptions,
@@ -312,7 +311,7 @@ export function createRepoWorld(opts: RepoWorldOptions): RepoWorld {
       uid,
       gid,
       execLimitMs: resolved.execLimitSec * 1000,
-      deadlineAt: now + PIPELINE_DEADLINE_SEC * 1000,
+      deadlineAt: now + resolved.pipelineDeadlineSec * 1000,
     });
     if (created.ok) return { box: created.box };
     return {
