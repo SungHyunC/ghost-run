@@ -65,7 +65,7 @@ Decisions reflected in this plan:
 - [x] 2. Checkpoint - probe gate
   - Confirm `docs/measurements.md` holds the probe results, `design.md` matches them, and no other file was written. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Steering updates S1 to S7
+- [x] 3. Steering updates S1 to S7
   - [x] 3.1 Update `.kiro/steering/structure.md` (S1 to S4)
     - **Each steering edit is shown to the user and approved when the task runs.** The files must satisfy the `blacklight-steering` hook and the hidden-character ban (no literal hidden character, no HTML comment opener).
     - S1: in "Dependency Direction", add that `apps/*` may depend on `worlds/*`, and that `worlds/*` may depend on `core/` and on the engine package of the world only (for example `@mujoco/mujoco`, `sql.js`). S2: remove "3D ghost overlay" from the tree comment of `ui/`. S3: add `apps/ghost-hand/` entries (3D overlay, Node entry point) and the "What Goes Where" line `3D ghost overlay -> apps/ghost-hand/`. S4: name `worlds/drawer-arm/` (with its `wards.yaml`) in the tree of `worlds/`.
@@ -77,11 +77,11 @@ Decisions reflected in this plan:
     - Report to the user that the page and the README still show no P2 text until task 18.2 runs.
     - _Requirements: 10.6, 19.1_
 
-  - [ ] 3.3 Update `.kiro/steering/tech.md` (S6)
+  - [x] 3.3 Update `.kiro/steering/tech.md` (S6)
     - In "Hosting", state that Ghost Hand uses the single-thread MuJoCo build and needs no COOP or COEP header, and that the multi-thread build is not used. Keep the rule for any other app that needs the headers.
     - _Requirements: 2.2, 19.7_
 
-  - [ ] 3.4 Update `.kiro/steering/product.md` (S7)
+  - [x] 3.4 Update `.kiro/steering/product.md` (S7)
     - Record that App 2 is confirmed as Ghost Hand and the third world is Ghost Cloud (the file still says "may switch"). Change nothing else.
     - _Requirements: 1.8_
 
@@ -109,70 +109,70 @@ Decisions reflected in this plan:
     - `apps/ghost-hand/tests/scan/package.test.ts` and `worlds/drawer-arm/tests/package.test.ts`: the app `dependencies` are exactly the nine runtime entries of task 4.2 with exact versions for `@mujoco/mujoco`, `three`; `@types/three`, `vite`, `vitest`, `jsdom` are in `devDependencies`; the versions of `react`, `react-dom`, `vite`, `vitest`, `jsdom` equal those of `ui/package.json`; the world depends on `@ghost-run/core` and `@mujoco/mujoco` only, with no `three`, `react`, or `@ghost-run/ui`; `@mujoco/mujoco` is imported only under `src/engine/`; the world imports `@ghost-run/core` only through its public entry point; the app imports `@ghost-run/wards-config` only through its default entry point; no source imports `@ghost-run/ghost-runner`, `integrations/*`, or any path of the throwaway Experiment C.
     - _Requirements: 1.3, 1.4, 1.5, 1.7_
 
-- [ ] 5. Pure world logic
-  - [ ] 5.1 Create the types, the World_Config, and the action validator
+- [x] 5. Pure world logic
+  - [x] 5.1 Create the types, the World_Config, and the action validator
     - `worlds/drawer-arm/src/types.ts` (`Vec3`, `GhostHandAction`, `VariantParams`, `RunMonitors`, `ControllerState`, `GhostHandState` exactly as in the design), `src/world-config.ts` (`WORLD_CONFIG` as const with the provisional values of the design, the closed `actionRanges`, `contactNames`, and the `BODY_SHAPES` table shared by the MJCF builder and the overlay), and `src/actions.ts` (`validateAction(a)` returns `{ ok: true } | { ok: false; error }`, checks the shape, finiteness, and the closed ranges, never clamps; `describeAction(a)` returns the text form `reach(x=<x>, y=<y>, z=<z>, speed=<s>)`, `grasp(force=<f>)`, `pull(distance=<d>, speed=<s>)`, `release()` with numbers printed by `String(number)`). Export them from `src/index.ts`.
     - `GhostHandState` contains only finite numbers, strings, booleans, plain arrays, plain objects, and `Float64Array`. No function, `Map`, `Set`, `Date`, or circular reference.
     - _Requirements: 3.2, 4.4, 4.6, 5.1, 5.2, 5.3, 5.8, 6.1_
 
-  - [ ] 5.2 Write unit tests for the action validator and the World_Config
+  - [x] 5.2 Write unit tests for the action validator and the World_Config
     - `worlds/drawer-arm/tests/actions.test.ts`: every range is a closed interval of finite numbers with `min <= max`; each action type with a value at each boundary is ok; one step outside, `NaN`, `Infinity`, a string, a missing field, and an unknown `type` are not ok and are not clamped; `describeAction` output for each type; `contactNames` includes `vase`; the world config holds no read of a clock or random source.
     - _Requirements: 4.4, 5.1, 5.2, 5.8, 3.6_
 
-  - [ ] 5.3 Implement the PRNG, the Variant_Config parser and printer, and the variant sampler
+  - [x] 5.3 Implement the PRNG, the Variant_Config parser and printer, and the variant sampler
     - `src/prng.ts` (`mix32` murmur3 finalizer with `Math.imul` and `>>> 0`, `xorshift32`, `u32ToUnit` as a division by 4294967296), `src/variant-config.ts` (`VariantConfig`, `parseVariantConfig(text)` that never throws and reports `invalid-json`, `wrong-type`, `missing-field`, `unknown-field`, `out-of-range`, `input-too-large` above 64 KiB with a `field` path per error, rebuilds the config from known keys only, rejects non-finite bounds, `min > max`, counts outside 1 to 20, and seeds outside 0 to 4294967295; `printVariantConfig(config)` returns two-space JSON, a fixed key order, and a trailing newline), and `src/variant.ts` (`sampleVariant(seed, index, config)` with the fixed draw order friction, mass, offset x, y, z, noise, delay, noise seed, clamping with `Math.min` and `Math.max`, delay by `floor`; `BASE_VARIANT_PARAMS`; pure `applyVariant(base, params)` that sets `variant`, the PRNG state, and the delay buffer and leaves `integration` untouched). Use only the operations allowed by Requirement 5 criterion 6. Export from `src/index.ts`.
     - _Requirements: 5.6, 6.1, 6.2, 6.3, 6.4, 6.6, 6.8, 6.10, 7.1, 7.2, 7.3_
 
-  - [ ] 5.4 Write unit tests for the variant config and the sampler
+  - [x] 5.4 Write unit tests for the variant config and the sampler
     - `tests/variant-config.test.ts` and `tests/variant.test.ts`: each error code of `parseVariantConfig` with its `field` path; the 64 KiB limit; unknown keys; canonical print form (two-space indent, key order, trailing newline); known test vectors of the murmur3 finalizer; the stream is non-zero; two different indices give different parameters for a fixed seed; the shipped `variant-config.json` parses with `ok: true`; the default count is 8 and the largest allowed count is at most 20; `applyVariant` leaves `integration` unchanged.
     - _Requirements: 6.2, 6.3, 7.1, 7.2, 7.3, 6.8_
 
-  - [ ] 5.5 Write the property test for the Variant_Config round trip
+  - [x] 5.5 Write the property test for the Variant_Config round trip
     - **Property 2: Variant config round trip (GH-P2)**
     - **Validates: Requirements 7.3, 7.4**
     - File: `tests/p02-variant-config-roundtrip.test.ts`. Generator: valid configs with generated ranges (`min <= max`), counts 1 to 20, seeds 0 to 4294967295, both values of `largeCountEnabled`. Assert `ok: true` with a deep-equal config, and print idempotence. Pure; at least 100 Short_Run, 10,000 Nightly_Run.
 
-  - [ ] 5.6 Write the property test for variant ranges
+  - [x] 5.6 Write the property test for variant ranges
     - **Property 3: Variant parameters stay inside their ranges (GH-P3)**
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 17.6**
     - File: `tests/p03-variant-ranges.test.ts`. Generators: seeds, variant indices, valid configs. Assert every field is finite and inside its closed range, `commandDelaySteps` is an integer, and `noiseSeed` is an integer from 0 to 4294967295. Claim scope: the Tested_Environments (P8, range part).
 
-- [ ] 6. App input formats, texts, and capability probes
-  - [ ] 6.1 Implement the Plan_File parser and printer
+- [x] 6. App input formats, texts, and capability probes
+  - [x] 6.1 Implement the Plan_File parser and printer
     - **Depends on the `ui-kit` implementation** for `isHiddenDisplay` (the Hidden_Display_Code_Point test) exported by `@ghost-run/ui`.
     - `apps/ghost-hand/src/plan/plan-file.ts`: `FileError`, `PlanFile`, `parsePlanFile(text)` (never throws; `input-too-large` above 1 MiB checked first; `invalid-json`, `wrong-type`, `missing-field`, `unknown-field` with the key as `field`, `unsupported-version`, `out-of-range` including the 1 to 50 action count and the `name` and `note` limits, `unknown-action`, `invalid-character` for control or hidden code points in `name`, `note`, `recordedWith`, and `revisionOf`; `taskText` is exempt from the hidden-character check, kept as given, and counted in code points; each action is rebuilt from known keys and checked with `validateAction`; `-0` is normalized to `0`) and `printPlanFile(plan)` (fixed key order `format, version, name, origin, actions, note, recordedWith, revisionOf, taskText`, two-space indent, trailing newline, every code unit above `0x7E` written as a lowercase `\u` escape, a surrogate pair for a code point above U+FFFF).
     - A Plan_File carries no clock value, session identifier, verdict, or trajectory.
     - _Requirements: 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 11.1, 11.2, 11.3, 20.1_
 
-  - [ ] 6.2 Create `texts.ts` with every fixed text and the P2 switch
+  - [x] 6.2 Create `texts.ts` with every fixed text and the P2 switch
     - `apps/ghost-hand/src/texts.ts` holds every fixed text of the requirements as an exported constant, written exactly as in `requirements.md` (engine start failure, secure context alert, unknown ward entry, joint-limit status, no physics ward, provisional wording note, P1 failure alert, P5 and P6 line, Docker line, P2 check lines, determinism check lines, restore failure line, P8 scope line, reference-simulation line, plan origin lines, WebGL fallback, graveyard drop line, possession lines). It also exports `P2_TEXT_ENABLED = false`. After this task only task 18.2 edits this file, and it only flips that constant.
     - The fixed texts contain the words `sealed` or `isolated` nowhere. The file contains no hidden Unicode.
     - _Requirements: 2.8, 4.7, 8.7, 9.7, 9.9, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.10, 10.11, 11.6, 13.11, 14.9, 16.6_
 
-  - [ ] 6.3 Implement the seed and count input validation
+  - [x] 6.3 Implement the seed and count input validation
     - `apps/ghost-hand/src/inputs.ts`: `parseSeedInput(text)` accepts only the decimal text of an integer from 0 to 4294967295 (no sign, space, or exponent); `validateVariantCount(count, config)` accepts 1 to `defaultCount`, or up to `maxCount` only when `largeCountEnabled`. A rejection returns a message and no run.
     - _Requirements: 6.7, 6.8_
 
-  - [ ] 6.4 Write unit tests for the Plan_File parser and printer
+  - [x] 6.4 Write unit tests for the Plan_File parser and printer
     - `tests/model/plan-file.test.ts`: each error code with its `field`; a Plan_File with an unknown field is rejected with the field path; the 1 MiB limit; `invalid-character` in `name` and not in `taskText`; hidden code points in `taskText` written as `\u` escapes in the file text are accepted; the printed text contains no code unit above `0x7E`; an action with an out-of-range value is rejected with `out-of-range`.
     - _Requirements: 7.5, 7.6, 7.7, 7.9, 11.3, 18.4_
 
-  - [ ] 6.5 Write the property test for the Plan_File round trip
+  - [x] 6.5 Write the property test for the Plan_File round trip
     - **Property 1: Plan file round trip and printed form (GH-P1)**
     - **Validates: Requirements 7.5, 7.8, 7.9, 7.10, 11.1, 11.2**
     - File: `tests/model/p01-plan-roundtrip.test.ts`. Generators: plans of 1 to 50 actions inside the Action_Ranges, any `origin`, optional `note`, `recordedWith`, `revisionOf`, and `taskText` with hidden code points built by `String.fromCodePoint`. Assert deep-equal round trip, print idempotence, no code unit above `0x7E`, and no literal hidden character. Pure; 100 Short_Run, 10,000 Nightly_Run.
 
-  - [ ] 6.6 Write the property test for parser totality
+  - [x] 6.6 Write the property test for parser totality
     - **Property 4: Parser totality and error shape (GH-P5)**
     - **Validates: Requirements 7.1, 7.2, 7.5, 7.6, 7.7, 7.11**
     - File: `tests/model/p04-parser-totality.test.ts`. Generators: arbitrary strings, serialized JSON values, deep nesting, huge numbers, lone surrogates in escapes, texts around 64 KiB and 1 MiB. Assert `parsePlanFile` and `parseVariantConfig` return a result object and never throw, every error has non-empty `code` and `message` and a `field` string, and an oversized text returns only `input-too-large`.
 
-  - [ ] 6.7 Write the property test for seed and count validation
+  - [x] 6.7 Write the property test for seed and count validation
     - **Property 19: Seed and count validation**
     - **Validates: Requirements 6.7, 6.8**
     - File: `tests/model/p19-inputs.test.ts`. Generators: arbitrary strings plus decimal strings near the bounds, integer counts, both values of `largeCountEnabled`. Assert the accept-if-and-only-if rules of the design and that a rejection carries a message.
 
-  - [ ] 6.8 Implement the capability probes and the claim evidence type
+  - [x] 6.8 Implement the capability probes and the claim evidence type
     - **Depends on PR-1, PR-2, and PR-3 only through behavior probes; none of them is required to have landed.**
     - `apps/ghost-hand/src/capabilities.ts`: `Capabilities { jointSelfWard, claimsOptional, bannerNotApplicable }` and `probeCapabilities()` exactly as in the design (D16): `jointSelfWard` is true only when `WardEngine.evaluate` blocks on both a `jointLimitExceeded` probe report and a `selfCollisionOccurred` probe report (a partial landing is false); `claimsOptional` is true only when `renderMessage` accepts a context without `claims` and the text lacks the fragment `no ghost rehearsal took place`; `bannerNotApplicable` is true only when the PR-3 field exists (until then it is false). Add `ClaimEvidence { selfCheck, capabilities }` in `src/evidence.ts`.
     - Create `tests/capabilities.expected.json` with the values observed today and a test per flag that compares the probe with the file and fails with `capability changed: update the expected file and the dependent texts`. Add tests that build the claims and texts for each combination of capability values by override (both paths).

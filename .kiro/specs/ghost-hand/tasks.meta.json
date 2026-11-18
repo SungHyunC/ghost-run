@@ -1,5 +1,27 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "5.5 Write the property test for the Variant_Config round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794980063112
+    },
+    "6.5 Write the property test for the Plan_File round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794980210651
+    },
+    "6.6 Write the property test for parser totality": {
+      "status": "passed",
+      "lastRunTimestamp": 1794980385474
+    },
+    "6.7 Write the property test for seed and count validation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794980386272
+    },
+    "5.6 Write the property test for variant ranges": {
+      "status": "passed",
+      "failingExample": "Earlier counterexample (now fixed): seed 0, index 0, commandDelaySteps range min=max=-5e-324 (no integer inside). The parser now rejects such a range.",
+      "lastRunTimestamp": 1794980388328
+    }
+  },
   "executionHistory": {
     "1.1 Probe the `@mujoco/mujoco` 4.0.1 API and create `docs/measurements.md`": [
       {
@@ -116,6 +138,249 @@
         "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
         "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
         "timestamp": 1794979604958
+      }
+    ],
+    "3.3 Update `.kiro/steering/tech.md` (S6)": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979712869
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979747098
+      }
+    ],
+    "3.4 Update `.kiro/steering/product.md` (S7)": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979712877
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979747888
+      }
+    ],
+    "3. Steering updates S1 to S7": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979747892
+      }
+    ],
+    "5.1 Create the types, the World_Config, and the action validator": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979752843
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979819175
+      }
+    ],
+    "5.2 Write unit tests for the action validator and the World_Config": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979822526
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979924651
+      }
+    ],
+    "5.3 Implement the PRNG, the Variant_Config parser and printer, and the variant sampler": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979822807
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979924662
+      }
+    ],
+    "6.2 Create `texts.ts` with every fixed text and the P2 switch": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979823237
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979925295
+      }
+    ],
+    "6.1 Implement the Plan_File parser and printer": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979934906
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980023896
+      }
+    ],
+    "5.4 Write unit tests for the variant config and the sampler": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979934915
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980023885
+      }
+    ],
+    "6.3 Implement the seed and count input validation": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794979939417
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980023906
+      }
+    ],
+    "5.5 Write the property test for the Variant_Config round trip": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980026817
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980139130
+      }
+    ],
+    "5.6 Write the property test for variant ranges": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980027615
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980139140
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980373270
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980394263
+      }
+    ],
+    "6.4 Write unit tests for the Plan_File parser and printer": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980028054
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980139305
+      }
+    ],
+    "5. Pure world logic": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980139142
+      }
+    ],
+    "6.5 Write the property test for the Plan_File round trip": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980142252
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980222971
+      }
+    ],
+    "6.6 Write the property test for parser totality": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980143048
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980223010
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980372748
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980394768
+      }
+    ],
+    "6.7 Write the property test for seed and count validation": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980143448
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980223105
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980372753
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980395604
+      }
+    ],
+    "6.8 Implement the capability probes and the claim evidence type": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980223474
+      },
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980372733
+      }
+    ],
+    "6. App input formats, texts, and capability probes": [
+      {
+        "executionId": "10b48fff-92ba-42e2-8ca1-f79f64a0dfbc",
+        "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
+        "timestamp": 1794980372736
       }
     ]
   }

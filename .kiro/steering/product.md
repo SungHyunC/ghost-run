@@ -42,10 +42,10 @@ The ghost runs the plan inside a sealed box against a mirror-world copy. Declare
 |---|---|
 | `core/` | Template: World contract, ghost runner, wards engine, possession detector, UI kit, Kiro integration |
 | `apps/ghost-shell/` | App 1 — shell/SQL commands run against a file/DB copy inside a Docker box; also works as a Kiro Pre Tool Use hook |
-| `apps/ghost-hand/` | App 2 — browser MuJoCo robot arm tries a plan across 8 haunted variants before the real arm moves. **May switch to Ghost Cloud depending on 11/19 experiment results.** |
+| `apps/ghost-hand/` | App 2 — browser MuJoCo robot arm tries a plan across 8 haunted variants before the real arm moves. **Confirmed as Ghost Hand.** |
 | `worlds/` | Drop-in folder for additional World implementations |
 
-**Third world:** Ghost Cloud (agent tries to delete an S3 bucket; ward catches it in a mock AWS world). If time runs short, falls back to Ghost Sheet (guards row deletion and formula overwrite in a CSV). If App 2 switches to Ghost Cloud, the third world becomes Ghost Sheet.
+**Third world:** Ghost Cloud (agent tries to delete an S3 bucket; ward catches it in a mock AWS world). Confirmed as the third world (App 2 is Ghost Hand). If time runs short, falls back to Ghost Sheet (guards row deletion and formula overwrite in a CSV).
 
 ## Out of Scope (Do Not Add)
 

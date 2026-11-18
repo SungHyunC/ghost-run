@@ -43,7 +43,8 @@ inclusion: always
 
 ## Hosting
 
-- **Cloudflare Pages** or **Netlify** (free tier) — required for COOP/COEP headers for multi-threaded MuJoCo WASM
+- **Ghost Hand** uses only the single-thread MuJoCo build (with Web Workers) and needs no COOP or COEP header. The multi-thread build and `SharedArrayBuffer` are not used. It runs on any static host, including GitHub Pages.
+- **Cloudflare Pages** or **Netlify** (free tier) — required for any other app that needs COOP/COEP headers (for example a multi-threaded MuJoCo WASM build)
 - GitHub Pages = single-threaded build only
 
 ## Target OS
