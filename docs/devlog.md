@@ -1,6 +1,6 @@
 # Ghost Run+ 개발 기록
 
-하루에 한 줄 이상 쓴다. 크레딧은 Kiro 상태 표시줄의 사용량 표시(누르면 계정 대시보드가 열린다), IDE 채팅 메시지마다 붙는 "Est. Credits Used", Kiro CLI `stream-json` 출력의 턴별 사용량에서 읽는다. 처음에는 무료 플랜 월 50크레딧뿐이라 남은 크레딧이 10 아래로 내려가면 멈추기로 했다. 11/18 오전에 해커톤 크레딧 4,000을 받은 뒤부터는 기획서의 점검선(11/23까지 1,300 이하, 11/30까지 2,900 이하, 12/2까지 3,400 이하)을 따르고, 모델은 Auto를 기본으로 쓴다.
+하루에 한 줄 이상 쓴다. 크레딧은 Kiro 상태 표시줄의 사용량 표시(누르면 계정 대시보드가 열린다), IDE 채팅 메시지마다 붙는 "Est. Credits Used", Kiro CLI `stream-json` 출력의 턴별 사용량에서 읽는다. 처음에는 무료 플랜 월 50크레딧뿐이라 남은 크레딧이 10 아래로 내려가면 멈추기로 했다. 11/18 오전에 해커톤 크레딧 4,000을 받은 뒤부터는 기획서의 점검선(11/23까지 1,300 이하, 11/30까지 2,900 이하, 12/2까지 3,400 이하)을 따르고, 모델은 Auto를 기본으로 쓴다. 11/18 오후 사용자 결정으로 날짜별 점검선 대신 "언제나 1,000 이상 남긴다"(쓸 수 있는 양 약 3,050)를 따른다.
 
 역할: 제품 코드, spec, steering, hook, PBT는 Kiro가 만든다. Claude Code는 Kiro 화면 조작(프롬프트 입력과 승인), 결과 검토, 저장소 밖 실험(A·C), 이 기록 정리를 맡는다.
 
@@ -67,6 +67,8 @@
 | 13:05 | kiro-integration 결정 반영 + design.md (성질 21개), 16분 | | 31.76 | 누계 약 736 / 4,050 (6차 첫 턴 제외) |
 | 13:19 | kiro-integration 정정 + tasks.md (작업 20개, 실행 묶음 20개), 13분 | | 26.14 | |
 | 13:20 | 실험 B hook 두 개 끄기(`enabled: false`), Kiro CLI vibe 모드, 28초 | | 0.58 | 누계 약 763 / 4,050 (6차 첫 턴 제외) |
+| 13:40 | ghost-hand requirements (요구사항 20개, 성질 GH-P1~GH-P8), 9분 | | 14.33 | 누계 약 778 / 4,050 (6차 첫 턴 제외) |
+| 13:55 | ui-kit 구현 1차: 작업 1~5 (패키지 뼈대, 색 토큰과 대비 검사, view-model 전부), 35분 | | 81.67 | 누계 약 860 / 4,050 (6차 첫 턴 제외) |
 
 ### 한 일
 
@@ -163,6 +165,29 @@
 - ghost-runner 구현 6차(12:53에 끊김): Claude Code가 Kiro CLI를 백그라운드로 돌릴 때 준 한도 60분에 걸려 프로세스가 끊겼다. 끊기기 전 로그에서 Docker 속성 시험 P5·P6(각 100회, 109초)과 다섯 시나리오는 통과했고, 상자에 `--init`(docker-init)이 들어가 PID 1 좀비 문제도 반영됐다. 하지만 Repo_World의 P3 Docker 속성 시험이 100회에 27분쯤 걸렸고, 시험이 남긴 컨테이너 4개와 볼륨 5개가 계속 떠 있었다. 같은 세션을 한도 2시간으로 이어서 누수 원인 수정, 느린 Docker 성질의 실행 시간 조정, 전체 시험 세 번 연속 통과 확인을 맡겼다. 이후 긴 구현 회차는 한도를 2시간으로 준다.
 - README의 상자 패키지 라이선스는 Kiro가 "병합 전 확인"으로 남겨 둬서, Claude Code가 상자 이미지 안의 Debian copyright 파일로 확인했다: strace 6.1 LGPL-2.1-or-later, sqlite3 3.40.1 public domain, curl 7.88.1 curl license, openssl 3.0.22 Apache-2.0, ca-certificates GPL-2.0-or-later와 MPL-2.0, 상자 안 Node v20.20.2 MIT.
 
+### 앱 2 결정 (13:35)
+
+기획서의 기준("반나절 안에 도형 팔과 서랍이 브라우저에서 결정적으로 돌면 Ghost Hand 유지")을 실험 C가 15분 만에 넘겼다(같은 seed면 Node·Chrome·Web Worker 모두 비트 단위로 같은 결과, 빠르게 당기기 5/8 대 천천히 세게 쥐기 8/8). 사용자가 확인해 앱 2는 Ghost Hand, 세 번째 세계는 Ghost Cloud로 확정했다. Spirit Phone 비교는 해당 없음. 계획 수정 장면은 외부 LLM API 없이, Kiro 에이전트가 판정 메시지를 읽고 계획을 고친 실제 기록을 녹화해 쓰기로 했다.
+
+- ghost-hand requirements(13:40): P1은 브라우저에서 실행마다 지문이 같을 때만, P8은 Node 20.20.2와 Apple M1의 Chrome 157로 한정하고, 페이지가 뜰 때 저장된 해시와 비교하는 결정성 자가 점검을 둔다(Firefox·Safari 사용자는 보장이 아니라 측정 결과를 본다). P5·P6은 이 세계에 해당하지 않는다. Kiro가 남긴 다른 spec과의 충돌 두 가지를 정했다. (1) 관절 한계·자기 충돌은 성공률에 섞으면 20개 중 1개 실패가 95% 기준을 통과하므로, core `VariantResult`에 선택 필드 두 개를 더해 어느 변형에서든 나오면 block한다(wards 2차에 넣음). (2) wards 메시지의 "no ghost rehearsal took place" 줄은 B안에만 맞는 문구라, 이유별 문구로 나누고 P5·P6이 해당하지 않는 세계에는 붙이지 않는다(wards 2차), 화면 배너는 "해당 없음"을 보일 수 있게 한다(ui-kit 2차).
+- ui-kit 구현 1차(13:55): `ui/` 패키지 뼈대, 두 테마 색 토큰, 화면 여섯 부분의 view-model. 테스트 25개 파일 223개 통과. 손으로 계산했던 대비값은 UI-P6 시험이 50쌍 모두 기준을 넘는다고 확인했다(가장 빠듯한 짝은 밝은 테마의 선 색 대 안개 3.987, 기준 3). **PBT가 찾은 두 번째 제품 버그:** UI-P7(격리 주장 정직성)이 `claims.ts`에서 플래그 하나만 형식이 틀려도(`p5Claimed: null`) Docker 상자 확인 문구 전체가 사라지는 버그를 찾았고, Kiro가 고친 뒤 반례를 고정 시험으로 남겼다. UI-P3은 시험 쪽 기준 실수(U+FFFF 위 글자의 표기 길이)를 잡았다. 측정값 원문은 Kiro가 devlog 끝에 영어로 붙였던 것을 `docs/measurements.md`로 옮겼다. 앞으로 Kiro 지시에는 "devlog.md는 고치지 않고 측정값은 measurements.md에"를 넣는다.
+- 같은 회차에서 Kiro가 pnpm의 새 패키지 설치 대기(게시 후 일정 시간 설치를 막는 공급망 보호)를 `@eslint-react` 5.30.4 계열 13개에 대해 `minimumReleaseAgeExclude`로 우회했다. 5.30.4는 11/17 17:04 UTC에 게시돼 반나절밖에 안 된 버전이었다(Claude Code가 이 버전을 지시에 적으면서 게시 시각을 확인하지 않은 탓도 있다). 다음 ui-kit 회차에서 이틀 전에 나온 5.30.3으로 고정하고 예외를 지우게 한다. 이 예외 줄은 wards 커밋(04a2c9b)에 섞여 들어갔다.
+
+### 커밋 (사용자 요청으로 13:40부터)
+
+사용자가 만든 private 저장소(github.com/SungHyunC/ghost-run)에 spec별로 커밋해 올린다. 11:01에 다른 경로로 올라간 첫 커밋 메시지에 Claude 공동 작성자 줄이 있어서, 사용자 허락을 받아 메시지만 고쳐 덮어썼다(트리는 그대로, `--force-with-lease`). 커밋 작성자 메일은 이 저장소에서만 GitHub noreply 주소로 바꿨다. 제품 이름은 사용자 결정으로 Ghost Run+를 유지한다("Ghosting"도 검토: 같은 분야의 같은 이름은 못 찾았지만 흔한 속어라 검색과 상표 식별이 약함).
+
+| 커밋 | 내용 | spec 작업 |
+| --- | --- | --- |
+| c6f8284 | 11:01 시점 전체 스냅숏 (core-contract 전부, ghost-runner 1~11, possession 1~3과 4 일부, 각 spec 문서) | 여러 spec |
+| 8e77373 | possession 속성 시험 1~22, 예시·Node 전용 시험, README possession 절 | possession 4~13 |
+| 04a2c9b | core 판정 모듈(`core/src/judge/`), core 타입 추가, wards-config 뼈대, structure steering | wards 1~3 |
+| e403cda | ghost-shell과 kiro-integration spec 문서 | 두 spec의 requirements·design·tasks |
+| 09f28de | 실험 B hook 끄기 | kiro-integration 3.1(미리 함) |
+| ca34c17 | 개발 기록 | |
+
+아직 커밋하지 않은 것: Kiro가 고치는 중인 ghost-runner(12~14)와 ui-kit, 그리고 두 회차가 함께 바꾼 pnpm-lock.yaml. 각 회차가 끝나면 커밋한다.
+
 ### 조사 (Claude Code, 공식 출처만)
 
 자세한 내용과 출처는 `docs/research.md`(영어)에 있다. 08:13~08:40에 조사 에이전트 두 개로 진행했다.
@@ -243,10 +268,4 @@
   - hook: IDE 형식으로 만든 `.kiro/hooks/*.json`을 CLI도 그대로 읽었다. 종료 코드 2로 `rm -rf`가 막혔고, 에이전트는 "Tool "execute_bash" was intercepted by PreToolUse hooks before execution ... The tool was NOT executed"라는 안내와 우리 stderr를 받고 재시도하지 않았다. 기획서의 "CLI는 종료 코드 2가 차단" 확인.
   - 크레딧: `stream-json` 출력의 `promptTurnSummaries[].usage`에 턴별 사용량이 나온다. 계정 합계는 CLI로 볼 수 없어 웹 계정 대시보드나 IDE에서 확인한다.
   - 모드와 모델: 세션 설정에 모드 `vibe`(Default), `spec`, `quick-spec`, `bug-fix`, `plan`, `autonomous` 등과, 모델 `auto`, `claude-sonnet-4.5`, `claude-haiku-4.5`, `deepseek-3.2`, `qwen3-coder-next` 등이 있다. 비대화형에서는 `/usage` 같은 슬래시 명령이 질문으로 처리되므로, spec 작업은 `--agent spec`처럼 모드로 고른다.
-- 실험 hook 두 개는 켜 둔 상태다. Agent Hooks 패널의 눈 아이콘으로 끌 수 있다.
-
-- **ui-kit task 1.3 (install facts).** `corepack pnpm install` ran once for the workspace (pnpm 12.21.0, +123 packages). No peer-dependency warnings. One deprecation warning: sub-dependency `whatwg-encoding@3.1.1` (via jsdom). pnpm added 13 `@eslint-react/*` and `eslint-plugin-react-*` 5.30.4 entries to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`. The install changed nothing in `core/`, `ghost-runner/`, or `wards-config/`.
-  - Resolved versions: vite 7.3.8, vitest 3.2.7, jsdom 26.1.0, react 19.3.1, react-dom 19.3.1, @eslint-react/eslint-plugin 5.30.4, axe-core 4.14.1.
-  - Q1 confirmed: ESLint accepts `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (`eslint .` and `tsc --noEmit` both exit 0 in `ui/`).
-  - Q2 confirmed: Vitest 3.2.7 accepts the inline `projects` config (projects model, static, dom, scan, dist listed; `vitest run --passWithNoTests` exits 0). No fallback needed.
-  - Non-ASCII scan of `ui/` and `.kiro/specs/ui-kit/`: only box-drawing characters (U+2500, U+2502, U+251C, U+2514) and U+2248 in `design.md`. No hidden Unicode.
+- 실험 hook 두 개는 11/18 13:20에 Kiro가 껐다(`enabled: false`, 위 "구현 시작" 기록 참고). IDE에서는 Agent Hooks 패널의 눈 아이콘으로도 켜고 끌 수 있다.
