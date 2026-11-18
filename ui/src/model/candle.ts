@@ -1,5 +1,6 @@
 import { compact } from './escape';
 import { arrayOf, displayPrimitive, pick, type Unreadable } from './guards';
+import type { IconId } from './icons';
 import { UNKNOWN_VERDICT_MAX } from './limits';
 import {
   CANDLE_LABELS,
@@ -13,7 +14,6 @@ import {
 } from './texts';
 
 export type CandleState = 'lit' | 'flickering' | 'out' | 'unknown' | 'idle';
-export type CandleIconId = 'candle-lit' | 'candle-flicker' | 'candle-out' | 'candle-unknown' | 'candle-idle';
 
 export type ListItem = { readonly text: string } | { readonly unreadableIndex: number };
 
@@ -22,7 +22,7 @@ export interface CandleModel {
   readonly state: CandleState;
   readonly textLabel: string;
   readonly accessibleLabel: string;
-  readonly icon: CandleIconId;
+  readonly icon: IconId;
   readonly unknownValueText?: string;
   readonly wardLines: readonly string[];
   readonly violationItems: readonly ListItem[];
@@ -37,7 +37,7 @@ const STATE_BY_VERDICT: Readonly<Record<string, Exclude<CandleState, 'unknown' |
   block: 'out',
 };
 
-const ICON_BY_STATE: Readonly<Record<CandleState, CandleIconId>> = {
+const ICON_BY_STATE: Readonly<Record<CandleState, IconId>> = {
   lit: 'candle-lit',
   flickering: 'candle-flicker',
   out: 'candle-out',

@@ -450,14 +450,29 @@ const maybeFlag: fc.Arbitrary<unknown> = fc.oneof(
   { weight: 1, arbitrary: nonBoolean },
 );
 const looseReason: fc.Arbitrary<unknown> = fc.oneof(
-  fc.constantFrom('docker-unavailable', 'box-image-missing'),
+  fc.constantFrom('docker-unavailable', 'box-image-missing', 'static-analysis', 'unsupported-step'),
   fc.string({ maxLength: 12 }),
   fc.constant(undefined),
 );
 
-function claimRecord(mode: unknown, p1: unknown, p5: unknown, p6: unknown, reason: unknown): unknown {
+/** A `notApplicable` value: valid lists, lists with P1 or junk entries, and non-arrays. */
+const looseNotApplicable: fc.Arbitrary<unknown> = fc.oneof(
+  { weight: 4, arbitrary: fc.subarray(['P5', 'P6'] as const) },
+  { weight: 2, arbitrary: fc.array(fc.constantFrom<unknown>('P1', 'P5', 'P6', 'p5', 7, null, 'P7'), { maxLength: 4 }) },
+  { weight: 1, arbitrary: fc.constantFrom<unknown>('P5', 5, null, {}) },
+);
+
+function claimRecord(
+  mode: unknown,
+  p1: unknown,
+  p5: unknown,
+  p6: unknown,
+  reason: unknown,
+  notApplicable?: unknown,
+): unknown {
   const out: Rec = { mode, p1Claimed: p1, p5Claimed: p5, p6Claimed: p6 };
   if (reason !== undefined) out['reason'] = reason;
+  if (notApplicable !== undefined) out['notApplicable'] = notApplicable;
   return out;
 }
 
@@ -499,8 +514,14 @@ const claimsLoose: fc.Arbitrary<unknown> = fc
     maybeFlag,
     maybeFlag,
     looseReason,
+    fc.option(looseNotApplicable, { nil: undefined }),
   )
-  .map(([m, p1, p5, p6, r]) => claimRecord(m, p1, p5, p6, r));
+  .map(([m, p1, p5, p6, r, na]) => claimRecord(m, p1, p5, p6, r, na));
+
+/** Sealed mode, boolean flags, a `notApplicable` list, and any reason: exercises the not-applicable rule. */
+const claimsNa: fc.Arbitrary<unknown> = fc
+  .tuple(guaranteedMode, fc.boolean(), fc.boolean(), fc.boolean(), looseReason, looseNotApplicable)
+  .map(([m, p1, p5, p6, r, na]) => claimRecord(m, p1, p5, p6, r, na));
 
 /**
  * Anything a caller might pass as `claims`. Weighted so that each of "A and B", "only A", and
@@ -513,6 +534,7 @@ export const claimsAny: fc.Arbitrary<unknown> = fc.oneof(
   { weight: 2, arbitrary: claimsOnlyA },
   { weight: 3, arbitrary: claimsOnlyB },
   { weight: 2, arbitrary: claimsLoose },
+  { weight: 3, arbitrary: claimsNa },
 );
 
 export type ClaimsBucket = 'both' | 'onlyA' | 'onlyB' | 'neither';
@@ -522,7 +544,15 @@ export function claimsBucket(value: unknown): ClaimsBucket {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return 'onlyB';
   const r = value as Rec;
   const a = (r['mode'] === 'docker-box' || r['mode'] === 'playground') && r['p1Claimed'] === true;
-  const b = r['p1Claimed'] !== true || r['p5Claimed'] !== true || r['p6Claimed'] !== true;
+  const na = Array.isArray(r['notApplicable']) ? (r['notApplicable'] as unknown[]) : [];
+  const malformed =
+    !(r['mode'] === 'docker-box' || r['mode'] === 'playground' || r['mode'] === 'static-analysis') ||
+    ['p1Claimed', 'p5Claimed', 'p6Claimed'].some((k) => typeof r[k] !== 'boolean');
+  const b =
+    (malformed && r['mode'] !== 'static-analysis') ||
+    r['p1Claimed'] !== true ||
+    (r['p5Claimed'] !== true && !na.includes('P5')) ||
+    (r['p6Claimed'] !== true && !na.includes('P6'));
   const staticBanner = r['mode'] === 'static-analysis';
   const banner = b || staticBanner;
   if (a && banner) return 'both';

@@ -69,7 +69,7 @@ Decisions reflected in this plan:
 
   - [x] 1.2 Create `ui/eslint.config.mjs`
     - Flat config, consistent with `core`. Rules for `src/**` and `gallery/**`: `no-restricted-imports` (patterns for `@ghost-run/ghost-runner`, `**/ghost-runner/**`, `**/apps/**`, `**/integrations/**`, `**/worlds/**`, `three`, `@mujoco/mujoco`, core internals), `no-restricted-syntax` (the selector list of the design: type-only `@ghost-run/core` imports, the `dangerouslySetInnerHTML` attribute and property, positive `tabIndex`, handlers on non-interactive elements, `style` props, `innerHTML` and `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `new Function`, string timer arguments, `new Date`), `no-restricted-globals` for clock, storage, network, and console globals, and `no-restricted-properties` for `Math.random`, `navigator.sendBeacon`, and `document.cookie`.
-    - Enable the two fixed `dangerouslySetInnerHTML` rules of `@eslint-react/eslint-plugin` as `error` under the plugin key `@eslint-react`: `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (hyphen form, verified against `@eslint-react/eslint-plugin` 5.30.4). No load-time resolution and no try-both fallback (Open Question Q1 is resolved). Register `eslint-plugin-react-hooks` with only `rules-of-hooks` and `exhaustive-deps` enabled.
+    - Enable the two fixed `dangerouslySetInnerHTML` rules of `@eslint-react/eslint-plugin` as `error` under the plugin key `@eslint-react`: `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (hyphen form, verified against `@eslint-react/eslint-plugin` 5.30.3). No load-time resolution and no try-both fallback (Open Question Q1 is resolved). Register `eslint-plugin-react-hooks` with only `rules-of-hooks` and `exhaustive-deps` enabled.
     - Add a `tests/**` block that keeps the forbidden-imports rule but allows value imports from `@ghost-run/core`. Repeat the full `no-restricted-syntax` list in each block that sets it, because a later block replaces rule options.
     - Do not use `eslint-plugin-react` or `eslint-plugin-jsx-a11y`.
     - _Requirements: 1.4, 1.5, 4.1, 4.2, 4.6_
@@ -154,8 +154,8 @@ Decisions reflected in this plan:
 
   - [x] 4.2 Implement `ui/src/model/candle.ts` and `ui/src/model/claims.ts`
     - `buildCandleModel(verdict)`: the state is chosen by `verdict.verdict` alone through a lookup table (`lit`, `flickering`, `out`, `unknown`, `idle`) with the fixed text labels, accessible labels, and icon ids. Ward lines are the distinct `wardId` values in order of first appearance. Violation and notice items (every notice renders as `step <stepIndex>: <reason>` whatever its `kind`; the model never switches on or narrows `WardNotice.kind`), `<k> notices need review`, `Violated ward: none reported`, the `Data inconsistent` text, and the escaped unknown value of at most 40 code points. A non-record violation becomes `Unreadable item <index>`. The Candle texts never contain `approved` or `safe`.
-    - `buildClaimModel(claims)` is total and never returns `unreadable`. It computes condition A (`assuranceText`) and condition B (`staticBanner` or `notClaimedBanner`) separately from the effective claim lines, following the decision table of the design. A claim counts as claimed only when the supplied value is the boolean `true`. `static-analysis` always yields the static banner with the reason suffix only for the two enum values.
-    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.12, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.9, 14.1, 14.3_
+    - `buildClaimModel(claims)` is total and never returns `unreadable`. It computes condition A (`assuranceText`) and condition B (`staticBanner` or `notClaimedBanner`) separately from the effective claim lines, following the decision table of the design. A claim counts as claimed only when the supplied value is the boolean `true`. `static-analysis` always yields the static banner with the reason suffix only for `docker-unavailable` and `box-image-missing`. `IsolationClaims.notApplicable` (only `P5` and `P6`, decision D16) makes a line `not-applicable` (text `P<n>: not applicable to this world`, icon `not-applicable`) when well formed in a sealed mode and the flag is not `true`; it never counts toward condition B. The not-claimed banner carries ` No rehearsal took place.` for `reason` `static-analysis` and ` Some steps were not rehearsed.` for `reason` `unsupported-step`, nothing otherwise. `ClaimLine` also carries `status`, `text`, and `icon`. `IconId` is imported from `model/icons.ts`, the single definition (also used by `mirror.ts` and `candle.ts`).
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.12, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.9, 7.10, 7.11, 7.12, 14.1, 14.3_
 
   - [x] 4.3 Implement `ui/src/model/blacklight.ts`
     - `buildBlacklightModel(sources, mode, reveal)`: one pass per source that splits the text into code points and lines (`\n`, `\r\n`, lone `\r`), marks shown-covered and overflow-covered code points, places Findings (`offset`, `length` within the text), and builds markers (category, `line:column` from the supplied Finding, at most 20 hex items plus `+<k> more`, `rendering` at most 200 code points plus `[truncated]`).
@@ -187,9 +187,9 @@ Decisions reflected in this plan:
 
   - [x] 4.8 Write the model-leg property test for claim honesty
     - **Property 7: Claim honesty**
-    - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.9**
-    - File: `tests/model/p7-claims.test.ts` (V leg). The S leg is task 8.3. Tag `UI-P7`. Generator: `claimsAny` (absent, non-record, `mode` from the three values plus unknown strings and numbers, each of the three booleans independently `true`, `false`, or a non-boolean, `reason` from the enum, other strings, or absent). Environment: node, V leg, 100 and 10,000.
-    - Assertions: condition A (Assurance_Text) holds if and only if `mode` is `docker-box` or `playground` and `p1Claimed` is the boolean `true`, and its text matches the mode; condition B (banner) holds if and only if `claims` is absent or malformed or at least one of P1, P5, P6 is not claimed; a not-claimed banner names exactly the unclaimed ids in the order P1, P5, P6; a `static-analysis` value always gives the static banner; `Isolation status unknown.` is present if and only if `claims` is absent or malformed; A and B are checked separately and may both be present. Counter buckets: mode, `p1Claimed`, both or one of A and B.
+    - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.9, 7.10, 7.11, 7.12**
+    - File: `tests/model/p7-claims.test.ts` (V leg). The S leg is task 8.3. Tag `UI-P7`. Generator: `claimsAny` (absent, non-record, `mode` from the three values plus unknown strings and numbers, each of the three booleans independently `true`, `false`, or a non-boolean, `reason` from the four enum values, other strings, or absent, and `notApplicable` valid, with `P1` or junk entries, a non-list, or absent). Environment: node, V leg, 100 and 10,000.
+    - Assertions: condition A (Assurance_Text) holds if and only if `mode` is `docker-box` or `playground` and `p1Claimed` is the boolean `true`, and its text matches the mode; condition B (banner) holds if and only if `claims` is absent or malformed or at least one of P1, P5, P6 is neither claimed nor validly not applicable (P1 only claimed); a not-claimed banner names exactly the not-claimed ids in the order P1, P5, P6, followed by the reason wording (`static-analysis`: ` No rehearsal took place.`; `unsupported-step`: ` Some steps were not rehearsed.`; otherwise none); a validly not-applicable line has the text `P<n>: not applicable to this world` and never the text `NOT claimed`; a `static-analysis` value always gives the static banner; `Isolation status unknown.` is present if and only if `claims` is absent or malformed; A and B are checked separately and may both be present. Counter buckets: mode, `p1Claimed`, both or one of A and B.
 
   - [x] 4.9 Write the model-leg property test for blacklight coverage
     - **Property 10: Blacklight coverage and involution**
@@ -223,73 +223,73 @@ Decisions reflected in this plan:
 - [x] 5. Checkpoint - Model layer complete
   - Run `pnpm --filter @ghost-run/ui test`, `typecheck`, and `lint`. Confirm the contrast gate (task 2.2) passes and that no component exists yet. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. React foundations, SVG assets, and styles
-  - [ ] 6.1 Create the SVG art components and the SVG test
+- [x] 6. React foundations, SVG assets, and styles
+  - [x] 6.1 Create the SVG art components and the SVG test
     - **Precondition: task 2.2 is complete and passing.**
-    - `components/art/Icon.tsx` with the fixed `IconId` union and the exact geometry of the icon table of the design (candle-lit, candle-flicker, candle-out, candle-unknown, candle-idle, check, ban, cloud, lamp, bulb, thread, hidden-text, warning, link-changed, the four state icons, chevron, back). A prop string can never select an icon or inject markup.
+    - `components/art/Icon.tsx` imports the single `IconId` type from `model/icons.ts` (already created in the preflight; do not declare a second union) and holds geometry only: the exact geometry of the icon table of the design for every id of `ICON_IDS` (candle-lit, candle-flicker, candle-out, candle-unknown, candle-idle, check, ban, not-applicable, cloud, lamp, bulb, thread, hidden-text, warning, link-changed, the four state icons, chevron, back). A prop string can never select an icon or inject markup.
     - `FlameArt.tsx` (lit, flickering, and out shapes, wisp for out), `SmokeLayer.tsx` (decorative, behind text), `TombstoneShape.tsx` (arch, base line, inscription lines, no cross), and the red thread connector. All are original geometry in this package, use `currentColor` or token classes, and are `aria-hidden="true"` with `focusable="false"`.
     - Test `tests/static/svg.test.tsx`: every icon path equals the design table; the five candle icons are pairwise different in shape; the tombstone path has no crossing strokes; every decorative SVG has `aria-hidden`; no `style` attribute and no literal color.
     - _Requirements: 6.2, 10.13, 12.3, 12.4, 13.5, 13.6, 13.7_
 
-  - [ ] 6.2 Create hooks, `Placeholder`, `KitBoundary`, and `Reveal`
+  - [x] 6.2 Create hooks, `Placeholder`, `KitBoundary`, and `Reveal`
     - **Precondition: task 2.2 is complete and passing.**
     - `hooks/useReducedMotion.ts` (`useSyncExternalStore` over `matchMedia`, server snapshot `false`, returns `false` when `matchMedia` is missing) and `hooks/useFocusReturn.ts` (per-document store in a `WeakMap`, `remember`, `restore`, pending request consumed by a mount effect).
     - `Placeholder.tsx` (`role="alert"`, text `Data unavailable: <component name> received unreadable input.` with a fixed component name), `KitBoundary.tsx` (class component with `getDerivedStateFromError`, fallback shows only the Placeholder and no text from the error or the data, and a `withBoundary` helper), and `Reveal.tsx` (a native button with the text `Showing <shown> of <total>` and an accessible name such as `Show all <total> rows`).
     - The kit logs nothing to the console and writes nothing to storage.
     - _Requirements: 4.6, 10.9, 12.1, 12.5, 14.2, 14.4, 14.5_
 
-  - [ ] 6.3 Create the stylesheets `kit.css`, `motion.css`, and `index.css`
+  - [x] 6.3 Create the stylesheets `kit.css`, `motion.css`, and `index.css`
     - **Precondition: task 2.2 is complete and passing.**
     - `kit.css`: layout, the fog layer as a background pseudo-layer only, no `filter` and no `opacity` below 1 on any text element, monospace and interface font stacks (system fonts only, no `@font-face`, no `@import`), `tabular-nums`, `pre-wrap`, `overflow-wrap: anywhere`, focus ring of 3 px with 2 px offset using `--gk-focus`, blacklight marker styling (fluorescent fill, dashed outline, icon, text), `gk-sr-only`. All colors use `var(--gk-*)`, `currentColor`, `transparent`, or `inherit`. A foreground token and a background token are set together only as a declared Contrast_Pair.
     - `motion.css`: the only file with `@keyframes`, `animation`, and `transition`. `gk-flicker` 0.6 s with 3 iterations, `gk-dissolve` 0.9 s with 1 iteration and `forwards`, `gk-fade` 0.2 s with 1 iteration. No `infinite`. The file ends with the `prefers-reduced-motion: reduce` block that sets `animation: none` and `transition: none`.
     - `index.css` imports the three files. No external origin and no `url()` that points outside the package.
     - _Requirements: 5.2, 5.9, 5.10, 11.5, 12.2, 12.5, 12.6, 12.7, 12.12, 13.4_
 
-  - [ ] 6.4 Write the stylesheet scan test and the theme sync test
+  - [x] 6.4 Write the stylesheet scan test and the theme sync test
     - `tests/scan/stylesheet.test.ts`: color literals appear only in `theme.css`; other CSS uses tokens, `currentColor`, `transparent`, or `inherit`; every foreground and background combination in a rule is a declared Contrast_Pair; every foreground token is declared against all three backdrops; `@keyframes`, `animation`, and `transition` appear only in `motion.css`; every animation has a finite iteration count, a duration of at most 1 s, and a total of at most 3 s; no `infinite`; the file ends with the reduced-motion block; no `opacity` below 1 or `filter` on a text-bearing selector; no `@font-face` with a non-relative source and no `@import`; the tests fail on a bad sample string for each rule (self-test on in-memory CSS).
     - `tests/scan/theme-sync.test.ts`: every custom property of `theme.css` equals the `THEMES` value and no token is missing in either theme.
     - _Requirements: 11.5, 11.6, 12.5, 12.6, 12.7, 12.9, 12.12, 13.4_
 
-- [ ] 7. Components
-  - [ ] 7.1 Implement `MirrorWorld` and `MirrorWorldView`
+- [x] 7. Components
+  - [x] 7.1 Implement `MirrorWorld` and `MirrorWorldView`
     - **Precondition: task 2.2 is complete and passing.**
     - `MirrorWorldView(model, uiState)` is a pure function that renders a `section` with the heading `Mirror world`, the summary line, and a table (columns `Reality` and `Mirror (copy)`, one `tbody` per step with a `step <stepIndex>` header and label, one `tr` with `data-change-row` per Change_Row). The mirror cell has the fog background layer, a `SmokeLayer` behind the text for vanish rows, and the state tag with icon and text `would be removed`. Empty text, the `Full scene` disclosure (`aria-expanded`, `aria-controls`), scene entries through `flattenGeneric`, and the reveal buttons for rows and scene entries.
     - `MirrorWorld` is the container (`useState` for the reveal and scene states) wrapped in `KitBoundary` and the Placeholder path. It never states that reality is unchanged.
     - Every path, table, count, step index, and target is in a monospace element.
     - _Requirements: 5.1, 5.2, 5.3, 5.5, 5.7, 5.8, 5.9, 5.10, 5.11, 5.12, 5.13, 12.3, 12.4, 12.12, 14.2, 14.4, 14.5_
 
-  - [ ] 7.2 Implement `Candle`, `ClaimBanner`, and the candle `View`
+  - [x] 7.2 Implement `Candle`, `ClaimBanner`, and the candle `View`
     - **Precondition: task 2.2 is complete and passing.**
-    - One `section` with `data-candle-state` and `aria-label` equal to the accessible label, the `FlameArt` (decorative), the state icon with the text label, the polite `role="status"` live region that announces a state change, the ward lines, the violation and notice lists in monospace, and the `ClaimBanner` in the same container. `ClaimBanner` is a group with three claim lines (icon plus `claimed` or `NOT claimed`) and independent paragraphs with `data-claim="assurance"`, `data-claim="static"`, or `data-claim="not-claimed"`, each shown whenever its own condition holds.
+    - One `section` with `data-candle-state` and `aria-label` equal to the accessible label, the `FlameArt` (decorative), the state icon with the text label, the polite `role="status"` live region that announces a state change, the ward lines, the violation and notice lists in monospace, and the `ClaimBanner` in the same container. `ClaimBanner` is a group with three claim lines rendered from `ClaimLine.text` and `ClaimLine.icon` (icon plus `claimed`, `NOT claimed`, or `P<n>: not applicable to this world`) and independent paragraphs with `data-claim="assurance"`, `data-claim="static"`, or `data-claim="not-claimed"`, each shown whenever its own condition holds.
     - No text states that an action is approved or safe.
-    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.11, 6.12, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.8, 7.9, 12.3, 12.4, 14.2, 14.4_
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.11, 6.12, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.8, 7.9, 7.10, 7.11, 7.12, 12.3, 12.4, 14.2, 14.4_
 
-  - [ ] 7.3 Implement `BlacklightView`, `BlacklightPanelView`, and `BlacklightSwitch`
+  - [x] 7.3 Implement `BlacklightView`, `BlacklightPanelView`, and `BlacklightSwitch`
     - **Precondition: task 2.2 is complete and passing.**
     - `BlacklightSwitch` is a native button with `role="switch"`, `aria-checked`, accessible name `Blacklight`, the lamp icon, and the visible text `Blacklight: off` or `Blacklight: on` (starting with the accessible name). The container holds the mode and per-source reveal sets. The panel view renders the summary and per-category counts, the line list with monospace line numbers, `Showing <shown> of <total>` and keyboard-operable reveal buttons for lines and Findings, the Findings list (one `li` with `data-finding-index` per placed shown Finding), the unplaced group, `mark` markers (fill, dashed outline, icon, category text, position, hex list, rendering), the `No hidden text found by the blacklight.` text, and the fixed sentence `Text analysis does not catch every injection.`
     - Toggling changes only the in-text markers, not the Findings list and not the reveal state.
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12, 12.3, 12.4, 14.2, 14.4, 14.5_
 
-  - [ ] 7.4 Implement `RedThreadView`
+  - [x] 7.4 Implement `RedThreadView`
     - **Precondition: task 2.2 is complete and passing.**
     - One `li` per thread with a `role="group"` and the accessible name of the model, the action end, the cause end for `found` links, the connector line only for `found`, the `matched host key` text, the hidden-text warning with icon, the `not-found` text, the mismatch and empty texts, the fixed sentence `The red thread finds literal occurrences only.`, and a reveal button for more than 200 threads. `line:column`, `lineText`, and step numbers are in monospace.
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 12.3, 12.4, 14.2, 14.4, 14.5_
 
-  - [ ] 7.5 Implement `Graveyard` and `GraveyardView`
+  - [x] 7.5 Implement `Graveyard` and `GraveyardView`
     - **Precondition: task 2.2 is complete and passing.**
     - Summary line, one native button per Tombstone (accessible name of the model, `data-tombstone-index`, the arch shape, monospace command, `recordedAt`, and ward ids), disabled tombstones with `No seance link: invalid id`, the `time unreadable` mark, `Unreadable item <index>` slots, the empty text, and the `Show all <n> tombstones` reveal button. Activation calls `onOpenSeance` once with the original id after `store.remember(inputIndex)`. A mount effect consumes a pending focus-return request. A non-function `onOpenSeance` makes activation a no-op and never throws.
     - The kit does not route, fetch, or build a seance URL.
     - _Requirements: 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.9, 10.10, 10.11, 10.13, 12.1, 12.3, 14.2, 14.4, 14.5_
 
-  - [ ] 7.6 Implement `KitRoot` and `LightsToggle`
+  - [x] 7.6 Implement `KitRoot` and `LightsToggle`
     - `KitRoot` renders the root element with `data-theme`, a header with `LightsToggle`, and the children at the same tree position in both themes (no remount). Theme state starts as `dark` or as `initialTheme` when valid (an invalid `initialTheme` starts in `dark`, renders the children, and shows the Placeholder for `KitRoot` above them). `LightsToggle` is a native button with `role="switch"`, `aria-checked`, accessible name `Lights on`, the bulb icon, and the visible text `Lights: off` or `Lights: on`. It is not exported alone. Nothing is stored and `prefers-color-scheme` is ignored.
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.7, 11.8, 12.1, 12.3, 14.2_
 
-  - [ ] 7.7 Implement `SeanceView`
+  - [x] 7.7 Implement `SeanceView`
     - Section with a focusable heading `Seance` (focused on mount), the full command, `recordedAt`, ward ids, then for each present part the `Candle` with its `ClaimBanner`, `MirrorWorld`, `BlacklightView`, and `RedThreadView`; for each absent part the text `<part> not recorded`. A `Back to graveyard` native button calls `onBack`, and the focus store restores focus to the opening tombstone after `onBack` and on unmount. A non-function `onBack` is a no-op.
     - _Requirements: 6.1, 7.8, 10.8, 10.9, 10.10, 12.1, 14.2, 14.4_
 
-  - [ ] 7.8 Create the public exports `ui/src/index.ts`
+  - [x] 7.8 Create the public exports `ui/src/index.ts`
     - Export the six components, `KitRoot`, the prop and data types, the theme tokens, and the stylesheet entry through `exports["./styles.css"]`. Do not export `LightsToggle` alone, the model internals, or any server module. The public entry imports `@ghost-run/core` with `import type` only; re-exported core types use `export type` only.
     - Also export `escapeForDisplay` and `isHiddenDisplay` (value exports from `model/escape.ts`) as public API, so Ghost Shell uses the same display rule.
     - Add `ui/tests/scan/index-exports.test.ts`: import `ui/src/index.ts` and require `escapeForDisplay` and `isHiddenDisplay` to be functions, `escapeForDisplay('\u200B')` to equal `<U+200B>`, and `isHiddenDisplay(0x200B)` to be true; a source scan requires that `ui/src/index.ts` has no value import or non-`type` re-export from `@ghost-run/core`.
@@ -309,8 +309,8 @@ Decisions reflected in this plan:
 
   - [ ] 8.3 Write the static-leg property test for claim honesty
     - **Property 7: Claim honesty**
-    - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9**
-    - File: `tests/static/p7-claims.test.tsx`. Tag `UI-P7`. Environment: node, S leg, 100 and 10,000. Generator: `claimsAny` combined with an absent verdict and each of the three verdicts. Check conditions A and B separately on the Candle container markup using `data-claim` attributes, that the Assurance_Text is exactly that of the mode, that `Isolation status unknown.` appears if and only if `claims` is absent or malformed, and that the words `sealed` and `isolated` appear only inside an Assurance_Text.
+    - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12**
+    - File: `tests/static/p7-claims.test.tsx`. Tag `UI-P7`. Environment: node, S leg, 100 and 10,000. Generator: `claimsAny` combined with an absent verdict and each of the three verdicts. Check conditions A and B separately (B with the not-applicable rule of Requirement 7 criteria 10 and 11 and the reason wording of criterion 12) on the Candle container markup using `data-claim` attributes, that a not-applicable line shows `P<n>: not applicable to this world` and never `NOT claimed`, that the Assurance_Text is exactly that of the mode, that `Isolation status unknown.` appears if and only if `claims` is absent or malformed, and that the words `sealed` and `isolated` appear only inside an Assurance_Text.
 
   - [ ] 8.4 Write the static-leg property test for graveyard coverage and order
     - **Property 9: Graveyard coverage and order**

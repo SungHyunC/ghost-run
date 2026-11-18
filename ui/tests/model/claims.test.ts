@@ -31,6 +31,16 @@ describe('buildClaimModel', () => {
     expect(buildClaimModel({ ...base, mode: 'static-analysis', reason: 'other' }).staticBanner).not.toMatch(/Reason/);
   });
 
+  it('line texts and icons', () => {
+    const m = buildClaimModel({ ...base, p5Claimed: false, notApplicable: ['P6'], p6Claimed: false });
+    expect(m.lines.map((l) => [l.text, l.icon])).toEqual([
+      ['P1 claimed', 'check'],
+      ['P5 NOT claimed', 'ban'],
+      ['P6: not applicable to this world', 'not-applicable'],
+    ]);
+    expect(m.notClaimedBanner).toBe('Not claimed for this run: P5.');
+  });
+
   it('absent or malformed claims are unknown', () => {
     for (const c of [undefined, 5, { mode: 'weird' }, { ...base, p1Claimed: 1 }]) {
       const m = buildClaimModel(c);

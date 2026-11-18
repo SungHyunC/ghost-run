@@ -1,5 +1,6 @@
 import { MIRROR_ROWS, UNRECOGNIZED_FIELDS } from './limits';
 import { compact } from './escape';
+import type { IconId } from './icons';
 import { arrayOf, displayPrimitive, isRecord, pick } from './guards';
 import type { Unreadable } from './guards';
 import { formatCount } from './numbers';
@@ -15,16 +16,6 @@ import {
   rowsLost,
   unreadableItem,
 } from './texts';
-
-/** Icons the Mirror world uses (subset of the kit icon set). */
-export type MirrorIconId =
-  | 'cloud'
-  | 'link-changed'
-  | 'state-created'
-  | 'state-overwritten'
-  | 'state-present'
-  | 'state-absent'
-  | 'warning';
 
 export type RowKind =
   | 'file-created'
@@ -43,7 +34,7 @@ export interface CellItem {
 /** Text plus icon, never color alone. */
 export interface StateTag {
   readonly text: string;
-  readonly icon: MirrorIconId;
+  readonly icon: IconId;
 }
 export interface PaneCell {
   readonly state: StateTag;
@@ -88,7 +79,7 @@ export { WOULD_BE_REMOVED };
 
 const UNKNOWN_FIELDS = UNRECOGNIZED_FIELDS;
 
-function tag(text: string, icon: MirrorIconId): StateTag {
+function tag(text: string, icon: IconId): StateTag {
   return { text, icon };
 }
 

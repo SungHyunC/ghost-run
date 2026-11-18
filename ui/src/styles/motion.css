@@ -1,0 +1,42 @@
+/* The only stylesheet with @keyframes, animation, and transition.
+   Each effect ends in the base style, so reduced motion shows the same end state.
+   Transform and fill-opacity only; no animation touches text opacity. Nothing is infinite. */
+
+@keyframes gk-flicker {
+  0%   { transform: rotate(0deg) scaleY(1); }
+  25%  { transform: rotate(-4deg) scaleY(0.94); }
+  50%  { transform: rotate(0deg) scaleY(1); }
+  75%  { transform: rotate(4deg) scaleY(0.94); }
+  100% { transform: rotate(0deg) scaleY(1); }
+}
+
+@keyframes gk-dissolve {
+  from { fill-opacity: 0.9; transform: translateY(0); }
+  to   { fill-opacity: 0.35; transform: translateY(-3px); }
+}
+
+@keyframes gk-fade {
+  from { fill-opacity: 0; }
+  to   { fill-opacity: 1; }
+}
+
+[data-candle-state='flickering'] .gk-flame {
+  animation: gk-flicker 0.6s ease-in-out 3;
+}
+
+.gk-smoke {
+  animation: gk-dissolve 0.9s ease-out 1 forwards;
+}
+
+.gk-tombstone-art,
+.gk-candle-art .gk-candle-body {
+  animation: gk-fade 0.2s linear 1;
+}
+
+.gk-chevron {
+  transition: transform 0.2s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

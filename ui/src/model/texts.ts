@@ -22,6 +22,12 @@ export const ASSURANCE_PLAYGROUND = 'Ghost ran on an in-memory copy in this brow
 export const STATIC_BANNER = 'Static analysis only: no ghost rehearsal took place. P1, P5 and P6 are NOT claimed for this run.';
 export const REASON_DOCKER_UNAVAILABLE = ' Reason: Docker unavailable.';
 export const REASON_BOX_IMAGE_MISSING = ' Reason: box image missing.';
+// Lowered-claim wording by reason. Sealed modes only; a static-analysis run is already worded by STATIC_BANNER.
+export const REASON_NO_REHEARSAL = ' No rehearsal took place.';
+export const REASON_STEPS_NOT_REHEARSED = ' Some steps were not rehearsed.';
+export const CLAIMED_TEXT = 'claimed';
+export const NOT_CLAIMED_TEXT = 'NOT claimed';
+export const notApplicableText = (id: string): string => `${id}: not applicable to this world`;
 export const NOT_CLAIMED_PREFIX = 'Not claimed for this run: ';
 export const STATUS_UNKNOWN = 'Isolation status unknown.';
 export const notClaimed = (ids: readonly string[]): string => `${NOT_CLAIMED_PREFIX}${ids.join(', ')}.`;

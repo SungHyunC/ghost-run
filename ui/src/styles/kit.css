@@ -1,0 +1,524 @@
+/* Kit layout. No color literals: only var(--gk-*), currentColor, transparent, inherit.
+   No animation or transition here (see motion.css). */
+
+.gk-root {
+  --gk-font-ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gk-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 16px;
+  font-family: var(--gk-font-ui);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--gk-text);
+  background: var(--gk-bg);
+}
+
+.gk-root *,
+.gk-root *::before,
+.gk-root *::after {
+  box-sizing: border-box;
+}
+
+.gk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 16px;
+}
+
+/* Layout of a part (section) and its surface. */
+.gk-section {
+  position: relative;
+  margin-block-end: 16px;
+  padding: 16px;
+  border: 1px solid var(--gk-line);
+  border-radius: 8px;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+.gk-heading {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: inherit;
+}
+
+.gk-subheading {
+  margin: 12px 0 4px;
+  font-size: 1rem;
+  color: inherit;
+}
+
+.gk-summary,
+.gk-note {
+  margin: 0 0 8px;
+  color: var(--gk-muted);
+}
+
+.gk-empty {
+  margin: 0;
+  color: var(--gk-text);
+}
+
+.gk-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gk-list > li {
+  margin-block: 4px;
+}
+
+.gk-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+
+/* Monospace elements: paths, tables, counts, step numbers, commands, ward ids. */
+.gk-mono,
+.gk-root code,
+.gk-root pre {
+  font-family: var(--gk-font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.gk-root pre {
+  margin: 0;
+}
+
+/* Fog layer: a background pseudo-layer behind the text, never a filter or opacity on text. */
+.gk-fog {
+  position: relative;
+  isolation: isolate;
+}
+
+.gk-fog::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--gk-fog);
+}
+
+/* Mirror table. */
+.gk-table-wrap {
+  overflow-x: auto;
+}
+
+.gk-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.gk-table th,
+.gk-table td {
+  padding: 8px;
+  border: 1px solid var(--gk-line);
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.gk-table th {
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+.gk-step-header th {
+  color: var(--gk-muted);
+  background: var(--gk-surface);
+}
+
+.gk-cell-mirror {
+  position: relative;
+  isolation: isolate;
+}
+
+.gk-cell-mirror::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--gk-fog);
+}
+
+.gk-cell-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Smoke layer sits behind the cell text. Fill opacity only; never on text. */
+.gk-smoke {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: var(--gk-smoke);
+  fill-opacity: 0.35;
+}
+
+/* State tag: icon and text together. */
+.gk-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.gk-state-tag[data-state='absent'],
+.gk-state-removed {
+  color: var(--gk-block);
+}
+
+/* Buttons and switches. */
+.gk-button,
+.gk-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--gk-line);
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+.gk-toggle[aria-checked='true'] {
+  border-style: double;
+  border-width: 3px;
+}
+
+.gk-button:focus-visible,
+.gk-toggle:focus-visible,
+.gk-link:focus-visible,
+.gk-root a:focus-visible,
+.gk-root button:focus-visible,
+.gk-root [tabindex]:focus-visible {
+  outline: 3px solid var(--gk-focus);
+  outline-offset: 2px;
+}
+
+/* Icons are inline SVG in currentColor. */
+.gk-icon {
+  display: inline-block;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gk-chevron[data-open='true'] {
+  transform: rotate(180deg);
+}
+
+/* Candle. */
+.gk-candle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  align-items: start;
+}
+
+.gk-candle-art {
+  width: 48px;
+  height: 72px;
+}
+
+.gk-candle-art .gk-candle-body {
+  fill: var(--gk-surface);
+  stroke: var(--gk-line);
+  stroke-width: 2;
+}
+
+.gk-flame {
+  transform-box: view-box;
+  transform-origin: 24px 32px;
+  fill: var(--gk-flame);
+  stroke: var(--gk-pass);
+  stroke-width: 2;
+}
+
+.gk-wisp {
+  fill: none;
+  stroke: var(--gk-smoke);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.gk-candle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+[data-candle-state='lit'] .gk-candle-label {
+  color: var(--gk-pass);
+}
+
+[data-candle-state='flickering'] .gk-candle-label {
+  color: var(--gk-warn);
+}
+
+[data-candle-state='out'] .gk-candle-label {
+  color: var(--gk-block);
+}
+
+[data-candle-state='unknown'] .gk-candle-label,
+[data-candle-state='idle'] .gk-candle-label {
+  color: var(--gk-text);
+}
+
+.gk-warn {
+  color: var(--gk-warn);
+}
+
+.gk-block {
+  color: var(--gk-block);
+}
+
+.gk-candle-claims {
+  grid-column: 1 / -1;
+}
+
+.gk-list,
+.gk-claim-list {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+/* Claim banner and claim lines: text plus icon, never color alone. */
+.gk-claims {
+  margin-block-start: 12px;
+}
+
+.gk-claim-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-inline-start: 4px solid var(--gk-line);
+  color: var(--gk-text);
+}
+
+.gk-claim-claimed {
+  border-inline-start-style: solid;
+}
+
+.gk-claim-not-claimed {
+  border-inline-start-style: double;
+  font-weight: 700;
+}
+
+/* Not applicable: neither claimed nor NOT claimed. Dotted edge, muted text, own icon. */
+.gk-claim-not-applicable {
+  border-inline-start-style: dotted;
+  color: var(--gk-muted);
+}
+
+.gk-claim-not-applicable .gk-icon {
+  stroke-dasharray: 3 2;
+}
+
+.gk-claim-text {
+  overflow-wrap: anywhere;
+}
+
+.gk-banner,
+.gk-assurance {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--gk-line);
+  border-radius: 6px;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+.gk-banner[data-claim='static'],
+.gk-banner[data-claim='not-claimed'] {
+  border-width: 2px;
+  border-style: dashed;
+}
+
+/* Blacklight: fluorescent fill, dashed outline, icon, text. */
+.gk-marker {
+  display: inline;
+  padding: 0 2px;
+  outline: 2px dashed var(--gk-bl-edge);
+  outline-offset: 0;
+  border-radius: 2px;
+  font-family: var(--gk-font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--gk-bl-ink);
+  background: var(--gk-bl-fill);
+}
+
+.gk-marker .gk-icon {
+  width: 1em;
+  height: 1em;
+}
+
+.gk-line-no {
+  display: inline-block;
+  min-width: 4ch;
+  margin-inline-end: 8px;
+  font-family: var(--gk-font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  color: var(--gk-muted);
+}
+
+.gk-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gk-lines > li {
+  font-family: var(--gk-font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Red thread. */
+.gk-thread {
+  display: grid;
+  grid-template-columns: 1fr minmax(48px, 120px) 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.gk-thread-line {
+  width: 100%;
+  height: 24px;
+  fill: none;
+  stroke: var(--gk-block);
+  stroke-width: 2;
+}
+
+.gk-thread-dot {
+  fill: var(--gk-block);
+  stroke: none;
+}
+
+.gk-thread-end {
+  padding: 8px;
+  border: 1px solid var(--gk-line);
+  border-radius: 6px;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+/* Graveyard and seance. */
+.gk-tombstones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gk-tombstone {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--gk-line);
+  border-radius: 20px 20px 4px 4px;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+.gk-tombstone:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.gk-tombstone-command {
+  overflow-wrap: anywhere;
+}
+
+.gk-tombstone-art {
+  width: 40px;
+  height: 52px;
+  fill: var(--gk-surface);
+  stroke: var(--gk-line);
+  stroke-width: 2;
+}
+
+.gk-seance-part {
+  margin-block: 8px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--gk-line);
+}
+
+/* Scene disclosure. */
+.gk-scene {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gk-scene-entry {
+  font-family: var(--gk-font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Placeholder for unreadable input. */
+.gk-placeholder {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 2px dashed var(--gk-block);
+  border-radius: 6px;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+/* Visually hidden, still read by assistive technology. */
+.gk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

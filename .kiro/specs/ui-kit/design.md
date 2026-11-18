@@ -27,6 +27,7 @@ The design has two layers.
 | D12 | The Theme owner is `KitRoot`. `LightsToggle` is rendered by `KitRoot` and is not exported alone. | Components |
 | D13 | Secret-like key redaction (`[hidden: secret-like field]`) happens in the view model by the pure functions `isSecretLikeKey` and `redactGenericValue`, once, for unknown-kind `Change` fields and `Scene` values. It is a key-name heuristic. | Components (Secret-like keys) |
 | D14 | Claim honesty has two independent outputs: the Assurance_Text and the "Not claimed" banner. Each has its own condition and both can appear together. | Components (Candle and claim banner) |
+| D16 | Not-applicable claims. `IsolationClaims.notApplicable?: readonly ('P5' | 'P6')[]` marks a property that does not apply to the world (for example P5 and P6 in Ghost Hand). It is neither claimed nor NOT claimed, is shown as `P<n>: not applicable to this world` with the `not-applicable` icon, and does not count toward condition B. Rule when a property is both claimed `true` and listed: the claim wins and the line shows `claimed` (the kit only echoes what it receives and a supplied `true` is shown as claimed by criterion 9; the other choice would silently drop a claim, and neither choice can produce a `NOT claimed` text). Not applicable applies only to well-formed claims in `docker-box` or `playground`; it is ignored for `static-analysis` and for malformed claims, and a malformed flag is not rescued by the list. P1 cannot be listed (type and model). **Decision awaiting user confirmation.** | Components (claims model) |
 | D15 | ESLint 10 only: no `eslint-plugin-react` and no `eslint-plugin-jsx-a11y` (their peer ranges stop at ESLint 9). Accessibility is checked by axe-core and role-based queries. | Source hygiene; Testing Strategy |
 
 ### Research summary
@@ -34,9 +35,9 @@ The design has two layers.
 The design environment had no shell and no network access (every `execute_bash`, `web_fetch`, and web search call was refused before running). Therefore:
 
 - **Verified by reading the repository:** `pnpm-workspace.yaml` already lists `ui`; the directory `ui/` does not exist yet; `core/src/index.ts` already re-exports `./possession/index.js`, so `Finding`, `ScanResult`, `Needle`, and `ThreadLink` reach the kit through `@ghost-run/core` (Assumption A1 holds today). The core name is `ThreadLink`, and the requirements now use the same spelling; this design writes `ThreadLink` everywhere. `core` and `ghost-runner` use `vitest ^3.2.7`, `fast-check ^4.10.2`, `typescript ^5.9.0`, `eslint ^10.15.0`, `typescript-eslint ^8.73.0`, `@types/node ^20.19.0`. `ghost-runner` resolves `@ghost-run/core` to `../core/src/index.ts` through a Vitest alias and a `tsconfig` `paths` entry. The root `package.json` declares `packageManager` `pnpm@12.21.0`.
-- **Taken from the task statement (npm, 2026-11-18), not re-checked here:** versions and licenses of react, react-dom 19.3.1; @types/react and @types/react-dom 19.3.0; vite 7.3.8 (Node ^20.19); @vitejs/plugin-react 5.2.0 (Vite 4 to 8); vitest 3.2.7 (Vite 5 to 7); @testing-library/react 16.3.3; @testing-library/dom 10.4.2; @testing-library/user-event 14.6.12; jsdom 26.1.0 (Node 18+); happy-dom 21.0.4; eslint-plugin-react-hooks 7.1.1 (peer range accepts ESLint ^10); @eslint-react/eslint-plugin 5.30.4 (MIT, Node 20.19 or newer, peer `eslint` `*`); all MIT except axe-core 4.14.1 (MPL-2.0).
+- **Taken from the task statement (npm, 2026-11-18), not re-checked here:** versions and licenses of react, react-dom 19.3.1; @types/react and @types/react-dom 19.3.0; vite 7.3.8 (Node ^20.19); @vitejs/plugin-react 5.2.0 (Vite 4 to 8); vitest 3.2.7 (Vite 5 to 7); @testing-library/react 16.3.3; @testing-library/dom 10.4.2; @testing-library/user-event 14.6.12; jsdom 26.1.0 (Node 18+); happy-dom 21.0.4; eslint-plugin-react-hooks 7.1.1 (peer range accepts ESLint ^10); @eslint-react/eslint-plugin 5.30.3 (MIT, Node 20.19 or newer, peer `eslint` `*`); all MIT except axe-core 4.14.1 (MPL-2.0).
 - **Excluded because of ESLint 10 (from the task statement):** `core` uses ESLint 10.15.0. `eslint-plugin-react` 7.37.5 (peer ESLint up to ^9.7) and `eslint-plugin-jsx-a11y` 6.10.2 (peer ESLint up to ^9) do not accept ESLint 10, so `ui/` does not depend on them (see "Forbidden versions and why"). The `dangerouslySetInnerHTML` ban uses `@eslint-react/eslint-plugin`, and accessibility is checked by axe-core DOM tests and role-based queries.
-- **Verified since:** the `dangerouslySetInnerHTML` rule IDs of `@eslint-react/eslint-plugin` 5.30.4 are fixed (see Q1).
+- **Verified since:** the `dangerouslySetInnerHTML` rule IDs of `@eslint-react/eslint-plugin` 5.30.3 are fixed (see Q1).
 - **Unverified (listed in "Open Questions / Unverified"):** the Vitest `projects` inline syntax in 3.2.7, `react-dom/server` resolution inside the jsdom environment, strings in the React production bundle, and the contrast values (computed by hand, see "Visual design").
 
 ### Dependencies
@@ -55,7 +56,7 @@ Development (`devDependencies`), each with its reason. All MIT except axe-core.
 | `jsdom` | `^26.1.0` | DOM environment (D4). `^26` excludes jsdom 27 (needs Node 22). |
 | `@testing-library/react`, `@testing-library/dom`, `@testing-library/user-event` | `^16.3.3`, `^10.4.2`, `^14.6.12` | DOM mount, queries, keyboard and pointer input. `@testing-library/dom` is a peer of the React package. |
 | `@types/react`, `@types/react-dom` | `^19.3.0` | Types. |
-| `@eslint-react/eslint-plugin` | `^5.30.4` | `dangerouslySetInnerHTML` prohibition rule (peer `eslint` `*`, accepts ESLint 10; Node 20.19 or newer). The rule IDs are fixed and verified: `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (Q1, resolved); a `no-restricted-syntax` selector blocks the same construct independently. |
+| `@eslint-react/eslint-plugin` | `5.30.3` (exact) | `dangerouslySetInnerHTML` prohibition rule (peer `eslint` `*`, accepts ESLint 10; Node 20.19 or newer). The rule IDs are fixed and verified: `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (Q1, resolved); a `no-restricted-syntax` selector blocks the same construct independently. |
 | `eslint-plugin-react-hooks` | `^7.1.1` | `rules-of-hooks` and `exhaustive-deps` (peer range includes ESLint ^10). |
 | `axe-core` | `^4.14.1` | Accessibility audit in DOM tests; it replaces the static JSX accessibility lint. **MPL-2.0.** |
 
@@ -92,7 +93,7 @@ ui/
 │  ├─ types.ts                    # UI-owned input types (IsolationClaims, GraveEntry, ...)
 │  ├─ model/                      # pure view models, no React
 │  │  ├─ limits.ts  texts.ts  guards.ts  escape.ts  numbers.ts  time.ts  redact.ts
-│  │  ├─ mirror.ts  scene.ts  candle.ts  claims.ts
+│  │  ├─ mirror.ts  scene.ts  candle.ts  claims.ts  icons.ts
 │  │  ├─ blacklight.ts  thread.ts  graveyard.ts  seance.ts
 │  ├─ theme/
 │  │  └─ tokens.ts                # Theme_Tokens + Contrast_Pairs (single source)
@@ -404,7 +405,14 @@ The state is chosen by `verdict.verdict` alone (a lookup table, no other field i
 
 ```ts
 // model/claims.ts
-export interface ClaimLine { readonly id: 'P1' | 'P5' | 'P6'; readonly claimed: boolean }
+export type ClaimStatus = 'claimed' | 'not-claimed' | 'not-applicable'
+export interface ClaimLine {
+  readonly id: 'P1' | 'P5' | 'P6'
+  readonly claimed: boolean       // true iff status is 'claimed'
+  readonly status: ClaimStatus
+  readonly text: string           // 'P1 claimed' | 'P5 NOT claimed' | 'P6: not applicable to this world'
+  readonly icon: IconId           // check | ban | not-applicable (IconId from model/icons.ts)
+}
 export interface ClaimModel {
   readonly lines: readonly [ClaimLine, ClaimLine, ClaimLine];        // effective values, in order P1, P5, P6
   /** Condition A (Requirement 7 criterion 6): set iff mode is docker-box or playground AND p1Claimed === true. */
@@ -412,7 +420,7 @@ export interface ClaimModel {
   /** Condition for criterion 3: set iff mode is the valid value static-analysis. */
   readonly staticBanner: string | null;
   /** Condition B (Requirement 7 criterion 5): set iff claims is absent or malformed, OR mode is docker-box or playground
-   *  and at least one of P1, P5, P6 is not claimed. Independent of condition A. */
+   *  and at least one of P1, P5, P6 is neither claimed nor validly not applicable. Independent of condition A. */
   readonly notClaimedBanner: string | null;                           // 'Not claimed for this run: <list>.' (+ 'Isolation status unknown.' when absent or malformed)
   readonly unknownStatus: boolean;
 }
@@ -425,11 +433,13 @@ Decision table (`mode` is checked first):
 
 | `claims` | `lines` (effective) | `assuranceText` (condition A) | `staticBanner` | `notClaimedBanner` (condition B) |
 |---|---|---|---|---|
-| absent, not a record, `mode` unknown, or a boolean field not a boolean | all `false` | `null` | `null` | `Isolation status unknown. Not claimed for this run: P1, P5, P6.` |
+| absent, not a record, `mode` unknown, or a boolean field not a boolean (`notApplicable` ignored) | all `false` | `null` | `null` | `Isolation status unknown. Not claimed for this run: P1, P5, P6.` |
 | `static-analysis` (any booleans, any `reason`) | all `false` (a supplied `true` is treated as not claimed) | `null` | `Static analysis only: no ghost rehearsal took place. P1, P5 and P6 are NOT claimed for this run.` + ` Reason: Docker unavailable.` or ` Reason: box image missing.` when `reason` is exactly that value | `null` (the static banner already names P1, P5, P6) |
 | `docker-box` or `playground`, all three booleans `true` | all `true` | Docker text or in-memory text by `mode` | `null` | `null` |
 | `docker-box` or `playground`, `p1Claimed` `true`, `p5Claimed` or `p6Claimed` not `true` | as supplied | by `mode` | `null` | `Not claimed for this run: <list>.` naming each unclaimed id in the order P1, P5, P6 (here P5, P6, or both) |
 | `docker-box` or `playground`, `p1Claimed` not `true` | as supplied | `null` | `null` | `Not claimed for this run: <list>.` including P1 |
+| `docker-box` or `playground`, well-formed, `P5` and/or `P6` in `notApplicable` with that flag not `true` | that line is `not-applicable` (text `P<n>: not applicable to this world`, icon `not-applicable`); a flag that is `true` stays `claimed` (D16); `P1` and other entries are ignored | by `mode` iff `p1Claimed` `true` | `null` | the list names only ids that are `not-claimed`; `null` when none is left |
+| `docker-box` or `playground`, well-formed, lowered claim listed in the banner | as above | as above | `null` | list followed by ` No rehearsal took place.` for `reason` `static-analysis`, by ` Some steps were not rehearsed.` for `reason` `unsupported-step`, and by nothing for any other or absent `reason` |
 
 **Text table** (all fixed texts of the claim display; constants in `model/texts.ts`):
 
@@ -441,10 +451,13 @@ Decision table (`mode` is checked first):
 | ` Reason: Docker unavailable.` / ` Reason: box image missing.` | appended to the static banner when `reason` is exactly `docker-unavailable` / `box-image-missing` | `REASON_*` |
 | `Not claimed for this run: <list>.` | condition B | `NOT_CLAIMED_PREFIX` |
 | `Isolation status unknown.` | condition B and `claims` is absent or malformed (including an unknown `mode`) | `STATUS_UNKNOWN` |
+| ` No rehearsal took place.` / ` Some steps were not rehearsed.` | appended to the not-claimed banner when `reason` is exactly `static-analysis` / `unsupported-step` (the wards message builder uses the same split; no wording for a not-applicable property or an absent reason) | `REASON_NO_REHEARSAL` / `REASON_STEPS_NOT_REHEARSED` |
+| `P<n>: not applicable to this world` | a validly not-applicable P5 or P6 line | `notApplicableText` |
+| `claimed` / `NOT claimed` | line suffix after `P<n> ` | `CLAIMED_TEXT` / `NOT_CLAIMED_TEXT` |
 
 Fixed Assurance_Text strings are the only places where the words `sealed` and `isolated` may appear; a source-scan test enforces this (Requirement 7 criterion 8). The model sets a claim to `true` only when the supplied value is the boolean `true` (Requirement 7 criterion 9).
 
-`Candle` component: one container `<section data-candle-state="lit" aria-label="<accessibleLabel>">` holding the `FlameArt` (decorative), the icon with the text label (`PASS`), the polite live region `<div role="status" aria-live="polite" class="gk-sr-only">` with the accessible label, the ward lines, violation and notice lists in monospace, and the `ClaimBanner` (always in the same container, Requirement 7 criterion 8). `ClaimBanner` is `<div role="group" aria-label="Isolation claims">` with three `<li>` lines (`P1 claimed` with the check icon, `P5 NOT claimed` with the ban icon), then the assurance paragraph (condition A) and the banner paragraph (static or not-claimed, condition B), each shown whenever its own condition holds, so both may appear together. The banner paragraphs carry `data-claim="assurance"`, `data-claim="static"`, or `data-claim="not-claimed"` so tests do not rely on text alone.
+`Candle` component: one container `<section data-candle-state="lit" aria-label="<accessibleLabel>">` holding the `FlameArt` (decorative), the icon with the text label (`PASS`), the polite live region `<div role="status" aria-live="polite" class="gk-sr-only">` with the accessible label, the ward lines, violation and notice lists in monospace, and the `ClaimBanner` (always in the same container, Requirement 7 criterion 8). `ClaimBanner` is `<div role="group" aria-label="Isolation claims">` with three `<li>` lines taken from `ClaimLine.text` and `ClaimLine.icon` (`P1 claimed` with the check icon, `P5 NOT claimed` with the ban icon, `P6: not applicable to this world` with the `not-applicable` icon, which is neither of the two other icons), then the assurance paragraph (condition A) and the banner paragraph (static or not-claimed, condition B), each shown whenever its own condition holds, so both may appear together. The banner paragraphs carry `data-claim="assurance"`, `data-claim="static"`, or `data-claim="not-claimed"` so tests do not rely on text alone.
 
 Props: `{ verdict?: WardVerdict; claims?: IsolationClaims }`. Keyboard: none (not interactive).
 
@@ -688,7 +701,7 @@ Monospace elements also set `font-variant-numeric: tabular-nums`, `white-space: 
 
 All assets are original geometry written for this package (license: repository MIT; listed in the README asset table). All SVG elements set `aria-hidden="true"` and `focusable="false"` when decorative. Strokes and fills use `currentColor` or token classes, never literals. No cross, crucifix, trademark, logo, or character is drawn. A single diagonal slash appears only inside the "not claimed" ban circle; no two strokes cross to make a plus or an x.
 
-**Icon set** (`viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="2"`, `stroke-linecap="round"`, `stroke-linejoin="round"`). `Icon` takes an `IconId` from a fixed union, so a prop string can never select an icon or inject markup.
+**Icon set** (`viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="2"`, `stroke-linecap="round"`, `stroke-linejoin="round"`). The single `IconId` union (with the `ICON_IDS` list) is defined once in `model/icons.ts` (pure, no React); `model/mirror.ts`, `model/candle.ts`, and `model/claims.ts` import it as a type, and `components/art/Icon.tsx` imports the same type and holds geometry only (a `Record<IconId, ...>` of the table below). `Icon` therefore takes an `IconId` from a fixed union, so a prop string can never select an icon or inject markup.
 
 | `IconId` | Elements | Used for |
 |---|---|---|
@@ -699,6 +712,7 @@ All assets are original geometry written for this package (license: repository M
 | `candle-idle` | body and wick; bar `M10 8h4` | no verdict |
 | `check` | `M5 12.5l4.5 4.5L19 7.5` | claimed |
 | `ban` | `<circle cx="12" cy="12" r="8"/>` and `M6.4 6.4l11.2 11.2` | NOT claimed |
+| `not-applicable` | `<circle cx="12" cy="12" r="8"/>` and `M8 12h8` | `P<n>: not applicable to this world` |
 | `cloud` | `M7 18a4 4 0 0 1-.6-7.96 5 5 0 0 1 9.6-1.54A4.8 4.8 0 0 1 17 18H7z` | would be removed, deleted |
 | `lamp` | tube `M5 6h14v5H5z`; rays `M8 11v3M12 11v5M16 11v3` | blacklight |
 | `bulb` | `M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.1 1 1.9v.2h5v-.2c0-.8.4-1.4 1-1.9A6 6 0 0 0 12 3zM10 18h4M10 21h4` | lights |
@@ -739,7 +753,10 @@ export interface IsolationClaims {
   readonly p1Claimed: boolean;
   readonly p5Claimed: boolean;
   readonly p6Claimed: boolean;
-  readonly reason?: 'docker-unavailable' | 'box-image-missing';
+  /** `docker-unavailable` and `box-image-missing` explain a static-analysis run; `static-analysis`: no rehearsal took place; `unsupported-step`: some steps could not be rehearsed. */
+  readonly reason?: 'docker-unavailable' | 'box-image-missing' | 'static-analysis' | 'unsupported-step';
+  /** Properties that do not apply to this world; only P5 and P6 (D16). */
+  readonly notApplicable?: readonly ('P5' | 'P6')[];
 }
 
 export interface BlacklightSource { readonly source: string; readonly text: string; readonly scan: ScanResult }
@@ -831,9 +848,9 @@ PBT applies to this feature because the view models and the static render of the
 
 ### Property 7: Claim honesty
 
-*For any* `claims` value (absent, a non-record, a record with `mode` one of `docker-box`, `static-analysis`, `playground`, or any other string or number, with `p1Claimed`, `p5Claimed`, `p6Claimed` each `true`, `false`, or a non-boolean, and `reason` one of the two enum values, another string, or absent) combined with *any* verdict (absent or any of the three), the Render_Output of the Candle container satisfies two independent conditions. **Condition A:** it contains an Assurance_Text if and only if `mode` is `docker-box` or `playground` and `p1Claimed` is the boolean `true`; that text is the Docker text for `docker-box` and the in-memory text for `playground`, and never the other. **Condition B:** it contains a banner (`data-claim="static"` for the valid `static-analysis` value, `data-claim="not-claimed"` otherwise) if and only if `claims` is absent or malformed (including an unknown `mode` or a non-boolean claim field) or at least one of `p1Claimed`, `p5Claimed`, `p6Claimed` is not the boolean `true`; a `not-claimed` banner names exactly the ids that are not claimed, in the order P1, P5, P6, and a `static-analysis` value always produces the static banner (with the reason suffix only for the two enum values) and never a claimed line. A and B are not exclusive and are checked separately: both appear together for `docker-box` or `playground` with `p1Claimed` true and `p5Claimed` or `p6Claimed` not true, only A appears when all three are true, only B appears when `p1Claimed` is not true or the value is `static-analysis`, absent, or malformed, and for every generated value at least one of the two is present unless all three of P1, P5, P6 are claimed under `docker-box` or `playground`. The text `Isolation status unknown.` is present if and only if `claims` is absent or malformed, and absent for every valid `docker-box`, `playground`, and `static-analysis` value. The words `sealed` and `isolated` occur in the Render_Output only inside an Assurance_Text.
+*For any* `claims` value (absent, a non-record, a record with `mode` one of `docker-box`, `static-analysis`, `playground`, or any other string or number, with `p1Claimed`, `p5Claimed`, `p6Claimed` each `true`, `false`, or a non-boolean, `reason` one of the four enum values, another string, or absent, and `notApplicable` a list of `P1`, `P5`, `P6`, or other entries, a non-list, or absent) combined with *any* verdict (absent or any of the three), the Render_Output of the Candle container satisfies two independent conditions. **Condition A:** it contains an Assurance_Text if and only if `mode` is `docker-box` or `playground` and `p1Claimed` is the boolean `true`; that text is the Docker text for `docker-box` and the in-memory text for `playground`, and never the other. **Condition B:** it contains a banner (`data-claim="static"` for the valid `static-analysis` value, `data-claim="not-claimed"` otherwise) if and only if `claims` is absent or malformed (including an unknown `mode` or a non-boolean claim field) or at least one of `p1Claimed`, `p5Claimed`, `p6Claimed` is neither the boolean `true` nor (for P5 and P6, with well-formed claims) validly not applicable, where P5 or P6 is validly not applicable when listed in `notApplicable` and its flag is not `true` (P1 only claimed; D16); a `not-claimed` banner names exactly the ids that are not claimed and not applicable, in the order P1, P5, P6, and a `static-analysis` value always produces the static banner (with the reason suffix only for the two `docker-unavailable` and `box-image-missing` values, and `notApplicable` ignored) and never a claimed line. Each validly not-applicable line shows exactly `P<n>: not applicable to this world` with its icon and never the text `NOT claimed`; the not-claimed banner carries ` No rehearsal took place.` for `reason` `static-analysis` and ` Some steps were not rehearsed.` for `reason` `unsupported-step` and no other wording. A and B are not exclusive and are checked separately: both appear together for `docker-box` or `playground` with `p1Claimed` true and `p5Claimed` or `p6Claimed` not true, only A appears when all three are true, only B appears when `p1Claimed` is not true or the value is `static-analysis`, absent, or malformed, and for every generated value at least one of the two is present unless P1 is claimed and each of P5, P6 is claimed or validly not applicable under `docker-box` or `playground`. The text `Isolation status unknown.` is present if and only if `claims` is absent or malformed, and absent for every valid `docker-box`, `playground`, and `static-analysis` value. The words `sealed` and `isolated` occur in the Render_Output only inside an Assurance_Text.
 
-**Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9**
+**Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12**
 
 ### Property 8: Totality
 
@@ -882,6 +899,7 @@ PBT applies to this feature because the view models and the static render of the
 | `claims` absent, malformed, or with an unknown `mode` | Banner `Isolation status unknown. Not claimed for this run: P1, P5, P6.` and no Assurance_Text. `buildClaimModel` is total and never returns `unreadable`. | 7.5 |
 | `docker-box` or `playground` with `p1Claimed` true and `p5Claimed` or `p6Claimed` not true | Assurance_Text and `Not claimed for this run: <list>.` are both shown (independent conditions). | 7.5, 7.6 |
 | `static-analysis` with `p1Claimed: true` | Treated as not claimed; static banner shown. | 7.6 |
+| `notApplicable` lists `P1`, an unknown id, or is not a list; or a flag listed there is `true` | The entry or value is ignored; a `true` flag stays claimed (D16). | 7.10, 7.11 |
 | `needles` and `links` differ in length | Pairs up to the shorter length plus `Red thread data mismatch: <a> needles, <b> links.` No guessed pairing. | 9.8 |
 | `Finding` lies outside the text | Listed under `Findings that could not be placed` with its fields; never dropped. | 8.9 |
 | `Finding` list is empty for a source | `No hidden text found by the blacklight.` for that source. `sources` empty: `No texts to scan.` | 8.12, 14.1 |
@@ -1002,7 +1020,7 @@ export function params(kind: 'full' | 'dom'): { numRuns: number; seed?: number; 
 | UI-P2 | verdict (`pass`, `warn`, `block`, `unknown`, `absent`), `violations` empty or not, repeated ward ids |
 | UI-P3 | field name, hidden category (tag, zero-width, bidi, control, surrogate) |
 | UI-P4 | extra-field name, secret-like word (all eleven), letter case (lower, upper, mixed, capitalized), key position (whole key, prefix, suffix, inside a longer key), nesting (top level, nested object, object in array, depth 1 to 6), view (unknown-kind `Change`, `realScene`, `mirrorScene`), non-secret control key present |
-| UI-P7 | `mode` (`docker-box`, `playground`, `static-analysis`, unknown, absent, malformed) x `p1Claimed` value x (`p5Claimed`, `p6Claimed` both true or not); both A and B present together |
+| UI-P7 | `mode` (`docker-box`, `playground`, `static-analysis`, unknown, absent, malformed) x `p1Claimed` value x (`p5Claimed`, `p6Claimed` both true or not) x `notApplicable` (valid, with `P1` or junk entries, non-list, absent) x `reason` (four enum values, other, absent); both A and B present together |
 | UI-P8 | output was Placeholder or normal, per component |
 | UI-P9 | time valid or invalid, id valid or invalid, equal instants present |
 | UI-P10 | findings placed or unplaced, overlapping or not, covered or uncovered hidden code point, Finding count (at most 100, 101 to 250), line count (at most 200, 201 to 400), revealed or not |
@@ -1015,7 +1033,7 @@ export function params(kind: 'full' | 'dom'): { numRuns: number; seed?: number; 
 - `markupString`: `fc.constantFrom` over a fixed list of hostile samples plus `fc.string()` joined with them. The list contains the element names from the allow-list, the `javascript:` variants, and attribute-breaking quotes. Hosts in samples use `.example` and `.invalid` only.
 - `canary`: `'sk-CANARY-' + fc.stringMatching(/^[A-Za-z0-9_-]{1,40}$/)`.
 - `secretLikeKey`: picks one of `SECRET_LIKE_WORDS` (the test file holds its own copy of the eleven words, so the oracle is independent of `src/`), applies a letter-case variant (`toLowerCase`, `toUpperCase`, capitalized, or random per-character case), and optionally adds a prefix and a suffix from `fc.stringMatching(/^[A-Za-z0-9_-]{0,6}$/)`. `plainKey`: a generated key that contains none of the eleven words in lowercase (filtered by the independent oracle). `genericValue(depth)`: a record of `plainKey` and `secretLikeKey` entries whose values are strings, numbers, booleans, nested records, and arrays of records, up to depth 6; each secret-like key holds a `canary` or a nested record that holds canaries under any key; each plain key outside a secret-like subtree holds `visible-` plus digits. `unknownChange`: `{ kind: <string outside the five known kinds> }` plus `genericValue(1)` fields, and known kinds with a mistyped field. `sceneValue`: `genericValue(6)`. `circularValue` and `deepValue(n)`: records built in code with a back reference, and records nested 9 to 40 levels deep (not JSON, used by the model leg only).
-- `claimsAny`: `fc.oneof` of absent, non-record values, and records with `mode` from `docker-box`, `static-analysis`, `playground`, other strings, and numbers, with `p1Claimed`, `p5Claimed`, `p6Claimed` each independently `true`, `false`, or a non-boolean, and `reason` from the two enum values, other strings, or absent. It is weighted so that each of the cases "A and B both present", "only A", and "only B" has probability of at least 1 in 10.
+- `claimsAny`: `fc.oneof` of absent, non-record values, and records with `mode` from `docker-box`, `static-analysis`, `playground`, other strings, and numbers, with `p1Claimed`, `p5Claimed`, `p6Claimed` each independently `true`, `false`, or a non-boolean, `reason` from the four enum values, other strings, or absent, and `notApplicable` as a list of `P5`, `P6`, `P1`, or junk entries, a non-list, or absent. It is weighted so that each of the cases "A and B both present", "only A", and "only B" has probability of at least 1 in 10.
 - `bigScan`: a text with 0 to 400 lines and 0 to 250 inserted hidden runs plus its `scanText` result, used with the `reveal` sets of the Blacklight model.
 - `change`, `changes`, `wardVerdict`, `claims`, `needle`, `threadLink`, `finding`, `scanResult`, `graveEntry`, `graveDetail`: structured arbitraries for valid data, plus `breakOne(valid)` that replaces one field or element by `fc.jsonValue()`.
 - `scanOracle(text)`: `scanText(text)` from `@ghost-run/core` (tests may import values from core; `src/` may not).
@@ -1034,7 +1052,7 @@ export function params(kind: 'full' | 'dom'): { numRuns: number; seed?: number; 
 | `tests/model/redact.test.ts` | Fixed examples for `isSecretLikeKey` (the eleven words in lower, upper, and mixed case; `userSessionId`, `X-Auth-Token`, `API_KEY`; non-matches `name`, `path`; the documented misses `privateKey`, `x-api-key`, `pwd`; the documented false positive `session_count`) and for `redactGenericValue` (secret-like key at depth 3 hides a nested object without descending; array indices are not keys; a circular object yields `[circular reference]`; a 9-level value yields `[nested too deep]`; a throwing getter yields `[unreadable value]` and its siblings render; a shared non-circular reference renders twice) |
 | `tests/static/texts.test.tsx` | Fixed texts of Requirements 5, 6, 7, 8, 9, 10, 14 (all literals pinned by the requirements); empty states; seance parts and `<part> not recorded`; no `approved` or `safe` in the Candle's fixed texts; no `sealed` or `isolated` outside the two Assurance_Text constants |
 | `tests/static/svg.test.tsx` | Every icon path equals the table of this design; the tombstone path has no crossing strokes; every SVG has `aria-hidden` |
-| `tests/types.test-d.ts` | No input type holds `SecretValues`, `EvaluateInputs`, `Uint8Array`, or `Map`; `IsolationClaims` accepts a structural `Isolation` value |
+| `tests/types.test-d.ts` | No input type holds `SecretValues`, `EvaluateInputs`, `Uint8Array`, or `Map`; `IsolationClaims` accepts a structural `Isolation` value and `notApplicable` accepts only `'P5'` and `'P6'` |
 | `tests/regressions.test.tsx` | Shrunk counterexamples (starts empty) |
 
 ### Scan tests (`tests/scan/`, node, no build)
@@ -1110,7 +1128,7 @@ import tseslint from 'typescript-eslint';
 import eslintReact from '@eslint-react/eslint-plugin';
 import hooks from 'eslint-plugin-react-hooks';
 
-// Rule IDs of the dangerouslySetInnerHTML prohibition in @eslint-react/eslint-plugin 5.30.4 (verified, fixed, no fallback):
+// Rule IDs of the dangerouslySetInnerHTML prohibition in @eslint-react/eslint-plugin 5.30.3 (verified, fixed, no fallback):
 // '@eslint-react/dom-no-dangerously-set-innerhtml' and '@eslint-react/dom-no-dangerously-set-innerhtml-with-children'.
 // The plugin is registered under the key '@eslint-react' in the plugins object below.
 
@@ -1167,7 +1185,7 @@ export default tseslint.config(
 );
 ```
 
-`react-hooks/*` are the long-standing rule names of `eslint-plugin-react-hooks` 7.1.1, whose peer range includes ESLint ^10; the plugin object is registered under the key `react-hooks` and only these two rules are enabled (no preset, so the config does not depend on the preset accessor name). `@eslint-react/eslint-plugin` 5.30.4 declares peer `eslint` `*` and Node 20.19 or newer. Its rule IDs for the prohibition are fixed (verified against 5.30.4, Q1 resolved): `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children`, with a hyphen and no fallback; `eslint-fixtures.test.ts` fails when these rules do not reject `dangerouslySetInnerHTML`. The `no-restricted-syntax` selectors (the JSX attribute selector and the property selector) are the independent second layer for Requirement 4 criterion 1, so a plugin mismatch cannot remove the ban. `eslint-plugin-react` and `eslint-plugin-jsx-a11y` are not used at all (decision D15, "Forbidden versions and why"); the selectors for positive `tabIndex` and handlers on non-interactive elements are a small source-level substitute, and axe-core plus role-based queries cover the rest (see "Accessibility checking"). As in `core/eslint.config.mjs`, each block that sets `no-restricted-syntax` repeats the full list, because a later block replaces rule options instead of merging them.
+`react-hooks/*` are the long-standing rule names of `eslint-plugin-react-hooks` 7.1.1, whose peer range includes ESLint ^10; the plugin object is registered under the key `react-hooks` and only these two rules are enabled (no preset, so the config does not depend on the preset accessor name). `@eslint-react/eslint-plugin` 5.30.3 declares peer `eslint` `*` and Node 20.19 or newer. Its rule IDs for the prohibition are fixed (verified against 5.30.3, Q1 resolved): `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children`, with a hyphen and no fallback; `eslint-fixtures.test.ts` fails when these rules do not reject `dangerouslySetInnerHTML`. The `no-restricted-syntax` selectors (the JSX attribute selector and the property selector) are the independent second layer for Requirement 4 criterion 1, so a plugin mismatch cannot remove the ban. `eslint-plugin-react` and `eslint-plugin-jsx-a11y` are not used at all (decision D15, "Forbidden versions and why"); the selectors for positive `tabIndex` and handlers on non-interactive elements are a small source-level substitute, and axe-core plus role-based queries cover the rest (see "Accessibility checking"). As in `core/eslint.config.mjs`, each block that sets `no-restricted-syntax` repeats the full list, because a later block replaces rule options instead of merging them.
 
 ### `ui/package.json`
 
@@ -1196,7 +1214,7 @@ export default tseslint.config(
   "license": "MIT",
   "dependencies": { "@ghost-run/core": "workspace:*", "react": "^19.3.1", "react-dom": "^19.3.1" },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "^5.30.4",
+    "@eslint-react/eslint-plugin": "5.30.3",
     "@testing-library/dom": "^10.4.2", "@testing-library/react": "^16.3.3", "@testing-library/user-event": "^14.6.12",
     "@types/node": "^20.19.0", "@types/react": "^19.3.0", "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0", "axe-core": "^4.14.1", "eslint": "^10.15.0",
@@ -1295,7 +1313,7 @@ export default defineConfig({
 | 4 Markup inertness, secret non-display | Components (D6, props only as text; D13 and "Secret-like keys": `isSecretLikeKey`, `redactGenericValue`, README text); Source hygiene (ESLint selectors and the `@eslint-react` rule); Data Models (type test); Properties 4 and 5 |
 | 5 Mirror world | Components (Mirror world, Secret-like keys); Visual design (SVG); Property 1; Property 4 (criteria 5 and 11); Error Handling |
 | 6 Candle | Components (Candle and claim banner); Visual design (icons, flame); Property 2 |
-| 7 Isolation claims, Plan B | Components (`claims.ts` model, decision table, text table; D14); Property 7 (conditions A and B); resolved Open Question Q4 |
+| 7 Isolation claims, Plan B | Components (`claims.ts` model, decision table, text table; D14, D16); Property 7 (conditions A and B); resolved Open Question Q4 |
 | 8 Blacklight | Components (Blacklight: limits, covered code points); Visual design (marker styling); Property 10; resolved Open Question Q12 |
 | 9 Red thread | Components (Red thread); Visual design (connector); Property 11 |
 | 10 Graveyard and seance | Components (Graveyard and seance, focus return D11, `time.ts` D10); Visual design (tombstone); Property 9 |
@@ -1314,7 +1332,7 @@ These items could not be confirmed in the design session (no shell, no network) 
 
 | # | Item | Status and plan |
 |---|---|---|
-| Q1 | **`@eslint-react/eslint-plugin` 5.30.4 rule IDs.** The `dangerouslySetInnerHTML` prohibition uses the fixed IDs `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (hyphen form, verified against 5.30.4). | **Resolved.** No load-time resolution and no try-both fallback. `eslint-fixtures.test.ts` proves the rules reject `dangerouslySetInnerHTML` and that the `no-restricted-syntax` selector rejects it independently (double layer). |
+| Q1 | **`@eslint-react/eslint-plugin` 5.30.3 rule IDs.** The `dangerouslySetInnerHTML` prohibition uses the fixed IDs `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (hyphen form, verified against 5.30.3). | **Resolved.** No load-time resolution and no try-both fallback. `eslint-fixtures.test.ts` proves the rules reject `dangerouslySetInnerHTML` and that the `no-restricted-syntax` selector rejects it independently (double layer). |
 | Q2 | **Vitest 3.2.7 inline `projects` with `extends: true`.** | **Unverified.** Fallback: per-file `// @vitest-environment jsdom` docblocks and `vitest run <glob>` per script. |
 | Q3 | **`react-dom/server` inside the jsdom environment** (export conditions could select the browser build). | **Unverified.** The static legs avoid it (node environment). If UI-P5 cannot call `renderToStaticMarkup` in jsdom, UI-P5 renders with Testing Library and parses `container.innerHTML`. |
 | Q4 | **Conflict between Requirement 7 criteria 5 and 7 (previous design).** | **Resolved.** The requirements now state two independent conditions. Condition A: Assurance_Text iff `mode` is `docker-box` or `playground` and `p1Claimed` is true. Condition B: the "Not claimed" banner iff `claims` is absent or malformed or at least one of P1, P5, P6 is not claimed. Both may appear together. The design implements this in `buildClaimModel` (decision D14, decision table and text table), the component, and Property 7. |

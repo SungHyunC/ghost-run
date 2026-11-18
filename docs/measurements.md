@@ -4,8 +4,8 @@ Measured values recorded by the Kiro implementation runs. The development log (`
 
 ## ui-kit task 1.3: install facts
 
-`corepack pnpm install` ran once for the workspace (pnpm 12.21.0, +123 packages). No peer-dependency warnings. One deprecation warning: sub-dependency `whatwg-encoding@3.1.1` (via jsdom). pnpm added 13 `@eslint-react/*` and `eslint-plugin-react-*` 5.30.4 entries to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`. The install changed nothing in `core/`, `ghost-runner/`, or `wards-config/`.
-  - Resolved versions: vite 7.3.8, vitest 3.2.7, jsdom 26.1.0, react 19.3.1, react-dom 19.3.1, @eslint-react/eslint-plugin 5.30.4, axe-core 4.14.1.
+`corepack pnpm install` ran once for the workspace (pnpm 12.21.0, +123 packages). No peer-dependency warnings. One deprecation warning: sub-dependency `whatwg-encoding@3.1.1` (via jsdom). The first install bypassed the release-age check with 13 `minimumReleaseAgeExclude` entries for 5.30.4. That bypass was reverted: `@eslint-react/eslint-plugin` is pinned to exactly 5.30.3 and installs with no exclusions. The install changed nothing in `core/`, `ghost-runner/`, or `wards-config/`.
+  - Resolved versions: vite 7.3.8, vitest 3.2.7, jsdom 26.1.0, react 19.3.1, react-dom 19.3.1, @eslint-react/eslint-plugin 5.30.3, axe-core 4.14.1.
   - Q1 confirmed: ESLint accepts `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (`eslint .` and `tsc --noEmit` both exit 0 in `ui/`).
   - Q2 confirmed: Vitest 3.2.7 accepts the inline `projects` config (projects model, static, dom, scan, dist listed; `vitest run --passWithNoTests` exits 0). No fallback needed.
   - Non-ASCII scan of `ui/` and `.kiro/specs/ui-kit/`: only box-drawing characters (U+2500, U+2502, U+251C, U+2514) and U+2248 in `design.md`. No hidden Unicode.

@@ -1,4 +1,5 @@
 import { pick } from './guards';
+import type { IconId } from './icons';
 import {
   ASSURANCE_DOCKER,
   ASSURANCE_PLAYGROUND,
@@ -6,12 +7,26 @@ import {
   REASON_DOCKER_UNAVAILABLE,
   STATIC_BANNER,
   STATUS_UNKNOWN,
+  notApplicableText,
   notClaimed,
+  CLAIMED_TEXT,
+  NOT_CLAIMED_TEXT,
+  REASON_NO_REHEARSAL,
+  REASON_STEPS_NOT_REHEARSED,
 } from './texts';
 
+export type ClaimId = 'P1' | 'P5' | 'P6';
+export type ClaimStatus = 'claimed' | 'not-claimed' | 'not-applicable';
+
 export interface ClaimLine {
-  readonly id: 'P1' | 'P5' | 'P6';
+  readonly id: ClaimId;
+  /** True iff `status` is `claimed`. Kept for callers that only need the boolean. */
   readonly claimed: boolean;
+  readonly status: ClaimStatus;
+  /** Visible text of the line, e.g. `P1 claimed`, `P5 NOT claimed`, `P6: not applicable to this world`. */
+  readonly text: string;
+  /** `check`, `ban`, or `not-applicable`: text plus icon, never color alone. */
+  readonly icon: IconId;
 }
 
 export interface ClaimModel {
@@ -20,22 +35,35 @@ export interface ClaimModel {
   readonly assuranceText: string | null;
   /** Set iff mode is static-analysis. */
   readonly staticBanner: string | null;
-  /** Condition B: claims absent or malformed, or a sealed mode with an unclaimed P1, P5 or P6. */
+  /** Condition B: claims absent or malformed, or a sealed mode with P1, P5 or P6 neither claimed nor validly not applicable. */
   readonly notClaimedBanner: string | null;
   readonly unknownStatus: boolean;
 }
 
-function lines(p1: boolean, p5: boolean, p6: boolean): ClaimModel['lines'] {
-  return [
-    { id: 'P1', claimed: p1 },
-    { id: 'P5', claimed: p5 },
-    { id: 'P6', claimed: p6 },
-  ];
+function line(id: ClaimId, status: ClaimStatus): ClaimLine {
+  if (status === 'claimed') return { id, claimed: true, status, text: `${id} ${CLAIMED_TEXT}`, icon: 'check' };
+  if (status === 'not-applicable') return { id, claimed: false, status, text: notApplicableText(id), icon: 'not-applicable' };
+  return { id, claimed: false, status, text: `${id} ${NOT_CLAIMED_TEXT}`, icon: 'ban' };
 }
 
-/** Total: never returns Unreadable. A claim counts only when the supplied value is the boolean `true`. */
+function allNotClaimed(): ClaimModel['lines'] {
+  return [line('P1', 'not-claimed'), line('P5', 'not-claimed'), line('P6', 'not-claimed')];
+}
+
+/** Lowered-claim wording by reason; no reason (or a reason that only explains a static run) gives none. */
+function loweredWording(reason: unknown): string {
+  if (reason === 'static-analysis') return REASON_NO_REHEARSAL;
+  if (reason === 'unsupported-step') return REASON_STEPS_NOT_REHEARSED;
+  return '';
+}
+
+/**
+ * Total: never returns Unreadable. A claim counts only when the supplied value is the boolean `true`.
+ * A property is not applicable only when `notApplicable` is an array that contains the string 'P5' (resp. 'P6')
+ * AND the claim flag is not the boolean `true` (a supplied true claim is shown as claimed). P1 is never not applicable.
+ */
 export function buildClaimModel(claims: unknown): ClaimModel {
-  const p = pick(claims, 'mode', 'p1Claimed', 'p5Claimed', 'p6Claimed', 'reason');
+  const p = pick(claims, 'mode', 'p1Claimed', 'p5Claimed', 'p6Claimed', 'reason', 'notApplicable');
   const mode = p?.mode;
 
   if (p !== null && mode === 'static-analysis') {
@@ -46,7 +74,7 @@ export function buildClaimModel(claims: unknown): ClaimModel {
           ? REASON_BOX_IMAGE_MISSING
           : '';
     return {
-      lines: lines(false, false, false),
+      lines: allNotClaimed(),
       assuranceText: null,
       staticBanner: STATIC_BANNER + reason,
       notClaimedBanner: null,
@@ -66,7 +94,7 @@ export function buildClaimModel(claims: unknown): ClaimModel {
     const assuranceText =
       validMode && p?.p1Claimed === true ? (mode === 'docker-box' ? ASSURANCE_DOCKER : ASSURANCE_PLAYGROUND) : null;
     return {
-      lines: lines(false, false, false),
+      lines: allNotClaimed(),
       assuranceText,
       staticBanner: null,
       notClaimedBanner: `${STATUS_UNKNOWN} ${notClaimed(['P1', 'P5', 'P6'])}`,
@@ -74,13 +102,20 @@ export function buildClaimModel(claims: unknown): ClaimModel {
     };
   }
 
-  const l = lines(p.p1Claimed, p.p5Claimed, p.p6Claimed);
-  const unclaimed = l.filter((x) => !x.claimed).map((x) => x.id);
+  const na = Array.isArray(p.notApplicable) ? (p.notApplicable as readonly unknown[]) : [];
+  const status = (id: 'P5' | 'P6', flag: boolean): ClaimStatus =>
+    flag ? 'claimed' : na.includes(id) ? 'not-applicable' : 'not-claimed';
+  const l: ClaimModel['lines'] = [
+    line('P1', p.p1Claimed ? 'claimed' : 'not-claimed'),
+    line('P5', status('P5', p.p5Claimed)),
+    line('P6', status('P6', p.p6Claimed)),
+  ];
+  const unclaimed = l.filter((x) => x.status === 'not-claimed').map((x) => x.id);
   return {
     lines: l,
     assuranceText: p.p1Claimed ? (mode === 'docker-box' ? ASSURANCE_DOCKER : ASSURANCE_PLAYGROUND) : null,
     staticBanner: null,
-    notClaimedBanner: unclaimed.length > 0 ? notClaimed(unclaimed) : null,
+    notClaimedBanner: unclaimed.length > 0 ? notClaimed(unclaimed) + loweredWording(p.reason) : null,
     unknownStatus: false,
   };
 }

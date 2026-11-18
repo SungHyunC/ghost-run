@@ -2,7 +2,7 @@ import tseslint from 'typescript-eslint';
 import eslintReact from '@eslint-react/eslint-plugin';
 import hooks from 'eslint-plugin-react-hooks';
 
-// Rule IDs of the dangerouslySetInnerHTML prohibition in @eslint-react/eslint-plugin 5.30.4 (verified, fixed, no fallback):
+// Rule IDs of the dangerouslySetInnerHTML prohibition in @eslint-react/eslint-plugin 5.30.3 (verified, fixed, no fallback):
 // '@eslint-react/dom-no-dangerously-set-innerhtml' and '@eslint-react/dom-no-dangerously-set-innerhtml-with-children'.
 // The plugin is registered under the key '@eslint-react' in the plugins object below.
 
