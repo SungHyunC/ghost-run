@@ -147,32 +147,32 @@ The plan follows the implementation order of the design:
     - Update `src/index.ts` to export `createWatchdogExecutor` and `TimerPort`.
     - _Requirements: 5.12, 8.5, 20.6_
 
-- [ ] 6. Shell parser, interpreter, and command handlers
-  - [ ] 6.1 Implement the tokenizer, the parser, and the `fnmatch` helper
+- [x] 6. Shell parser, interpreter, and command handlers
+  - [x] 6.1 Implement the tokenizer, the parser, and the `fnmatch` helper
     - `src/shell/tokenize.ts`: one pass over code points with the unquoted, single-quoted, and double-quoted states; tokens `word` (`{ text, quoted, glob }`), `op` (`;`, `&&`, `>`, `>>`), and `bad(reason)` for pipes, `||`, `&`, `<`, `<<`, parentheses, braces, `$` outside single quotes, backticks, unquoted `#` at a word start, a digit-only word glued to `>`, `&>`, newline, trailing backslash, unterminated quote, and NUL, with fixed short reasons. It never throws and never executes anything.
     - `src/shell/parse.ts`: split at `;` and `&&` into `SimpleCommand { words, redirect?, connector, unsupportedReason? }`; `unsupportedReason` for a bad token, an unquoted glob word, more than one redirect, a redirect without a target, no words, an empty segment, a trailing `&&`, more than 64 simple commands, or more than 4,096 code points; a trailing `;` is allowed.
     - `src/shell/fnmatch.ts`: iterative basename glob (`*`, `?`, `[abc]`, `[!abc]`), no regular expression.
     - Write table-driven example tests for each token and reason, quoting, and `fnmatch`.
     - _Requirements: 5.2, 5.10, 6.1, 19.4_
 
-  - [ ] 6.2 Implement `runLine` and the file-system command handlers
+  - [x] 6.2 Implement `runLine` and the file-system command handlers
     - `src/shell/interpret.ts`: `RunEnv`, `LineResult`, and `runLine(line, env)` with the semantics of the design (left to right; `&&` skips when the last exit code is not 0; the first unsupported segment ends the line with exit 127 and `unsupported: <reason>`, effects of earlier commands stay; a command budget of 256 per action with the reason `command budget exceeded`; a mark before the line and a rollback to it on `LimitError` with exit 1 and `limit exceeded: <name>`; redirects `>` and `>>` through `toVirtualPath`, truncating before the command runs, writing stdout after).
     - `src/shell/commands/`: `pwd`, `ls` (`-a`, `-l`, several paths with headers), `cat`, `echo` (`-n` only), `mkdir` (`-p`), `touch`, `rm` (`-r`, `-f`, `-rf`, `-fr`; refuses `.`, `/`, root), `mv`, `cp` (`-r`), `find` (`-name`, `-print`, `-delete`, post-order, `-delete` followed by another expression unsupported, `find` without a path unsupported), `true`, `false`. Each handler validates its option list against the table of Requirement 5.3 and returns the reserved `UNSUPPORTED(reason)` for anything else, so the decision is in one place per command. The handlers receive file reads only through `env.trace.recordRead` (a stub that does nothing until task 6.5 fills the choke point; handlers call it already).
     - Create `tests/support/arb-commands.ts` with the generator of supported command lines over a generated project (used by later property tasks).
     - Write table-driven example tests per command and option, including the unsupported option sets (Requirement 5.10) and exit codes 0, 1, and 127.
     - _Requirements: 4.1, 4.3, 5.1, 5.2, 5.3, 5.10, 5.11, 6.1, 6.2_
 
-  - [ ] 6.3 Write property test for connector semantics
+  - [x] 6.3 Write property test for connector semantics
     - **Property 11: Connector semantics**
     - **Validates: Requirements 5.2**
     - File `tests/prop-11-connectors.test.ts`. Generator: lines built from `true`, `false`, and `echo <word>` joined by `;` and `&&`, checked against a small reference evaluator written in the test.
 
-  - [ ] 6.4 Write property test for limits and output truncation
+  - [x] 6.4 Write property test for limits and output truncation
     - **Property 21: Limits and output truncation**
     - **Validates: Requirements 4.1, 5.11**
     - File `tests/prop-21-limits.test.ts`. Generators: plans that exceed 2,000 entries, 1 MiB per file, or 16 MiB in total (built from `mkdir -p`, `echo >>` loops with generated sizes kept within test time), and commands with generated output length. The test uses reduced fixtures by passing the limits through the `StateFs` constructor only where the design allows a limit parameter; otherwise it uses real limits with a small number of large steps.
 
-  - [ ] 6.5 Implement the `trace.recordRead` choke point, effects, and the `sqlite3`, `curl`, and `npm` handlers
+  - [x] 6.5 Implement the `trace.recordRead` choke point, effects, and the `sqlite3`, `curl`, and `npm` handlers
     - **Depends on tasks 5.1 and 6.2.**
     - `env.trace.recordRead(path)` is the only way a handler records a secret read: it tests the path against `compilePathSet(secretPatterns, { caseSensitive: false })` from core and appends a `secret-read` event deduped per `(stepIndex, path)`; with no patterns nothing is recorded. Wire it into `cat`, `cp` (source files), `curl -d @`, `curl --data-binary @`, and `sqlite3`.
     - `src/shell/commands/sqlite3.ts`: open or create the file, call `screenSql`, call the executor, write bytes and `tables` back only when the bytes differ, start a missing file as an empty database, fail with `file is not a database` without touching the file, exit 1 for a directory, turn `watchdog: true` into exit 1, `StepRecord.watchdog`, and `Trace.watchdogFired`.
@@ -183,33 +183,33 @@ The plan follows the implementation order of the design:
     - Write example tests per handler, including `npm install` recording `registry.npmjs.org:443` and the error texts.
     - _Requirements: 3.9, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.12, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-  - [ ] 6.6 Write property test for network attempts and payloads
+  - [x] 6.6 Write property test for network attempts and payloads
     - **Property 14: Network attempts and payloads**
     - **Validates: Requirements 7.1, 7.2, 7.6, 7.7**
     - File `tests/prop-14-network.test.ts`. Generators: `http` and `https` URLs with hosts in any case and optional ports, request bodies of generated length (including above 65,536 bytes), missing `-d @file`, and non-http URLs.
 
-  - [ ] 6.7 Write property test for secret-read recording
+  - [x] 6.7 Write property test for secret-read recording
     - **Property 15: Secret reads are recorded by pattern, once per step**
     - **Validates: Requirements 7.3, 7.4, 7.5**
     - File `tests/prop-15-secret-reads.test.ts`. Generators: projects, secret pattern sets (including the empty set), and the commands `cat`, `cp`, `curl -d @`, `curl --data-binary @`, and `sqlite3` over existing paths, in `;` and `&&` lines and expanded npm scripts.
 
-  - [ ] 6.8 Write property test for npm script expansion
+  - [x] 6.8 Write property test for npm script expansion
     - **Property 12: npm script expansion equals direct execution**
     - **Validates: Requirements 5.4, 5.5, 11.9**
     - File `tests/prop-12-npm.test.ts`. Generators: script texts of supported commands over a generated project, missing scripts, and unreadable `package.json`.
 
-  - [ ] 6.9 Write property test for SQL steps
+  - [x] 6.9 Write property test for SQL steps
     - **Property 20: SQL steps**
     - **Validates: Requirements 5.8, 5.9, 5.12**
     - File `tests/prop-20-sql.test.ts`. Uses `InlineSqlExecutor`. Generators: read-only SQL from a SELECT-only grammar on generated databases; SQL text containing each screened word in any letter case; erroneous SQL; whole-file deletes and moves of a database (a `file-deleted` Change, no row-count Change).
 
-  - [ ] 6.10 Write property test for identical writes and observation-only steps
+  - [x] 6.10 Write property test for identical writes and observation-only steps
     - **Property 10: Identical writes and observation-only steps leave no Change**
     - **Validates: Requirements 3.14, 4.6**
     - File `tests/prop-10-no-change.test.ts`. Generators: file contents and paths for rewrites with `echo >` and `cp` of an identical file; plans made only of `curl` and `npm install` steps.
 
-- [ ] 7. World assembly and contract tests
-  - [ ] 7.1 Implement `createPlaygroundWorld`, the public entry, and the world registration
+- [x] 7. World assembly and contract tests
+  - [x] 7.1 Implement `createPlaygroundWorld`, the public entry, and the world registration
     - **Depends on tasks 4.3, 5.2, and 6.5.**
     - `src/world.ts`: `createPlaygroundWorld(project, options)` is synchronous, deep-copies and deeply freezes the project as the live state (no method returns a reference to it), and implements `snapshot` (structured clone, id `snap-<n>` from a world-local counter, `result: { success: true }`, an empty Trace stored under the id), `step` (clone, `StateFs`, `runLine` with `stepIndex` equal to the previous Trace's step count, commit, new Trace stored under the new id, result from the last step record; never throws; an internal error becomes an unsupported step with the reason `internal error` and the state of `s` unchanged; an unknown snapshot id is treated as an empty Trace), `diff` (`diffStates`), `render` (`renderScene`), `fingerprint`, `effectsOutside`, `traceOf`, and `metadata: { id: 'playground-shell', deterministic: true }`. A step with a non-zero exit code or an unsupported step has `result: { success: false, error: '<non-empty>' }`; an unsupported step's error is `unsupported: <reason>`.
     - `src/index.ts`: the final public entry (all exports of the design). `world.config.ts`: `{ id: 'playground-shell', deterministic: true, wardsFile: '../../apps/ghost-shell/wards.yaml', create: createPlaygroundWorld }` as a path string only, never an import.
@@ -217,27 +217,27 @@ The plan follows the implementation order of the design:
     - Write example tests: `snapshot` deep copy independence, `step` leaves the input snapshot unchanged, unique ids, `traceOf` for unknown ids, `effectsOutside` with and without a URL, observation-only steps with an empty `diff`.
     - _Requirements: 1.2, 3.1, 3.2, 3.3, 3.4, 3.5, 3.9, 3.10, 3.12, 3.13, 3.14_
 
-  - [ ] 7.2 Write property test for no silent pass
+  - [x] 7.2 Write property test for no silent pass
     - **Property 3: No silent pass (GS-P3)**
     - **Validates: Requirements 3.5, 5.10, 6.1, 6.2, 6.3, 6.7**
     - File `tests/prop-03-no-silent-pass.test.ts`. Generators: arbitrary strings and command-like strings (pipes, expansions, globs, unknown commands, unknown options, screened SQL words). Checks that `step` never throws, the step is supported or `unsupported: true` with exit 127 and `unsupported: <reason>`, effects before the first unsupported command stay and none after it run, and a failing step has `success: false` with a non-empty `error`. Keep each shrunk counterexample as an example in `tests/regressions.test.ts` (created by this task; later tasks append only in later waves).
 
-  - [ ] 7.3 Write property test for the P1 isolation (contract P1) with a mutation test
+  - [x] 7.3 Write property test for the P1 isolation (contract P1) with a mutation test
     - **Property 7: Ghost run never changes reality (contract P1)**
     - **Validates: Requirements 3.3, 9.2, 10.3**
     - File `tests/prop-07-isolation.test.ts`. Generators: projects and plans of 1 to 50 supported and unsupported actions. Also checks that changing one byte or deleting an entry of a snapshot leaves the live fingerprint equal, and that a deliberately broken world (a `step` that mutates the live state) makes the property fail (the test asserts that the assertion rejects).
 
-  - [ ] 7.4 Write property test for snapshot immutability and replay (contract P3)
+  - [x] 7.4 Write property test for snapshot immutability and replay (contract P3)
     - **Property 8: Snapshots are immutable and replay is deterministic (contract P3)**
     - **Validates: Requirements 3.4, 10.4**
     - File `tests/prop-08-restore.test.ts`. Generators: projects and plans of 1 to 50 actions.
 
-  - [ ] 7.5 Write property test for the ghost diff versus the independent execution diff (contract P2)
+  - [x] 7.5 Write property test for the ghost diff versus the independent execution diff (contract P2)
     - **Property 9: Ghost diff equals the independent execution diff (contract P2)**
     - **Validates: Requirements 3.6, 4.4, 4.5, 4.7, 4.8, 4.9, 10.1, 10.2, 10.5**
     - File `tests/prop-09-diff.test.ts`. Creates `tests/support/journal-adapter.ts`: a `DeterministicTestAdapter` that re-executes the plan on a clone with `JournalFs` and the same handlers and derives the Changes with `JournalFs.changes()`. Generators: projects and plans of supported commands (no watchdog event). Also checks sorting, the allowed kinds only, and empty `Change[]` for equal states.
 
-  - [ ] 7.6 Run `verifyWorld`, measure the run time, and apply the fallback if needed
+  - [x] 7.6 Run `verifyWorld`, measure the run time, and apply the fallback if needed
     - **Depends on tasks 7.2 to 7.5 and 7.7.**
     - Create `tests/support/budget.ts` (records the elapsed time of the contract tests and fails the Short_Run above 45,000 ms) and `tests/verify-world.test.ts` calling `verifyWorld(world, { id: 'playground-shell', deterministic: true, wardSet: <default wards loaded with loadWardsFile in Node-only test code>, testAdapter: journalAdapter, actionArb: supportedActionArb, numRuns: NUM_RUNS })` from `@ghost-run/core/verify`. The world is built from the Scenario 4 neutral project (an `app.db` of 1,206 rows built by `tests/support/neutral-project.ts`, a test-only copy of the fixture recipe: it does not import from the app). `supportedActionArb` draws from the Supported_Command_Set with `sqlite3` at about 10 percent of the draws and SQL from a bounded grammar (`SELECT`, `INSERT`, `UPDATE`, `DELETE` with bounded `WHERE`, no recursion).
     - Run the Short_Run with `time` on the Reference_Machine class of hardware (Apple M1 or comparable) and record: the elapsed time of `verifyWorld` alone, of the whole world suite, and the number of SQL steps executed. Compare with the design estimate (10 to 20 s, near 30 s for the file-save run), the 45 s guard, and the 60 s save-time budget.
@@ -246,12 +246,12 @@ The plan follows the implementation order of the design:
     - Confirm `verifyWorld` resolves without a `VerificationError`. Optionally run the Nightly_Run once and record the elapsed time.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 20.1_
 
-  - [ ] 7.7 Write world hygiene and scan tests
+  - [x] 7.7 Write world hygiene and scan tests
     - Create `tests/scan/world-scan.test.ts` (node): the source files of `worlds/playground-shell/` contain no `eval`, `new Function`, `innerHTML`, `dangerouslySetInnerHTML`, `Date.now`, `new Date`, `Math.random`, `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `fetch`, `XMLHttpRequest`, `WebSocket`, or `console.`; the `package.json` lists exactly the runtime dependencies `@ghost-run/core` and `sql.js`; the installed `vitest` and `jsdom` majors are 3 and 26; no handler imports the byte reader except through `env.trace.recordRead` (scan of `commands/*.ts`); `journal-fs.ts` and `diff.ts` do not import each other; every `http`, `https` host in sources and fixtures uses a reserved suffix or `registry.npmjs.org`.
     - Create `tests/scan/determinism.test.ts`: run the same plan twice with `Date.now` and `Math.random` replaced by functions that throw, requiring equal states, Changes, Step_Records, and events.
     - _Requirements: 1.4, 3.2, 5.1, 10.6, 19.3, 19.4, 19.6_
 
-- [ ] 8. Checkpoint - World complete
+- [x] 8. Checkpoint - World complete
   - Run `pnpm --filter @ghost-run/playground-shell test`, `typecheck`, and `lint`. Confirm the Short_Run suite finishes within 60 s per file, `core/package.json` and `core/src` are unchanged apart from task 1.1, and the world package has exactly the two runtime dependencies. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. App prerequisites and `ui` wiring

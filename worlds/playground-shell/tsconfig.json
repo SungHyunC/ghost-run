@@ -15,5 +15,5 @@
       "@ghost-run/core/verify": ["../../core/verify.ts"]
     }
   },
-  "include": ["src", "tests", "vitest.config.ts"]
+  "include": ["src", "tests", "vitest.config.ts", "world.config.ts"]
 }

@@ -329,3 +329,19 @@ Recorded 2026-11-18 for task 1.6 of `.kiro/specs/kiro-integration`. Source: `.gh
 | (h) `timeout` at entry level (`hooks[].timeout`) | pending (task 1.4) | Honored: a 3 s wait with `timeout: 1` was cut after about 1 s (the `entry` run has a `start` and no `end`; the next record starts 1.03 s later) | lines 5 and 6 |
 | (h) `timeout` inside `action` | pending (task 1.4) | Ignored: the 3 s wait ran to the end (`start` and `end` 3.00 s apart) | lines 6 and 7 |
 | (i) `ask` permission decision | pending (task 17.2) | pending (task 17.2) | `probe-ask.json` (disabled) |
+
+## Playground world contract run time (task 7.6)
+
+Measured on an Apple M1 class machine (macOS, Node 20+), Short_Run (`numRuns` 100), nothing else running, with `time corepack pnpm exec vitest run` in `worlds/playground-shell`. The world is built from the Scenario 4 neutral project (`app.db` with 1,206 `users` rows and 3 `orders` rows). `verifyWorld` used the default state comparison (no `stateEquals`) and resolved without a `VerificationError`. No fallback was needed.
+
+| Measurement | Result | Reference |
+|---|---|---|
+| `verifyWorld` alone (`tests/verify-world.test.ts`) | 13.8 s and 14.9 s in two runs | design estimate 10 to 20 s; Short_Run guard 45 s; save-time budget 60 s |
+| Whole world suite, wall clock (`pnpm test`, 34 files, 397 tests) | 16.8 s (single file alone: 15.5 s wall) | per-file budget 60 s |
+| SQL steps executed by the world (ghost runs of P3, P1, P2, wards) | 496 and 472 in two runs | design estimate about 700 |
+| SQL steps executed by the journal oracle (P2 real side, memoized) | 367 and 363 | none |
+| Runs per property | 100 (7 sequences: P3 twice, P1, P2, 3 wards) | floor 100 |
+
+The step counts vary between runs because fast-check seeds are random. `sqlite3` is about 10 percent of the draws, with SQL from a bounded grammar (`SELECT`, `INSERT`, `UPDATE`, `DELETE` with a bounded `WHERE`, no recursion). The Nightly_Run of `verifyWorld` was not run.
+
+Equivalence of the test worker and the app SQL core: `tests/sql-worker-equivalence.test.ts` compares `tests/support/sql-worker.mjs` with `handleSqlRequest` over generated SQL, erroneous SQL, and databases with bytes. It passed at 100 runs (about 1 s) and at the Nightly_Run size of 10,000 runs (about 84 s).
