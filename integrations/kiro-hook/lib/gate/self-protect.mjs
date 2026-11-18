@@ -3,6 +3,9 @@
 
 import { compilePathSet } from '@ghost-run/core';
 
+/** Fixed notice for a change under a Self_Protected_Path (Requirement 6.6, 10). */
+export const SELF_PROTECT_NOTICE = 'step 0: change to a gate-protected path needs human approval.';
+
 /** Fixed Self_Protected_Path patterns (workspace-relative). */
 export const SELF_PROTECTED = Object.freeze([
   '.kiro/hooks/**',

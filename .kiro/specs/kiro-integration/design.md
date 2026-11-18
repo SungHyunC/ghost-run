@@ -179,7 +179,7 @@ Comparison. The documentation (hooks page, schema table) lists `timeout` and `en
 | `contract-pbt.json` | 1 | `PostFileSave`, `(^\|/)(core\|worlds)/` | The matcher is a prefilter. The script checks the workspace-relative path with `^(core\|worlds)/`. `timeout: 60`. |
 | `blacklight-steering.json` | 1 | `PostFileSave`, `(^\|/)\.kiro/` | Script checks `^\.kiro/`. `timeout: 10`. |
 | `world-scaffold.json` | 1 | file-create trigger (candidate `PostFileCreate`), `(^\|/)worlds/[^/]+/` | Written only after the probe confirms the identifier (O1). `timeout: 10`. Resolved (CLI 3.4.0, 2026-11-18): the trigger `PostFileCreate` is confirmed in the CLI, so the file may be written with `FILE_CREATE_TRIGGER = 'PostFileCreate'`. IDE result pending, re-check after task 1.4. |
-| `probe-host-facts.json` | several | all candidate triggers | Created first. `enabled: false` once the devlog table exists. |
+| `probe-host-facts.json` | several | all candidate triggers | Created first. `enabled: false` once the results table exists in `docs/measurements.md`. |
 | `exp-b-block-rm-rf.json`, `exp-b-log-write.json` | 1 each | unchanged | `enabled: false`. |
 
 The file-event matcher is a regular expression over a path whose form (absolute or workspace-relative) is unconfirmed, so the matchers are unanchored prefilters and the script is the authority (`file-event.mjs` makes the path workspace-relative first).
@@ -482,7 +482,7 @@ Only these values are recorded: the `hook_event_name`, the sorted top-level fiel
 
 The probe script takes its test modes from one optional argument, so the file-name set stays at one script. This is a small deviation from Requirement 2 criterion 2 (a `command` of the form `node integrations/kiro-hook/<script>.mjs`) that applies only to probe entries, and from Requirement 24 criterion 3 ("prints nothing") in the `--stdout-test` mode, which prints the marker. O15 records both. The agent creating the probe hook is a change under `.kiro/hooks/**`; it is exempt from the gate only in the sense that the gate is not yet enabled when the probe task runs (the gate and the probe are not both live before the probe results exist), and later changes go through the ordinary warn.
 
-After the results table is written to `docs/devlog.md`, the probe file gets `enabled: false` and stays in the repository; a test fails if it is enabled while the table exists. The results fix the constants `FILE_EVENT_PATH_FIELDS`, `FILE_CREATE_TRIGGER`, `POST_RESPONSE_FIELDS`, and the `WARN_MODE` decision in `gate-config.mjs` and `file-event.mjs`. Resolved (CLI 3.4.0, 2026-11-18): `FILE_EVENT_PATH_FIELDS = ['file_path']`, `FILE_CREATE_TRIGGER = 'PostFileCreate'`, `POST_RESPONSE_FIELDS = ['tool_response']` (a non-object value). `WARN_MODE` is unchanged (`exit2`, O9 and O18). These values come from the CLI only. IDE result pending, re-check after task 1.4.
+After the results table is written to `docs/measurements.md`, the probe file gets `enabled: false` and stays in the repository; a test fails if it is enabled while the table exists. The results fix the constants `FILE_EVENT_PATH_FIELDS`, `FILE_CREATE_TRIGGER`, `POST_RESPONSE_FIELDS`, and the `WARN_MODE` decision in `gate-config.mjs` and `file-event.mjs`. Resolved (CLI 3.4.0, 2026-11-18): `FILE_EVENT_PATH_FIELDS = ['file_path']`, `FILE_CREATE_TRIGGER = 'PostFileCreate'`, `POST_RESPONSE_FIELDS = ['tool_response']` (a non-object value). `WARN_MODE` is unchanged (`exit2`, O9 and O18). These values come from the CLI only. IDE result pending, re-check after task 1.4.
 
 ### MCP server `ghost-run` (Requirements 18, 19)
 
@@ -565,7 +565,7 @@ The Power_Folder contains no hook and no steering file (the template keeps them 
 | `runs/<id>.json` | `serializeRunResult` output | gate, `ghost_run` | `ghost_diff`, `ghost_trace` |
 | `pbt/last.json` | `PbtSummary` | contract-pbt | humans |
 | `blacklight/last.txt` | `formatReport` text | blacklight-steering | humans |
-| `probe/events.jsonl` | probe record | probe | devlog author |
+| `probe/events.jsonl` | probe record | probe | measurements author |
 
 Constants (`gate-config.mjs`, a Self_Protected_Path): `WARN_MODE = 'exit2'`, `WATCHDOG_MS = 50_000`, `RUNNER_DEADLINE_SEC = 44`, `SEMAPHORE_SLOTS = 2`, `SEMAPHORE_WAIT_MS = 5_000`, `STDIN_MAX_BYTES = 1_048_576`, `COMMAND_MAX_CODE_POINTS = 4096`, `DELETE_ENUM_MAX = 10_000`, `STORE_CAPS = { sessions: 20, runs: 200, graveyardLines: 2000, provenancePerSession: 1000, recordBytes: 1_048_576 }`. The environment variables read are `GHOST_RUN_WARDS_FILE` and `GHOST_RUN_SEANCE_BASE` only. No variable and no workspace file disables the gate (Requirement 8 criterion 6); the only disable path is `enabled: false` in the hook entry.
 
@@ -817,7 +817,7 @@ Unit tests stay few because the properties cover input space; unit tests pin fix
 | 21 exp-b retirement | Hook file format | `enabled` test |
 | 22 Hygiene | Testing Strategy | possession scan test, fixtures |
 | 23 Tests | Testing Strategy, Correctness Properties | all |
-| 24 Probe | Probe hook | probe-disabled test, devlog table |
+| 24 Probe | Probe hook | probe-disabled test, measurements table |
 
 ---
 

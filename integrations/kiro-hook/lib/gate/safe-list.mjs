@@ -1,7 +1,7 @@
 // Safe list (Requirement 4): a grammar, a hand-written tokenizer, and a pure classifier.
 // No I/O. Any line that cannot be proven safe is "not safe" and goes to the ghost.
 
-import { compilePathSet, normalizePath } from '@ghost-run/core';
+import { compilePathSet, normalizePath, scanText } from '@ghost-run/core';
 
 /**
  * @typedef {object} GrammarEntry
@@ -32,27 +32,15 @@ export const BUILTIN_GRAMMAR = Object.freeze([
   { name: ['echo'], options: [], paths: 'none', extra: 'words' },
 ]);
 
-// Same ranges as the hidden ranges of core's `hasHiddenChar`, which the core public entry does not export.
-const HIDDEN_RANGES = [
-  [0x0000, 0x001f],
-  [0x007f, 0x007f],
-  [0x200b, 0x200d],
-  [0x2060, 0x2060],
-  [0xfeff, 0xfeff],
-  [0x202a, 0x202e],
-  [0x2066, 0x2069],
-  [0xe0000, 0xe007f],
-];
+// "Hidden character present" is decided by core's blacklight scan (`scanText`, markdown off), which covers
+// tag characters, zero-width characters, and bidi controls. The scan does not report C0 controls
+// (U+0000 to U+001F) or DEL (U+007F), so a separate explicit check covers newline, CR, NUL, and the other
+// controls. It does not repeat any of core's hidden ranges.
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/u;
 
 /** @param {string} s */
 function hasHidden(s) {
-  for (const ch of s) {
-    const cp = /** @type {number} */ (ch.codePointAt(0));
-    for (const [lo, hi] of HIDDEN_RANGES) {
-      if (cp >= /** @type {number} */ (lo) && cp <= /** @type {number} */ (hi)) return true;
-    }
-  }
-  return false;
+  return CONTROL_CHARS.test(s) || scanText(s, { markdown: false }).findings.length > 0;
 }
 
 const FORBIDDEN_CHARS = new Set([';', '&', '|', '<', '>', '`', '$', '\\']);

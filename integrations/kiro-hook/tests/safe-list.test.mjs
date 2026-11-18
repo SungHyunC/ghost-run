@@ -146,3 +146,20 @@ describe('extension entries', () => {
     expect(buildGrammar([null, { name: [] }, { name: ['x'], paths: 'bogus' }]).rejected).toBe(3);
   });
 });
+
+describe('hidden characters (decided by core scanText plus a control check)', () => {
+  const hidden = [0x200b, 0x200c, 0x2060, 0xfeff, 0x202e, 0x2066, 0xe0041, 0x0000, 0x0009, 0x000a, 0x000d, 0x001b, 0x007f];
+  for (const cp of hidden) {
+    const label = 'U+' + cp.toString(16).toUpperCase().padStart(4, '0');
+    it(`rejects ${label} in a command line`, () => {
+      expect(safe('ls ' + String.fromCodePoint(cp) + 'src')).toBe(false);
+      expect(safe('echo hi' + String.fromCodePoint(cp))).toBe(false);
+    });
+    it(`rejects ${label} in an extension command name`, () => {
+      expect(validateExtensionEntry({ name: ['b' + String.fromCodePoint(cp) + 'at'], options: [], paths: 'none' }).length).toBeGreaterThan(0);
+    });
+  }
+  it('still accepts a plain line', () => {
+    expect(safe('ls -la src')).toBe(true);
+  });
+});

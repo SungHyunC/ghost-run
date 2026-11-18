@@ -372,6 +372,9 @@ importers:
       '@ghost-run/ghost-runner':
         specifier: workspace:*
         version: link:../../ghost-runner
+      '@ghost-run/ui':
+        specifier: workspace:*
+        version: link:../../ui
       '@ghost-run/wards-config':
         specifier: workspace:*
         version: link:../../wards-config

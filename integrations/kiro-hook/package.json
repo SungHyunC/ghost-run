@@ -17,6 +17,7 @@
   "dependencies": {
     "@ghost-run/core": "workspace:*",
     "@ghost-run/ghost-runner": "workspace:*",
+    "@ghost-run/ui": "workspace:*",
     "@ghost-run/wards-config": "workspace:*"
   },
   "devDependencies": {

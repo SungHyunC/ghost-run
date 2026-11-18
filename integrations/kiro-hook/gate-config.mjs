@@ -35,7 +35,7 @@ export const STORE_CAPS = Object.freeze({
 });
 
 /** True once the runner accepts a caller-supplied run id (see Cross-spec dependencies). */
-export const RUNNER_SUPPORTS_RUN_ID = false;
+export const RUNNER_SUPPORTS_RUN_ID = true;
 
 // File-event and Post Tool Use constants. These values are CLI-3.4.0-measured
 // (probe, 2026-11-18). They must be re-checked after the IDE probe, task 1.4.

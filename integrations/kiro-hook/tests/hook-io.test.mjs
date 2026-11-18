@@ -45,7 +45,7 @@ describe('gate-config', () => {
       provenancePerSession: 1000,
       recordBytes: 1_048_576,
     });
-    expect(config.RUNNER_SUPPORTS_RUN_ID).toBe(false);
+    expect(config.RUNNER_SUPPORTS_RUN_ID).toBe(true);
   });
 });
 
