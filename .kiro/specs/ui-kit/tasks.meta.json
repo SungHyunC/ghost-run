@@ -1,0 +1,410 @@
+{
+  "pbtResults": {
+    "3.4 Write the model-leg property test for no hidden characters (escaper)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794977622716
+    }
+  },
+  "executionHistory": {
+    "1.1 Confirm the workspace entry and create the package and build configuration files": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975680298
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975878125
+      }
+    ],
+    "1.2 Create `ui/eslint.config.mjs`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975878984
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975883380
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975926437
+      }
+    ],
+    "1.3 Install dependencies and record the resolved facts": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975926449
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975929123
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975996187
+      }
+    ],
+    "1.4 Write the package guard test `ui/tests/scan/package.test.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975999259
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976003311
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976082948
+      }
+    ],
+    "1.5 Create the test harness `ui/tests/support/` and `ui/tests/fixtures/`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794975999684
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976004090
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976082960
+      }
+    ],
+    "2.1 Create `ui/src/theme/tokens.ts` and `ui/src/styles/theme.css`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976000498
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976004615
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976083443
+      }
+    ],
+    "1. Package scaffolding, lint, and test harness": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976082963
+      }
+    ],
+    "2.2 Write the contrast helper and the UI-P6 test, and run it before any component work (contrast gate)": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976087670
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976090791
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976206956
+      }
+    ],
+    "3.1 Create `ui/src/types.ts` and the shared model helpers": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976087687
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976091314
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976206972
+      }
+    ],
+    "2. Color tokens and the contrast gate": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976206959
+      }
+    ],
+    "3.2 Implement `ui/src/model/redact.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976220818
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976227507
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976424436
+      }
+    ],
+    "3.3 Create the generators `ui/tests/fixtures/arbitraries.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976220826
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976227513
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976424448
+      }
+    ],
+    "3.4 Write the model-leg property test for no hidden characters (escaper)": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976221469
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976424984
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976532495
+      }
+    ],
+    "3.5 Write the model-leg property test and the examples for secret-like keys": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976425792
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976532515
+      }
+    ],
+    "4.1 Implement `ui/src/model/mirror.ts` and `ui/src/model/scene.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976426504
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976533347
+      }
+    ],
+    "3. View-model foundations": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976532518
+      }
+    ],
+    "4.2 Implement `ui/src/model/candle.ts` and `ui/src/model/claims.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976534136
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976633820
+      }
+    ],
+    "4.3 Implement `ui/src/model/blacklight.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976534937
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976633963
+      }
+    ],
+    "4.4 Implement `ui/src/model/thread.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976535577
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976634720
+      }
+    ],
+    "4.5 Implement `ui/src/model/graveyard.ts` and `ui/src/model/seance.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976635824
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976754491
+      }
+    ],
+    "4.6 Write the property test for change coverage": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976636622
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976755295
+      }
+    ],
+    "4.7 Write the model-leg property test for the candle mapping": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976637331
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976756132
+      }
+    ],
+    "4.8 Write the model-leg property test for claim honesty": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976756862
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976861502
+      }
+    ],
+    "4.9 Write the model-leg property test for blacklight coverage": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976757557
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976861513
+      }
+    ],
+    "4.10 Write the model-leg property test for red thread pairing": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976870375
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977296208
+      }
+    ],
+    "4.11 Write the model-leg property test for graveyard coverage and order": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976870896
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977296921
+      }
+    ],
+    "4.12 Write unit tests for the shared helpers": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794976871452
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977300387
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977304790
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977485499
+      }
+    ],
+    "4.13 Write the type-level test `ui/tests/types.test-d.ts`": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977301119
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977485521
+      }
+    ],
+    "4. View models of the six parts": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977485540
+      }
+    ],
+    "5. Checkpoint - Model layer complete": [
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977485731
+      },
+      {
+        "executionId": "bb6ca7ec-0287-4242-85c6-dfa4c2c66718",
+        "chatSessionId": "sess_cfb75d41-29c8-404e-874e-4a83f1f529d7",
+        "timestamp": 1794977695110
+      }
+    ]
+  }
+}

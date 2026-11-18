@@ -1,0 +1,37 @@
+/* Mirror of src/theme/tokens.ts. The only stylesheet with color literals. */
+
+[data-theme='dark'] {
+  --gk-bg: #14111c;
+  --gk-surface: #1d1928;
+  --gk-fog: rgba(176,170,204,0.10);
+  --gk-text: #ece8f4;
+  --gk-muted: #b4adc6;
+  --gk-pass: #fff1d6;
+  --gk-warn: #ffc247;
+  --gk-block: #ff8585;
+  --gk-line: #8d86a6;
+  --gk-focus: #8ab4ff;
+  --gk-bl-fill: #b8ff5c;
+  --gk-bl-ink: #14111c;
+  --gk-bl-edge: #b8ff5c;
+  --gk-flame: #fff1d6;
+  --gk-smoke: #8d86a6;
+}
+
+[data-theme='light'] {
+  --gk-bg: #faf7f2;
+  --gk-surface: #ffffff;
+  --gk-fog: rgba(90,80,130,0.08);
+  --gk-text: #1f1b2e;
+  --gk-muted: #565068;
+  --gk-pass: #3b3552;
+  --gk-warn: #7a4a00;
+  --gk-block: #b3261e;
+  --gk-line: #7a7390;
+  --gk-focus: #1f4fd1;
+  --gk-bl-fill: #d6ff3d;
+  --gk-bl-ink: #1f1b2e;
+  --gk-bl-edge: #1f1b2e;
+  --gk-flame: #fff1d6;
+  --gk-smoke: #7a7390;
+}
