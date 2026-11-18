@@ -69,6 +69,8 @@
 | 13:20 | 실험 B hook 두 개 끄기(`enabled: false`), Kiro CLI vibe 모드, 28초 | | 0.58 | 누계 약 763 / 4,050 (6차 첫 턴 제외) |
 | 13:40 | ghost-hand requirements (요구사항 20개, 성질 GH-P1~GH-P8), 9분 | | 14.33 | 누계 약 778 / 4,050 (6차 첫 턴 제외) |
 | 13:55 | ui-kit 구현 1차: 작업 1~5 (패키지 뼈대, 색 토큰과 대비 검사, view-model 전부), 35분 | | 81.67 | 누계 약 860 / 4,050 (6차 첫 턴 제외) |
+| 13:59 | ghost-hand 결정 반영 + design.md (성질 23개), 16분 | | 24.63 | 누계 약 885 / 4,050 (6차 첫 턴 제외) |
+| 14:14 | ghost-hand 결정 반영 + tasks.md (작업 21개, 실행 묶음 25개), 14분 | | 26.46 | 누계 약 911 / 4,050 (6차 첫 턴 제외) |
 
 ### 한 일
 
@@ -170,6 +172,9 @@
 기획서의 기준("반나절 안에 도형 팔과 서랍이 브라우저에서 결정적으로 돌면 Ghost Hand 유지")을 실험 C가 15분 만에 넘겼다(같은 seed면 Node·Chrome·Web Worker 모두 비트 단위로 같은 결과, 빠르게 당기기 5/8 대 천천히 세게 쥐기 8/8). 사용자가 확인해 앱 2는 Ghost Hand, 세 번째 세계는 Ghost Cloud로 확정했다. Spirit Phone 비교는 해당 없음. 계획 수정 장면은 외부 LLM API 없이, Kiro 에이전트가 판정 메시지를 읽고 계획을 고친 실제 기록을 녹화해 쓰기로 했다.
 
 - ghost-hand requirements(13:40): P1은 브라우저에서 실행마다 지문이 같을 때만, P8은 Node 20.20.2와 Apple M1의 Chrome 157로 한정하고, 페이지가 뜰 때 저장된 해시와 비교하는 결정성 자가 점검을 둔다(Firefox·Safari 사용자는 보장이 아니라 측정 결과를 본다). P5·P6은 이 세계에 해당하지 않는다. Kiro가 남긴 다른 spec과의 충돌 두 가지를 정했다. (1) 관절 한계·자기 충돌은 성공률에 섞으면 20개 중 1개 실패가 95% 기준을 통과하므로, core `VariantResult`에 선택 필드 두 개를 더해 어느 변형에서든 나오면 block한다(wards 2차에 넣음). (2) wards 메시지의 "no ghost rehearsal took place" 줄은 B안에만 맞는 문구라, 이유별 문구로 나누고 P5·P6이 해당하지 않는 세계에는 붙이지 않는다(wards 2차), 화면 배너는 "해당 없음"을 보일 수 있게 한다(ui-kit 2차).
+- ghost-hand design(13:59): 세계는 `worlds/drawer-arm`, `reach` 목표는 장 앞면 바닥 중앙을 원점으로 한 월드 좌표, 복원은 `mj_getState`/`mj_setState`(`mjSTATE_INTEGRATION`)로 상태 배열 하나에 둔다(실험 C에서 비트 단위로 같았던 방식). 변형은 Web Worker 최대 4개에서 돌리고 결과는 변형 번호로 정렬한다. MuJoCo 호출은 `engine/` 안에만 두고 `.delete()`는 범위 객체로 관리한다. Kiro가 판정을 읽고 계획을 고치는 장면을 위해 Node 진입점 `ghost-hand-run`(종료 코드 0 pass, 1 warn, 2 block)을 둔다. 다른 spec의 선행 조건 세 가지(관절 한계·자기 충돌 필드, 이유별 메시지 문구, 배너의 "해당 없음")는 들어오기 전까지 주장하지 않거나 잠정 문구를 보이게 했다. P2는 world-contract steering이 놀이터 세계로 한정하고 있어서, "같은 빌드·시험한 환경에서 유령 실행과 기준 시뮬레이션의 결과가 같다(실물 하드웨어에는 주장 안 함)"로 steering을 넓히는 작업을 tasks에 넣게 했다.
+- ghost-hand tasks.md(14:14): 첫 작업은 `@mujoco/mujoco` 4.0.1 API 탐침이고, 결과가 design과 다르면 design부터 고친다. P2 문구는 world-contract steering이 넓혀진 뒤에만 켠다(코드 상수로 막음). 선택 작업은 맨 끝의 금지 접촉 붉은 실 하나뿐이다. 이로써 앱 1(ghost-shell), 앱 2(ghost-hand), Kiro 연동, 화면 키트의 spec이 모두 갖춰졌다. 남은 spec은 세 번째 세계(Ghost Cloud, `_new-world` 양식에서 Kiro가 만드는 장면)와 world-smith 에이전트다.
+- ghost-runner 6차(14:12): 전체 시험 세 번 연속 통과(576초, 630초, 570초, 끝난 뒤 남은 컨테이너·볼륨 0개). Docker 속성 시험이 포함돼 한 번에 10분쯤 걸린다. 저장 시 hook(60초)에는 Docker 시험을 빼고 짧게 돌려야 한다.
 - ui-kit 구현 1차(13:55): `ui/` 패키지 뼈대, 두 테마 색 토큰, 화면 여섯 부분의 view-model. 테스트 25개 파일 223개 통과. 손으로 계산했던 대비값은 UI-P6 시험이 50쌍 모두 기준을 넘는다고 확인했다(가장 빠듯한 짝은 밝은 테마의 선 색 대 안개 3.987, 기준 3). **PBT가 찾은 두 번째 제품 버그:** UI-P7(격리 주장 정직성)이 `claims.ts`에서 플래그 하나만 형식이 틀려도(`p5Claimed: null`) Docker 상자 확인 문구 전체가 사라지는 버그를 찾았고, Kiro가 고친 뒤 반례를 고정 시험으로 남겼다. UI-P3은 시험 쪽 기준 실수(U+FFFF 위 글자의 표기 길이)를 잡았다. 측정값 원문은 Kiro가 devlog 끝에 영어로 붙였던 것을 `docs/measurements.md`로 옮겼다. 앞으로 Kiro 지시에는 "devlog.md는 고치지 않고 측정값은 measurements.md에"를 넣는다.
 - 같은 회차에서 Kiro가 pnpm의 새 패키지 설치 대기(게시 후 일정 시간 설치를 막는 공급망 보호)를 `@eslint-react` 5.30.4 계열 13개에 대해 `minimumReleaseAgeExclude`로 우회했다. 5.30.4는 11/17 17:04 UTC에 게시돼 반나절밖에 안 된 버전이었다(Claude Code가 이 버전을 지시에 적으면서 게시 시각을 확인하지 않은 탓도 있다). 다음 ui-kit 회차에서 이틀 전에 나온 5.30.3으로 고정하고 예외를 지우게 한다. 이 예외 줄은 wards 커밋(04a2c9b)에 섞여 들어갔다.
 
