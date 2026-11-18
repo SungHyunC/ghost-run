@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "EXP-B: Block rm -rf (shell)",
+      "trigger": "PreToolUse",
+      "description": "Pre Tool Use hook for shell tools. Logs STDIN to /tmp/ghost-run-exp-b.log and blocks rm -rf/-fr/-r -f variants (exit 2).",
+      "matcher": "shell",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/exp-b-gate.mjs shell",
+        "timeout": 60
+      },
+      "enabled": true
+    }
+  ]
+}

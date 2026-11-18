@@ -1,0 +1,30 @@
+# 의존성과 빌드 결과
+node_modules/
+dist/
+.DS_Store
+
+# 비밀값 (가짜 canary도 저장소 밖에서 만든다)
+.env
+.env.*
+
+# 내부 기획서: 공개 저장소에 올리지 않는다 (Kiro는 로컬에서 그대로 읽을 수 있다)
+docs/plan.md
+docs/GhostRun_*.png
+
+# Claude Code 설정은 저장소에 넣지 않는다. .kiro/는 절대 무시하지 않는다(제출 필수)
+.claude/
+CLAUDE.md
+
+# ghost-runner build output and temporary run data
+ghost-runner/dist
+.ghost-run-*/
+ghost-runner/box/*.local
+
+# Private key material (never commit; the box CA key is generated at runtime)
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+box/ca/
+**/ghost/ca/

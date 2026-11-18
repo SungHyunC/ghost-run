@@ -1,0 +1,701 @@
+{
+  "pbtResults": {
+    "4.2 Write property test for configuration and plan bounds [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964773899
+    },
+    "5.2 Write property test for static analysis [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964809541
+    },
+    "6.2 Write property test for hardened argv [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964830178
+    },
+    "6.3 Write property test for mount audit [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964908807
+    },
+    "4.7 Write property test for verdict composition and claims [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964909133
+    },
+    "4.8 Write property test for protected paths inside excluded directories [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964914914
+    },
+    "4.5 Write property test that serialized output never contains payload or secret bytes [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964925468
+    },
+    "4.4 Write property test for serialization round trip and idempotence [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794964941924
+    },
+    "8.2 Write property test for the DNS codec [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794965208922
+    },
+    "7.4 Write property test for copy fidelity and link safety [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794965418239
+    },
+    "8.4 Write property test for the strace parser [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794965490084
+    },
+    "8.6 Write property test for recorder corruption detection [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794965626409
+    },
+    "7.7 Write property test for diff algebra [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794965639327
+    },
+    "7.6 Write property test for incremental versus full-hash differ [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794965809826
+    }
+  },
+  "executionHistory": {
+    "1.1 Create the `ghost-runner/` package and register it in the workspace": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962857384
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962905498
+      }
+    ],
+    "1.3 Update `.kiro/steering/structure.md` (W2)": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962857392
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962905702
+      }
+    ],
+    "1.4 Update `.gitignore` for build output, temporary run data, and key material": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962857546
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962906060
+      }
+    ],
+    "1.2 Add the `core/` to `ghost-runner` import ban and verify that lint fails on violation [no-docker]": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962912565
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794963038019
+      }
+    ],
+    "2.1 Add the `core` build so Node can import `@ghost-run/core` (W4)": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962912571
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794963038702
+      }
+    ],
+    "2.2 Confirm `core` types suffice (W5) [no-docker]": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962912712
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794963039254
+      }
+    ],
+    "2.3 Create the test harness: PBT profiles and Docker availability helper [no-docker]": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794962912718
+      },
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794963039802
+      }
+    ],
+    "1. Workspace scaffold and steering (W1, W2)": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794963038022
+      }
+    ],
+    "2. Core build and test infrastructure (W4, W5)": [
+      {
+        "executionId": "385e958c-9ace-442a-894c-93fd07df40f9",
+        "chatSessionId": "sess_48432aff-28a7-4e37-aa09-23dbe5e813b9",
+        "timestamp": 1794963039806
+      }
+    ],
+    "3.1 Extend the core types in `core/src/types.ts` and export them": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964483614
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964518834
+      }
+    ],
+    "3.2 Update `core/src/wards.ts` for the new kinds and the optional third parameter": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964521703
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964549478
+      }
+    ],
+    "3.3 Write unit tests for the new kinds and fields in `core/tests/wards.test.ts` [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964552466
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964592010
+      }
+    ],
+    "3.4 Verify the existing core tests and rebuild `core` so `ghost-runner` sees the changes [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964594983
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964634920
+      }
+    ],
+    "3. Core type changes (W0): must land before all other remaining work": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964634922
+      }
+    ],
+    "4.1 Implement `src/config.ts` and `src/errors.ts`": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964641445
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964729166
+      }
+    ],
+    "5.1 Implement `src/static/analyzer.ts`": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964641451
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964729319
+      }
+    ],
+    "6.1 Implement `src/docker/cli.ts` and `src/docker/hardening.ts`": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964641458
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964729840
+      }
+    ],
+    "4.2 Write property test for configuration and plan bounds [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964743158
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964843524
+      }
+    ],
+    "4.3 Implement `src/result.ts`": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964743164
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964843535
+      }
+    ],
+    "4.6 Implement `src/verdict.ts` and protected-path detection": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964743342
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964843841
+      }
+    ],
+    "5.2 Write property test for static analysis [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964743348
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964844377
+      }
+    ],
+    "6.2 Write property test for hardened argv [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964743625
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964844926
+      }
+    ],
+    "5. Static analyzer (`static/`)": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964844381
+      }
+    ],
+    "4.4 Write property test for serialization round trip and idempotence [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964848345
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964954459
+      }
+    ],
+    "4.5 Write property test that serialized output never contains payload or secret bytes [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964849044
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964954615
+      }
+    ],
+    "4.7 Write property test for verdict composition and claims [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964850034
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964955435
+      }
+    ],
+    "4.8 Write property test for protected paths inside excluded directories [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964851046
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964956141
+      }
+    ],
+    "6.3 Write property test for mount audit [no-docker]": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964851317
+      },
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964956868
+      }
+    ],
+    "4. Configuration, result, and verdict modules": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964956145
+      }
+    ],
+    "6. Docker argv builder and mount audit (`docker/`)": [
+      {
+        "executionId": "027bc12f-261b-4239-af7b-6fda929729bd",
+        "chatSessionId": "sess_138152c0-3a05-4d78-8db4-fe799f4febd1",
+        "timestamp": 1794964956873
+      }
+    ],
+    "7.1 Implement `src/fs/manifest.ts` and `src/fs/fingerprint.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965076039
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965164566
+      }
+    ],
+    "8.1 Implement `src/recorder/dns-codec.ts`, `secret-patterns.ts`, and `events.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965076549
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965164575
+      }
+    ],
+    "7.2 Write property test for Original fingerprint [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965169327
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965339121
+      }
+    ],
+    "7.3 Implement `src/copy/planner.ts` and `src/copy/copier.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965169334
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965339132
+      }
+    ],
+    "8.2 Write property test for the DNS codec [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965169471
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965339404
+      }
+    ],
+    "8.3 Implement `src/recorder/parse-strace.ts` and `parse-logs.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965169973
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965339716
+      }
+    ],
+    "7.4 Write property test for copy fidelity and link safety [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965343830
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965564974
+      }
+    ],
+    "7.5 Implement `src/fs/sqlite.ts` and `src/fs/differ.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965343995
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965565523
+      }
+    ],
+    "8.4 Write property test for the strace parser [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965344738
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965566167
+      }
+    ],
+    "8.5 Implement `src/recorder/collect.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965344837
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965566961
+      }
+    ],
+    "7.6 Write property test for incremental versus full-hash differ [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965571903
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965820650
+      }
+    ],
+    "7.7 Write property test for diff algebra [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965572103
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965821573
+      }
+    ],
+    "8.6 Write property test for recorder corruption detection [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965572723
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965822261
+      }
+    ],
+    "8.7 Implement `eventId` assignment linking `RunOutput.payloads` to events in `src/recorder/events.ts`": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965573279
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965823067
+      }
+    ],
+    "7. File-system layer: fingerprint, copier, differ (`fs/`, `copy/`)": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965821577
+      }
+    ],
+    "8.8 Write unit tests for `eventId` assignment [no-docker]": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965827197
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965864567
+      }
+    ],
+    "8. Recorder host side (`recorder/`)": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965864569
+      }
+    ],
+    "9. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965868962
+      },
+      {
+        "executionId": "f91a0ef9-a027-468e-b300-d3488430cfad",
+        "chatSessionId": "sess_6e32443a-3b87-4480-8402-96d0c82d0d2c",
+        "timestamp": 1794965915589
+      }
+    ],
+    "10.1 Create `box/Dockerfile`, `BASE_DIGEST`, and `box/build.mjs`": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966067106
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966236985
+      }
+    ],
+    "11.4 Create the fake Docker client for tests [no-docker]": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966067116
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966237130
+      }
+    ],
+    "10.2 Write the in-box recorder scripts in `box/recorder/`": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966245009
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966580969
+      }
+    ],
+    "11.1 Implement `src/docker/availability.ts` and `src/docker/box.ts`": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966245415
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966580979
+      }
+    ],
+    "10.3 Generate the box-only CA at image build time and guard against committed private keys": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966585556
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966808145
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966865598
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966920380
+      }
+    ],
+    "11.2 Implement `src/docker/pool.ts` (long-lived hosts only)": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966585564
+      },
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966808867
+      }
+    ],
+    "10. Box image (W3)": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966808150
+      }
+    ],
+    "11.3 Write the pool lifecycle model test [no-docker]": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966813331
+      }
+    ],
+    "11. Docker layer: availability, box lifecycle, pool": [
+      {
+        "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
+        "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
+        "timestamp": 1794966813335
+      }
+    ]
+  }
+}

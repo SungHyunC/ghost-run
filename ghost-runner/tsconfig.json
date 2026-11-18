@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "types": ["node"],
+    "paths": {
+      "@ghost-run/core": ["../core/src/index.ts"],
+      "@ghost-run/core/verify": ["../core/verify.ts"]
+    }
+  },
+  "include": ["src", "tests", "vitest.config.ts"]
+}

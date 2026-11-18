@@ -1,0 +1,248 @@
+{
+  "pbtResults": {
+    "7. Write property test for ward monotonicity": {
+      "status": "passed",
+      "lastRunTimestamp": 1794962457775
+    },
+    "8. Write property test for ghost run isolation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794962458455
+    },
+    "9. Write property test for ghost diff fidelity": {
+      "status": "passed",
+      "lastRunTimestamp": 1794962459065
+    },
+    "11. Write property test for snapshot immutability and replay determinism": {
+      "status": "passed",
+      "lastRunTimestamp": 1794962459313
+    }
+  },
+  "executionHistory": {
+    "1. Scaffold `core/` package": [
+      {
+        "executionId": "5e306da8-1212-481a-9234-69fb8245d002",
+        "chatSessionId": "sess_31ac8e11-5885-432f-9033-b8e03befe9d8",
+        "timestamp": 1794961148115
+      },
+      {
+        "executionId": "53ee1e58-cec9-4868-8300-c870ab1d4cf7",
+        "chatSessionId": "sess_7b4baefa-e76d-4241-9473-87fbf22f977e",
+        "timestamp": 1794961347275
+      }
+    ],
+    "2. Implement `src/types.ts` — all exported types": [
+      {
+        "executionId": "53ee1e58-cec9-4868-8300-c870ab1d4cf7",
+        "chatSessionId": "sess_7b4baefa-e76d-4241-9473-87fbf22f977e",
+        "timestamp": 1794961350052
+      },
+      {
+        "executionId": "53ee1e58-cec9-4868-8300-c870ab1d4cf7",
+        "chatSessionId": "sess_7b4baefa-e76d-4241-9473-87fbf22f977e",
+        "timestamp": 1794961397916
+      }
+    ],
+    "3. Implement `src/fingerprint.ts` — `compareFingerprints`": [
+      {
+        "executionId": "53ee1e58-cec9-4868-8300-c870ab1d4cf7",
+        "chatSessionId": "sess_7b4baefa-e76d-4241-9473-87fbf22f977e",
+        "timestamp": 1794961400913
+      },
+      {
+        "executionId": "53ee1e58-cec9-4868-8300-c870ab1d4cf7",
+        "chatSessionId": "sess_7b4baefa-e76d-4241-9473-87fbf22f977e",
+        "timestamp": 1794961449371
+      }
+    ],
+    "4. Implement `src/wards.ts` — `isMoreRestrictive` and `WardEngine`": [
+      {
+        "executionId": "2b056a71-2717-453f-bcc0-b1a5fb62d8c7",
+        "chatSessionId": "sess_ab2501ac-b017-4a7e-b34d-173ec7348ccb",
+        "timestamp": 1794961549514
+      },
+      {
+        "executionId": "2b056a71-2717-453f-bcc0-b1a5fb62d8c7",
+        "chatSessionId": "sess_ab2501ac-b017-4a7e-b34d-173ec7348ccb",
+        "timestamp": 1794961628612
+      }
+    ],
+    "5. Implement `src/runner.ts` — `ghostRun`": [
+      {
+        "executionId": "2b056a71-2717-453f-bcc0-b1a5fb62d8c7",
+        "chatSessionId": "sess_ab2501ac-b017-4a7e-b34d-173ec7348ccb",
+        "timestamp": 1794961629144
+      },
+      {
+        "executionId": "2b056a71-2717-453f-bcc0-b1a5fb62d8c7",
+        "chatSessionId": "sess_ab2501ac-b017-4a7e-b34d-173ec7348ccb",
+        "timestamp": 1794961661413
+      }
+    ],
+    "14. Create `tests/fixtures/` — reference world and deterministic test adapter": [
+      {
+        "executionId": "2b056a71-2717-453f-bcc0-b1a5fb62d8c7",
+        "chatSessionId": "sess_ab2501ac-b017-4a7e-b34d-173ec7348ccb",
+        "timestamp": 1794961661736
+      },
+      {
+        "executionId": "2b056a71-2717-453f-bcc0-b1a5fb62d8c7",
+        "chatSessionId": "sess_ab2501ac-b017-4a7e-b34d-173ec7348ccb",
+        "timestamp": 1794961705681
+      }
+    ],
+    "13. Write unit tests for `isMoreRestrictive` and `WardEngine` — `tests/wards.test.ts`": [
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961809681
+      },
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961905769
+      }
+    ],
+    "6. Implement `verify.ts` — `verifyWorld`": [
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961810544
+      },
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961905777
+      }
+    ],
+    "12. Write compile-time type tests — `tests/types.test-d.ts`": [
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961810922
+      },
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961905953
+      }
+    ],
+    "7. Write PBT for P4 ward monotonicity — `tests/p4-monotonicity.test.ts`": [
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794961908624
+      },
+      {
+        "executionId": "338a2631-fecd-4d93-9f43-719106851f4c",
+        "chatSessionId": "sess_9c882b1f-800c-49f7-be61-d0ec72777975",
+        "timestamp": 1794962015921
+      }
+    ],
+    "8. Write PBT for P1 isolation — `tests/p1-isolation.test.ts`": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962144590
+      }
+    ],
+    "9. Write PBT for P2 fidelity — `tests/p2-fidelity.test.ts`": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962144593
+      }
+    ],
+    "10. Write example-based tests for `verifyWorld` — `tests/verify.test.ts`": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962144594
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962178306
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962272246
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962339948
+      }
+    ],
+    "11. Write PBT for P3 restore — `tests/p3-restore.test.ts`": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962144596
+      }
+    ],
+    "8. Write property test for ghost run isolation": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962178301
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962183170
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962272231
+      }
+    ],
+    "9. Write property test for ghost diff fidelity": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962178304
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962272242
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962378976
+      }
+    ],
+    "11. Write property test for snapshot immutability and replay determinism": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962178309
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962272251
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962340157
+      }
+    ],
+    "7. Write property test for ward monotonicity": [
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962384242
+      },
+      {
+        "executionId": "d6cc58ee-73f4-425b-9438-f22272f3b940",
+        "chatSessionId": "sess_75b2d77a-f961-4c8c-b240-2e25385e40a9",
+        "timestamp": 1794962473891
+      }
+    ]
+  }
+}

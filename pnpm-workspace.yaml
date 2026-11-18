@@ -1,0 +1,9 @@
+packages:
+  - core
+  - ghost-runner
+  - ui
+  - apps/*
+  - integrations/*
+  - worlds/*
+allowBuilds:
+  esbuild: true

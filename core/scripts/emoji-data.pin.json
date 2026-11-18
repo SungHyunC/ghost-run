@@ -1,0 +1,12 @@
+{
+  "unicodeVersion": "16.0.0",
+  "emojiVersion": "16.0",
+  "emojiData": {
+    "url": "https://www.unicode.org/Public/16.0.0/ucd/emoji/emoji-data.txt",
+    "sha256": "f1365a5173eee18e1f98b240cdc492e84a25f1ce7e0c9d1094eb29c41a22696a"
+  },
+  "emojiSequences": {
+    "url": "https://www.unicode.org/Public/emoji/16.0/emoji-sequences.txt",
+    "sha256": "3fe3c77e72e8f26df302dc7d99b106c5d08fd808ef7246fb5d4502d659fe659c"
+  }
+}

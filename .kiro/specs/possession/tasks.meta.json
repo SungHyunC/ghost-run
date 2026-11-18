@@ -1,0 +1,196 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Update `core/package.json` and add the three new tsconfig files": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966303383
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966420747
+      }
+    ],
+    "2.1 Write `core/scripts/gen-emoji-table.mjs` and `core/scripts/emoji-data.pin.json`": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966303403
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966420766
+      }
+    ],
+    "3.1 Implement `types.ts`, `classify.ts`, and `search.ts`": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966303458
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966420784
+      }
+    ],
+    "1.2 Rewrite `core/eslint.config.mjs` with the generated Node built-in ban": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966423616
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966491496
+      }
+    ],
+    "1.3 Create the `core/tests-node/` folder and relocate any Node-needing tests": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966424130
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966491994
+      }
+    ],
+    "2.2 Generate and commit the two tables": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966424390
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966492301
+      }
+    ],
+    "1. Package tooling, tsconfig files, and ESLint": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966491997
+      }
+    ],
+    "2. Unicode tables and generator": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966492305
+      }
+    ],
+    "3.2 Implement `emoji.ts` and `tag-sequence.ts`": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966496550
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966536557
+      }
+    ],
+    "3.3 Implement `scan.ts` (`scanInternal`, `scanText`)": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966539279
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966615752
+      }
+    ],
+    "3.4 Implement `sanitize.ts` (`sanitizeText`)": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966618427
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966773845
+      }
+    ],
+    "3.5 Implement `provenance.ts` (`serializeProvenanceLog`, `parseProvenanceLog`)": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966618975
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966774348
+      }
+    ],
+    "3.6 Implement `red-thread.ts` (`collectNeedles`, `traceRedThread`)": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966619528
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966774957
+      }
+    ],
+    "3.7 Implement `entry.ts` (`scanTexts`, `exitCodeFor`, `formatReport`)": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966620027
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966775413
+      }
+    ],
+    "3.8 Wire the public surface: `possession/index.ts` and `core/src/index.ts`": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966778377
+      },
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966820259
+      }
+    ],
+    "3. Pure possession module (`core/src/possession/`)": [
+      {
+        "executionId": "31762016-f507-432d-8b96-b256bd1b00cd",
+        "chatSessionId": "sess_61eaf23e-64be-4565-a754-a654ba174bfa",
+        "timestamp": 1794966820261
+      }
+    ],
+    "4.1 Implement `core/possession-node.ts` (`scanFiles`)": [
+      {
+        "executionId": "66992109-697a-4f80-84f4-d3786c692ba6",
+        "chatSessionId": "sess_b1e2babe-ad88-46f2-9410-d8ad247caa39",
+        "timestamp": 1794967134342
+      }
+    ],
+    "5.1 Write `core/tests/possession/arbitraries.ts`": [
+      {
+        "executionId": "66992109-697a-4f80-84f4-d3786c692ba6",
+        "chatSessionId": "sess_b1e2babe-ad88-46f2-9410-d8ad247caa39",
+        "timestamp": 1794967134807
+      }
+    ]
+  }
+}

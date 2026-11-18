@@ -1,0 +1,52 @@
+{
+  "name": "@ghost-run/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Run+ World contract, ghost runner, and wards engine",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./verify": {
+      "types": "./dist/verify.d.ts",
+      "import": "./dist/verify.js"
+    },
+    "./possession-node": {
+      "types": "./dist/possession-node.d.ts",
+      "import": "./dist/possession-node.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.possession.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.test.json",
+    "gen:emoji": "node scripts/gen-emoji-table.mjs",
+    "lint": "eslint src possession-node.ts",
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.node.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^3.2.7"
+  },
+  "peerDependencies": {
+    "fast-check": "^4.10.2"
+  },
+  "peerDependenciesMeta": {
+    "fast-check": {
+      "optional": true
+    }
+  }
+}

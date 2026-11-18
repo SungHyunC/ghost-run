@@ -1,0 +1,35 @@
+{
+  "name": "@ghost-run/ghost-runner",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Run+ ghost runner: rehearses shell plans against a copy of a repository inside a sealed Docker box",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:pbt": "GHOST_PBT_MODE=explicit vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "build": "\"$npm_execpath\" --filter @ghost-run/core build && tsc -p tsconfig.build.json",
+    "box:build": "\"$npm_execpath\" --filter @ghost-run/core build && node box/build.mjs",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@ghost-run/core": "workspace:*",
+    "shell-quote": "^1.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/shell-quote": "^1.7.5",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^3.2.7"
+  }
+}

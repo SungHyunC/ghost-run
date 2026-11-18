@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "EXP-B: Log write / block delete",
+      "trigger": "PreToolUse",
+      "description": "Pre Tool Use hook for write tools. Logs STDIN to /tmp/ghost-run-exp-b.log and blocks calls whose tool_name contains 'delete' (exit 2).",
+      "matcher": "write",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/exp-b-gate.mjs write",
+        "timeout": 60
+      },
+      "enabled": true
+    }
+  ]
+}
