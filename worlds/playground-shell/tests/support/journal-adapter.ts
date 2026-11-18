@@ -146,6 +146,14 @@ export function createJournalAdapter(options: JournalAdapterOptions): JournalAda
     observe(world) {
       return {
         ...world,
+        // Every plan starts with a snapshot. The memo is only read by `apply` for the plan that
+        // was just executed, so it is dropped here. Without this it keeps one full project state
+        // (plus a hex key of the same size) per step of every example, which exhausts the heap
+        // in a nightly run.
+        snapshot() {
+          memo.clear();
+          return world.snapshot();
+        },
         async step(s, a) {
           await executeStep(s.state, a);
           return world.step(s, a);

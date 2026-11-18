@@ -950,3 +950,11 @@ Check of requirement 12 (`node scripts/measure-demo.mjs`, seed 42, 8 variants): 
 The recorded revised plan was named `slow pull, strong grip` when it was recorded, because that was the name fixed by requirements 12.1 for the hand-written plan. The recorded values lower the grasp force from 20 N to 15 N, so "strong" no longer matched the content. The plan is now named `slow pull, gentle grip`, which matches the lowered grip and the ward `gentle-hands`. Only the name changed; the actions, `origin`, `recordedWith`, and `revisionOf` are the same. The earlier sections of this file keep the old name because they record what was measured under it.
 
 Re-measurement with `node scripts/measure-demo.mjs` (seed 42, 8 variants): `slow pull, gentle grip` passes, 0 of 8 variants with success:false, maximum contact force 29.24 N (limit 30 N), Base_World drawer opening 0.1276 m (target 0.12 m). `fast pull` is unchanged: block, 1 of 8 failed, 27.53 N, 0.1216 m. The README table "Measured numbers of the demo runs" now shows these values.
+
+## Nightly contract run of playground-shell (2026-11-18)
+
+Command: `GHOST_PBT_MODE=nightly corepack pnpm exec vitest run tests/verify-world.test.ts` in `worlds/playground-shell`, measured with `/usr/bin/time -l`. 10,000 runs per property, no time limit, Node 20 on macOS (Apple Silicon).
+
+Cause of the earlier out-of-memory end (about 3.7 GB of heap, two runs): the memo of `tests/support/journal-adapter.ts` kept the outcome of every executed step, with a hex key of the whole project state, for the whole run. Probe with 600 runs and a forced garbage collection before and after the fix: 2054 MB of live heap before, 37 MB after. The fix clears the memo at the start of each plan. Property, generators, and run count are unchanged.
+
+Result after the fix: passed in one run, `verifyWorld` 1,130,597 ms (18 min 51 s), 50,911 world SQL steps and 44,425 oracle SQL steps. Maximum resident set size of the process tree's largest process reported by `time -l`: 718,749,696 bytes (about 685 MiB). Sampled worker size during the run grew from about 300 MB to about 680 MB; the slow growth is the per-snapshot Trace map of the world object (see the ghost-shell design.md).

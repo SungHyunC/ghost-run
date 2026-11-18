@@ -894,6 +894,8 @@ Why 100 is expected to fit in 60 s (an estimate to be measured in the first test
 
 **Cross-checks that avoid tautologies.** Property 9 compares the state-based diff with the journal-derived Changes. Both share the command handlers, so Property 9 verifies copy isolation and Change derivation, not that the emulation matches a real shell. Fidelity to a real shell is not claimed; it is bounded by the Supported_Command_Set and checked by example tests whose expected values are stated in the requirements. The `JournalFs` classification table is written without importing `diffStates`, and a test asserts the two modules do not import each other.
 
+**Nightly memory (fix of 2026-11-18).** The Nightly_Run of `verifyWorld` (10,000 runs) used to end with an out-of-memory error at about 3.7 GB of heap. The cause was the test oracle `tests/support/journal-adapter.ts`: its memo of executed steps was keyed by the hex text of the whole project state and kept every outcome of every example, although `apply` reads only the plan that was just executed. `observe(world)` now clears the memo in `snapshot()`, which every plan starts with. The property, the generators, and the run count are unchanged. After the fix the run passes; the numbers are in `docs/measurements.md`. `createPlaygroundWorld` still keeps one small Trace per snapshot id for `traceOf`, so its memory grows slowly with the number of snapshots of one world object.
+
 ---
 
 ## Cross-spec Dependencies
