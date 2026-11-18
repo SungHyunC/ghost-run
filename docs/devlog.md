@@ -106,6 +106,7 @@
 | 21:33 | ghost-hand 계획 고치기 녹화(design D18): Kiro가 차단 메시지를 읽고 고칠 값을 직접 정함, 다섯 번째 시도에 통과, 6분 | | 3.85 | 누계 약 2,265 / 4,050 (6차 첫 턴 제외) |
 | 21:37 | 같은 세션 이어서: 고친 계획 이름을 `slow pull, gentle grip`으로 바꾸고(그립을 낮춘 값과 맞춤) README 수치를 녹화본 값으로, 3분 | | 1.37 | 누계 약 2,266 / 4,050 (6차 첫 턴 제외) |
 | 22:03 | 남은 수정 회차(F1): playground nightly 메모리 부족, 패키지 사이 Docker 시험 충돌, 위생 검사 범위에 `.kiro/agents` 추가, 50분(nightly 19분 포함) | | 9.82 | 누계 약 2,276 / 4,050 (6차 첫 턴 제외) |
+| 22:41 | 저장소 전체 시험을 차례 실행으로(루트 `test`·`typecheck`·`lint`), ui DOM 시험 시간 제한, 루트 README 정리(소개, 빠른 시작, 작동 방식, Ghost Shell, Built with Kiro), 20분 | | 13.90 | 누계 약 2,290 / 4,050 (6차 첫 턴 제외) |
 
 ### 한 일
 
@@ -241,6 +242,7 @@
 - ghost-hand 구현 7차(21:23): 실제 시간으로 도는 headless Chrome 하네스로 잰 값은 페이지 준비 248~416 ms, 유령 8개 308·414 ms(목표 2초), 20개 518·557 ms(목표 5초), 3D 겹치기 프레임 간격 중앙값 16.7 ms(화면 주사율 한계라 여유는 못 보여 줌). 실행 40회 뒤에도 WebAssembly 힙이 그대로(76,218,368 bytes). Chrome의 메인 스레드와 Web Worker 결정성 해시가 Node 값, `golden.json`과 같아서 P8 범위를 줄이지 않았다. P2 문구를 켰고, drawer-arm·ghost-hand·core·ui·wards-config에 `integrations/` import 금지를 넣었다(kiro-integration 2.2 완료). Kiro가 지시 범위 밖에서 `core/tests-node/eslint-builtins.test.ts`의 임시 파일 경합을 한 줄 고쳤고, 스스로 보고했다.
 - 계획 고치기 녹화(21:33, design D18): 손으로 쓴 고친 계획(`origin: scripted`)을 실제 Kiro 세션의 결정으로 바꿨다. 손으로 쓴 값을 보지 말고 차단 메시지, `wards.yaml`, 첫 계획, 동작 범위만 보고 정하게 했다. Kiro는 그립을 세게(25, 28 N) 하면 접촉력이 30 N 한도를 넘고 빨리 당기면 성공률이 떨어지는 것을 시도로 확인한 뒤, 그립 15 N, 당기기 0.15 m를 0.15 m/s로 정했다(8개 변형 모두 성공, 최대 접촉력 29.24 N, 기본 세계 서랍 0.1276 m). 첫 시도 중 macOS sed 문법 차이로 한 번은 같은 값으로 돌았고, Kiro가 이를 알아채고 기록에 남겼다. 그립을 낮췄는데 이름이 요구 사항에 박힌 `slow pull, strong grip`이라 어긋나서, 같은 세션을 이어 이름을 바꾸게 했다. Claude Code가 다시 돌린 결과: 첫 계획 종료 코드 2(gentle-hands 7/8, variant-6 관절 한계), 고친 계획 종료 코드 0.
 - 남은 수정 회차(22:03, F1): playground의 nightly 계약 PBT(10,000회)가 힙 3.7GB에서 끝나지 못하던 원인은 제품 코드가 아니라 시험용 판정 도우미(`tests/support/journal-adapter.ts`)의 메모였다. 모든 예시의 모든 단계 결과를 프로젝트 상태 전체를 16진수로 만든 키와 함께 끝까지 들고 있었다. 계획마다 비우게 고치자 600회 기준 GC 뒤 힙이 2,054MB에서 37MB로 줄었고, nightly 10,000회가 18분 51초, 최대 메모리 약 685MiB로 처음 끝까지 통과했다. Docker 시험 충돌은 kiro-hook과 mcp가 같은 라벨의 컨테이너 전체 목록을 전후로 비교해서 생겼다. 두 패키지 시험이 기계 하나에 잠금 하나를 잡고 번갈아 돌게 하고, mcp 시험은 자기 run id만 보게 고쳤다. Claude Code가 두 패키지를 동시에 돌려 확인한 결과: 609개와 60개 통과, 25초, 끝난 뒤 컨테이너 0개, 볼륨 변화 없음. playground 397개 통과. Kiro가 남긴 결정거리: 잠금이 패키지 시험 전체를 직렬화하는 것(유지), playground 세계의 Trace 맵이 스냅샷마다 계속 쌓이는 것(데모에는 지장 없음, design에만 기록), 잠금 파일이 두 패키지에 복제된 것(의존 방향 규칙 때문).
+- 전체 회귀와 README 정리(22:41): Claude Code가 루트에서 `pnpm -r test`(기본 동시 실행)를 돌리자 부하 때문에 시간 제한 시험 세 개가 실패했다. ui DOM 시험 두 개가 기본 5초를 넘었고(혼자서는 2초), drawer-arm 계약 시험이 45초 제한에 48초였다. 첫 실패에서 pnpm이 멈춰 앱과 integrations 시험은 아예 돌지 않았다. 패키지를 하나씩 돌리면 모두 통과했다. Kiro가 루트에 패키지를 하나씩 도는 `test`, `typecheck`, `lint`를 만들고, ui DOM 시험 제한을 30초로 늘렸다(요구 사항에서 나온 시간이 아님을 확인). drawer-arm의 45초는 hook 60초 한도에서 나온 요구 사항이라 그대로 두었다. `corepack pnpm test` 한 번에 10개 패키지 3,354개 시험 통과, 817초(그중 ghost-runner Docker 시험 657초), 남은 컨테이너 0개. 같은 회차에서 루트 README 앞부분을 새로 썼다. 기존 절은 뜻을 바꾸지 않고 순서만 옮겼다. Claude Code 확인: 루트 typecheck·lint 통과, README를 읽는 시험이 있는 네 패키지 통과, README 상대 링크 8개 모두 존재.
 - ghost-runner 6차(14:12): 전체 시험 세 번 연속 통과(576초, 630초, 570초, 끝난 뒤 남은 컨테이너·볼륨 0개). Docker 속성 시험이 포함돼 한 번에 10분쯤 걸린다. 저장 시 hook(60초)에는 Docker 시험을 빼고 짧게 돌려야 한다.
 - ui-kit 구현 1차(13:55): `ui/` 패키지 뼈대, 두 테마 색 토큰, 화면 여섯 부분의 view-model. 테스트 25개 파일 223개 통과. 손으로 계산했던 대비값은 UI-P6 시험이 50쌍 모두 기준을 넘는다고 확인했다(가장 빠듯한 짝은 밝은 테마의 선 색 대 안개 3.987, 기준 3). **PBT가 찾은 두 번째 제품 버그:** UI-P7(격리 주장 정직성)이 `claims.ts`에서 플래그 하나만 형식이 틀려도(`p5Claimed: null`) Docker 상자 확인 문구 전체가 사라지는 버그를 찾았고, Kiro가 고친 뒤 반례를 고정 시험으로 남겼다. UI-P3은 시험 쪽 기준 실수(U+FFFF 위 글자의 표기 길이)를 잡았다. 측정값 원문은 Kiro가 devlog 끝에 영어로 붙였던 것을 `docs/measurements.md`로 옮겼다. 앞으로 Kiro 지시에는 "devlog.md는 고치지 않고 측정값은 measurements.md에"를 넣는다.
 - ui-kit 구현 3차(15:25): 화면 성질 UI-P1~UI-P11의 정적 마크업 시험과 DOM 시험(키보드, 테마, 네트워크 금지, 오류 경계, 움직임 줄이기, axe 접근성 검사). 시험 63개 파일 533개, 저장 시 실행 약 32초. axe 검사가 붉은 실 목록의 잘못된 역할(`<li role="group">`)을 찾아 고쳤다. 다음 회차에 넣을 결정: 블랙라이트의 발견 목록은 스위치를 켜기 전에는 숨긴 문장을 풀어 보이지 않는다(데모의 "켜면 드러난다" 장면을 지키기 위해서. 지금은 목록이 꺼짐 상태에서도 풀어 쓴 내용을 보여 준다), UI-P5의 `javascript:` 검사는 URL을 담는 속성에만 둔다, Nightly 시간 한도를 모든 속성 시험에 맞춘다, UI-P7 생성기가 정적 분석 모드를 너무 드물게 내는 것을 고친다.
@@ -296,6 +298,8 @@
 | a2114f2 | recorded plan revision from a Kiro CLI session (design D18), renamed to slow pull, gentle grip; README numbers updated | ghost-hand |
 | dac7e79 | nightly verifyWorld no longer runs out of memory (journal oracle memo cleared per plan); nightly measurement | ghost-shell |
 | 47492a1 | real-box tests serialized across packages with a box lock, mcp box tests matched by run id, hygiene scan covers .kiro/agents | kiro-integration |
+| 2a1ec6d | update the development log | docs |
+| 3ff1064 | root test, typecheck, and lint scripts run packages one at a time; ui DOM test timeout; README intro, quick start, Ghost Shell, and Built with Kiro sections | repo |
 
 아직 커밋하지 않은 것: 이 개발 기록. 커밋 내용 칸은 커밋 메시지(영어)를 그대로 옮겼다.
 
