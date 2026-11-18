@@ -157,7 +157,7 @@ describe('UI-P8 totality (DOM leg): mounting', () => {
       );
       counter.print();
       assertBucketsHit(counter, ['placeholder', 'normal']);
-    }, PBT_TIMEOUT ?? 0);
+    }, PBT_TIMEOUT);
   }
 });
 
@@ -208,5 +208,5 @@ describe('UI-P8 totality (DOM leg): KitBoundary', () => {
     }
     counter.print();
     assertBucketsHit(counter, []);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 });

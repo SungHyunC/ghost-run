@@ -263,6 +263,12 @@ const ALLOWED_ATTRIBUTES = new Set([
 ]);
 const isAllowedAttribute = (name: string): boolean =>
   ALLOWED_ATTRIBUTES.has(name) || name.startsWith('aria-') || name.startsWith('data-') || name.startsWith('stroke');
+// Attributes whose value a browser can read as a URL.
+const URL_ATTRIBUTES = new Set([
+  'href', 'src', 'action', 'formaction', 'xlink:href', 'poster', 'cite', 'data', 'srcset', 'ping', 'background',
+  'manifest', 'longdesc', 'codebase', 'usemap',
+]);
+const isUrlAttribute = (name: string): boolean => URL_ATTRIBUTES.has(name) || name.endsWith(':href');
 // Whitespace and control characters, written with escapes.
 const STRIP_RE = /[\s\u0000-\u001f\u007f-\u009f]/g;
 
@@ -282,11 +288,10 @@ function inspect(html: string): Check {
       if (name.startsWith('on')) problems.push(`event attribute ${name}`);
       else if (name === 'style' || name === 'href' || name === 'src') problems.push(`forbidden attribute ${name}`);
       else if (!isAllowedAttribute(name)) problems.push(`undeclared attribute ${name}`);
-      // aria-* and data-* carry display text only (an accessible name or an id) and are never read as a URL
-      // or as script, so a value that merely begins with the word is not a finding there. Every other
-      // attribute is checked.
-      const textOnly = name.startsWith('aria-') || name.startsWith('data-');
-      if (!textOnly && attr.value.replace(STRIP_RE, '').toLowerCase().startsWith('javascript:')) {
+      // The `javascript:` check covers URL-bearing attributes only. Display-text attributes (aria-*, data-*,
+      // id, class) are never read as a URL, so a value that merely begins with the word is not a finding there.
+      // The bans on href, src, style, and on* above hold for every attribute.
+      if (isUrlAttribute(name) && attr.value.replace(STRIP_RE, '').toLowerCase().startsWith('javascript:')) {
         problems.push(`javascript: value in ${name}`);
       }
     }
@@ -336,7 +341,7 @@ describe('UI-P5 markup inertness', () => {
       }),
       params('full'),
     );
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   it('UI-P5: example, script tag and onerror payload in every field', () => {
     const f = Object.fromEntries(

@@ -131,7 +131,7 @@ describe('UI-P4 no secret forwarding (static leg)', () => {
       ...EXTRA_NAMES.map((n) => `extra:${n}`),
       ...['candle', 'mirror', 'blacklight', 'red-thread', 'graveyard', 'seance'].map((v) => `view:${v}`),
     ]);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   // -------------------------------------------------------------------------
   // Part two: secret-like keys in unknown changes and scenes
@@ -196,7 +196,7 @@ describe('UI-P4 no secret forwarding (static leg)', () => {
       'view:mirror-full-scene',
       'case:mixed',
     ]);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   it('UI-P4: examples (hidden text with the key shown, nested subtree hidden)', () => {
     const c = `${CANARY_PREFIX}abc123`;

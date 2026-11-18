@@ -218,7 +218,7 @@ describe('UI-P9 graveyard coverage and order (static leg)', () => {
       'valid-id',
       'disabled',
     ]);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   it('UI-P9: more than 200 entries show 200 first, then all after reveal', () => {
     console.log(`PBT seed=${PBT_SEED}`);
@@ -232,7 +232,7 @@ describe('UI-P9 graveyard coverage and order (static leg)', () => {
     );
     counter.print();
     assertBucketsHit(counter, ['limited']);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   it('UI-P9: example with pinned invalid times and ids', () => {
     const list = [

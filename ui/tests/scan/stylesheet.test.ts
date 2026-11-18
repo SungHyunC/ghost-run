@@ -45,6 +45,61 @@ describe('stylesheets in src/styles', () => {
   });
 });
 
+describe('smoke layer stays small, faint, and outside the text area', () => {
+  const strip = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const kit = strip(sources.get('kit.css') ?? '');
+  const rule = (selector: string): string => new RegExp(`${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`).exec(kit)?.[1] ?? '';
+
+  it('is a small corner element, not a full-cell overlay', () => {
+    const smoke = rule('.gk-smoke');
+    expect(smoke).toMatch(/width:\s*2\.5rem/);
+    expect(smoke).toMatch(/height:\s*1\.5rem/);
+    expect(smoke).not.toMatch(/inset:\s*0/);
+    expect(smoke).not.toMatch(/width:\s*100%/);
+    const opacity = Number(/fill-opacity:\s*([\d.]+)/.exec(smoke)?.[1]);
+    expect(opacity).toBeGreaterThan(0);
+    expect(opacity).toBeLessThanOrEqual(0.2);
+  });
+
+  it('reserves a strip at the inline end of the cell that is wider than the smoke plus its offset', () => {
+    expect(rule('.gk-cell-vanish')).toMatch(/padding-inline-end:\s*3\.25rem/);
+  });
+
+  it('shows only the static state under reduced motion', () => {
+    const motion = sources.get('motion.css') ?? '';
+    expect(motion).toMatch(/\.gk-smoke\[data-motion='reduce'\]\s*\{\s*animation:\s*none;/);
+    expect(motion).toMatch(/fill-opacity:\s*0\.18/);
+  });
+});
+
+describe('form control base styles', () => {
+  const kit = (sources.get('kit.css') ?? '').replace(/\/\*[\s\S]*?\*\//g, '');
+  it.each(['.gk-button', '.gk-input', '.gk-textarea'])('%s sets text color, surface, and a line border from tokens', (cls) => {
+    const rules = [...kit.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(
+      (m) => !(m[1] ?? '').includes(':') && (m[1] ?? '').split(',').some((x) => x.trim() === cls),
+    );
+    const body = rules.map((m) => m[2] ?? '').join('\n');
+    expect(body).toMatch(/color:\s*var\(--gk-text\)/);
+    expect(body).toMatch(/background:\s*var\(--gk-surface\)/);
+    expect(body).toMatch(/border:\s*1px solid var\(--gk-line\)/);
+  });
+
+  it('gives the three controls the 3px --gk-focus ring', () => {
+    const focus = /([^{}]*:focus-visible[^{}]*)\{([^}]*)\}/g;
+    const rules = [...kit.matchAll(focus)];
+    const ring = rules.find((m) => (m[1] ?? '').includes('.gk-input:focus-visible'));
+    expect(ring?.[1]).toContain('.gk-button:focus-visible');
+    expect(ring?.[1]).toContain('.gk-textarea:focus-visible');
+    expect(ring?.[2]).toMatch(/outline:\s*3px solid var\(--gk-focus\)/);
+  });
+
+  it('exports the kit styles through ./styles.css, which imports kit.css', () => {
+    const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { exports: Record<string, unknown> };
+    expect(pkg.exports['./styles.css']).toBe('./src/styles/index.css');
+    expect(sources.get('index.css')).toContain("'./kit.css'");
+  });
+});
+
 const noFogPairs: PairsByTheme = {
   dark: CONTRAST_PAIRS.dark.filter((p) => !(p.fg === '--gk-text' && p.bg === '--gk-fog')),
   light: CONTRAST_PAIRS.light,

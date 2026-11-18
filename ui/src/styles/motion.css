@@ -11,8 +11,8 @@
 }
 
 @keyframes gk-dissolve {
-  from { fill-opacity: 0.9; transform: translateY(0); }
-  to   { fill-opacity: 0.35; transform: translateY(-3px); }
+  from { fill-opacity: 0.32; transform: translateY(0); }
+  to   { fill-opacity: 0.18; transform: translateY(-2px); }
 }
 
 @keyframes gk-fade {
@@ -35,6 +35,10 @@
 
 .gk-chevron {
   transition: transform 0.2s linear;
+}
+
+.gk-smoke[data-motion='reduce'] {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

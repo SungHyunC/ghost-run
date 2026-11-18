@@ -41,6 +41,17 @@ function Marker({ marker }: { readonly marker: MarkerModel }) {
   );
 }
 
+/** Findings list item: category, position, and code point count; hex and the expanded text only when open. */
+function EntryView({ marker, open }: { readonly marker: MarkerModel; readonly open: boolean }) {
+  if (open) return <Marker marker={marker} />;
+  return (
+    <>
+      <span>{`${marker.category} ${marker.position} `}</span>
+      <span className="gk-mono">{marker.codePointCount}</span>
+    </>
+  );
+}
+
 function SegmentView({ segment }: { readonly segment: Segment }) {
   return segment.kind === 'text' ? <>{segment.text}</> : <Marker marker={segment.marker} />;
 }
@@ -52,6 +63,7 @@ interface SourceHandlers {
 
 function SourcePanel(props: { readonly source: SourceModel; readonly index: number } & SourceHandlers) {
   const { source, index, onRevealLines, onRevealFindings } = props;
+  const open = source.listHint === null;
   const shownLines = source.lines.length;
   const shownFindings = source.entries.length + source.unplaced.length + source.unreadableItems.length;
   return (
@@ -78,10 +90,11 @@ function SourcePanel(props: { readonly source: SourceModel; readonly index: numb
         <Reveal shown={shownLines} total={source.totalLines} noun="lines" onReveal={onRevealLines && (() => onRevealLines(index))} />
       )}
       {source.totalFindings === 0 ? null : <h4 className="gk-subheading">Findings</h4>}
+      {source.listHint === null ? null : <p className="gk-note" data-findings-hint="locked">{source.listHint}</p>}
       <ul className="gk-list gk-findings">
         {source.entries.map((m) => (
           <li key={m.findingIndex} data-finding-index={m.findingIndex}>
-            <Marker marker={m} />
+            <EntryView marker={m} open={open} />
           </li>
         ))}
         {source.unreadableItems.map((t, i) => (
@@ -94,7 +107,9 @@ function SourcePanel(props: { readonly source: SourceModel; readonly index: numb
           <ul className="gk-list">
             {source.unplaced.map((f) => (
               <li key={f.findingIndex} data-unplaced-index={f.findingIndex} className="gk-mono">
-                {`${f.category} ${f.position} offset ${f.offset} length ${f.length} ${hexText(f)}${f.rendering === '' ? '' : ` ${f.rendering}`}`}
+                {open
+                  ? `${f.category} ${f.position} offset ${f.offset} length ${f.length} ${hexText(f)}${f.rendering === '' ? '' : ` ${f.rendering}`}`
+                  : `${f.category} ${f.position} offset ${f.offset} length ${f.length} ${f.codePointCount}`}
               </li>
             ))}
           </ul>

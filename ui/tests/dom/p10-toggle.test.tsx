@@ -88,10 +88,19 @@ async function run(c: Case): Promise<void> {
     const sw = screen.getByRole('switch', { name: 'Blacklight' });
     const firstOff = container.innerHTML;
     expect(sw.getAttribute('aria-checked')).toBe('false');
+    // Off: the Findings list shows category, position, and count only, with the fixed text.
+    const hint = 'Turn on the blacklight to read it.';
+    const listOf = (): string => container.querySelector('ul.gk-findings')?.textContent ?? '';
+    const hasFindings = c.scan.findings.length > 0;
+    expect(container.textContent?.includes(hint) ?? false).toBe(hasFindings);
+    expect(listOf()).not.toContain('<U+');
     for (const gesture of c.gestures) {
       await press(user, sw, gesture);
       expect(sw.getAttribute('aria-checked')).toBe('true');
       expect(sw.textContent).toBe('Blacklight: on');
+      // On: the fixed text is gone and the list entries carry the Hex_Notation.
+      expect(container.textContent?.includes(hint) ?? false).toBe(false);
+      if (container.querySelector('ul.gk-findings li[data-finding-index]') !== null) expect(listOf()).toContain('<U+');
       await press(user, sw, gesture);
       expect(sw.getAttribute('aria-checked')).toBe('false');
       expect(sw.textContent).toBe('Blacklight: off');
@@ -111,5 +120,5 @@ describe('UI-P10 blacklight toggle involution (DOM leg)', () => {
       }),
       params('dom'),
     );
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 });

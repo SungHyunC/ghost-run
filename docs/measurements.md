@@ -550,3 +550,102 @@ Row status `failed` means the row did not reach the target opening or exceeded a
 | Step cost (microseconds per step) | 33.51 |
 | `verifyWorld` with 35 examples (ms) | 6040 |
 | `shortRuns` in `tests/pbt-budget.json` | 35 (was 36 before the tuning) |
+
+## ui-kit Short_Run and Nightly_Run timing (task 14.1, Open Question Q9)
+
+Machine: the development Mac (Apple Silicon). Command: `corepack pnpm test --reporter=default --reporter=json --outputFile=/tmp/ui-short-<n>.json` in `ui/` (the JSON files are written under `/tmp`, outside the repository, so git cannot track them). Projects: model, static, dom, scan. Result of every run: 69 files, 697 tests, no type errors.
+
+### Short_Run (100 runs for model and static properties, 25 for DOM properties)
+
+| Run | Wall time (s) | Vitest "Duration" (s) | Sum of test time over workers (s) |
+|---|---|---|---|
+| 1 | 27.2 | 26.7 | 102.9 |
+| 2 | 33.3 | 32.9 | 140.3 |
+| 3 | 23.2 | 22.9 | 88.5 |
+
+An earlier set of three runs (before the JSON file path was fixed) took 23.4, 24.9, and 30.0 s. Worst case over all six runs: 33.3 s. This is below the 45 s margin and the 60 s limit, so `NUM_RUNS_DOM` stays at 25 and no generator was changed. The design estimate of about 30 s holds.
+
+Ten slowest files, run 3 (the median run), duration in seconds:
+
+| File | Duration (s) |
+|---|---|
+| `tests/static/p9-graveyard.test.tsx` | 17.6 |
+| `tests/dom/a11y.test.tsx` | 11.7 |
+| `tests/model/p9-graveyard.test.ts` | 11.0 |
+| `tests/dom/p5-inert.test.tsx` | 9.0 |
+| `tests/static/p8-total.test.tsx` | 4.6 |
+| `tests/static/p1-mirror.test.tsx` | 4.6 |
+| `tests/dom/keyboard.test.tsx` | 4.3 |
+| `tests/dom/p10-toggle.test.tsx` | 4.0 |
+| `tests/dom/network.test.tsx` | 3.6 |
+| `tests/static/p10-blacklight.test.tsx` | 3.6 |
+| All 69 files (sum, workers run in parallel) | 88.4 |
+
+Run 2 was the slowest (`p9-graveyard.test.tsx` 28.5 s, `a11y.test.tsx` 20.0 s, `p5-inert.test.tsx` 17.6 s), which shows about 40 % load noise between runs on the same machine.
+
+### Nightly_Run (10 000 runs for model and static properties, 500 for DOM properties, no time limit)
+
+Command: `GHOST_PBT_MODE=nightly corepack pnpm test:nightly --reporter=default --reporter=json --outputFile=/tmp/ui-nightly.json`, run once.
+
+| Item | Value |
+|---|---|
+| Wall time | 628 s (10.5 min); Vitest "Duration" 627.2 s |
+| Files and tests | 69 files, 697 tests, all passed. No property failed, so there is no counterexample. |
+| Sum of test time over workers | 1733 s |
+| Process exit code | 1, because Vitest reported 8 unhandled errors `[vitest-worker]: Timeout calling "onTaskUpdate"` (the worker was busy in long synchronous property loops and missed the RPC reply). No test result was affected. |
+
+Ten slowest files, duration in seconds:
+
+| File | Duration (s) |
+|---|---|
+| `tests/dom/p5-inert.test.tsx` | 498.2 |
+| `tests/static/p8-total.test.tsx` | 245.6 |
+| `tests/static/p1-mirror.test.tsx` | 197.1 |
+| `tests/model/p10-blacklight.test.ts` | 175.7 |
+| `tests/static/p10-blacklight.test.tsx` | 170.3 |
+| `tests/static/p3-hidden.test.tsx` | 98.9 |
+| `tests/static/p4-secrets.test.tsx` | 78.0 |
+| `tests/model/p1-mirror.test.ts` | 74.2 |
+| `tests/dom/p10-toggle.test.tsx` | 49.8 |
+| `tests/static/p9-graveyard.test.tsx` | 38.2 |
+| All 69 files (sum, workers run in parallel) | 1733.0 |
+
+The design estimate of 8 to 9 minutes was low by about 1.5 minutes. `p5-inert.test.tsx` alone takes 498 s and sets the lower bound of the wall time.
+
+### Run counts per property
+
+Source: `tests/support/pbt-config.ts`, checked by `tests/model/support.test.ts` ("Short run uses 100 / 25 runs and a 60 s timeout", "Nightly run uses 10000 / 500 runs and no timeout"; both passed in both modes).
+
+| Mode | Model and static properties (`NUM_RUNS_FULL`) | DOM properties (`NUM_RUNS_DOM`) | Per-test timeout |
+|---|---|---|---|
+| Short_Run | 100 | 25 | 60 s |
+| Nightly_Run | 10 000 | 500 | none |
+
+## ui-kit Open Question results (task 14.2)
+
+| Question | Result |
+|---|---|
+| Q1 | ESLint accepts the two fixed rule IDs `@eslint-react/dom-no-dangerously-set-innerhtml` and `@eslint-react/dom-no-dangerously-set-innerhtml-with-children` (plugin 5.30.3). `ui/tests/scan/eslint-fixtures.test.ts` lints fixtures that use the attribute and passes. |
+| Q2 | Vitest 3.2.7 accepts the inline `projects` syntax in `ui/vitest.config.ts` (projects model, static, dom, scan, dist). No fallback is used. |
+| Q3 | `renderToStaticMarkup` from `react-dom/server` runs inside jsdom (`tests/dom/p5-inert.test.tsx`, helper `tests/support/markup.ts`). The Testing Library fallback is not needed. |
+| Q5 | The dist scan allow-list has four entries (React error decoder prefix, gallery sample `curl` command with a reserved `.example` host, the word `segment`, React's `javascript:` refusal message). Reasons are in the "ui-kit dist scan (task 9.3)" section above. |
+| Q6 | See the lowest ratios below. |
+| Q7 | The first green run confirmed jsdom 26.1.0 with Vitest 3.2.7, axe-core 4.14.1 running in jsdom, @vitejs/plugin-react 5.2.0, and @testing-library/user-event 14.6.12 with React 19.3.1. |
+| Q9 | Short_Run takes about 23 to 33 s, Nightly_Run 628 s (task 14.1 section above). See the exit-code note below. |
+| Q10 | `vite preview` with `port: 0` worked (`tests/dist/serve.test.ts` reads the assigned port from the server address). |
+
+### Q6: lowest contrast ratios per pair role (task 2.2, all 50 pairs pass)
+
+| Pair role | Threshold | Dark, lowest | Light, lowest |
+|---|---|---|---|
+| text (text, muted, pass, warn, block on bg, surface, fog) | 4.5 | block/fog 6.125 | block/fog 5.811 |
+| highlight text (bl-ink on bl-fill) | 4.5 | 15.529 | 14.532 |
+| graphic (line, focus, bl-edge on bg, surface, fog) | 3 | line/fog 4.172 | line/fog 3.987 |
+
+### Q9: Nightly_Run exit code 1
+
+The Nightly_Run exits with code 1 although all 697 tests pass. Vitest reports 8 unhandled errors `[vitest-worker]: Timeout calling "onTaskUpdate"`: a worker stays inside a long synchronous property loop and misses the RPC reply to the main process. The timeout belongs to Vitest's internal worker RPC and `teardownTimeout` does not govern it, so no config option in `ui/vitest.config.ts` fixes it trivially. Splitting `p5-inert.test.tsx` (498 s) into smaller tests would be needed. This is not done. Treat the nightly result by the test report, not by the exit code, until then. (`vitest run --dangerouslyIgnoreUnhandledErrors` would hide the errors and is not used.)
+
+### Decisions kept as documented (Q8, Q13, Q14, Q15, Q17)
+
+These stay as written in the design. The limits are listed in the "Known limits" section of `ui/README.md`.

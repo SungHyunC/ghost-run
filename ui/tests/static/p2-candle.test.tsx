@@ -247,7 +247,7 @@ describe('UI-P2 static leg: candle mapping', () => {
         'blockNoViolations',
       ]);
     },
-    PBT_TIMEOUT ?? 0,
+    PBT_TIMEOUT,
   );
 
   it('regression: notice kinds beyond the known ones render as step lines', () => {

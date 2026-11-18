@@ -477,9 +477,9 @@ function claimRecord(
 }
 
 const guaranteedMode = fc.constantFrom('docker-box', 'playground');
+/** A mode outside the three known values (static-analysis has its own branch, `claimsStatic`). */
 const otherMode: fc.Arbitrary<unknown> = fc.oneof(
-  fc.constant('static-analysis'),
-  fc.string({ maxLength: 8 }).filter((s) => s !== 'docker-box' && s !== 'playground'),
+  fc.string({ maxLength: 8 }).filter((s) => s !== 'docker-box' && s !== 'playground' && s !== 'static-analysis'),
   fc.integer(),
 );
 
@@ -506,6 +506,11 @@ const claimsOnlyB: fc.Arbitrary<unknown> = fc.oneof(
   ),
 );
 
+/** Plan B: mode static-analysis with arbitrary flags, reason, and notApplicable list. */
+const claimsStatic: fc.Arbitrary<unknown> = fc
+  .tuple(maybeFlag, maybeFlag, maybeFlag, looseReason, fc.option(looseNotApplicable, { nil: undefined }))
+  .map(([p1, p5, p6, r, na]) => claimRecord('static-analysis', p1, p5, p6, r, na));
+
 /** Fully random records and non-record values. */
 const claimsLoose: fc.Arbitrary<unknown> = fc
   .tuple(
@@ -525,7 +530,8 @@ const claimsNa: fc.Arbitrary<unknown> = fc
 
 /**
  * Anything a caller might pass as `claims`. Weighted so that each of "A and B", "only A", and
- * "only B" has probability of at least 1 in 10 (A: Assurance_Text; B: banner).
+ * "only B" has probability of at least 1 in 10 (A: Assurance_Text; B: banner), and each of the modes
+ * docker-box, playground, and static-analysis has a share of at least 20 %.
  */
 export const claimsAny: fc.Arbitrary<unknown> = fc.oneof(
   { weight: 1, arbitrary: fc.constant(undefined) },
@@ -533,8 +539,9 @@ export const claimsAny: fc.Arbitrary<unknown> = fc.oneof(
   { weight: 3, arbitrary: claimsBoth },
   { weight: 2, arbitrary: claimsOnlyA },
   { weight: 3, arbitrary: claimsOnlyB },
-  { weight: 2, arbitrary: claimsLoose },
+  { weight: 1, arbitrary: claimsLoose },
   { weight: 3, arbitrary: claimsNa },
+  { weight: 6, arbitrary: claimsStatic },
 );
 
 export type ClaimsBucket = 'both' | 'onlyA' | 'onlyB' | 'neither';

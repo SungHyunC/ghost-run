@@ -78,7 +78,7 @@ describe('reduced motion', () => {
       expect(label).toBeTruthy();
       const tag = label?.parentElement;
       expect(tag?.querySelector('svg[data-icon="cloud"]')).toBeTruthy();
-      const smoke = view.container.querySelector('td.gk-cell-mirror > svg');
+      const smoke = view.container.querySelector('td.gk-cell-mirror.gk-cell-vanish > svg.gk-smoke');
       expect(smoke?.getAttribute('data-motion')).toBe(reduced ? 'reduce' : null);
       view.unmount();
     }

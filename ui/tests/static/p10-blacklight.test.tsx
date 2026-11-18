@@ -175,17 +175,29 @@ function check(c: Case, counter: Counter): void {
     if (n === 0) expect(html).toContain('No hidden text found by the blacklight.');
     else expect(html).not.toContain('No hidden text found by the blacklight.');
 
-    // Findings list entries: one per placed shown Finding, in order, with category, position, hex.
+    // Findings list entries: one per placed shown Finding, in order. Off: category, position, and code point
+    // count only. On: category, position, hex, and the expanded text.
+    const isOn = html === on;
     const entryRe = /<li data-finding-index="(\d+)">(.*?)<\/li>/gs;
     const entries = [...html.matchAll(entryRe)];
     expect(entries.map((m) => Number(m[1]))).toEqual(placedIdx);
     for (const m of entries) {
       const f = findings[Number(m[1])] as Finding;
-      const hexes = f.codePoints.slice(0, 20).map(hex).join(' ');
-      const more = f.codePoints.length > 20 ? ` +${f.codePoints.length - 20} more` : '';
       expect(m[2]).toContain(`<span>${escapeHtml(`${f.category} ${f.line}:${f.column} `)}</span>`);
-      expect(m[2]).toContain(`<span class="gk-mono">${escapeHtml(hexes + more)}</span>`);
+      if (isOn) {
+        const hexes = f.codePoints.slice(0, 20).map(hex).join(' ');
+        const more = f.codePoints.length > 20 ? ` +${f.codePoints.length - 20} more` : '';
+        expect(m[2]).toContain(`<span class="gk-mono">${escapeHtml(hexes + more)}</span>`);
+      } else {
+        const count = `${f.codePoints.length} code point${f.codePoints.length === 1 ? '' : 's'}`;
+        expect(m[2]).toBe(`<span>${escapeHtml(`${f.category} ${f.line}:${f.column} `)}</span><span class="gk-mono">${count}</span>`);
+        expect(m[2]).not.toContain('&lt;U+');
+        expect(m[2]).not.toContain('<mark');
+      }
     }
+    // The fixed list text appears exactly in the off state of a source with Findings.
+    const hintCount = html.split('Turn on the blacklight to read it.').length - 1;
+    expect(hintCount).toBe(!isOn && n > 0 ? 1 : 0);
     const unplaced = [...html.matchAll(/data-unplaced-index="(\d+)"/g)].map((m) => Number(m[1]));
     expect(unplaced).toEqual(unplacedIdx);
     if (unplacedIdx.length > 0) expect(html).toContain('Findings that could not be placed');
@@ -222,13 +234,20 @@ function check(c: Case, counter: Counter): void {
   expect(markupLines(on)).toEqual(wantOn);
   expect([...off.matchAll(/<ol class="gk-lines">(.*?)<\/ol>/gs)].some((m) => (m[1] ?? '').includes('<mark'))).toBe(false);
 
-  // On and off differ only in the in-text markers.
-  const stripLineMarkers = (html: string): string =>
-    html.replace(/<ol class="gk-lines">(.*?)<\/ol>/s, (_s, inner: string) => `<ol class="gk-lines">${inner.replace(MARK_RE, '')}</ol>`);
-  expect(stripLineMarkers(on)).toBe(off);
+  // On and off differ only in the in-text markers, the Findings list items, the unplaced group, and the list text.
+  const stripVariable = (html: string): string =>
+    html
+      .replace(/<ol class="gk-lines">(.*?)<\/ol>/s, (_s, inner: string) => `<ol class="gk-lines">${inner.replace(MARK_RE, '')}</ol>`)
+      .replace(/<p class="gk-note" data-findings-hint="locked">.*?<\/p>/s, '')
+      .replace(/<ul class="gk-list gk-findings">.*?<\/ul>/s, '')
+      .replace(/<div role="group" aria-label="Findings that could not be placed".*?<\/ul><\/div>/s, '');
+  expect(stripVariable(on)).toBe(stripVariable(off));
+  // Involution: off, on, off restores the first off markup exactly.
+  expect(render(c, 'off')).toBe(off);
 
   // Buckets.
   counter.add(c.origin);
+  if (n > 0) counter.add('list-hint-off');
   counter.add(n > SHOWN_MAX ? 'findings>100' : 'findings<=100');
   counter.add(unplacedIdx.length > 0 ? 'has-unplaced' : 'all-placed');
   counter.add(totalLines > LINES_MAX ? 'lines>200' : 'lines<=200');
@@ -264,8 +283,9 @@ describe('UI-P10 blacklight coverage and involution (static leg)', () => {
       'findings-notice',
       'lines-notice',
       'hex-in-off',
+      'list-hint-off',
     ]);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   it('UI-P10: example, a Finding beyond the 100th keeps its code point as hex when off', () => {
     const zw = cp(0x200b);

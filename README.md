@@ -86,6 +86,14 @@ Only the behavior criterion catches these cases: a network attempt to a host tha
 - The in-box recorder reports `tamperResistant: false`.
 - Supported on macOS and Linux. Windows is unverified.
 
+## UI kit
+
+`@ghost-run/ui` (`ui/`) draws the mirror world, candle, blacklight, red thread, graveyard, and lights-on theme from data that `core` already produced. It computes no verdict, diff, or finding. It asserts none of P1 to P8 and shows only the claim flags it receives. Its render properties are named UI-P1 to UI-P11. A Plan B run never shows a P1 claim. Commands, the dependency table, and the asset table are in [ui/README.md](ui/README.md).
+
+### Secret-like key rule
+
+The Mirror world hides the value of any field whose key name contains `secret`, `token`, `password`, `passwd`, `apikey`, `api_key`, `authorization`, `cookie`, `credential`, `private_key`, or `session`, ignoring letter case, and shows `[hidden: secret-like field]` instead. This is a heuristic. It matches key names by case-insensitive containment and never inspects values. It can miss a secret under an innocent key name (for example `pwd`, or `privateKey`, which does not contain `private_key`), and it can hide a harmless value (for example `session_count`). It does not detect a secret typed into a command string or any other displayed text. The producer of the changes and scenes remains responsible for redaction.
+
 ## Dependencies and data
 
 | Name | Version | Use | License |
@@ -124,6 +132,7 @@ Only the behavior criterion catches these cases: a network attempt to a host tha
 | @vitejs/plugin-react | 5.2.0 | Dev dependency of `ui`, Vite React plugin | MIT |
 | axe-core | 4.14.1 | Dev dependency of `ui`, accessibility audit in tests (not shipped) | MPL-2.0 |
 | `core` (`@ghost-run/core`) | 0.0.0 | no runtime dependencies (`core/package.json` has no `dependencies` field) | MIT (this repository) |
+| Fonts, icons, and assets of `ui` | none | Icons, flame, smoke, and tombstone shapes are original SVG paths written in `ui/` as code (MIT). Fonts: none, system stacks only. Audio: none | MIT (this repository) |
 | Fonts, icons, and assets of `apps/ghost-hand` | none | The app uses only primitive shapes and system fonts | none |
 
 Notes for the Ghost Hand rows:

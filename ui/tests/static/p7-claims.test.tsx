@@ -138,6 +138,16 @@ describe('UI-P7 static leg: claim honesty in the Candle container markup', () =>
       params('full'),
     );
     counter.print();
+    // Non-vacuity of the mode weighting: each known mode is at least 10 % of the samples (the generator targets 20 % or more).
+    {
+      const modeKeys = ['docker-box', 'playground', 'static-analysis', 'other'];
+      const total = modeKeys.reduce((a, m) => a + (counter.counts[`mode:${m}`] ?? 0), 0);
+      if (total >= 100) {
+        for (const m of modeKeys.slice(0, 3)) {
+          expect((counter.counts[`mode:${m}`] ?? 0) / total, `share of mode ${m}`).toBeGreaterThanOrEqual(0.1);
+        }
+      }
+    }
     assertBucketsHit(counter, [
       'mode:docker-box',
       'mode:playground',

@@ -1,6 +1,6 @@
 // Shared property-based test configuration for ui (design.md, "PBT configuration").
 // Follows core/tests/pbt-config.ts; core test files cannot be imported from this package.
-// GHOST_PBT_MODE=nightly -> 10 000 / 500 runs, no time limit. Anything else -> 100 / 25 runs, 60 s limit.
+// GHOST_PBT_MODE=nightly -> 10 000 / 500 runs, no time limit (timeout 0). Anything else -> 100 / 25 runs, 60 s limit.
 // GHOST_PBT_SEED=<integer> replays a run. tsconfig has `types: []`, so `process` is read via globalThis.
 
 const env = (
@@ -16,8 +16,11 @@ export const NUM_RUNS_FULL: number = PBT_MODE === 'nightly' ? 10_000 : 100;
 /** Runs for properties that render through the DOM. */
 export const NUM_RUNS_DOM: number = PBT_MODE === 'nightly' ? 500 : 25;
 
-/** Per-test timeout in ms; undefined means no limit. */
-export const PBT_TIMEOUT: number | undefined = PBT_MODE === 'nightly' ? undefined : 60_000;
+/**
+ * Per-test timeout in ms, passed as the third argument of `it`/`test` in every property test.
+ * 0 disables the limit in vitest (Nightly); never leave it undefined, because vitest would then apply its 5 s default.
+ */
+export const PBT_TIMEOUT: number = PBT_MODE === 'nightly' ? 0 : 60_000;
 
 function resolveSeed(): number {
   const raw = env?.['GHOST_PBT_SEED'];

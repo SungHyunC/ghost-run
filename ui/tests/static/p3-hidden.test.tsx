@@ -295,7 +295,7 @@ describe('UI-P3 no hidden characters (static leg)', () => {
     );
     counter.print();
     assertBucketsHit(counter, [...FIELD_BUCKETS, ...CATEGORY_BUCKETS, 'hex-in-markup']);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 
   it('UI-P3: example, one hidden character in a path and a command', () => {
     const f = Object.fromEntries(FIELD_NAMES.map((n) => [n, `a${String.fromCodePoint(0x200b)}b`])) as Fields;

@@ -172,9 +172,26 @@ function check(c: Case, counter: ReturnType<typeof createCounter>): void {
       const f = findings[e.findingIndex] as Finding;
       expect(e.category).toBe(f.category);
       expect(e.position).toBe(`${f.line}:${f.column}`);
-      expect(e.hex).toEqual(f.codePoints.slice(0, 20).map(hex));
-      expect(e.moreCount).toBe(Math.max(0, f.codePoints.length - 20));
+      expect(e.codePointCount).toBe(`${f.codePoints.length} code point${f.codePoints.length === 1 ? '' : 's'}`);
+      if (m === on) {
+        expect(e.hex).toEqual(f.codePoints.slice(0, 20).map(hex));
+        expect(e.moreCount).toBe(Math.max(0, f.codePoints.length - 20));
+        expect(e.rendering === '').toBe(f.rendering === '');
+      } else {
+        // Off: only category, position, and code point count; no hex and no expanded text.
+        expect(e.hex).toEqual([]);
+        expect(e.moreCount).toBe(0);
+        expect(e.rendering).toBe('');
+      }
     }
+    for (const u of m.unplaced) {
+      if (m === off) {
+        expect(u.hex).toEqual([]);
+        expect(u.rendering).toBe('');
+      }
+    }
+    // The fixed list text appears exactly while the switch is off and the source has Findings.
+    expect(m.listHint).toBe(m === off && n > 0 ? 'Turn on the blacklight to read it.' : null);
     // Findings limit and its notice.
     expect(m.findingsNotice).toBe(shownCount < n ? `Showing ${shownCount} of ${n}` : null);
     // Lines limit and its notice.
@@ -215,13 +232,15 @@ function check(c: Case, counter: ReturnType<typeof createCounter>): void {
     }
   }
 
-  // Involution: off, on, off with the same reveal gives equal models.
+  // Involution: off, on, off with the same reveal restores the first off model exactly. The on state differs
+  // from off in the in-text markers, the list items (hex and expanded text), and the list text.
   const off2 = modelOf(c, 'off');
   expect(off2).toEqual(off);
   expect(modelOf(c, 'on')).toEqual(on);
 
   // Buckets.
   counter.add(c.origin);
+  if (on.entries.some((e) => e.rendering !== '')) counter.add('expanded-text-on');
   counter.add(n > SHOWN_MAX ? 'findings>100' : 'findings<=100');
   if (n === 0) counter.add('no-findings');
   counter.add(placedIdx.length < shownIdx.length ? 'has-unplaced' : 'all-placed');
@@ -263,6 +282,7 @@ describe('UI-P10 blacklight coverage and involution (model leg)', () => {
       'lines-revealed',
       'covered-hidden',
       'uncovered-hidden',
+      'expanded-text-on',
     ]);
   }, PBT_TIMEOUT);
 

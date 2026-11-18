@@ -17,7 +17,7 @@ describe('buildClaimModel', () => {
     expect(m.notClaimedBanner).toBe('Not claimed for this run: P6.');
   });
 
-  it('unclaimed P1 removes assurance', () => {
+  it('unclaimed isolation flag removes assurance', () => {
     const m = buildClaimModel({ ...base, p1Claimed: false, p5Claimed: 'true' });
     expect(m.assuranceText).toBeNull();
     expect(m.notClaimedBanner).toBeTruthy();

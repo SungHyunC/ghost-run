@@ -30,6 +30,16 @@ describe('BlacklightView markup', () => {
     expect(html).toContain('abcd');
   });
 
+  it('off: the Findings list shows category, position, count, and the fixed text only', () => {
+    const html = renderMarkup(<BlacklightViewMarkup sources={sources} mode="off" reveal={NO_REVEAL} />);
+    expect(html).toContain('Turn on the blacklight to read it.');
+    expect(html).toContain('<li data-finding-index="0"><span>zero-width 1:3 </span><span class="gk-mono">1 code point</span></li>');
+    expect(html).not.toContain('U+200B');
+    expect(html).not.toContain('<mark');
+    const on = renderMarkup(<BlacklightViewMarkup sources={sources} mode="on" reveal={NO_REVEAL} />);
+    expect(on).not.toContain('Turn on the blacklight to read it.');
+  });
+
   it('renders a mark with category, position, and hex when on', () => {
     const html = renderMarkup(<BlacklightViewMarkup sources={sources} mode="on" reveal={NO_REVEAL} />);
     expect(html).toContain('aria-checked="true"');

@@ -822,6 +822,296 @@
         "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
         "timestamp": 1794982969615
       }
+    ],
+    "9.1 Create the gallery page `ui/gallery/main.tsx` and finish `ui/index.html`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995441998
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995644139
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996268073
+      }
+    ],
+    "9.2 Write the dist scanner `ui/tests/support/dist-scan.ts` and its self-tests": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442001
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995533075
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995636338
+      }
+    ],
+    "9.3 Build the gallery and write the dist scan test": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442004
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996462683
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996694019
+      }
+    ],
+    "9.4 Write the `vite preview` serving test `tests/dist/serve.test.ts`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442006
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996699278
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996816496
+      }
+    ],
+    "10.1 Write the ESLint fixture test `tests/scan/eslint-fixtures.test.ts`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442009
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995455608
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995526733
+      }
+    ],
+    "10.2 Write the source scan test `tests/scan/source-scan.test.ts`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442011
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996273672
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996411647
+      }
+    ],
+    "10.3 Write the hygiene test `tests/scan/hygiene.test.ts`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442013
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996273685
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996459090
+      }
+    ],
+    "10.4 Write the dependency direction test `tests/scan/dependency-direction.test.ts`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442016
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995644151
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996268160
+      }
+    ],
+    "11.1 Write `ui/README.md` and extend the repository `README.md`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442019
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996274267
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996411656
+      }
+    ],
+    "11.2 Write the README test `tests/scan/readme.test.ts`": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442021
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996463353
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996694027
+      }
+    ],
+    "11.3 Update `.kiro/steering/structure.md` for the `ui/` package": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442024
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995644158
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996268895
+      }
+    ],
+    "12. Checkpoint - Components, hosting, and hygiene complete": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442025
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996822194
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996905631
+      }
+    ],
+    "13.1 Add the `@ghost-run/ui` import ban to `core/eslint.config.mjs` with a lint fixture test": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442027
+      }
+    ],
+    "14.1 Measure the Short_Run and record the result": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442029
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996822204
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794997930416
+      }
+    ],
+    "14.2 Resolve the Open Questions and record each result": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442031
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794997930643
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794998006584
+      }
+    ],
+    "15. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794995442033
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794998008133
+      },
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794998091035
+      }
+    ],
+    "10. Source hygiene": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996459091
+      }
+    ],
+    "11. Documentation and steering": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996694031
+      }
+    ],
+    "9. Gallery and static hosting": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794996816498
+      }
+    ],
+    "14. Measurement and open questions": [
+      {
+        "executionId": "d6e4ac42-c47f-4a53-ae99-481511f63370",
+        "chatSessionId": "sess_46fd879b-fbcc-4d1d-8870-963446578a3b",
+        "timestamp": 1794998006593
+      }
     ]
   }
 }

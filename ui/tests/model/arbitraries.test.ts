@@ -56,6 +56,19 @@ describe('ui test arbitraries', () => {
     }
   });
 
+  it('claimsAny modes docker-box, playground, and static-analysis each have a share of at least 20 %', () => {
+    const counter = createCounter('claimsAny modes');
+    const N = 2000;
+    for (const v of fc.sample(A.claimsAny, { numRuns: N, seed: PBT_SEED })) {
+      const mode = typeof v === 'object' && v !== null ? (v as Record<string, unknown>)['mode'] : undefined;
+      if (mode === 'docker-box' || mode === 'playground' || mode === 'static-analysis') counter.add(mode);
+    }
+    counter.print();
+    for (const m of ['docker-box', 'playground', 'static-analysis']) {
+      expect((counter.counts[m] ?? 0) / N).toBeGreaterThanOrEqual(0.2);
+    }
+  });
+
   it('secretLikeKey and plainKey agree with the independent oracle', () => {
     for (const k of fc.sample(A.secretLikeKey, { numRuns: SAMPLES, seed: PBT_SEED })) {
       expect(A.secretLikeOracle(k)).toBe(true);

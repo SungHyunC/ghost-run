@@ -25,7 +25,16 @@ export default defineConfig({
         },
       },
       { extends: true, test: { name: 'scan', environment: 'node', include: ['tests/scan/**/*.test.ts'] } },
-      { extends: true, test: { name: 'dist', environment: 'node', include: ['tests/dist/**/*.test.ts'] } },
+      {
+        extends: true,
+        test: {
+          name: 'dist',
+          environment: 'node',
+          include: ['tests/dist/**/*.test.ts'],
+          // The default exclude has **/dist/**, which would also drop tests/dist.
+          exclude: ['**/node_modules/**'],
+        },
+      },
     ],
   },
 });

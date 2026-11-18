@@ -43,7 +43,10 @@ describe('buildBlacklightModel', () => {
     expect(lineText(off, 0)).toBe('abcd');
     expect(lineText(on, 0)).toBe('ab[M0]cd');
     expect(on.entries).toHaveLength(1);
-    expect(off.entries).toEqual(on.entries);
+    // Off keeps category, position, and count; hex and the expanded text appear only when on.
+    expect(off.entries).toEqual(on.entries.map((e) => ({ ...e, hex: [], moreCount: 0, rendering: '' })));
+    expect(off.listHint).toBe('Turn on the blacklight to read it.');
+    expect(on.listHint).toBeNull();
     expect(on.summary).toBe('README: 1 findings');
     expect(on.entries[0]?.hex).toEqual(['<U+200B>']);
     expect(on.entries[0]?.position).toBe('1:3');

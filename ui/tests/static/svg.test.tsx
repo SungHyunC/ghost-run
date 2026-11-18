@@ -99,8 +99,8 @@ describe('SVG art (static)', () => {
   });
 
   it('draws the design geometry for smoke, tombstone, and thread', () => {
-    expect(renderMarkup(<SmokeLayer />)).toContain('viewBox="0 0 96 24"');
-    expect(renderMarkup(<SmokeLayer />).match(/<circle/g)).toHaveLength(5);
+    expect(renderMarkup(<SmokeLayer />)).toContain('viewBox="0 0 40 24"');
+    expect(renderMarkup(<SmokeLayer />).match(/<circle/g)).toHaveLength(3);
     expect(renderMarkup(<ThreadConnector />)).toContain('d="M2 12C40 2 80 22 118 12"');
     const tomb = renderMarkup(<TombstoneShape />);
     expect(tomb).toContain('d="M6 50V20a14 14 0 0 1 28 0v30z"');

@@ -4,6 +4,7 @@ import { CANARY_PREFIX, canaryArb, isCanary } from '../fixtures/canary';
 import { isReservedHost, RESERVED_HOSTS } from '../fixtures/hosts';
 import { listAttributeNames, listElementNames } from '../support/markup';
 import * as fc from 'fast-check';
+import { PBT_TIMEOUT } from '../support/pbt-config';
 
 type Env = Record<string, string | undefined>;
 const env = (globalThis as unknown as { process: { env: Env } }).process.env;
@@ -39,7 +40,7 @@ describe('pbt-config', () => {
     expect(c.PBT_MODE).toBe('nightly');
     expect(c.NUM_RUNS_FULL).toBe(10_000);
     expect(c.NUM_RUNS_DOM).toBe(500);
-    expect(c.PBT_TIMEOUT).toBeUndefined();
+    expect(c.PBT_TIMEOUT).toBe(0);
   });
 
   it('replays the seed from GHOST_PBT_SEED', async () => {
@@ -70,7 +71,7 @@ describe('fixtures and markup helpers', () => {
   it('canaries and hosts are fake and reserved', () => {
     fc.assert(fc.property(canaryArb, (v) => v.startsWith(CANARY_PREFIX) && isCanary(v)), { numRuns: 50 });
     expect(RESERVED_HOSTS.every(isReservedHost)).toBe(true);
-  });
+  }, PBT_TIMEOUT);
 
   it('lists element and attribute names', () => {
     const html = '<div class="a" data-x="1>2"><span hidden>t</span></div>';

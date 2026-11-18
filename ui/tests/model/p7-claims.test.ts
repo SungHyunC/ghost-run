@@ -32,7 +32,7 @@ describe('UI-P7 model leg: claim honesty', () => {
     expect(model.notClaimedBanner).toBe(`${STATUS_UNKNOWN} ${notClaimed(['P1', 'P5', 'P6'])}`);
   });
 
-  it('not applicable: P5 and P6 lines show the fixed text and never NOT claimed; only P5 and P6 can be listed', () => {
+  it('not applicable: secret and egress claim lines show the fixed text and never NOT claimed; only those two can be listed', () => {
     const base = { mode: 'docker-box', p1Claimed: true, p5Claimed: false, p6Claimed: false };
     const m = buildClaimModel({ ...base, notApplicable: ['P5', 'P6'] });
     expect(m.notClaimedBanner).toBeNull();
@@ -133,6 +133,16 @@ describe('UI-P7 model leg: claim honesty', () => {
       params('full'),
     );
     counter.print();
+    // Non-vacuity of the mode weighting: each known mode is at least 10 % of the samples (the generator targets 20 % or more).
+    {
+      const modeKeys = ['docker-box', 'playground', 'static-analysis', 'other'];
+      const total = modeKeys.reduce((a, m) => a + (counter.counts[`mode:${m}`] ?? 0), 0);
+      if (total >= 100) {
+        for (const m of modeKeys.slice(0, 3)) {
+          expect((counter.counts[`mode:${m}`] ?? 0) / total, `share of mode ${m}`).toBeGreaterThanOrEqual(0.1);
+        }
+      }
+    }
     assertBucketsHit(counter, [
       'mode:docker-box',
       'mode:playground',

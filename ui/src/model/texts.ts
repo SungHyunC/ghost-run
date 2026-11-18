@@ -69,6 +69,9 @@ export const UNPLACED_FINDINGS = 'Findings that could not be placed';
 export const THREAD_NOT_FOUND = 'No cause found in the texts the agent read. Not found does not mean safe.';
 export const THREAD_LITERAL_ONLY = 'The red thread finds literal occurrences only.';
 export const HIDDEN_TEXT = 'hidden text';
+/** Fixed text of the Findings list while the blacklight is off. */
+export const FINDINGS_LOCKED = 'Turn on the blacklight to read it.';
+export const codePointCountText = (n: number): string => `${n} code point${n === 1 ? '' : 's'}`;
 export const TURN_ON_BLACKLIGHT = 'Turn on the blacklight to reveal it.';
 export const MATCHED_HOST_KEY = 'matched host key';
 export const threadMismatch = (needles: number, links: number): string =>

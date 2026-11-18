@@ -217,7 +217,7 @@ describe('UI-P8 totality (static leg): components', () => {
       );
       counter.print();
       assertBucketsHit(counter, ['placeholder', 'normal']);
-    }, PBT_TIMEOUT ?? 0);
+    }, PBT_TIMEOUT);
   }
 });
 
@@ -334,7 +334,7 @@ describe('UI-P8 totality (static leg): unreadable list elements', () => {
       );
       counter.print();
       assertBucketsHit(counter, ['with-siblings']);
-    }, PBT_TIMEOUT ?? 0);
+    }, PBT_TIMEOUT);
   }
 });
 
@@ -400,6 +400,6 @@ describe('UI-P8 totality (model leg inside the static file): builders', () => {
       );
       counter.print();
       assertBucketsHit(counter, ['normal']);
-    }, PBT_TIMEOUT ?? 0);
+    }, PBT_TIMEOUT);
   }
 });

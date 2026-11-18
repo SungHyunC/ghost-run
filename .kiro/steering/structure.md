@@ -15,9 +15,12 @@ ghost-run/
 │                           # wards.yaml parser, validator, printer.
 │                           # Not under integrations/. Depends on core/ only
 │                           # (wards-config -> core)
-├─ ui/                      # Shared UI kit: mirror world, candle verdict,
-│                           # blacklight toggle, red-thread trace, graveyard,
-│                           # lights-on mode
+├─ ui/                      # Separate workspace package (@ghost-run/ui), exported
+│                           # as source. Shared UI kit: mirror world, candle
+│                           # verdict, blacklight toggle, red-thread trace,
+│                           # graveyard, lights-on mode. The gallery page is the
+│                           # build and static-hosting check target.
+│                           # Depends on core/ only (ui -> core)
 ├─ ghost-runner/            # Separate workspace package (@ghost-run/ghost-runner):
 │                           # Docker box runner, Repo_World, Plan B static analysis.
 │                           # Depends on core/ only (ghost-runner -> core)
@@ -52,7 +55,7 @@ ghost-run/
 - `apps/*` and `integrations/*` may depend on `core/` and `ui/`.
 - `apps/*` may depend on `worlds/*`, `ui/`, `wards-config/`, and `core/`.
 - `worlds/*` may depend on `core/` only, plus the runtime libraries of the world itself (for example `@mujoco/mujoco`, `sql.js`).
-- `ui/` may depend on `core/`.
+- `ui/` may depend on `core/` only, through `@ghost-run/core` with type-only imports in source files. `core/` must not import `ui/`.
 - `ghost-runner/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only (`ghost-runner -> core`), through the public entry point of `@ghost-run/core`.
 - `wards-config/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only, through the public entry point `@ghost-run/core`.
 - `integrations/*` may also depend on `ghost-runner/` and `wards-config/`, only through their public entry points. `integrations/mcp` may depend on `integrations/kiro-hook` only through its `index.mjs`.
@@ -96,9 +99,9 @@ Guards are declared in `wards.yaml`, not in code. Each ward has an `id`, a `kind
 ## What Goes Where
 
 - **New world** → `worlds/<name>/` (world-scaffold hook populates boilerplate)
-- **Shared UI** → `ui/`
+- **Shared UI** (Candle, Mirror world, Blacklight, Red thread, Graveyard, Lights toggle) → `ui/`
 - **App-specific UI** → `apps/<name>/`
-- **3D ghost overlay** → `apps/ghost-hand/`
+- **3D ghost overlay** → `apps/ghost-hand/`; it stays out of `ui/` until the 11/19 decision (the second app's spec decides)
 - **Docker box runner, Repo_World, static (Plan B) analysis** → `ghost-runner/` (its own workspace package, not under `integrations/`; depends on `core/` only)
 - **wards.yaml parsing, validation, and printing** → `wards-config/` (its own workspace package, not under `integrations/`; depends on `core/` only)
 - **Default Ghost Shell wards** → `apps/ghost-shell/wards.yaml`

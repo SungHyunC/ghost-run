@@ -88,7 +88,7 @@ Decisions reflected in this plan:
     - _Requirements: 1.1, 1.3, 1.7_
 
   - [x] 1.5 Create the test harness `ui/tests/support/` and `ui/tests/fixtures/`
-    - `pbt-config.ts` follows `core/tests/pbt-config.ts`: `PBT_MODE`, `NUM_RUNS_FULL` (100 or 10,000), `NUM_RUNS_DOM` (25 or 500), `PBT_TIMEOUT` (60,000 or none), `PBT_SEED`, and `params(kind)`. It reads `process` through `globalThis` and prints `PBT seed=<n>`.
+    - `pbt-config.ts` follows `core/tests/pbt-config.ts`: `PBT_MODE`, `NUM_RUNS_FULL` (100 or 10,000), `NUM_RUNS_DOM` (25 or 500), `PBT_TIMEOUT` (60,000 in Short_Run and 0, which disables the limit in vitest, in Nightly_Run; every `it` that runs a property passes it as the third argument, and `tests/scan/pbt-timeout.test.ts` fails when a test file with a property run does not), `PBT_SEED`, and `params(kind)`. It reads `process` through `globalThis` and prints `PBT seed=<n>`.
     - `pbt-stats.ts` copies the `createCounter` helper of `core/tests/pbt-stats.ts` (the `ui` package cannot import core test files) and supports non-vacuity assertions for buckets with probability of at least 1 in 10.
     - `setup-dom.ts`: registers `afterEach(cleanup)`, installs a controllable `window.matchMedia` stub, sets `IS_REACT_ACT_ENVIRONMENT`, installs no `jest-dom`.
     - `markup.ts`: helpers that render a pure view with `renderToStaticMarkup`, parse markup into a `template`, list element and attribute names, and escape text for HTML comparison.
@@ -188,7 +188,7 @@ Decisions reflected in this plan:
   - [x] 4.8 Write the model-leg property test for claim honesty
     - **Property 7: Claim honesty**
     - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.9, 7.10, 7.11, 7.12**
-    - File: `tests/model/p7-claims.test.ts` (V leg). The S leg is task 8.3. Tag `UI-P7`. Generator: `claimsAny` (absent, non-record, `mode` from the three values plus unknown strings and numbers, each of the three booleans independently `true`, `false`, or a non-boolean, `reason` from the four enum values, other strings, or absent, and `notApplicable` valid, with `P1` or junk entries, a non-list, or absent). Environment: node, V leg, 100 and 10,000.
+    - File: `tests/model/p7-claims.test.ts` (V leg). The S leg is task 8.3. Tag `UI-P7`. Generator: `claimsAny` (absent, non-record, `mode` weighted so that each of `docker-box`, `playground`, and `static-analysis` has a share of at least 20 % (checked by a counter in `tests/model/arbitraries.test.ts` over 2,000 samples, and by a 10 % non-vacuity floor in the model and static P7 tests) plus unknown strings and numbers, each of the three booleans independently `true`, `false`, or a non-boolean, `reason` from the four enum values, other strings, or absent, and `notApplicable` valid, with `P1` or junk entries, a non-list, or absent). Environment: node, V leg, 100 and 10,000.
     - Assertions: condition A (Assurance_Text) holds if and only if `mode` is `docker-box` or `playground` and `p1Claimed` is the boolean `true`, and its text matches the mode; condition B (banner) holds if and only if `claims` is absent or malformed or at least one of P1, P5, P6 is neither claimed nor validly not applicable (P1 only claimed); a not-claimed banner names exactly the not-claimed ids in the order P1, P5, P6, followed by the reason wording (`static-analysis`: ` No rehearsal took place.`; `unsupported-step`: ` Some steps were not rehearsed.`; otherwise none); a validly not-applicable line has the text `P<n>: not applicable to this world` and never the text `NOT claimed`; a `static-analysis` value always gives the static banner; `Isolation status unknown.` is present if and only if `claims` is absent or malformed; A and B are checked separately and may both be present. Counter buckets: mode, `p1Claimed`, both or one of A and B.
 
   - [x] 4.9 Write the model-leg property test for blacklight coverage
@@ -267,7 +267,7 @@ Decisions reflected in this plan:
   - [x] 7.3 Implement `BlacklightView`, `BlacklightPanelView`, and `BlacklightSwitch`
     - **Precondition: task 2.2 is complete and passing.**
     - `BlacklightSwitch` is a native button with `role="switch"`, `aria-checked`, accessible name `Blacklight`, the lamp icon, and the visible text `Blacklight: off` or `Blacklight: on` (starting with the accessible name). The container holds the mode and per-source reveal sets. The panel view renders the summary and per-category counts, the line list with monospace line numbers, `Showing <shown> of <total>` and keyboard-operable reveal buttons for lines and Findings, the Findings list (one `li` with `data-finding-index` per placed shown Finding), the unplaced group, `mark` markers (fill, dashed outline, icon, category text, position, hex list, rendering), the `No hidden text found by the blacklight.` text, and the fixed sentence `Text analysis does not catch every injection.`
-    - Toggling changes only the in-text markers, not the Findings list and not the reveal state.
+    - Toggling changes the in-text markers, the Findings list entries (Hex_Notation and expanded text appear only while `on`; while `off` each entry shows category, position, and code point count and the list carries the fixed text `Turn on the blacklight to read it.`), and the unplaced group; it does not change the summary, the counts, or the reveal state. Off then on then off restores the first `off` markup exactly.
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12, 12.3, 12.4, 14.2, 14.4, 14.5_
 
   - [x] 7.4 Implement `RedThreadView`
@@ -320,7 +320,7 @@ Decisions reflected in this plan:
   - [x] 8.5 Write the static-leg property test for blacklight coverage
     - **Property 10: Blacklight coverage and involution**
     - **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.8, 8.9, 8.10, 8.13, 14.5**
-    - File: `tests/static/p10-blacklight.test.tsx`. Tag `UI-P10`. Environment: node, S leg, 100 and 10,000. Render `BlacklightPanelView` in both modes with and without reveal sets and check the Findings list entries, the markers, `Showing` texts and reveal buttons, hex notation of overflow-covered code points (visible with the switch `off`, Requirement 8 criterion 5 exception), the summary and category counts, the `off` text rules, and that the `on` and `off` markup differ only in the in-text markers.
+    - File: `tests/static/p10-blacklight.test.tsx`. Tag `UI-P10`. Environment: node, S leg, 100 and 10,000. Render `BlacklightPanelView` in both modes with and without reveal sets and check the Findings list entries, the markers, `Showing` texts and reveal buttons, hex notation of overflow-covered code points (visible with the switch `off`, Requirement 8 criterion 5 exception), the summary and category counts, the `off` text rules, that the `off` list entries show only category, position, and code point count with the fixed text `Turn on the blacklight to read it.` (no hex, no `rendering`), and that the `on` and `off` markup differ only in the in-text markers, the list entries, the unplaced group, and the fixed text.
 
   - [x] 8.6 Write the static-leg property test for red thread pairing
     - **Property 11: Red thread pairing**
@@ -345,7 +345,7 @@ Decisions reflected in this plan:
   - [x] 8.10 Write the markup inertness test
     - **Property 5: Markup inertness**
     - **Validates: Requirements 4.2, 4.3**
-    - File: `tests/dom/p5-inert.test.tsx`. Tag `UI-P5`. Environment: jsdom, SP leg, 100 Short_Run and 10,000 Nightly_Run. Generator: `markupString` samples (script tags, `onerror` payloads, quotes, ampersands, backticks, `javascript:` in mixed case, attribute-breaking sequences, entity text, allowed element names) placed in every displayed string. Render each component with `renderToStaticMarkup`, parse into a `template`, and require only allow-listed elements, no attribute whose name starts with `on`, no attribute outside the declared list, no `style`, `href`, or `src`, no `javascript:` value after removing whitespace and control characters, and the same element count as the plain-letter input. If `react-dom/server` cannot be called in jsdom (Open Question Q3), render with Testing Library and parse `container.innerHTML` instead and record the choice.
+    - File: `tests/dom/p5-inert.test.tsx`. Tag `UI-P5`. Environment: jsdom, SP leg, 100 Short_Run and 10,000 Nightly_Run. Generator: `markupString` samples (script tags, `onerror` payloads, quotes, ampersands, backticks, `javascript:` in mixed case, attribute-breaking sequences, entity text, allowed element names) placed in every displayed string. Render each component with `renderToStaticMarkup`, parse into a `template`, and require only allow-listed elements, no attribute whose name starts with `on`, no attribute outside the declared list, no `style`, `href`, or `src`, no `javascript:` value in a URL-bearing attribute (`href`, `src`, `action`, `formaction`, `xlink:href`, and similar; `aria-*` and `data-*` are excluded) after removing whitespace and control characters, and the same element count as the plain-letter input. If `react-dom/server` cannot be called in jsdom (Open Question Q3), render with Testing Library and parse `container.innerHTML` instead and record the choice.
 
   - [x] 8.11 Write the mount-leg totality test
     - **Property 8: Totality**
@@ -355,7 +355,7 @@ Decisions reflected in this plan:
   - [x] 8.12 Write the toggle leg for blacklight involution
     - **Property 10: Blacklight coverage and involution**
     - **Validates: Requirements 8.2, 8.13**
-    - File: `tests/dom/p10-toggle.test.tsx`. Tag `UI-P10`. Environment: jsdom, DOM leg, 25 and 500. Mount `BlacklightView`, toggle the switch with the pointer, Enter, and Space from `off` to `on` and back, and require the markup of the first `off` state to be restored exactly, with and without a previously activated reveal control.
+    - File: `tests/dom/p10-toggle.test.tsx`. Tag `UI-P10`. Environment: jsdom, DOM leg, 25 and 500. Mount `BlacklightView`, toggle the switch with the pointer, Enter, and Space from `off` to `on` and back, and require the markup of the first `off` state to be restored exactly, with and without a previously activated reveal control; while `off` the list holds the fixed text and no `<U+`, while `on` the text is gone and the entries carry hex.
 
   - [x] 8.13 Write the fixed-text and empty-state tests `tests/static/texts.test.tsx`
     - Pin the literals of the requirements: candle labels and accessible labels, the claim texts, blacklight and red thread texts, graveyard texts, the empty states of Requirement 14 criterion 1, the seance `<part> not recorded` lines, and the Placeholder text.
@@ -401,52 +401,52 @@ Decisions reflected in this plan:
     - `axe-core` is imported only in this test file.
     - _Requirements: 12.1, 12.3, 12.4, 12.12_
 
-- [ ] 9. Gallery and static hosting
-  - [ ] 9.1 Create the gallery page `ui/gallery/main.tsx` and finish `ui/index.html`
+- [x] 9. Gallery and static hosting
+  - [x] 9.1 Create the gallery page `ui/gallery/main.tsx` and finish `ui/index.html`
     - Render `KitRoot` with every component and fixture data inside `<main>`: a Mirror world with file, SQL, symlink, unrecognized, and secret-like key examples, the five candle states with the three claim modes, a Blacklight view built from a hidden-character text (characters built with `String.fromCodePoint`), a Red thread, a Graveyard that opens the Seance view, and the lights switch. Fixtures use canary values and reserved hosts only. The gallery imports `@ghost-run/core` types with `import type` only and nothing from `axe-core` or `react-dom/server`.
     - The page loads no external origin, no font, and no inline script.
     - _Requirements: 13.1, 13.3, 13.4, 13.8, 16.1, 16.3_
 
-  - [ ] 9.2 Write the dist scanner `ui/tests/support/dist-scan.ts` and its self-tests
+  - [x] 9.2 Write the dist scanner `ui/tests/support/dist-scan.ts` and its self-tests
     - `scanDist(files)` is a pure function that returns violations for these rules: external origin in a URL (allow-list: hosts ending in `.example`, `.test`, `.localhost`, `.invalid`, the W3C namespace identifiers, and entries recorded in task 9.3 with a reason); a reference to another origin in `script src`, `link href`, `img src`, `iframe src`, `form action`, CSS `@import`, and `url(...)`; network API use (`fetch(`, `XMLHttpRequest`, `new WebSocket`, `sendBeacon`, `new EventSource`, `importScripts`, `serviceWorker.register`); the analytics deny list; remote fonts; inline script and `javascript:`; the presence of the CSP meta tag with the exact policy string; only the file types `html`, `js`, `css`, `svg`, `txt` (a `map` file fails); no `axe-core` code in the bundle.
     - Self-tests `tests/scan/dist-scan-selftest.test.ts` on in-memory fixtures: a clean sample and one failing sample per rule, with URLs built from string pieces and reserved hosts so no real URL is committed.
     - _Requirements: 13.3, 13.4, 12.11_
 
-  - [ ] 9.3 Build the gallery and write the dist scan test
+  - [x] 9.3 Build the gallery and write the dist scan test
     - Run `pnpm --filter @ghost-run/ui build`. Write `tests/dist/dist-scan.test.ts` that reads every file under `ui/dist` (fails with `run pnpm build first` when `dist/index.html` is missing) and applies `scanDist`.
     - Run the test, inspect the React production bundle for strings that the scan flags (error-decoder URL text, any `fetch` token), and record each allowed entry with its reason in the scanner allow-list and in `docs/devlog.md` (Open Question Q5). The runtime proof stays the throwing-stub test of task 8.17.
     - Confirm that `ui/dist` and `node_modules` are ignored by git.
     - _Requirements: 13.1, 13.3, 13.4, 16.5_
 
-  - [ ] 9.4 Write the `vite preview` serving test `tests/dist/serve.test.ts`
+  - [x] 9.4 Write the `vite preview` serving test `tests/dist/serve.test.ts`
     - Start `preview({ root, preview: { host: '127.0.0.1', port: 0 } })` from the Vite JS API, request `/index.html`, every `script` and `link` URL found in it, and `/missing`, and assert status 200 for existing files, only same-origin URLs, content types `text/html`, `text/javascript`, and `text/css`, and that the served `index.html` equals the built file. Close the server in `afterAll`. If `port: 0` is not supported by Vite 7.3.8 (Open Question Q10), use port 4173 with `strictPort: true` and record the fallback.
     - The final in-browser check (tabbing through both themes, the browser axe extension with color contrast, grayscale, reduced motion) is a manual review by the user and is not a coding task.
     - _Requirements: 13.1, 13.3_
 
-- [ ] 10. Source hygiene
-  - [ ] 10.1 Write the ESLint fixture test `tests/scan/eslint-fixtures.test.ts`
+- [x] 10. Source hygiene
+  - [x] 10.1 Write the ESLint fixture test `tests/scan/eslint-fixtures.test.ts`
     - Run ESLint programmatically on one-line fixtures built from strings. For `dangerouslySetInnerHTML`, run twice: once with only the `@eslint-react/eslint-plugin` rule enabled and once with only the `no-restricted-syntax` selector enabled, and require an error each time, so either layer alone blocks the construct. Also check errors for forbidden imports (`@ghost-run/ghost-runner`, `three`, `@mujoco/mujoco`, `apps` paths), a value import from `@ghost-run/core` in `src`, `innerHTML`, `eval`, `new Function`, a string timer argument, `new Date`, the `style` prop, a positive `tabIndex`, and a handler on a non-interactive element.
     - The test fails when the two fixed plugin rules (`@eslint-react/dom-no-dangerously-set-innerhtml`, `@eslint-react/dom-no-dangerously-set-innerhtml-with-children`) are not enabled in the config (Q1).
     - _Requirements: 1.4, 1.5, 4.1, 4.2_
 
-  - [ ] 10.2 Write the source scan test `tests/scan/source-scan.test.ts`
+  - [x] 10.2 Write the source scan test `tests/scan/source-scan.test.ts`
     - In `src/`, `gallery/`, and `vite.config.ts`: no `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `new Function`, or string timer argument; no import of `axe-core`, `react-dom/server`, `three`, or `@mujoco/mujoco`; `sealed` and `isolated` only inside the Assurance_Text constants; no `<audio>` element and no audio file under `ui/`; no prop string used as an element name, `href`, `src`, `style` value, event handler, or CSS custom property value.
     - Each rule has a self-test sample that must be flagged.
     - _Requirements: 4.1, 4.2, 7.8, 12.11, 13.4, 13.6_
 
-  - [ ] 10.3 Write the hygiene test `tests/scan/hygiene.test.ts`
+  - [x] 10.3 Write the hygiene test `tests/scan/hygiene.test.ts`
     - Run `scanTexts` of `@ghost-run/core` over every file of `ui/` (excluding `node_modules` and `dist`) and over `.kiro/specs/ui-kit/`, read with `node:fs`, and expect the outcome `clean` (no literal Hidden_Display_Code_Point and no literal HTML comment opener).
     - Assert that fixtures name only hosts ending in `.example`, `.test`, `.localhost`, `.invalid`, or the `192.0.2.0/24` range, and secrets only of the form `sk-CANARY-`; no real credential, domain, or IP address. Assert that `.gitignore` lists `dist` and `node_modules`.
     - Assert that test files name the render properties `UI-P1` to `UI-P11` and never `P1` to `P8` of the safety contract in property titles.
     - _Requirements: 15.3, 16.1, 16.2, 16.3, 16.4, 16.5_
 
-  - [ ] 10.4 Write the dependency direction test `tests/scan/dependency-direction.test.ts`
+  - [x] 10.4 Write the dependency direction test `tests/scan/dependency-direction.test.ts`
     - Parse the import declarations of every file in `src/` and `gallery/`: only `react`, `react-dom`, relative paths, and `@ghost-run/core` through its public entry with `import type`. No import of `@ghost-run/ghost-runner`, `apps/*`, `integrations/*`, `worlds/*`, core internals, `three`, or `@mujoco/mujoco`. Tests may import values from `@ghost-run/core` but still not from the forbidden packages.
     - Check that `core/` does not import `ui`: read the files under `core/src` and fail when an import path names `@ghost-run/ui` or a `ui/` path. This is a read-only check. Changing the `core` ESLint configuration is task 13.1.
     - _Requirements: 1.4, 1.5, 1.7, 1.8, 2.2_
 
-- [ ] 11. Documentation and steering
-  - [ ] 11.1 Write `ui/README.md` and extend the repository `README.md`
+- [x] 11. Documentation and steering
+  - [x] 11.1 Write `ui/README.md` and extend the repository `README.md`
     - Extend the repository `README.md` without removing existing rows. Add the dependency table with name, version, and license for every runtime and development dependency of `ui/`. All are MIT except `axe-core` 4.14.1 (MPL-2.0), which is a development dependency used only by `tests/dom/*.test.tsx`, is not imported under `src/` or `gallery/`, is not in the Vite bundle or `ui/dist`, is not modified or copied, and is not published because `ui` is private. Note that `eslint-plugin-react` and `eslint-plugin-jsx-a11y` are not used because their peer ranges stop below ESLint 10.
     - Add the font and asset table: icons, flame, smoke, and tombstone shapes are original SVG paths written in this package as code, license MIT (the repository license); fonts: none, system font stacks only; audio: none.
     - Add the heading "Secret-like key rule" in both READMEs with the text of the design: the key-name heuristic matches by case-insensitive containment, can miss a secret under an innocent key name, can hide a harmless value, does not detect a secret typed into a command or other text, and the producer remains responsible for redaction.
@@ -454,22 +454,22 @@ Decisions reflected in this plan:
     - Keep the text English, free of hidden Unicode, and use reserved domains only.
     - _Requirements: 1.9, 4.7, 13.4, 13.5, 13.9, 15.3, 16.6_
 
-  - [ ] 11.3 Update `.kiro/steering/structure.md` for the `ui/` package
+  - [x] 11.3 Update `.kiro/steering/structure.md` for the `ui/` package
     - **This edits a steering file. The `blacklight-steering` hook runs on save of `.kiro/**`. Resolve any finding it reports, write only English text, and never write a hidden Unicode character literally (tag, zero-width, or bidi controls).**
     - Read the current file first. The wards plan also edits this file (its task 1.3). Do not run this task at the same time as another task that edits `structure.md`, change only the `ui/` parts, and keep every other line as it is.
     - Update the `ui/` entry: package `@ghost-run/ui`, exported as source, with the gallery page as the build and static-hosting check target. Dependency Direction: `ui/` may depend on `core/` only, through `@ghost-run/core` with type-only imports in source files; `core/` must not import `ui/`. "What Goes Where": shared UI and the Candle, Mirror world, Blacklight, Red thread, Graveyard, and Lights toggle go to `ui/`; the 3D ghost overlay stays out of `ui/` until the 11/19 decision (the second app's spec decides).
     - _Requirements: 1.1, 1.4, 1.6, 1.7_
 
-  - [ ] 11.2 Write the README test `tests/scan/readme.test.ts`
+  - [x] 11.2 Write the README test `tests/scan/readme.test.ts`
     - Read `ui/README.md` and the repository `README.md`. Each contains the heading "Secret-like key rule" and the phrases `case-insensitive containment`, `heuristic`, `innocent key name`, `harmless value`, and `responsible for redaction`.
     - The repository `README.md` dependency table lists `axe-core` with the license `MPL-2.0` and a note that it is dev only and not shipped, lists every dependency of `ui/package.json` with a version and a license, and the asset table lists the original SVG source and states that no font and no audio is shipped.
     - _Requirements: 1.9, 4.7, 13.5, 16.6_
 
-- [ ] 12. Checkpoint - Components, hosting, and hygiene complete
+- [x] 12. Checkpoint - Components, hosting, and hygiene complete
   - Run `pnpm --filter @ghost-run/ui test`, `typecheck`, `lint`, `build`, and `test:dist`. Confirm the contrast gate passes, the gallery builds, the dist scan and serving test pass, and every scan test passes. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 13. Core import ban (isolated task)
-  - [ ] 13.1 Add the `@ghost-run/ui` import ban to `core/eslint.config.mjs` with a lint fixture test
+  - [~] 13.1 Add the `@ghost-run/ui` import ban to `core/eslint.config.mjs` with a lint fixture test
     - **Precondition: run this task only after the possession spec and the wards spec have finished all of their changes to `core/`.** Confirm that every task of the possession and wards `tasks.md` files that edits `core/` is complete (including the wards tasks 1.2 and 1.4, which edit `core/eslint.config.mjs` and `core/src/types.ts`), that the `core` test suite passes, and that no other task is editing `core/` at this time. Do not run this task in the same wave as any other task.
     - Add `@ghost-run/ui` and `@ghost-run/ui/**` to the workspace import patterns of `core/eslint.config.mjs` next to the existing `**/ui/**` pattern and the entries other specs added. Change nothing else in `core/`.
     - Add a lint fixture test in `core/tests/` (following the pattern of the wards `wards-config` import-ban test): write a temporary file under `core/src/` that imports `@ghost-run/ui`, run ESLint programmatically on it, assert a `no-restricted-imports` error, and remove the file in `finally`.
@@ -477,18 +477,18 @@ Decisions reflected in this plan:
     - After this task passes, Requirement 1.6 is verified. Until then it is not claimed.
     - _Requirements: 1.6_
 
-- [ ] 14. Measurement and open questions
-  - [ ] 14.1 Measure the Short_Run and record the result
+- [x] 14. Measurement and open questions
+  - [x] 14.1 Measure the Short_Run and record the result
     - The design estimate of about 30 s is not measured. Run `pnpm --filter @ghost-run/ui test` with the JSON reporter output file (ignored by git) and record the total wall time and the per-file durations in `docs/devlog.md`. Also run the Nightly_Run once (`GHOST_PBT_MODE=nightly`, no time limit, estimated 8 to 9 minutes; use a long timeout or run it manually in a terminal) and record its time.
     - The Short_Run must finish within 60 s on the Reference_Machine (Apple M1). If the measured time exceeds 45 s (the design rule that keeps a margin), lower `NUM_RUNS_DOM` in `tests/support/pbt-config.ts` for the Short_Run from 25 to 15 first, then reduce generator sizes while keeping the S leg count. The V legs never drop below 100. Run the measurement again after any change and record both results.
     - _Requirements: 15.1_
 
-  - [ ] 14.2 Resolve the Open Questions and record each result
+  - [x] 14.2 Resolve the Open Questions and record each result
     - Append one entry per item to `docs/devlog.md` with the observed result and the action taken: Q1 (resolved before implementation: the two fixed rule IDs; record that ESLint accepted them), Q2 (inline `projects` accepted or the docblock fallback), Q3 (`react-dom/server` in jsdom or the Testing Library fallback of task 8.10), Q5 (dist scan allow-list entries with reasons), Q6 (exact contrast values from task 2.2), Q7 (first green run confirms jsdom 26 with Vitest 3.2.7, axe-core in jsdom, `@vitejs/plugin-react` 5.2.0, and `user-event` 14 with React 19), Q9 (timing from task 14.1), Q10 (`preview` port handling).
     - Q8, Q13, Q14, Q15, and Q17 stay as documented decisions; record in `ui/README.md` a short "Known limits" list: only the `...Z` time form is valid, two React copies are possible if an app uses a different range, `null` for an optional prop is unreadable, the line-break rule follows the possession rule, and real focus rings, browser color contrast, and animation playback are manual checks.
     - _Requirements: 4.1, 12.8, 13.3, 15.1, 15.5_
 
-- [ ] 15. Final checkpoint - Ensure all tests pass
+- [x] 15. Final checkpoint - Ensure all tests pass
   - Run Short_Run `pnpm --filter @ghost-run/ui test`, `typecheck`, `lint`, `build`, and `test:dist`, and `pnpm --filter @ghost-run/core exec eslint .` plus the core vitest run (task 13.1 changed `core`). Confirm: the contrast gate passes; the Short_Run is within 60 s; no hidden Unicode appears literally in `ui/` or `.kiro/specs/ui-kit/` (the hygiene test passes); the README tables list every dependency with its license (axe-core MPL-2.0, dev only); `core/package.json` is unchanged; `pnpm-workspace.yaml` still lists `ui`. Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

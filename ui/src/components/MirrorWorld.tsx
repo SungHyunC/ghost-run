@@ -46,7 +46,7 @@ function Row({ row }: { row: ChangeRowModel }): ReactNode {
   return (
     <tr data-change-row={row.key}>
       <Cell cell={row.reality} />
-      <td className="gk-cell-mirror">
+      <td className={removed ? 'gk-cell-mirror gk-cell-vanish' : 'gk-cell-mirror'}>
         {removed ? <SmokeLayer /> : null}
         <div className="gk-cell-text">
           <span className="gk-state-tag" data-state={row.mirror.state.text}>

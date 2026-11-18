@@ -169,5 +169,5 @@ describe('UI-P11 red thread pairing (static leg)', () => {
       'origin:observed-destination',
       'origin:observed-path',
     ]);
-  }, PBT_TIMEOUT ?? 0);
+  }, PBT_TIMEOUT);
 });

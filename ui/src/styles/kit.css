@@ -158,16 +158,23 @@
   z-index: 1;
 }
 
-/* Smoke layer sits behind the cell text. Fill opacity only; never on text. */
+/* A cell with smoke reserves a strip at its inline end, so the text never reaches the smoke.
+   The smoke is small and faint, sits in that strip of the cell background, and never covers text.
+   Fill opacity only; never on text. */
+.gk-cell-vanish {
+  padding-inline-end: 3.25rem;
+}
+
 .gk-smoke {
   position: absolute;
-  inset: 0;
+  top: 0.35rem;
+  inset-inline-end: 0.35rem;
   z-index: 0;
-  width: 100%;
-  height: 100%;
+  width: 2.5rem;
+  height: 1.5rem;
   pointer-events: none;
   fill: var(--gk-smoke);
-  fill-opacity: 0.35;
+  fill-opacity: 0.18;
 }
 
 /* State tag: icon and text together. */
@@ -183,7 +190,8 @@
   color: var(--gk-block);
 }
 
-/* Buttons and switches. */
+/* Buttons and switches. Base form controls (gk-button, gk-input, gk-textarea) use only tokens,
+   so an app gets both themes and the 3px focus ring by adding the class. */
 .gk-button,
 .gk-toggle {
   display: inline-flex;
@@ -199,12 +207,62 @@
   background: var(--gk-surface);
 }
 
+.gk-button:hover:not(:disabled),
+.gk-toggle:hover {
+  background: var(--gk-bg);
+}
+
+.gk-button:disabled {
+  cursor: not-allowed;
+  color: var(--gk-muted);
+  border-style: dashed;
+}
+
+.gk-input,
+.gk-textarea {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--gk-line);
+  border-radius: 6px;
+  font: inherit;
+  color: var(--gk-text);
+  background: var(--gk-surface);
+}
+
+.gk-textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.gk-input::placeholder,
+.gk-textarea::placeholder {
+  color: var(--gk-muted);
+  opacity: 1;
+}
+
+.gk-input:disabled,
+.gk-textarea:disabled {
+  cursor: not-allowed;
+  color: var(--gk-muted);
+  border-style: dashed;
+}
+
+.gk-input[aria-invalid='true'],
+.gk-textarea[aria-invalid='true'] {
+  border-color: var(--gk-block);
+  border-width: 2px;
+}
+
 .gk-toggle[aria-checked='true'] {
   border-style: double;
   border-width: 3px;
 }
 
 .gk-button:focus-visible,
+.gk-input:focus-visible,
+.gk-textarea:focus-visible,
 .gk-toggle:focus-visible,
 .gk-link:focus-visible,
 .gk-root a:focus-visible,

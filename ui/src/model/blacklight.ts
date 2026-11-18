@@ -2,7 +2,7 @@ import { BL_FINDINGS, BL_LINES, MARKER_CODEPOINTS, MARKER_RENDERING } from './li
 import { compact, detail, escapeForDisplay, formatHex } from './escape';
 import { arrayOf, displayPrimitive, pick } from './guards';
 import type { Unreadable } from './guards';
-import { EMPTY_BLACKLIGHT, NO_FINDINGS, blacklightSummary, showing, unreadableItem } from './texts';
+import { EMPTY_BLACKLIGHT, FINDINGS_LOCKED, NO_FINDINGS, codePointCountText, blacklightSummary, showing, unreadableItem } from './texts';
 
 export type HiddenCategory = 'tag' | 'zero-width' | 'bidi' | 'html-comment';
 
@@ -13,8 +13,12 @@ export interface MarkerModel {
   readonly category: string;
   /** 'line:column' exactly as supplied by the Finding. */
   readonly position: string;
+  /** Number of valid code points of the Finding; shown in both states. */
+  readonly codePointCount: string;
+  /** Hex_Notation list; empty while the blacklight is off. */
   readonly hex: readonly string[];
   readonly moreCount: number;
+  /** Expanded text of the Finding; empty while the blacklight is off. */
   readonly rendering: string;
 }
 
@@ -40,6 +44,7 @@ export interface FindingFields {
   readonly position: string;
   readonly offset: string;
   readonly length: string;
+  readonly codePointCount: string;
   readonly hex: readonly string[];
   readonly moreCount: number;
   readonly rendering: string;
@@ -58,6 +63,8 @@ export interface SourceModel {
   /** Texts of shown Finding elements that are not records. */
   readonly unreadableItems: readonly string[];
   readonly findingsNotice: string | null;
+  /** Fixed text of the Findings list while the blacklight is off and the source has Findings; otherwise null. */
+  readonly listHint: string | null;
   readonly noFindingsText: string | null;
 }
 
@@ -75,7 +82,7 @@ interface ParsedFinding {
   readonly placed: boolean;
 }
 
-function hexItems(codePoints: unknown): { hex: string[]; moreCount: number } {
+function hexItems(codePoints: unknown): { hex: string[]; moreCount: number; count: number } {
   const list = arrayOf(codePoints);
   const all: number[] = [];
   if (list !== null) {
@@ -86,13 +93,15 @@ function hexItems(codePoints: unknown): { hex: string[]; moreCount: number } {
   return {
     hex: all.slice(0, MARKER_CODEPOINTS).map(formatHex),
     moreCount: Math.max(0, all.length - MARKER_CODEPOINTS),
+    count: all.length,
   };
 }
 
-function parseFinding(raw: unknown, index: number, textLength: number): ParsedFinding | null {
+function parseFinding(raw: unknown, index: number, textLength: number, mode: 'on' | 'off'): ParsedFinding | null {
   const p = pick(raw, 'category', 'line', 'column', 'offset', 'length', 'codePoints', 'rendering');
   if (p === null) return null;
-  const { hex, moreCount } = hexItems(p.codePoints);
+  const { hex, moreCount, count } = hexItems(p.codePoints);
+  const open = mode === 'on';
   const offset = p.offset;
   const length = p.length;
   const placed =
@@ -103,7 +112,7 @@ function parseFinding(raw: unknown, index: number, textLength: number): ParsedFi
     offset >= 0 &&
     length >= 0 &&
     offset + length <= textLength;
-  const rendering = typeof p.rendering === 'string' ? detail(p.rendering, MARKER_RENDERING) : '';
+  const rendering = open && typeof p.rendering === 'string' ? detail(p.rendering, MARKER_RENDERING) : '';
   return {
     index,
     offset: placed ? (offset as number) : 0,
@@ -115,16 +124,17 @@ function parseFinding(raw: unknown, index: number, textLength: number): ParsedFi
       position: `${displayPrimitive(p.line, 40)}:${displayPrimitive(p.column, 40)}`,
       offset: displayPrimitive(offset, 40),
       length: displayPrimitive(length, 40),
-      hex,
-      moreCount,
+      codePointCount: codePointCountText(count),
+      hex: open ? hex : [],
+      moreCount: open ? moreCount : 0,
       rendering,
     },
   };
 }
 
 function toMarker(f: ParsedFinding): MarkerModel {
-  const { findingIndex, category, position, hex, moreCount, rendering } = f.fields;
-  return { findingIndex, category, position, hex, moreCount, rendering };
+  const { findingIndex, category, position, codePointCount, hex, moreCount, rendering } = f.fields;
+  return { findingIndex, category, position, codePointCount, hex, moreCount, rendering };
 }
 
 /** Difference-array coverage: result[i] > 0 when some finding in `list` covers code point i. */
@@ -158,6 +168,7 @@ function buildSource(raw: unknown, index: number, mode: 'on' | 'off', reveal: Bl
       unplaced: [],
       unreadableItems: [],
       findingsNotice: null,
+      listHint: null,
       noFindingsText: null,
     };
   }
@@ -183,7 +194,7 @@ function buildSource(raw: unknown, index: number, mode: 'on' | 'off', reveal: Bl
   const unreadableItems: string[] = [];
   const entries: MarkerModel[] = [];
   for (let i = 0; i < total; i++) {
-    const f = parseFinding(findings[i], i, n);
+    const f = parseFinding(findings[i], i, n, mode);
     const isShown = i < shownCount;
     if (f === null) {
       if (isShown) unreadableItems.push(unreadableItem(i));
@@ -270,6 +281,7 @@ function buildSource(raw: unknown, index: number, mode: 'on' | 'off', reveal: Bl
     unplaced,
     unreadableItems,
     findingsNotice: shownCount < total ? showing(shownCount, total) : null,
+    listHint: mode === 'off' && total > 0 ? FINDINGS_LOCKED : null,
     noFindingsText: total === 0 ? NO_FINDINGS : null,
   };
 }
