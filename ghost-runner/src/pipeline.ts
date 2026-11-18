@@ -40,7 +40,8 @@ import {
 } from './config.js';
 import { copyOriginal, placeCopy, sentinelPathFor } from './copy/copier.js';
 import { checkDockerAvailability, type DockerAvailability } from './docker/availability.js';
-import { createBox, removeRunContainers, type Box } from './docker/box.js';
+import { createBox, findRunIdContainers, removeRunContainers, type Box } from './docker/box.js';
+import { sweepStaleBoxesOnce } from './docker/stale-sweep.js';
 import { createDockerClient, type DeadlineClock, type DockerClient } from './docker/cli.js';
 import { ConfigError, FingerprintReadError } from './errors.js';
 import { diff as diffStates, diffDiagnostics } from './fs/differ.js';
@@ -818,8 +819,8 @@ export async function runPlan(plan: Plan, opts: RunPlanOptions): Promise<RunOutp
 
   const clock = opts.clock ?? systemClock;
   const client = opts.client ?? createDockerClient('docker', clock);
-  const deadlineAt = clock.now() + PIPELINE_DEADLINE_SEC * 1000;
-  const runId = randomUUID();
+  let deadlineAt = clock.now() + PIPELINE_DEADLINE_SEC * 1000;
+  const runId = resolved.runId ?? randomUUID();
   const phases = NO_PHASES();
 
   const checkStart = perf();
@@ -827,8 +828,28 @@ export async function runPlan(plan: Plan, opts: RunPlanOptions): Promise<RunOutp
   phases.dockerCheckMs = perf() - checkStart;
   if (!avail.available) return planB(plan, resolved, original, avail, runId, phases, opts.onNotice);
 
+  // Stale-box sweep (Req 16.7): once per process, outside the timed phases. Its time does not
+  // count toward the pipeline deadline; errors become a diagnostic and never fail the run.
+  const sweepDiagnostics: Diagnostic[] = [];
+  const sweepStart = clock.now();
+  const swept = await sweepStaleBoxesOnce(client);
+  deadlineAt += Math.max(0, clock.now() - sweepStart);
+  if (swept?.error !== undefined) {
+    sweepDiagnostics.push({ name: 'stale-sweep-failed', detail: { detail: capText(swept.error), removed: swept.removed } });
+  }
+
   const ctx: PipelineCtx = { plan, resolved, original, client, clock, runId, deadlineAt, avail, phases };
   const run = newRun();
+  run.diagnostics.push(...sweepDiagnostics);
+  if (resolved.runId !== undefined) {
+    // Before the try/finally: a duplicate must never reach cleanup, which removes by label.
+    const dup = await findRunIdContainers(client, runId);
+    if (!dup.ok) {
+      run.diagnostics.push({ name: 'run-id-check-failed', detail: { detail: capText(dup.detail) } });
+    } else if (dup.ids.length > 0) {
+      throw new ConfigError('runId', 'a run id not used by an existing ghost-run container', runId);
+    }
+  }
   const signal = opts.signal;
   try {
     if (signal === undefined) {

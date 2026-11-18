@@ -153,7 +153,10 @@ describeDocker('[docker] Requirement 18 scenarios', () => {
       expect(result.verdict).toBe('block');
     } else {
       // Design fallback: secret-read recording is not claimed (P6 not asserted); verdict is at least warn.
-      expect(result.verdict).not.toBe('pass');
+      // Req 9.8 / 14.2: recording not active => p6Claimed false and verdict >= warn (pass < warn < block).
+      expect(result.isolation.p6Claimed).toBe(false);
+      const rank = { pass: 0, warn: 1, block: 2 } as const;
+      expect(rank[result.verdict as keyof typeof rank]).toBeGreaterThanOrEqual(rank.warn);
     }
     // The payload map lives in memory only, so the serialized result and logs stay clean.
     checkClean(out, logs());

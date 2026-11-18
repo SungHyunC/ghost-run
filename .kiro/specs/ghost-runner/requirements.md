@@ -25,6 +25,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 ## Glossary
 
 - **Box_Runner**: The package `@ghost-run/ghost-runner`. It implements the Docker-box real-mode ghost run for repositories and is the only component that starts containers.
+- **Run_Id**: The identifier of one run: the option `runId` when the caller sets it, else a random UUID. It is the value of the container label `ghost-run.run-id` and the suffix of the container name `ghost-<Run_Id>`.
 - **Repo_World**: The `World<RepoState, ShellAction>` implementation exported by Box_Runner.
 - **Original**: The repository directory on the host that the user points Box_Runner at. Box_Runner reads Original and never writes to it.
 - **Copy**: A directory on the host created by the Copier from Original. The Copy is the only host path mounted into the Box (plus optional read-only excluded-directory mounts, see Requirement 4).
@@ -307,8 +308,11 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 
 1. WHEN a run finishes with any `status`, THE Box_Runner SHALL remove the container and delete the Copy with a Median_Of_5 of at most 1.0 s on the Reference_Machine.
 2. IF an error is thrown in any phase after the Copier started, THEN THE Box_Runner SHALL still remove the container and delete the Copy before the error propagates to the caller.
-3. THE Box_Runner SHALL label every container with `ghost-run.run-id=<uuid>`, where `<uuid>` is a random UUID not derived from the Plan, so that leftover containers can be found.
-4. WHEN a run finishes, THE number of containers with the label `ghost-run.run-id=<uuid>` of that run SHALL be 0 and the Copy directory SHALL not exist.
+3. THE Box_Runner SHALL label every container with `ghost-run.run-id=<id>` and name it `ghost-<id>`, where `<id>` is the Run_Id of the run, so that leftover containers can be found. WHERE the caller does not set the option `runId`, THE Run_Id SHALL be a random UUID not derived from the Plan.
+4. WHEN a run finishes, THE number of containers with the label `ghost-run.run-id=<id>` of that run SHALL be 0 and the Copy directory SHALL not exist.
+5. WHERE the caller sets the option `runId`, THE Box_Runner SHALL accept only a string that matches `^[A-Za-z0-9_-]{1,64}$` (the characters allowed in a Docker label value and in a container name suffix), SHALL use it as the Run_Id of that run (in `Run_Result.runId`, the label, and the container name), and SHALL throw `ConfigError` naming the bound, before it creates any container, for any other value.
+6. IF a container with the label `ghost-run.run-id=<id>` already exists in any state (running or stopped) for a caller-chosen Run_Id, THEN THE Box_Runner SHALL throw `ConfigError` before it creates any container or Copy and SHALL NOT stop, remove, or change the existing container. THE duplicate check SHALL use its own short timeout, and an error of the check itself SHALL be recorded as a diagnostic and SHALL NOT fail the run.
+7. THE Box_Runner SHALL label every box (not only Pool slots) with `ghost-run.owner=<pid>:<process start time>` of the host process. WHEN the first run of a process starts (and when a Pool starts), THE Box_Runner SHALL remove every container labeled `ghost-run.owner` whose owner process is dead, together with its anonymous `/ghost-rec` volume (`docker rm -f -v`), for example after SIGKILL of the host; an owner is alive when its pid exists and its start time equals the recorded one (same rule as the Pool sweep). THE Box_Runner SHALL NOT touch containers of a live foreign owner, containers of the current process, or containers without the owner label. THE sweep SHALL run outside the timed phases and outside the pipeline deadline with its own timeouts (3 s for the list call, 4 s per removal, at most 20 removals), and IF it fails THEN THE Box_Runner SHALL record the diagnostic `stale-sweep-failed` and go on with the run.
 
 ### Requirement 17: Safety Contract Claims and Property Tests
 

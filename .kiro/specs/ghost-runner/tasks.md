@@ -423,17 +423,43 @@ Decisions reflected in this plan:
     - Write all measured values to `docs/devlog.md` as one-line entries with the Reference_Machine description.
     - _Requirements: 8.1, 8.2, 5.10, 19.1, 19.2, 19.3, 19.4, 19.5_
 
-- [ ] 16. Documentation (W8, W10)
-  - [ ] 16.1 Complete `ghost-runner/README.md` and the root README entries (W10)
+- [x] 16. Documentation (W8, W10)
+  - [x] 16.1 Complete `ghost-runner/README.md` and the root README entries (W10)
     - Library and license table (host: `shell-quote` MIT, `fast-check` MIT, `vitest` MIT, `typescript` Apache-2.0; box packages from task 10.1), confirmed per dependency.
     - Plan B limitation (no P1, P5, or P6 claim), the exact notice text, macOS and Linux support, Windows unverified, Docker Desktop license note (already recorded in `docs/research.md`), the recorder tamper statement (`tamperResistant: false`, same-user process can rewrite its own records), the box-only CA statement (key generated at image build time, never committed), the `box:build` command, and the pool note (long-lived hosts only).
     - Add a link to `ghost-runner/` from the root `README.md` if it exists; do not create the root README if absent.
     - _Requirements: 1.5, 3.6, 10.2, 19.6_
 
-  - [ ] 16.2 Write the `contract-pbt` hook configuration note for the `kiro-integration` spec (W8)
+  - [x] 16.2 Write the `contract-pbt` hook configuration note for the `kiro-integration` spec (W8)
     - Add a section "Notes for kiro-integration" to `ghost-runner/README.md` stating: on save the hook must run the Repo_World properties with `GHOST_PBT_MODE=save` (20 examples per property, whole run within 60 s, no LLM calls), `[docker]` tests report `skipped (docker unavailable)`, and P1, P5, and P6 are not asserted then; and that the hook script must not build the box image or start a pool per process.
     - Do not create or edit hook files or other specs here; the hook belongs to the `kiro-integration` spec.
     - _Requirements: 17.7, 17.8_
+
+- [x] 18. Follow-ups from the previous round
+  - [x] 18.1 Remove the temporary timing test [no-docker]
+    - Delete `ghost-runner/tests/tmp-timing.docker.test.ts` and the `exclude` entry for it (and its comment) in `ghost-runner/vitest.config.ts`; keep the `node_modules` exclude. Confirm `grep` finds no remaining reference to `tmp-timing`.
+    - _Requirements: 17.7_
+
+  - [x] 18.2 Sweep stopped boxes of dead owners at run start [docker]
+    - Requirements and design first: add to Requirement 16 an acceptance criterion and to the cleanup section of `design.md` a paragraph stating that, at the start of a run (and a pool start), the runner removes containers and anonymous `/ghost-rec` volumes labeled `ghost-run.run-id` whose owner process is dead (for example after SIGKILL of the host), using the same owner label and liveness rule as the Pool sweep (`ghost-run.pool-owner=<pid>:<process start time>`; an owner is alive when its pid exists and its start time matches). Boxes of a live foreign owner and of the current process are never touched. This requires every box (not only pool slots) to carry an owner label; add `ghost-run.owner=<pid>:<start time>` to every box in `buildRunArgs` and keep the pool label.
+    - Implement it in `src/docker` (share the owner-liveness code with `pool.ts`) and call it once per process at the start of `runPlan` outside the timed phases (bounded by its own short timeouts, errors go to diagnostics and never fail the run).
+    - Tests: [no-docker] with the fake Docker client (dead owner removed, live foreign owner kept, current process kept, unlabeled container kept, list failure tolerated); [docker] one test that creates a stopped `ghost-run` box with a dead owner label (a pid that does not exist) and checks that the next `runPlan` removes it and its volume. Clean up everything the test creates.
+    - _Requirements: 16.2, 16.3, 6.7_
+
+  - [x] 18.3 Scenario 3 with secret-read recording off must give `warn` or more [docker]
+    - In the Docker scenario test for scenario 3, where the secret-read recording is switched off, assert the verdict is exactly `warn` or `block` as the design states (`pass < warn < block` order, at least `warn`), `p6Claimed` is `false`, and not only that it is not `pass`. Check design.md and requirements.md (Requirement 9 criterion 8, Requirement 14 criterion 2) for the exact expected value before writing the assertion.
+    - _Requirements: 9.8, 14.2_
+
+  - [x] 18.4 `verifyWorld` conformance with `stateEquals` [docker]
+    - In `ghost-runner/tests/verify-world.docker.test.ts` change the `it.fails` test to a plain `it`, pass `stateEquals` from core (`verifyWorld` option added by core-contract task 15) that compares the content fingerprint of two `RepoState` values: for each entry the relative path, the kind, and the content bytes (file bytes; symlink target); `rootPath`, timestamps (`mtimeNs`, `ctimeNs`, `copiedAt`), and `lastStep` are left out. Remove the second test that expects the failure and the long comment about the expected failure. Keep `deterministic: false`.
+    - _Requirements: 17.9_
+
+  - [x] 18.5 Optional caller-chosen `runId` in `RunnerOptions`
+    - Needed by the kiro-integration spec (watchdog cleans up by the `ghost-run.run-id` label when the runner hangs). First update `requirements.md` (Requirement 16 and the glossary or options wording), `design.md` (options section, label section, cleanup), and this `tasks.md` (this task) with: the option `runId?: string`; format `^[A-Za-z0-9_-]{1,64}$` (characters allowed in a Docker label value and container name suffix), violation throws `ConfigError` naming the bound before any container is created; a run id that is already in use by a container of the same label (a running or stopped box) makes `runPlan` throw `ConfigError` before creating anything and without touching the existing container; when absent, the runner makes a random UUID as today. The container name stays `ghost-<runId>`.
+    - Spec text added for this task: Req 16.3, 16.5, 16.6 and the glossary term Run_Id in `requirements.md`; the `runId` row and the "Caller-chosen `runId`" paragraph under "RunnerOptions and defaults" in `design.md`.
+    - Implement in `src/config.ts`, `src/pipeline.ts` and `src/docker` (duplicate check by `docker ps -a --filter label=ghost-run.run-id=<id>`, its own short timeout; an error of the check itself is a diagnostic, not a failure). `Repo_World` keeps random ids.
+    - Tests [no-docker]: valid and invalid formats (property test over generated strings), absent id gives a UUID, the given id appears in `RunResult.runId`, the label and the container name, duplicate throws and removes nothing, cleanup by label works after an injected hang with the fake Docker client. Add to Property 7 (configuration bounds) if it fits.
+    - _Requirements: 16.3, 16.5, 16.6, 7.1_
 
 - [ ] 17. Final checkpoint - Ensure all tests pass
   - Run `pnpm lint`, `pnpm -r build`, the `[no-docker]` tests in `save` and explicit profiles, and, where Docker is available, the `[docker]` tests. Confirm the summary shows `skipped (docker unavailable)` for any skipped Docker suite and that no private-key file is present in the repository. Ask the user if questions arise.
@@ -468,8 +494,10 @@ Decisions reflected in this plan:
     { "id": 13, "tasks": ["12.4", "12.5", "12.6", "12.7", "12.8", "14.1"] },
     { "id": 14, "tasks": ["12.8a", "12.9", "14.2", "14.3", "14.4", "14.5", "14.6", "14.7", "14.8", "14.9", "14.10", "14.11"] },
     { "id": 15, "tasks": ["12.8b", "15.1", "15.2"] },
-    { "id": 16, "tasks": ["16.1"] },
-    { "id": 17, "tasks": ["16.2"] }
+    { "id": 16, "tasks": ["18.1", "18.3", "18.5"] },
+    { "id": 17, "tasks": ["18.2", "18.4"] },
+    { "id": 18, "tasks": ["16.1"] },
+    { "id": 19, "tasks": ["16.2"] }
   ]
 }
 ```

@@ -1,5 +1,5 @@
 // Feature: ghost-runner, Property 7: Configuration and plan bounds
-// Validates: Requirements 6.1, 7.1, 7.3
+// Validates: Requirements 6.1, 7.1, 7.3, 16.5
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { resolveRunnerOptions, validatePlanSize } from '../src/config.js';
@@ -100,10 +100,37 @@ describe('Property 7: Configuration and plan bounds', () => {
     );
   }, testTimeoutMs(false));
 
+  it('runId s is accepted exactly when it matches ^[A-Za-z0-9_-]{1,64}$', () => {
+    const s = fc.oneof(
+      fc.stringMatching(/^[A-Za-z0-9_-]{1,64}$/),
+      fc.string({ maxLength: 80 }),
+      fc.stringMatching(/^[A-Za-z0-9_-]{65,80}$/),
+      fc.constantFrom('', 'a', 'a'.repeat(64), 'a'.repeat(65), 'a b', 'a.b', 'a/b', 'a:b', 'a\n'),
+    );
+    fc.assert(
+      fc.property(
+        s,
+        count((runId: string) => {
+          const r = outcome(() => resolveRunnerOptions({ ...base, runId }));
+          if (/^[A-Za-z0-9_-]{1,64}$/.test(runId)) {
+            expect(r).toBe('accepted');
+            expect(resolveRunnerOptions({ ...base, runId }).runId).toBe(runId);
+          } else {
+            expect(r).toBeInstanceOf(ConfigError);
+            const err = r as ConfigError;
+            expect(err.option).toBe('runId');
+            expect(err.bound).toContain('{1,64}');
+          }
+        }),
+      ),
+      pbtParams(),
+    );
+  }, testTimeoutMs(false));
+
   it('reports runs executed', () => {
     console.log(
       `Property 7: mode=${PBT_MODE}, NUM_RUNS per property=${NUM_RUNS}, total runs executed=${executed}`,
     );
-    expect(executed).toBeGreaterThanOrEqual(3 * NUM_RUNS);
+    expect(executed).toBeGreaterThanOrEqual(4 * NUM_RUNS);
   });
 });

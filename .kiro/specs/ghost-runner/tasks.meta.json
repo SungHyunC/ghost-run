@@ -1289,6 +1289,16 @@
         "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
         "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
         "timestamp": 1794973845354
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988530776
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988594544
       }
     ],
     "16.2 Write the `contract-pbt` hook configuration note for the `kiro-integration` spec (W8)": [
@@ -1311,6 +1321,16 @@
         "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
         "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
         "timestamp": 1794973846159
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988597711
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988644245
       }
     ],
     "17. Final checkpoint - Ensure all tests pass": [
@@ -1352,6 +1372,80 @@
         "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
         "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
         "timestamp": 1794973838220
+      }
+    ],
+    "18.1 Remove the temporary timing test [no-docker]": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794987562734
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988373341
+      }
+    ],
+    "18.3 Scenario 3 with secret-read recording off must give `warn` or more [docker]": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794987563357
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988373748
+      }
+    ],
+    "18.5 Optional caller-chosen `runId` in `RunnerOptions`": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794987564137
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988374508
+      }
+    ],
+    "18.2 Sweep stopped boxes of dead owners at run start [docker]": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988377835
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988519665
+      }
+    ],
+    "18.4 `verifyWorld` conformance with `stateEquals` [docker]": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988378489
+      },
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988520462
+      }
+    ],
+    "18. Follow-ups from the previous round": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988520465
+      }
+    ],
+    "16. Documentation (W8, W10)": [
+      {
+        "executionId": "9a7494a5-bc76-441f-a835-517754c0b198",
+        "chatSessionId": "sess_880d5b8b-cb12-4c70-8bb8-1248af61498e",
+        "timestamp": 1794988644248
       }
     ]
   }

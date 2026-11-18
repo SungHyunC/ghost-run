@@ -51,6 +51,11 @@ export interface RunnerOptions {
   readonly wardSet?: WardSet;
   /** Box image, `<name>@sha256:<64 hex>` only. Default: content-addressed local tag. */
   readonly image?: string;
+  /**
+   * Caller-chosen run id, `^[A-Za-z0-9_-]{1,64}$`. Becomes the `ghost-run.run-id` label value
+   * and the container name suffix, so a watchdog can remove the box by label. Default: random UUID.
+   */
+  readonly runId?: string;
 }
 
 export interface ResolvedRunnerOptions {
@@ -65,6 +70,8 @@ export interface ResolvedRunnerOptions {
   readonly secretPatterns: readonly string[];
   readonly wardSet: WardSet;
   readonly image: string | undefined;
+  /** Validated caller-chosen run id; undefined means the runner makes a random UUID. */
+  readonly runId?: string;
 }
 
 export const DEFAULT_LIMITS: ResourceLimits = Object.freeze({
@@ -76,6 +83,7 @@ export const DEFAULT_LIMITS: ResourceLimits = Object.freeze({
 
 const DIGEST_RE = /^sha256:[0-9a-f]{64}$/;
 const MEMORY_RE = /^[1-9][0-9]*[bkmg]$/i;
+export const RUN_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 /**
  * Accepts only `<name>@sha256:<64 hex>`. Tags (`name:tag`, `name:tag@sha256:...`)
@@ -167,6 +175,9 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
 
   const image = opts.image === undefined ? undefined : validateImageRef(opts.image);
 
+  if (opts.runId !== undefined && (typeof opts.runId !== 'string' || !RUN_ID_RE.test(opts.runId))) {
+    throw new ConfigError('runId', 'string matching ^[A-Za-z0-9_-]{1,64}$', opts.runId);
+  }
   return {
     original: opts.original,
     excludeDirs: [...excludeDirs],
@@ -179,5 +190,6 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
     secretPatterns: [...(opts.secretPatterns ?? DEFAULT_SECRET_PATTERNS)],
     wardSet: opts.wardSet ?? { wards: [] },
     image,
+    ...(opts.runId !== undefined ? { runId: opts.runId } : {}),
   };
 }

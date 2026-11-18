@@ -233,6 +233,9 @@ export function parseRunResult(json: string): SerializedRunResult;
 | `secretPatterns` | `.env`, `.env.*`, `**/*.pem`, `**/id_rsa*` plus egress ward `secrets` | globs | Req 9.1 |
 | `wardSet` | empty | core `WardSet` | Req 14.2 |
 | `image` | content-addressed local tag | `name@sha256:...` allowed | D4 |
+| `runId` | random UUID | `^[A-Za-z0-9_-]{1,64}$`, else `ConfigError`; a Run_Id already used by a container with the label `ghost-run.run-id=<id>` (running or stopped) gives `ConfigError` | Req 16.3, 16.5, 16.6 |
+
+Caller-chosen `runId` (Req 16.5, 16.6). The caller needs the id before the run starts so that a watchdog can remove the box by label (`docker ps -a --filter label=ghost-run.run-id=<id>`, then `rm -f -v`) when the runner hangs. The format check is in `resolveRunnerOptions` and runs before anything else is created. The duplicate check runs once in `runPlan`, after the Docker availability check and before the copy and the `try`/`finally` cleanup, with its own 3 s timeout: `docker ps -a -q --filter label=ghost-run.run-id=<id>`. A non-empty answer throws `ConfigError('runId', ...)`; the cleanup does not run for this run, so the existing container is never touched. A failed or timed-out check adds the diagnostic `run-id-check-failed` and the run continues. Plan B runs create no container and skip the check. `Repo_World` and pool slots keep random ids.
 
 Named constants in `config.ts` (fixed, not options; a change needs a spec change because the `wards` content-inspection cost bound depends on them):
 
@@ -281,7 +284,7 @@ Observed events cannot travel through core's `Snapshot`, so each `RepoState` car
 
 ```
 docker run -d --name ghost-<runId>
-  --label ghost-run.run-id=<uuid> [--label ghost-run.pool=1 --label ghost-run.pool-owner=<owner>]
+  --label ghost-run.run-id=<runId> [--label ghost-run.pool=1 --label ghost-run.pool-owner=<owner>]
   --network none --dns 127.0.0.1
   --init
   --cap-drop ALL --security-opt no-new-privileges
@@ -310,6 +313,8 @@ Notes:
 **Pool** (`docker/pool.ts`): with `pool.size` 1 to 8, keeps that many one-shot slots ready. A slot is a started container with the same hardening, an empty slot directory mounted at `/work`, and a fresh `/ghost-rec` volume. The Copy is created directly in the slot directory. A slot serves at most one run; afterwards the container, volume, and slot directory are removed and a replacement is started in the background, outside run timing. When no slot is ready the run uses a fresh container and records `box.source: "fresh"`.
 
 Pool ownership: hook scripts are short-lived processes, so a naive "remove all pool containers at startup" would delete a concurrent process's slots. Each slot carries `ghost-run.pool-owner=<pid>:<process start time>`. Startup and exit sweeps remove only slots whose owner process is dead or is the current process (Req 6.7, 6.8). The pool pays off in long-lived processes (MCP server, tests). A one-shot hook process leaves it off.
+
+Stale-box sweep (Req 16.7). Every box carries the label `ghost-run.owner=<pid>:<process start time>` (`LABEL_OWNER`, added by `buildRunArgs`; pool slots keep `ghost-run.pool` and `ghost-run.pool-owner` as well). The liveness code (`docker/owner.ts`: `processStartTime`, `ownerIsAlive`, `currentProcessInfo`) is shared with the Pool sweep. `docker/stale-sweep.ts` lists `docker ps -a --filter label=ghost-run.owner` (3 s), skips owners equal to the current process or alive, and removes the rest with `docker rm -f -v` (4 s each, at most 20), which also removes the anonymous `/ghost-rec` volume. `runPlan` calls `sweepStaleBoxesOnce` once per process, after the Docker availability check and before the duplicate-run-id check, and shifts the pipeline deadline by the time the sweep took, so it counts toward no phase. The sweep never throws; a failure adds the diagnostic `stale-sweep-failed` and the run continues. Containers without the owner label are never touched. The Pool start still runs its own sweep (by `ghost-run.pool-owner`).
 
 ### Diff engine (`fs/`)
 

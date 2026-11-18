@@ -26,6 +26,8 @@ export const REC_DIR = '/ghost-rec';
 export const LABEL_RUN_ID = 'ghost-run.run-id';
 export const LABEL_POOL = 'ghost-run.pool';
 export const LABEL_POOL_OWNER = 'ghost-run.pool-owner';
+/** Owner process of every box: `<pid>:<process start time>` (stale-box sweep, Req 16.7). */
+export const LABEL_OWNER = 'ghost-run.owner';
 
 /**
  * Self-expiry of a box (defense in depth against leaks). `ghost-init` exits after this many
@@ -42,6 +44,8 @@ export interface HardeningOptions {
   readonly limits?: ResolvedRunnerOptions['limits'];
   readonly uid: number;
   readonly gid: number;
+  /** Owner label of every box (`<pid>:<start time>`). Omitted: no owner label. */
+  readonly owner?: string;
   /** Set for pool slots. */
   readonly poolOwner?: string;
   /** Seconds until `ghost-init` exits on its own. Default BOX_MAX_LIFETIME_SEC. */
@@ -82,6 +86,10 @@ export function buildRunArgs(opts: HardeningOptions, runId: string, mounts: BoxM
     '--name', containerName(runId),
     '--label', `${LABEL_RUN_ID}=${runId}`,
   ];
+  if (opts.owner !== undefined) {
+    assertNoComma('owner', opts.owner);
+    args.push('--label', `${LABEL_OWNER}=${opts.owner}`);
+  }
   if (opts.poolOwner !== undefined) {
     args.push('--label', `${LABEL_POOL}=1`, '--label', `${LABEL_POOL_OWNER}=${opts.poolOwner}`);
   }

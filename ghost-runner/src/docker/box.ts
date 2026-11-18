@@ -8,6 +8,7 @@
  */
 import { collectRecorder, type CollectOptions, type CollectResult } from '../recorder/collect.js';
 import type { ResolvedRunnerOptions } from '../config.js';
+import { processInfo } from './owner.js';
 import { trackRun, untrackRun } from './reaper.js';
 import { buildCountInvocation, parseCountOutput, type SqliteState } from '../fs/sqlite.js';
 import { remainingMs, type DeadlineClock, type DockerClient } from './cli.js';
@@ -34,6 +35,8 @@ export const COLLECT_GRACE_MS = 2_000;
 /** Cleanup runs after the deadline and uses its own short timeouts (Req 16.2). */
 export const CLEANUP_RM_TIMEOUT_MS = 5_000;
 export const CLEANUP_LIST_TIMEOUT_MS = 3_000;
+/** The duplicate-run-id check before a run (Req 16.6). */
+export const RUN_ID_CHECK_TIMEOUT_MS = 3_000;
 
 export interface BoxParams {
   readonly runId: string;
@@ -46,6 +49,8 @@ export interface BoxParams {
   readonly uid: number;
   readonly gid: number;
   readonly poolOwner?: string;
+  /** Owner label value. Default: the pool owner, else this process. */
+  readonly owner?: string;
   /** Seconds until the box stops itself (see BOX_MAX_LIFETIME_SEC). */
   readonly maxLifetimeSec?: number;
   /** Total execution limit for the whole plan (Req 7.3), in ms. */
@@ -116,6 +121,21 @@ function text(b: Buffer): string {
 }
 
 /**
+ * Lists containers (any state) that carry the run-id label. `ok: false` when the check itself
+ * failed (error, timeout, spawn error); the caller records a diagnostic and goes on (Req 16.6).
+ */
+export async function findRunIdContainers(
+  client: DockerClient,
+  runId: string,
+): Promise<{ readonly ok: true; readonly ids: readonly string[] } | { readonly ok: false; readonly detail: string }> {
+  const r = await client.run(['ps', '-a', '-q', '--filter', `label=${LABEL_RUN_ID}=${runId}`], {
+    timeoutMs: RUN_ID_CHECK_TIMEOUT_MS,
+  });
+  if (r.code !== 0) return { ok: false, detail: r.timedOut ? 'timeout' : r.spawnError ?? `exit ${String(r.code)}` };
+  return { ok: true, ids: text(r.stdout).split('\n').map((s) => s.trim()).filter((s) => s !== '') };
+}
+
+/**
  * Removes the container (and its anonymous volume) of a run. First by reference, then by
  * the run-id label, so a container whose creation reported an error is still found.
  */
@@ -164,6 +184,7 @@ export async function createBox(client: DockerClient, p: BoxParams): Promise<Cre
       ...(p.limits !== undefined ? { limits: p.limits } : {}),
       uid: p.uid,
       gid: p.gid,
+      owner: p.owner ?? p.poolOwner ?? processInfo().owner,
       ...(p.poolOwner !== undefined ? { poolOwner: p.poolOwner } : {}),
       ...(p.maxLifetimeSec !== undefined ? { maxLifetimeSec: p.maxLifetimeSec } : {}),
     },
