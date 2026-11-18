@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import files from '../../plans/scenario-3.json?raw';
-import { loadPlanTemporary } from '../../src/scenarios/plan-loader';
+import { parsePlanFile } from '../../src/plan/plan-file';
 import { buildReadme } from '../../src/scenarios/readme';
 import { SCENARIOS } from '../../src/scenarios/scenarios';
 
@@ -24,15 +24,20 @@ describe('scenarios', () => {
   });
 
   it('builds the provenance log only for scenario 3, from the README fixture', () => {
-    expect(loadPlanTemporary(files).readings).toEqual(['README.md']);
+    const parsed = parsePlanFile(files);
+    expect(parsed.ok && parsed.plan.readings).toEqual(['README.md']);
     expect(SCENARIOS[2]!.provenance).toEqual([{ source: 'README.md', kind: 'file', content: buildReadme() }]);
     for (const i of [0, 1, 3, 4]) expect(SCENARIOS[i]!.provenance).toBeUndefined();
   });
 
-  it('rejects malformed plan text', () => {
-    expect(() => loadPlanTemporary('{')).toThrow();
-    expect(() => loadPlanTemporary('{"origin":"x","actions":[]}')).toThrow();
-    expect(() => loadPlanTemporary('{"origin":"scripted","actions":[{"command":1}]}')).toThrow();
-    expect(() => loadPlanTemporary('{"origin":"scripted","actions":[],"readings":[1]}')).toThrow();
+  it('rejects malformed plan text without throwing', () => {
+    for (const bad of [
+      '{',
+      '{"origin":"x","actions":[]}',
+      '{"format":"ghost-run-plan","version":1,"name":"n","origin":"scripted","actions":[{"command":1}]}',
+      '{"format":"ghost-run-plan","version":1,"name":"n","origin":"scripted","actions":[{"command":"ls"}],"readings":[1]}',
+    ]) {
+      expect(parsePlanFile(bad).ok).toBe(false);
+    }
   });
 });

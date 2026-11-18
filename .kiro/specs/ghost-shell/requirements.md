@@ -212,6 +212,8 @@ Hidden characters are never written literally in this document or in any reposit
 7. WHEN `curl -d @file` names a file that does not exist, THE Command_Interpreter SHALL fail the step with exit code 26 and no Network_Attempt, and SHALL record no `secret-read` event for the missing file.
 8. THE Trace, the Scene, every Grave_Entry, every serialized value, and every log line SHALL contain no Captured_Payload byte and no secret file content; the payloads travel only in memory as the `payloads` map of `EvaluateInputs` (Requirement 8, criterion 3).
 9. THE Command_Interpreter SHALL NOT claim detection of a secret read through a path it does not execute (an Unsupported_Command), and THE README SHALL say so (Requirement 17, criterion 4).
+10. THE Ghost_Shell_App SHALL replace, in the `stdout` and `stderr` of every step of the Playground_Run, each secret file value (the whole content, each line, each value after `=`, and each token of 8 or more characters, of at least 4 characters) and its base64, hex, and percent-encoded forms with the text `[redacted]`, before the secret bytes are released; THE `reason` `unsupported-step` SHALL be passed to the message builder only when the Plan has at least one Unsupported_Command (a watchdog step alone passes no `reason`).
+11. THE redaction applies to the step output after it was cut at 4,096 code points (criterion 11 of Requirement 5), so a secret value that straddles the cut is not matched in full and its leading part stays in the output; this is a known limitation, and THE README SHALL list it.
 
 ### Requirement 8: Ghost Run Pipeline and Judging
 

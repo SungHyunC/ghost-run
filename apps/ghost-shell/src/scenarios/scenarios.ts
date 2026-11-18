@@ -7,7 +7,8 @@ import s2f from '../../plans/scenario-2-fixed.json?raw';
 import s3 from '../../plans/scenario-3.json?raw';
 import s4 from '../../plans/scenario-4.json?raw';
 import s5 from '../../plans/scenario-5.json?raw';
-import { loadPlanTemporary } from './plan-loader';
+import { parsePlanFile } from '../plan/plan-file';
+import type { PlanFile } from '../plan/plan-file';
 import { buildReadme } from './readme';
 
 export type PlanOrigin = 'recorded' | 'scripted';
@@ -21,12 +22,18 @@ export interface Scenario {
   readonly provenance?: ProvenanceLog;
 }
 
+function planOf(text: string): PlanFile {
+  const r = parsePlanFile(text);
+  if (!r.ok) throw new Error(`bundled plan file is invalid: ${r.errors.map((e) => `${e.field}: ${e.message}`).join('; ')}`);
+  return r.plan;
+}
+
 function actionsOf(text: string): readonly PlaygroundAction[] {
-  return loadPlanTemporary(text).actions;
+  return planOf(text).actions;
 }
 
 function provenanceOf(text: string): ProvenanceLog | undefined {
-  const readings = loadPlanTemporary(text).readings;
+  const readings = planOf(text).readings;
   if (readings === undefined) return undefined;
   const readme = buildReadme();
   return readings.map((source) => {

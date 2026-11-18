@@ -25,6 +25,8 @@ export const UNSUPPORTED_STEP_REASON = 'unsupported command, not rehearsed.';
 export const WATCHDOG_STEP_REASON = 'sql statement exceeded the watchdog, not rehearsed.';
 export const UNSUPPORTED_MARKER_TEXT = 'unsupported';
 export const WATCHDOG_MARKER_TEXT = 'watchdog';
+export const FAILED_MARKER_TEXT = 'failed';
+export const NO_RUN_TEXT = 'No ghost run yet. Choose a scenario or add a command, then run the ghost.';
 
 export const P2_MEANING_TEXT =
   'P2 holds for the playground world only; it is not claimed for shell worlds in real mode.';
@@ -47,3 +49,11 @@ export const CLEAR_PLAN_LABEL = 'Clear plan';
 export const RUN_GHOST_LABEL = 'Run ghost';
 export const APPLY_FIXED_PLAN_LABEL = 'Apply fixed plan';
 export const PURIFY_LABEL = 'Purify';
+
+export const PURIFY_NOTE_TEXT =
+  'Purify replaces the README text of the in-memory copy only. It does not re-run the plan or write a file.';
+export const WARDS_EDITOR_LABEL = 'wards.yaml editor';
+export const WARDS_IN_MEMORY_TEXT =
+  'This edit is an in-memory copy. It is not saved and the bundled wards.yaml file does not change.';
+export const WARDS_ERRORS_LABEL = 'wards.yaml errors';
+export const WARDS_DOWNLOAD_FILE_NAME = 'wards.yaml';

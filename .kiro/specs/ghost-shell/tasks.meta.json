@@ -3,6 +3,30 @@
     "7.5 Write property test for the ghost diff versus the independent execution diff (contract P2)": {
       "status": "passed",
       "lastRunTimestamp": 1794988224238
+    },
+    "13.4 Write property test for the Graveyard reducer": {
+      "status": "passed",
+      "lastRunTimestamp": 1794989915297
+    },
+    "12.2 Write property test for the Plan_File round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794989925516
+    },
+    "12.3 Write property test for Plan_File and manual-command validation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794989941695
+    },
+    "13.2 Write property test for wards edit consistency": {
+      "status": "passed",
+      "lastRunTimestamp": 1794990061780
+    },
+    "13.6 Write property test for purify": {
+      "status": "passed",
+      "lastRunTimestamp": 1794990189332
+    },
+    "14.3 Write the screen property and example tests": {
+      "status": "passed",
+      "lastRunTimestamp": 1794990851231
     }
   },
   "executionHistory": {
@@ -595,6 +619,202 @@
         "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
         "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
         "timestamp": 1794989505236
+      }
+    ],
+    "12.1 Implement `parsePlanFile`, `printPlanFile`, and `validateCommand`": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989679400
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989872641
+      }
+    ],
+    "13.3 Implement the Graveyard reducer": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989679835
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989872650
+      }
+    ],
+    "13.1 Implement the wards-editor reducer": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989682524
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989873075
+      }
+    ],
+    "12.2 Write property test for the Plan_File round trip": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989876750
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989951962
+      }
+    ],
+    "12.3 Write property test for Plan_File and manual-command validation": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989876898
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989952515
+      }
+    ],
+    "13.4 Write property test for the Graveyard reducer": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989877439
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989953320
+      }
+    ],
+    "12.4 Write the scenario plan-file equality test": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989956441
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990138370
+      }
+    ],
+    "13.2 Write property test for wards edit consistency": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989957006
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990137221
+      }
+    ],
+    "13.5 Implement the page reducer, the purify action, and the app shell state": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794989957590
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990137802
+      }
+    ],
+    "12. Plan file codec and manual input": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990138373
+      }
+    ],
+    "13.6 Write property test for purify": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990142612
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990586995
+      }
+    ],
+    "14.1 Implement the app shell, scenario bar, plan panel, run panel, and notices": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990142629
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990587006
+      }
+    ],
+    "13. Wards editor, Graveyard, and page state": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990586997
+      }
+    ],
+    "14.2 Implement the possession panel, wards editor screen, and Graveyard panel": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990589962
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990750357
+      }
+    ],
+    "14.3 Write the screen property and example tests": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990753578
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990910702
+      }
+    ],
+    "15.1 Finalize the Vite build, the `_headers` CSP, and the dist verification": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990754290
+      },
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990911628
+      }
+    ],
+    "14. Screens": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990910704
+      }
+    ],
+    "15. Static build and headers": [
+      {
+        "executionId": "1a3d822b-81a8-4b6b-bbe0-cc47de131894",
+        "chatSessionId": "sess_5cc50dd6-6440-489f-8c0a-d0d806444823",
+        "timestamp": 1794990911630
       }
     ]
   }

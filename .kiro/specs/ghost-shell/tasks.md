@@ -335,8 +335,8 @@ The plan follows the implementation order of the design:
     - **Validates: Requirements 12.1, 12.4, 12.9, 12.10**
     - File `tests/scenarios/prop-06-red-thread.test.ts`. Generators: visible README texts without hidden code points, ASCII destinations of 1 to 60 printable characters, and insertion positions (a code point index). Runs the possession pipeline (`collectNeedles`, `traceRedThread`) and checks a `found` ThreadLink with `hidden: true` and `source: 'README.md'`, and that the Playground_Verdict is unchanged by whether the link was found.
 
-- [ ] 12. Plan file codec and manual input
-  - [ ] 12.1 Implement `parsePlanFile`, `printPlanFile`, and `validateCommand`
+- [x] 12. Plan file codec and manual input
+  - [x] 12.1 Implement `parsePlanFile`, `printPlanFile`, and `validateCommand`
     - **Depends on the `ui-kit` implementation** (task 9.1): `isHiddenDisplay` comes from `@ghost-run/ui`.
     - `src/plan/plan-file.ts`: `PlanFile`, `PlanParseError`, `parsePlanFile(text)` with the check order of the design (`input-too-large` above 1 MiB first; `invalid-json`; `wrong-type`; `missing-field`; `unknown-field` at the root and inside a provenance record; `unsupported-version`; `out-of-range`; `conflicting-fields`; `invalid-character`), at most 50 errors, fields such as `actions[2].command`, `provenance` re-reported as `provenance[<index>].<field>` through core `parseProvenanceLog`, never throws.
     - `src/plan/print-plan-file.ts`: canonical JSON written by hand with two-space indentation, the key order `format`, `version`, `name`, `origin`, `actions`, `note`, `provenance`, `readings`, a trailing newline, and every code point above U+007E and every Hidden_Display_Code_Point as an uppercase `\uXXXX` escape (a surrogate pair above U+FFFF).
@@ -344,77 +344,77 @@ The plan follows the implementation order of the design:
     - Write example tests: a recorded plan with a hidden instruction printed entirely in ASCII and parsed back; an unknown field rejected with its field path; `\u` escaped tag characters accepted in `provenance` content; no field for a clock value, session id, secret, or payload.
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.9, 13.11, 14.3_
 
-  - [ ] 12.2 Write property test for the Plan_File round trip
+  - [x] 12.2 Write property test for the Plan_File round trip
     - **Property 1: Plan_File round trip (GS-P1)**
     - **Validates: Requirements 13.7, 13.8, 13.9**
     - File `tests/plan/prop-01-roundtrip.test.ts`. Generators: plans of 1 to 50 actions with printable and non-ASCII commands, optional `note`, and either `provenance` or `readings`.
 
-  - [ ] 12.3 Write property test for Plan_File and manual-command validation
+  - [x] 12.3 Write property test for Plan_File and manual-command validation
     - **Property 23: Plan_File and manual-command validation**
     - **Validates: Requirements 13.3, 13.4, 13.5, 13.6, 14.3**
     - File `tests/plan/prop-23-validation.test.ts`. Generators: valid Plan_Files mutated in one place (unknown field, wrong type, missing field, wrong version, out-of-range count or length, both `provenance` and `readings`, a control or hidden code point in `command`, `cwd`, `name`, or `note`), texts above 1 MiB, and arbitrary strings.
 
-  - [ ] 12.4 Write the scenario plan-file equality test
+  - [x] 12.4 Write the scenario plan-file equality test
     - **Depends on task 11.2.**
     - `tests/plan/plans-equal-scenarios.test.ts` (node): each of the seven files of `apps/ghost-shell/plans/` is valid by `parsePlanFile` with `origin: 'scripted'`; the Plan of each Scenario equals the actions of its file; `scenario-3.json` has `readings` and no `provenance`; no file contains a hidden Unicode code point, a literal HTML comment opener, or a non-reserved host.
     - _Requirements: 13.10, 19.1, 19.3_
 
-- [ ] 13. Wards editor, Graveyard, and page state
-  - [ ] 13.1 Implement the wards-editor reducer
+- [x] 13. Wards editor, Graveyard, and page state
+  - [x] 13.1 Implement the wards-editor reducer
     - **Depends on the `ui-kit` implementation** (`escapeForDisplay`) and on the `wards-config` implementation.
     - `src/wards/wards-editor.ts` (pure reducer plus effect description): state `{ text, parsed, runId, shown, stale }`; events `edit(text)`, `debounceElapsed`, `runFinished(runId, run)`, `reset`. `edit` stores the text and asks the shell to schedule `debounceElapsed` after 300 ms through an injected `TimerPort` (the same interface as the watchdog; a new edit cancels the timer). `debounceElapsed` calls `parseWards`; `ok: true` increments `runId`, clears `stale`, and requests `runPlayground` with a rebuilt world for the new WardSet; `ok: false` keeps `shown`, sets `stale` (label `stale: wards.yaml has errors`), and exposes at most 50 `formatConfigError` strings through the Display_Escaper with the offending line numbers. `runFinished` applies only the latest `runId`. A re-run caused by an edit never adds a Grave_Entry. The text limit is 262,144 bytes (`input-too-large` shown); `Reset to default` restores the bundled text; the initial text is `apps/ghost-shell/wards.yaml` imported with `?raw`.
     - Write example tests: a parse error then a fix; a text above the limit; reset; debounce with a manual `TimerPort`.
     - _Requirements: 15.2, 15.4, 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9_
 
-  - [ ] 13.2 Write property test for wards edit consistency
+  - [x] 13.2 Write property test for wards edit consistency
     - **Property 4: Wards edit consistency (GS-P4)**
     - **Validates: Requirements 16.3, 16.4, 16.10**
     - File `tests/state/prop-04-wards-edit.test.ts`. **Depends on task 10.4.** Generators: sequences of wards-editor events (edits that parse and edits that do not, debounce firings, and run completions delivered in any order) over generated valid WardSets and the Scenario plans. Also an example test that the bundled text equals the bytes of `apps/ghost-shell/wards.yaml` and that `parseWards` on it equals `loadWardsFile` on the file (Node-only test code).
 
-  - [ ] 13.3 Implement the Graveyard reducer
+  - [x] 13.3 Implement the Graveyard reducer
     - **Depends on the `ui-kit` implementation** (`GraveEntry` type).
     - `src/state/graveyard.ts`: `GraveyardState`, `GraveyardEvent`, `graveyardReducer`. An entry is added only for an explicit user action with `run.verdict === 'block'`; `id` is `g-<n>` (matching `^[A-Za-z0-9_-]{1,64}$`); `command` is the plan commands joined by `; `; `recordedAt` comes from the injected `clock` formatted `YYYY-MM-DDTHH:MM:SSZ` (the world, the interpreter, and `runPlayground` never see it); `wardIds` are the distinct violation ward ids in order of first appearance; `detail` carries `wardVerdict`, `changes`, `claims`, `actionLabels`, and for the possession Scenario `sources`, `needles`, and `links`. At most 200 entries; the oldest is dropped and `dropped` set. No entry contains `secretValues`, a payload, or a file body.
     - Write example tests for each field and the 201st entry.
     - _Requirements: 17.3, 17.4, 17.5, 17.6, 17.7, 17.9_
 
-  - [ ] 13.4 Write property test for the Graveyard reducer
+  - [x] 13.4 Write property test for the Graveyard reducer
     - **Property 25: Graveyard reducer**
     - **Validates: Requirements 16.6, 17.3, 17.4, 17.5, 17.9**
     - File `tests/state/prop-25-graveyard.test.ts`. Generators: sequences of run events with a verdict and an origin (explicit, edit-caused, `Purify`).
 
-  - [ ] 13.5 Implement the page reducer, the purify action, and the app shell state
+  - [x] 13.5 Implement the page reducer, the purify action, and the app shell state
     - **Depends on tasks 10.4, 11.2, 12.1, 13.1, and 13.3.**
     - `src/state/reducer.ts`: the page-level reducer owning the selected scenario or `custom`, the current plan with `PlanMeta` (`name`, `origin`, `note`, project name), the wards-editor state, the last `Playground_Run`, the Graveyard, the open seance id, and the purified README text. A manually typed plan starts from the Scenario 4 neutral project and shows the project name. Actions: select scenario, `Run ghost` (empty plan shows `The plan is empty: add a command first.` and does not run), `Apply fixed plan`, `Add to plan`, `Remove step`, `Clear plan`, `Load plan file`, `Download plan file`, `Purify`. `Purify` replaces the README text of the in-memory fixture copy and of the Provenance_Record by `sanitizeText(readme)` and re-scans it; it does not re-run the plan, write a file, or touch the Graveyard. A thrown `runPlayground` keeps the previous run, shows `The playground failed to run this plan.`, and adds no Grave_Entry.
     - Write example tests for each action, the fixed-plan flow from `block` to `pass`, and the empty-plan message.
     - _Requirements: 11.1, 11.10, 12.6, 12.7, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 17.3, 17.4_
 
-  - [ ] 13.6 Write property test for purify
+  - [x] 13.6 Write property test for purify
     - **Property 24: Purify removes hidden text**
     - **Validates: Requirements 12.6**
     - File `tests/state/prop-24-purify.test.ts`. **Depends on task 13.5.** Generators: README texts with hidden runs inserted (tag characters, zero-width characters, bidi controls, an HTML comment), all built from code points.
 
-- [ ] 14. Screens
-  - [ ] 14.1 Implement the app shell, scenario bar, plan panel, run panel, and notices
+- [x] 14. Screens
+  - [x] 14.1 Implement the app shell, scenario bar, plan panel, run panel, and notices
     - **Depends on the `ui-kit` implementation** (`KitRoot`, `Candle` with its claim banner, `MirrorWorld`; a widened notice type) **and on task 13.5.**
     - `src/main.tsx` (injects the system clock and the browser worker executor created with `createWatchdogExecutor({ spawn: () => workerRunner() })`, started at load with an `init` request), `src/App.tsx`, `src/screens/ScenarioBar.tsx`, `PlanPanel.tsx` (numbered list in a monospace font; each step shows the exit code and the text `unsupported`, `failed`, or `watchdog` with an icon; the controls `Command`, `Add to plan`, `Remove step`, `Clear plan`, `Run ghost`, `Apply fixed plan`, `Load plan file` (file input read with `File.text()`, never uploaded), `Download plan file` (Blob created in the page), the Plan_Origin, `name`, `note`, and the scripted and recorded texts), `RunPanel.tsx` (Candle with the Claim_Banner above the Mirror_World, the `Message the agent receives` monospace panel, the `Docker box (real mode) is not used by this page.` text, the P2 meaning text, the alert for a fingerprint mismatch), and `Notices.tsx` (error alerts and fixed notices). Every string from a Plan_File, a command, a Step_Record, a file name, or a Config_Error passes through the Display_Escaper from `src/ui-imports.ts`. The page starts in the `dark` theme with the Lights_Toggle. No `dangerouslySetInnerHTML`, no storage, no `fetch`.
     - Write jsdom example tests (with the docblock) for the Scenario `Run` flow, `Apply fixed plan` moving the Candle from `block` to `pass`, the empty-plan text, a `Load plan file` error alert, and `Download plan file` printing text that parses back.
     - _Requirements: 6.4, 6.6, 8.8, 9.7, 11.1, 11.10, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 15.6, 17.1, 17.2, 17.10, 17.12, 19.5_
 
-  - [ ] 14.2 Implement the possession panel, wards editor screen, and Graveyard panel
+  - [x] 14.2 Implement the possession panel, wards editor screen, and Graveyard panel
     - **Depends on tasks 13.1, 13.3 and 14.1** (they edit `src/App.tsx` in a later wave).
     - `src/screens/PossessionPanel.tsx`: Red_Thread_View with the `Needle` list and `actionLabels` equal to the plan commands, Blacklight_View with the README text and `scanText(readme)` and the Blacklight_Switch, the `Purify` control, the texts `Text analysis does not catch every injection.` and `A secret read followed by an unapproved network attempt is blocked by action, with or without hidden text.`, and the canary text. `src/screens/WardsEditor.tsx`: the `wards.yaml` editor with line-numbered error marks, `Reset to default`, `Download wards.yaml`, errors in an element with the role `alert`, the `stale: wards.yaml has errors` label, the debounce wiring through the injected timer, and the statement that the edit is an in-memory copy. `src/screens/GraveyardPanel.tsx`: the kit `Graveyard` below the Candle with `onOpenSeance`, the Seance_View inside the page (no URL change, no fetch), `Back to graveyard` returning focus to the Tombstone through the kit's focus store, and the drop notice. Wire the three panels into `src/App.tsx`.
     - Write jsdom example tests: the possession flow (red thread to the README line, blacklight on, purify, `No hidden text found by the blacklight.`); a wards edit that fixes a parse error; the Graveyard entry of a blocked run opened by keyboard; loosening a ward so Scenario 1 passes shows the new verdict and no text that calls the ward set safe.
     - _Requirements: 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 16.1, 16.2, 16.3, 16.4, 16.5, 16.7, 16.8, 16.9, 17.1, 17.8, 17.9, 20.4_
 
-  - [ ] 14.3 Write the screen property and example tests
+  - [x] 14.3 Write the screen property and example tests
     - **Property 26: Displayed strings are escaped**
     - **Validates: Requirements 14.2, 14.5, 16.5, 19.5**
     - File `tests/screens/prop-26-escaping.test.ts`. Uses `renderToStaticMarkup` of the screen view functions in the node environment (full 100 runs). Generators: commands, step outputs, file names, errors, and Plan_File fields that contain hidden or control code points (built from code points). Checks that the markup contains no literal Hidden_Display_Code_Point and shows the `<U+XXXX>` form.
     - Also create, in separate files under `tests/screens/` (jsdom docblock): `no-network.test.ts` (with `fetch`, `XMLHttpRequest`, `WebSocket`, and `navigator.sendBeacon` replaced by functions that throw, except the loading of the bundled wasm from the page origin, Scenarios 1 to 5 run without a call), `no-storage.test.ts` (no `localStorage`, `sessionStorage`, `IndexedDB`, or cookie write), `keyboard.test.ts` (Graveyard opened and closed by keyboard), and `leak-render.test.ts` extending the leak rule of task 10.6 to the rendered markup and every Grave_Entry for a generated Canary (Property 18 is not renumbered; this file carries the tag `Property 18` for the screen leg).
     - _Requirements: 2.3, 2.5, 3.7, 14.2, 14.5, 16.5, 17.7, 19.5, 19.6, 20.3_
 
-- [ ] 15. Static build and headers
-  - [ ] 15.1 Finalize the Vite build, the `_headers` CSP, and the dist verification
+- [x] 15. Static build and headers
+  - [x] 15.1 Finalize the Vite build, the `_headers` CSP, and the dist verification
     - Update `apps/ghost-shell/vite.config.ts` for the final app (worker format `es`, `sourcemap: false`, `modulePreload.polyfill: false`) and verify `public/_headers` contains the design's CSP (`default-src 'none'`, `script-src 'self' 'wasm-unsafe-eval'`, `worker-src 'self'`, `connect-src 'self'`, `style-src 'self' 'unsafe-inline'`, `img-src 'self' data:`, `font-src 'self'`, `base-uri 'none'`, `form-action 'none'`, `frame-ancestors 'none'`), `X-Content-Type-Options: nosniff`, and `Referrer-Policy: no-referrer`. Do not set COOP or COEP.
     - Write `tests/build/dist.test.ts` that builds once and asserts: `dist/_headers` exists and contains `connect-src 'self'` and `default-src 'none'`; `dist/assets` holds the worker chunk and the `.wasm` file; `node scripts/check-dist.mjs` exits 0 on the final build; the bundled text of `wards.yaml` equals the file bytes; the build output contains no `node:` specifier and no reference to another origin.
     - Run `pnpm --filter @ghost-run/ghost-shell test:dist`. The manual browser smoke checks (CSP directives needed by the kit styles, load time within 3.0 s on the Reference_Machine, the worker in a real browser, Scenario 1 shows `block`) are listed in the README by task 16.1 and are not coding tasks.

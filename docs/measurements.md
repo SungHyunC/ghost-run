@@ -345,3 +345,18 @@ Measured on an Apple M1 class machine (macOS, Node 20+), Short_Run (`numRuns` 10
 The step counts vary between runs because fast-check seeds are random. `sqlite3` is about 10 percent of the draws, with SQL from a bounded grammar (`SELECT`, `INSERT`, `UPDATE`, `DELETE` with a bounded `WHERE`, no recursion). The Nightly_Run of `verifyWorld` was not run.
 
 Equivalence of the test worker and the app SQL core: `tests/sql-worker-equivalence.test.ts` compares `tests/support/sql-worker.mjs` with `handleSqlRequest` over generated SQL, erroneous SQL, and databases with bytes. It passed at 100 runs (about 1 s) and at the Nightly_Run size of 10,000 runs (about 84 s).
+
+## Ghost Shell dist size (task 15.1)
+
+Measured after `corepack pnpm build` in `apps/ghost-shell` (Vite 7.3.8, sourcemaps off). `dist/` is ignored by the root `.gitignore` (`dist/`) and is not committed.
+
+| Measurement | Result |
+|---|---|
+| `dist` total (`du -sh`) | 1.2 MB |
+| sql.js wasm (`sql-wasm-*.wasm`) | 688,197 bytes (337 kB gzip) |
+| JS, main bundle (`index-*.js`) | 474,358 bytes (151 kB gzip) |
+| JS, worker chunk (`worker-entry-*.js`) | 42,732 bytes |
+| JS total | 517,090 bytes |
+| CSS | 8,269 bytes |
+
+`scripts/check-dist.mjs` reports `check-dist: ok`: no host outside the allowlist, no `node:` specifier, the wasm file is referenced from a JS file, and `_headers` is present.
