@@ -42,6 +42,9 @@ export type AppEvent =
   | { readonly type: 'plan-error'; readonly errors: readonly FileError[] }
   | { readonly type: 'run-started'; readonly explicit: boolean }
   | { readonly type: 'run-finished'; readonly run: GhostRun; readonly nowMs: number }
+  /** The run threw (for example an invalid plan): no result, no graveyard entry. */
+  | { readonly type: 'run-aborted' }
+  | { readonly type: 'plan-cleared' }
   | { readonly type: 'reference-executed'; readonly p2Match?: boolean | null }
   | { readonly type: 'reference-reset' }
   | { readonly type: 'seed-changed'; readonly seed: number }
@@ -156,6 +159,17 @@ export function reducer(state: AppState, event: AppEvent): AppState {
             : state.openGraveId,
       };
     }
+    case 'run-aborted':
+      return { ...state, running: false, pendingRun: null };
+    case 'plan-cleared':
+      return {
+        ...state,
+        plan: null,
+        planError: null,
+        planIdentity: null,
+        referenceExecuted: false,
+        p2Match: null,
+      };
     case 'reference-executed':
       if (!canExecuteReference(state)) return state;
       return { ...state, referenceExecuted: true, p2Match: event.p2Match ?? null };

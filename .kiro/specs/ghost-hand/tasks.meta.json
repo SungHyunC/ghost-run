@@ -1162,6 +1162,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248965
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000657970
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000672969
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001113912
       }
     ],
     "14.2 Add plan controls, the reference execution, and `Play demo`": [
@@ -1169,6 +1184,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248968
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000657977
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001118305
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001898480
       }
     ],
     "14.3 Implement the Node entry point": [
@@ -1176,6 +1206,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248970
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000657984
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000672981
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001113924
       }
     ],
     "14.4 Write the Node entry point tests": [
@@ -1183,6 +1228,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248971
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000657997
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001118316
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001898504
       }
     ],
     "14.5 Write the DOM behavior tests": [
@@ -1190,6 +1250,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248974
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658000
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001902528
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002567023
       }
     ],
     "14.6 Write the network, storage, and start-up failure tests": [
@@ -1197,6 +1272,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248976
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658002
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001902542
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002567834
       }
     ],
     "15.1 Add the third-party notices build step": [
@@ -1204,6 +1294,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248979
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658005
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001118489
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001898568
       }
     ],
     "15.2 Write the source hygiene tests": [
@@ -1211,6 +1316,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248981
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658008
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795001902924
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002568466
       }
     ],
     "15.3 Write the build output tests": [
@@ -1218,6 +1338,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248983
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658010
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002571613
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002793353
       }
     ],
     "16. Checkpoint - app assembled": [
@@ -1225,6 +1360,21 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248986
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658013
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002800770
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002969108
       }
     ],
     "17.1 Implement the Chrome harness without a new dependency": [
@@ -1232,6 +1382,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248988
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658015
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000662684
       }
     ],
     "17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)": [
@@ -1239,6 +1399,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248990
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658017
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000662696
       }
     ],
     "17.3 Measure the 3D overlay frame time": [
@@ -1246,6 +1416,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248992
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658020
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000663030
       }
     ],
     "18.1 Write the claim-scope tests": [
@@ -1253,6 +1433,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248994
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658029
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000663534
       }
     ],
     "18.2 Switch the P2 text on after the steering update": [
@@ -1260,6 +1450,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248998
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658035
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000664330
       }
     ],
     "18.3 Check the landed state of PR-1, PR-2, and PR-3": [
@@ -1267,6 +1467,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983249001
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658038
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000665132
       }
     ],
     "18.4 Write the Ghost Hand README section": [
@@ -1274,6 +1484,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983249003
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658042
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000665684
       }
     ],
     "18.5 Write the README consistency tests": [
@@ -1281,6 +1501,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983249005
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658045
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000666200
       }
     ],
     "19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`": [
@@ -1288,6 +1518,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983249008
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658048
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000667087
       }
     ],
     "20. Final checkpoint": [
@@ -1295,6 +1535,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983249010
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000658051
+      },
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795000667449
       }
     ],
     "7. Engine, controller, and world": [
@@ -1330,6 +1580,20 @@
         "executionId": "fedbda5c-9874-4ecd-aab1-115d24b611b8",
         "chatSessionId": "sess_f25f3330-622a-466d-ac65-dcc348c0b4ab",
         "timestamp": 1795000357589
+      }
+    ],
+    "14. Screen composition and Node entry point": [
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002567837
+      }
+    ],
+    "15. Build output, third-party notices, and hygiene": [
+      {
+        "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
+        "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
+        "timestamp": 1795002793355
       }
     ]
   }

@@ -1,0 +1,144 @@
+/* Page layout of Ghost Hand. Colors come only from the ui kit theme tokens (var(--gk-*)).
+   No animation or transition here: motion lives in the kit and in the overlay renderer. */
+
+.gh-page {
+  max-width: 80rem;
+  margin-inline: auto;
+}
+
+.gh-title {
+  margin-block-end: 16px;
+}
+
+.gh-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.gh-tagline {
+  margin: 4px 0 0;
+  color: var(--gk-muted);
+}
+
+/* Narrow screens: one column in DOM order. Wide screens: plan and claims on the left,
+   the ghost run on the right. */
+.gh-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 16px;
+  align-items: start;
+}
+
+.gh-column {
+  min-width: 0;
+}
+
+@media (min-width: 60rem) {
+  .gh-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+}
+
+.gh-mono {
+  font-family: var(--gk-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.gh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin-block: 8px;
+}
+
+.gh-field {
+  display: grid;
+  gap: 4px;
+  margin-block: 8px;
+}
+
+.gh-steps {
+  margin: 8px 0;
+  padding-inline-start: 3ch;
+  overflow-wrap: anywhere;
+}
+
+.gh-error,
+.gh-errors {
+  color: var(--gk-block);
+}
+
+.gh-errors {
+  margin: 8px 0;
+  padding-inline-start: 2.5ch;
+}
+
+.gh-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--gk-line);
+  border-radius: 6px;
+}
+
+.gh-table-wrap {
+  overflow-x: auto;
+}
+
+.gh-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--gk-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+}
+
+.gh-table caption {
+  text-align: start;
+  color: var(--gk-muted);
+  padding-block-end: 4px;
+}
+
+.gh-table th,
+.gh-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--gk-line);
+  text-align: start;
+  white-space: nowrap;
+}
+
+/* A failed row differs by a dashed left edge and by its status word, not by color alone. */
+.gh-row-failed th[scope='row'] {
+  border-inline-start: 4px dashed var(--gk-block);
+}
+
+.gh-status {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.gh-status-failed {
+  color: var(--gk-block);
+  font-weight: 700;
+}
+
+.gh-message {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--gk-line);
+  border-radius: 6px;
+  background: var(--gk-surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The frame slider and the file picker are not kit buttons: give them the same focus ring as the kit
+   (3px, var(--gk-focus), 3:1 against the page and the surface in both themes). */
+.gh-field input[type='range']:focus-visible,
+.gh-field input[type='file']:focus-visible {
+  outline: 3px solid var(--gk-focus);
+  outline-offset: 2px;
+}

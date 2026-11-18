@@ -6,9 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/gen-notices.mjs",
+    "notices": "node scripts/gen-notices.mjs",
+    "build:node": "tsc --noEmit && vite build -c vite.node.config.ts",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:dist": "npm run build && npm run notices && GHOST_DIST_TESTS=1 vitest run --project dist",
     "test:nightly": "GHOST_PBT_MODE=nightly vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint .",
@@ -38,5 +41,8 @@
     "typescript-eslint": "^8.73.0",
     "vite": "^7.3.8",
     "vitest": "^3.2.7"
+  },
+  "bin": {
+    "ghost-hand-run": "./dist-node/cli.js"
   }
 }

@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./wards.yaml": "./wards.yaml"
+    "./wards.yaml": "./wards.yaml",
+    "./variant-config.json": "./variant-config.json"
   },
   "sideEffects": false,
   "scripts": {

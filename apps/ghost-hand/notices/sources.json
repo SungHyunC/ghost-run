@@ -1,0 +1,115 @@
+{
+  "components": [
+    {
+      "id": "mujoco",
+      "name": "MuJoCo (including the @mujoco/mujoco WebAssembly bindings)",
+      "version": "4.0.1",
+      "spdx": "Apache-2.0",
+      "bundledIn": "mujoco.wasm",
+      "file": "mujoco.LICENSE.txt",
+      "upstream": "https://github.com/google-deepmind/mujoco",
+      "licenseUrl": "https://raw.githubusercontent.com/google-deepmind/mujoco/4.0.1/LICENSE"
+    },
+    {
+      "id": "qhull",
+      "name": "Qhull",
+      "version": "git d1c2fc0caa5f644f3a0f220290d4a868c68ed4f6",
+      "spdx": "Qhull license (not OSI-approved)",
+      "bundledIn": "mujoco.wasm",
+      "file": "qhull.LICENSE.txt",
+      "upstream": "https://github.com/qhull/qhull",
+      "licenseUrl": "https://raw.githubusercontent.com/qhull/qhull/d1c2fc0caa5f644f3a0f220290d4a868c68ed4f6/COPYING.txt",
+      "sourceNotice": "The original Qhull source code may be obtained from https://github.com/qhull/qhull and http://www.qhull.org."
+    },
+    {
+      "id": "tinyxml2",
+      "name": "TinyXML-2",
+      "version": "git e6caeae85799003f4ca74ff26ee16a789bc2af48",
+      "spdx": "Zlib",
+      "bundledIn": "mujoco.wasm",
+      "file": "tinyxml2.LICENSE.txt",
+      "upstream": "https://github.com/leethomason/tinyxml2",
+      "licenseUrl": "https://raw.githubusercontent.com/leethomason/tinyxml2/e6caeae85799003f4ca74ff26ee16a789bc2af48/LICENSE.txt"
+    },
+    {
+      "id": "tinyobjloader",
+      "name": "tinyobjloader",
+      "version": "git 2945a967c5303b2c8c14174117c45f3302591150",
+      "spdx": "MIT",
+      "bundledIn": "mujoco.wasm",
+      "file": "tinyobjloader.LICENSE.txt",
+      "upstream": "https://github.com/tinyobjloader/tinyobjloader",
+      "licenseUrl": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/2945a967c5303b2c8c14174117c45f3302591150/LICENSE"
+    },
+    {
+      "id": "libccd",
+      "name": "libccd",
+      "version": "v2.1 (git 7931e764a19ef6b21b443376c699bbc9c6d4fba8)",
+      "spdx": "BSD-3-Clause",
+      "bundledIn": "mujoco.wasm",
+      "file": "libccd.LICENSE.txt",
+      "upstream": "https://github.com/danfis/libccd",
+      "licenseUrl": "https://raw.githubusercontent.com/danfis/libccd/7931e764a19ef6b21b443376c699bbc9c6d4fba8/BSD-LICENSE"
+    },
+    {
+      "id": "miniz",
+      "name": "miniz",
+      "version": "git 77d0dce8627735138c51770d1799a1ef48f2117d",
+      "spdx": "MIT",
+      "bundledIn": "mujoco.wasm",
+      "file": "miniz.LICENSE.txt",
+      "upstream": "https://github.com/richgel999/miniz",
+      "licenseUrl": "https://raw.githubusercontent.com/richgel999/miniz/77d0dce8627735138c51770d1799a1ef48f2117d/LICENSE"
+    },
+    {
+      "id": "lodepng",
+      "name": "LodePNG",
+      "version": "git 22561883dd63fd1850f18e1f6adac321e4f609b0",
+      "spdx": "Zlib",
+      "bundledIn": "mujoco.wasm",
+      "file": "lodepng.LICENSE.txt",
+      "upstream": "https://github.com/lvandeve/lodepng",
+      "licenseUrl": "https://raw.githubusercontent.com/lvandeve/lodepng/22561883dd63fd1850f18e1f6adac321e4f609b0/LICENSE"
+    },
+    {
+      "id": "react",
+      "name": "react",
+      "version": "19.3.1",
+      "spdx": "MIT",
+      "bundledIn": "JavaScript bundle",
+      "file": "react.LICENSE.txt",
+      "upstream": "https://github.com/facebook/react",
+      "licenseUrl": "npm package react@19.3.1 (LICENSE file in the installed package)"
+    },
+    {
+      "id": "react-dom",
+      "name": "react-dom",
+      "version": "19.3.1",
+      "spdx": "MIT",
+      "bundledIn": "JavaScript bundle",
+      "file": "react-dom.LICENSE.txt",
+      "upstream": "https://github.com/facebook/react",
+      "licenseUrl": "npm package react-dom@19.3.1 (LICENSE file in the installed package)"
+    },
+    {
+      "id": "scheduler",
+      "name": "scheduler",
+      "version": "0.28.0",
+      "spdx": "MIT",
+      "bundledIn": "JavaScript bundle",
+      "file": "scheduler.LICENSE.txt",
+      "upstream": "https://github.com/facebook/react",
+      "licenseUrl": "npm package scheduler@0.28.0 (LICENSE file in the installed package)"
+    },
+    {
+      "id": "three",
+      "name": "three.js",
+      "version": "0.187.0",
+      "spdx": "MIT",
+      "bundledIn": "JavaScript bundle",
+      "file": "three.LICENSE.txt",
+      "upstream": "https://github.com/mrdoob/three.js",
+      "licenseUrl": "npm package three@0.187.0 (LICENSE file in the installed package)"
+    }
+  ]
+}
