@@ -18,6 +18,7 @@ import { decisionFromRunResult } from '../lib/gate/output.mjs';
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REPO = join(PKG, '..', '..');
 const SKIPPED = 'skipped (docker unavailable)';
+const SKIPPED_RUN_ID = 'skipped (runner runId option missing)';
 const CLAIM_LOWERED = 'P5 and P6 protections are NOT guaranteed';
 const PLAN_B = 'P1 isolation is NOT guaranteed';
 
@@ -143,12 +144,18 @@ const SCENARIOS = [
   { id: 5, command: 'npm run clean', verdict: 'block', ward: 'protect-data' },
 ];
 
-describe.skipIf(!dockerAvailable)(`[docker] ghost-gate hook process${dockerAvailable ? '' : ` [${SKIPPED}]`}`, () => {
+/** Test title with its skip reason, so a skipped test never reads as passed. */
+const labeled_ = (/** @type {string} */ title, /** @type {string[]} */ reasons = []) =>
+  `${title}${reasons.length > 0 ? ` [${reasons.join('; ')}]` : ''}`;
+const dockerReason = dockerAvailable ? [] : [SKIPPED];
+const runIdReason = RUNNER_SUPPORTS_RUN_ID ? [] : [SKIPPED_RUN_ID];
+
+describe.skipIf(!dockerAvailable)(labeled_('[docker] ghost-gate hook process', dockerReason), () => {
   afterAll(async () => {
     await cleanupAll();
   }, 60_000);
 
-  it('runs the five Ghost Shell scenarios end to end; messages follow isolation only; no box is left', async () => {
+  it(labeled_('runs the five Ghost Shell scenarios end to end; messages follow isolation only; no box is left', dockerReason), async () => {
     const { ws, realDb } = await makeWorkspace();
     expect(realDb, 'sqlite3 CLI needed for scenario 1').toBe(true);
     const gate = join(PKG, 'ghost-gate.mjs');
@@ -193,7 +200,10 @@ describe.skipIf(!dockerAvailable)(`[docker] ghost-gate hook process${dockerAvail
   }, 300_000);
 
   it.skipIf(!RUNNER_SUPPORTS_RUN_ID)(
-    'a hung runner killed by the watchdog leaves no container with its run id label',
+    labeled_('a hung runner killed by the watchdog leaves no container with its run id label', [
+      ...dockerReason,
+      ...runIdReason,
+    ]),
     async () => {
       const root = await tmp('ghost-gate-docker-pkg-');
       const pkg = join(root, 'pkg');
@@ -236,7 +246,7 @@ describe.skipIf(!dockerAvailable)(`[docker] ghost-gate hook process${dockerAvail
     90_000,
   );
 
-  it('P5/P6 lines come from `isolation` only', () => {
+  it(labeled_('P5/P6 lines come from `isolation` only', dockerReason), () => {
     const wardVerdict = { verdict: 'warn', violations: [], notices: [] };
     /** @type {(p5Claimed: boolean, p6Claimed: boolean) => any} */
     const make = (p5Claimed, p6Claimed) => ({

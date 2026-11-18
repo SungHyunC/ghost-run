@@ -212,6 +212,30 @@ describe('ghost-gate.json (task 8.3)', () => {
   });
 });
 
+describe('ghost-log.json (task 10.3)', () => {
+  const log = docs['ghost-log.json'];
+
+  it('exists with version v1 and one PostToolUse entry per category', () => {
+    expect(log).toBeDefined();
+    expect(log.version).toBe('v1');
+    expect(log.hooks.map((/** @type {any} */ h) => [h.trigger, h.matcher])).toEqual([
+      ['PostToolUse', 'read'],
+      ['PostToolUse', 'web'],
+      ['PostToolUse', 'shell'],
+      ['PostToolUse', '@mcp'],
+    ]);
+  });
+
+  it('uses one command, entry-level timeout 10, and is disabled until task 19.1', () => {
+    for (const h of log.hooks) {
+      expect(h.action).toEqual({ type: 'command', command: 'node integrations/kiro-hook/ghost-log.mjs' });
+      expect(h.timeout).toBe(10);
+      expect('timeout' in h.action).toBe(false);
+      expect(h.enabled).toBe(false);
+    }
+  });
+});
+
 describe('exp-b retirement', () => {
   it('no exp-b file is enabled while ghost-gate.json is enabled', () => {
     expect(retirementViolations(docs)).toEqual([]);

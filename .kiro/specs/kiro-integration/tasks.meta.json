@@ -727,6 +727,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045593
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794997965890
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999292923
       }
     ],
     "10.2 Write the ghost-log tests [no-docker]": [
@@ -734,6 +744,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045595
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999292978
       }
     ],
     "10.3 Create `.kiro/hooks/ghost-log.json`": [
@@ -741,6 +756,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045597
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999293032
       }
     ],
     "11.1 Implement `contract-pbt.mjs`, `lib/pbt/select.mjs`, `lib/pbt/run.mjs`, and `lib/pbt/reporter.mjs`": [
@@ -748,6 +768,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045599
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794997966722
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999293672
       }
     ],
     "11.2 Write property test for suite selection [no-docker]": [
@@ -755,6 +785,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045601
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999294466
       }
     ],
     "11.3 Write the contract-pbt tests [no-docker]": [
@@ -762,6 +797,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045603
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999295261
       }
     ],
     "11.4 Create `.kiro/hooks/contract-pbt.json`": [
@@ -769,6 +809,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045606
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999297446
       }
     ],
     "12.1 Implement `world-scaffold.mjs`, `lib/scaffold/templates.mjs`, `lib/scaffold/scaffold.mjs`, and the root `vitest.worlds.config.ts`": [
@@ -776,6 +821,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045608
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794997967492
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999297632
       }
     ],
     "12.2 Write property test for scaffold idempotence [no-docker]": [
@@ -783,6 +838,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045611
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999297930
       }
     ],
     "12.3 Create `.kiro/hooks/world-scaffold.json`": [
@@ -790,6 +850,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045613
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999298963
       }
     ],
     "13.1 Implement `blacklight-steering.mjs` and the `pnpm blacklight` script": [
@@ -797,6 +862,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045615
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999113400
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999299765
       }
     ],
     "13.2 Write property test that the blacklight hook reports and does not write [no-docker]": [
@@ -804,6 +879,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045617
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999300564
       }
     ],
     "13.3 Create `.kiro/hooks/blacklight-steering.json` and the example test": [
@@ -811,6 +891,11 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045619
+      },
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999301325
       }
     ],
     "14.1 Scaffold the `@ghost-run/mcp` package and check the dependency licenses": [
@@ -1014,6 +1099,34 @@
         "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
         "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
         "timestamp": 1794996529117
+      }
+    ],
+    "10. ghost-log (Post Tool Use)": [
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999293038
+      }
+    ],
+    "11. contract-pbt (file save)": [
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999297448
+      }
+    ],
+    "12. world-scaffold (file create)": [
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999298965
+      }
+    ],
+    "13. blacklight-steering (file save)": [
+      {
+        "executionId": "eae82010-e14c-46ef-a1ff-55b59dd39c5c",
+        "chatSessionId": "sess_44dda07a-136c-4e8e-a24f-9e7c833ba488",
+        "timestamp": 1794999301327
       }
     ]
   }

@@ -9,7 +9,7 @@ import { STORE_CAPS } from '../../gate-config.mjs';
 import { redactCanaries } from './redact.mjs';
 
 export { sessionKey } from './session-key.mjs';
-export { loadCanaries, redactCanaries } from './redact.mjs';
+export { containsCanary, loadCanaries, redactCanaries } from './redact.mjs';
 
 const DIR_MODE = 0o700;
 const FILE_MODE = 0o600;

@@ -1,0 +1,53 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "ghost-log (read)",
+      "description": "Records what the agent read, for the red thread. Never blocks. Disabled until task 19.1.",
+      "trigger": "PostToolUse",
+      "matcher": "read",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/ghost-log.mjs"
+      },
+      "timeout": 10,
+      "enabled": false
+    },
+    {
+      "name": "ghost-log (web)",
+      "description": "Records fetched web text, for the red thread. Never blocks. Disabled until task 19.1.",
+      "trigger": "PostToolUse",
+      "matcher": "web",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/ghost-log.mjs"
+      },
+      "timeout": 10,
+      "enabled": false
+    },
+    {
+      "name": "ghost-log (shell)",
+      "description": "Counts shell calls that ran. Never blocks. Disabled until task 19.1.",
+      "trigger": "PostToolUse",
+      "matcher": "shell",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/ghost-log.mjs"
+      },
+      "timeout": 10,
+      "enabled": false
+    },
+    {
+      "name": "ghost-log (mcp)",
+      "description": "Records MCP tool output, for the red thread. Never blocks. Disabled until task 19.1.",
+      "trigger": "PostToolUse",
+      "matcher": "@mcp",
+      "action": {
+        "type": "command",
+        "command": "node integrations/kiro-hook/ghost-log.mjs"
+      },
+      "timeout": 10,
+      "enabled": false
+    }
+  ]
+}

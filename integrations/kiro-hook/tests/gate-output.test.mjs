@@ -138,6 +138,45 @@ describe('Plan B', () => {
   });
 });
 
+describe('warn without notices', () => {
+  const EMPTY = { verdict: 'warn', violations: [], notices: [] };
+
+  it('Plan B reads as a natural sentence without the notice count or "First:"', () => {
+    const r = makeResult({ isolation: PLAN_B, wardVerdict: EMPTY, verdict: 'warn' });
+    const d = decisionFromRunResult(r, CTX);
+    expect(d.exit).toBe(2);
+    expect(d.stderr.split('\n')[0]).toBe(
+      'GHOST RUN NEEDS HUMAN APPROVAL: Docker is unavailable, so this command was not rehearsed in a sealed copy.',
+    );
+    expect(d.stderr).not.toMatch(/notice\(s\)|First:|\(none\)/);
+    expect(d.stderr).toContain(PLAN_B_LINE);
+  });
+
+  it('keeps the Seance link on the claim line and uses the non-Docker sentence when not Plan B', () => {
+    const r = makeResult({ status: 'timeout', wardVerdict: EMPTY, verdict: 'warn' });
+    const d = decisionFromRunResult(r, CTX);
+    expect(d.stderr).toContain('GHOST RUN NEEDS HUMAN APPROVAL: the rehearsal did not finish cleanly');
+    expect(d.stderr).toContain('Seance: http://localhost:5317/seance/grave-1');
+    expect(d.stderr).not.toMatch(/notice\(s\)|First:|\(none\)/);
+  });
+
+  it('a warn with notices keeps the count and the first notice', () => {
+    const d = decisionFromRunResult(makeResult({ verdict: 'warn', wardVerdict: WARN_V }), CTX);
+    expect(d.stderr).toContain('1 notice(s)');
+    expect(d.stderr).toContain('First: network call to api.example');
+  });
+
+  it('noClaims leaves out the claim line for pass, warn, and block', () => {
+    const lowered = { ...DOCKER, p5Claimed: false, p6Claimed: false };
+    for (const [verdict, ward] of /** @type {const} */ ([['pass', PASS_V], ['warn', WARN_V], ['block', BLOCK_V]])) {
+      const d = decisionFromRunResult(makeResult({ isolation: lowered, verdict, wardVerdict: ward }), { ...CTX, noClaims: true });
+      expect(d.stdout + d.stderr).not.toContain('NOT guaranteed');
+      const withClaims = decisionFromRunResult(makeResult({ isolation: lowered, verdict, wardVerdict: ward }), CTX);
+      expect(withClaims.stdout + withClaims.stderr).toContain('NOT guaranteed');
+    }
+  });
+});
+
 describe('floor lines', () => {
   it('pins every fixed string', () => {
     expect(FLOOR_TEXT).toEqual({

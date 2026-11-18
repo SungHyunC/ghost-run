@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "world-scaffold",
+      "description": "Creates world.config.ts, tests/contract.test.ts, wards.yaml, and README.md for a new world folder. Disabled until task 19.1.",
+      "trigger": "PostFileCreate",
+      "matcher": "(^|/)worlds/[^/]+/",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/world-scaffold.mjs" },
+      "timeout": 10,
+      "enabled": false
+    }
+  ]
+}

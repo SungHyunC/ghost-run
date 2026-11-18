@@ -333,6 +333,40 @@ describe('decide: write and code calls', () => {
     expect(await readJsonl('graveyard.jsonl')).toEqual([]);
   });
 
+  it('a passing write carries no P5/P6 claim line (a direct ward judgment makes no claim)', async () => {
+    const d = await decide(inputOf(writeEvent('src/a.txt', 'hello')), depsOf());
+    expect(d.stdout).toBe('GHOST RUN PASSED: all 1 ward cleared.');
+    expect(d.stdout).not.toContain('NOT guaranteed');
+    expect(d.stdout).not.toContain('static analysis');
+  });
+
+  it('a blocked write names the violated ward id and adds no claim line or self-protection wording', async () => {
+    const fsView = makeMemTree({ [root]: { dir: true }, [`${root}/data`]: { dir: true }, [`${root}/data/x`]: 'rows' });
+    const d = await decide(inputOf(writeEvent('data/x', 'new')), depsOf({ fsView }));
+    expect(d).toMatchObject({ kind: 'deny', exit: 2 });
+    expect(d.stderr).toContain('ward protect-data');
+    expect(d.stderr).not.toContain('NOT guaranteed');
+    expect(d.stderr).not.toContain(SELF_PROTECT_NOTICE);
+  });
+
+  it('a write blocked by a ward on a self-protected path names the ward, not the self-protection rule', async () => {
+    /** @type {import('@ghost-run/core').WardSet} */
+    const ws = { wards: [{ id: 'keep-hooks', kind: 'path', deny: ['overwrite', 'delete'], paths: ['.kiro/hooks/**'] }] };
+    const fsView = makeMemTree({
+      [root]: { dir: true },
+      [`${root}/.kiro`]: { dir: true },
+      [`${root}/.kiro/hooks`]: { dir: true },
+      [`${root}/.kiro/hooks/a.json`]: '{}',
+    });
+    const d = await decide(
+      inputOf(writeEvent('.kiro/hooks/a.json', '{}')),
+      depsOf({ fsView, loadWards: async () => ({ ok: /** @type {const} */ (true), wardSet: ws, safeCommands: [], file: wardsFile }) }),
+    );
+    expect(d).toMatchObject({ kind: 'deny', exit: 2 });
+    expect(d.stderr).toContain('ward keep-hooks');
+    expect(d.stderr).not.toContain(SELF_PROTECT_NOTICE);
+  });
+
   it('a write to a Self_Protected_Path is at least warn (never allow)', async () => {
     const d = await decide(inputOf(writeEvent('.kiro/hooks/ghost-gate.json', '{}')), depsOf());
     expect(d.kind).not.toBe('allow');

@@ -197,3 +197,17 @@ export function redactCanaries(text, canaries) {
   const maxLen = usable.reduce((m, c) => Math.max(m, c.length), 0);
   return stillLeaks(out, usable, maxLen) ? REDACTED : out;
 }
+
+/**
+ * True when the text holds a canary, raw or in one common encoding (the same
+ * test `redactCanaries` uses for its final check). Never reports which canary.
+ * @param {string} text
+ * @param {readonly Uint8Array[]} canaries
+ * @returns {boolean}
+ */
+export function containsCanary(text, canaries) {
+  const usable = canaries.filter((c) => c.length >= MIN_NEEDLE);
+  if (usable.length === 0 || text.length === 0) return false;
+  const maxLen = usable.reduce((m, c) => Math.max(m, c.length), 0);
+  return stillLeaks(text, usable, maxLen);
+}

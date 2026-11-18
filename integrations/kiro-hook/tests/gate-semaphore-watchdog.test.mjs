@@ -134,11 +134,13 @@ function dockerAvailable() {
   }
 }
 
+const hasDocker = dockerAvailable();
+
 describe('cleanupRun with real Docker', () => {
-  it.skipIf(!dockerAvailable())('removes a labelled container', async () => {
+  it.skipIf(!hasDocker)(`removes a labelled container${hasDocker ? '' : ' [skipped (docker unavailable)]'}`, async (ctx) => {
     const runId = 'gate-cleanup-test-' + process.pid;
     const image = execFileSync('docker', ['images', '-q'], { encoding: 'utf8' }).split(/\s+/).find(Boolean);
-    if (image === undefined) return;
+    if (image === undefined) return ctx.skip('skipped (docker unavailable): no local image');
     const name = 'ghost-run-gate-test-' + process.pid;
     execFileSync('docker', [
       'create', '--name', name, '--network', 'none', '--label', `${LABEL_RUN_ID}=${runId}`, image, 'true',

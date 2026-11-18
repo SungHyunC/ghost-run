@@ -15,6 +15,7 @@ import { WARN_MODE } from '../../gate-config.mjs';
  * @property {string} [graveId] Grave id used in the Seance_Link.
  * @property {string} [seanceBase] Value of GHOST_RUN_SEANCE_BASE (the caller reads the environment).
  * @property {'exit2' | 'ask'} [warnMode] Default: WARN_MODE of gate-config.mjs.
+ * @property {boolean} [noClaims] True for a direct ward judgment (a write tool): no P5/P6 claim line is added.
  */
 
 /** Longest diff summary and ask reason, in code points. */
@@ -25,6 +26,18 @@ export const MAX_DIFF_LINES = 10;
 
 /** Fixed line added in Plan_B (Requirement 9). */
 export const PLAN_B_LINE = 'P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only.';
+
+/** First line `renderMessage` writes for a warn without notices (kept here only to replace it). */
+const EMPTY_WARN_LEAD =
+  'GHOST RUN NEEDS HUMAN APPROVAL: 0 notice(s) outside the copy or needing review. First: (none).';
+
+/** Natural lead for a warn without notices in Plan B (Docker unavailable). */
+export const PLAN_B_WARN_LEAD =
+  'GHOST RUN NEEDS HUMAN APPROVAL: Docker is unavailable, so this command was not rehearsed in a sealed copy.';
+
+/** Natural lead for a warn without notices when the run did not finish cleanly. */
+export const EMPTY_WARN_NATURAL_LEAD =
+  'GHOST RUN NEEDS HUMAN APPROVAL: the rehearsal did not finish cleanly, so the result needs review.';
 
 /** Fixed line when the runner rejected or reported an internal error. */
 export const RUNNER_FAILED_LINE = 'GHOST RUN GATE ERROR: runner-failed; the tool call was not allowed.';
@@ -180,7 +193,7 @@ export function decisionFromRunResult(result, ctx) {
 
     if (effective === 'pass') {
       const claims = { p5: iso.p5Claimed === true, p6: iso.p6Claimed === true };
-      const text = renderMessage(ward, { wardCount, claims });
+      const text = renderMessage(ward, { wardCount, ...(ctx?.noClaims === true ? {} : { claims }) });
       return { kind: 'allow', exit: 0, stdout: text, stderr: '', stats: [] };
     }
 
@@ -192,7 +205,16 @@ export function decisionFromRunResult(result, ctx) {
         ? { id: ctx.graveId, ...(typeof ctx.seanceBase === 'string' ? { base: ctx.seanceBase } : {}) }
         : undefined;
     const shown = effective === ward.verdict ? ward : { ...ward, verdict: effective };
-    const lines = [renderMessage(shown, { wardCount, claims, ...(seance ? { seance } : {}) })];
+    let lead = renderMessage(shown, {
+      wardCount,
+      ...(ctx?.noClaims === true ? {} : { claims }),
+      ...(seance ? { seance } : {}),
+    });
+    // A warn without notices would read "0 notice(s) ... First: (none)". Say what happened instead.
+    if (shown.verdict === 'warn' && lead.startsWith(EMPTY_WARN_LEAD)) {
+      lead = (planB ? PLAN_B_WARN_LEAD : EMPTY_WARN_NATURAL_LEAD) + lead.slice(EMPTY_WARN_LEAD.length);
+    }
+    const lines = [lead];
     if (effective !== ward.verdict || planB) {
       for (const key of floorKeys(result)) {
         lines.push(FLOOR_TEXT[/** @type {keyof typeof FLOOR_TEXT} */ (key)]);

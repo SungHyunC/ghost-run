@@ -163,6 +163,7 @@ function effectiveVerdict(result) {
  *   result: RunResult, command: string, ghostRun: boolean, wardSet: WardSet, sessionId: string,
  *   stats: string[], stat: (kind: import('../store/stats.mjs').StatsKind) => Promise<void>,
  *   deps: GateDeps, env: Record<string, string | undefined>, nowIso: string,
+ *   noClaims?: boolean,
  * }} c
  * @returns {Promise<GateDecision>}
  */
@@ -209,6 +210,7 @@ async function conclude(c) {
     ...(needsGrave ? { graveId: `g-${result.runId}` } : {}),
     ...(typeof seanceBase === 'string' && seanceBase !== '' ? { seanceBase } : {}),
     warnMode: deps.warnMode ?? WARN_MODE,
+    ...(c.noClaims === true ? { noClaims: true } : {}),
   });
   if (eff === 'pass') await c.stat('passed');
   else if (eff === 'warn') await c.stat('warned');
@@ -339,5 +341,5 @@ async function decideInner(input, deps) {
     notices: wj.notices,
   });
   const first = sanitizeJudgeText(cls.targets[0] ?? '', MAX_ERROR_CODE_POINTS);
-  return conclude({ ...base, result, command: `${event.tool_name} ${first}`, ghostRun: false });
+  return conclude({ ...base, result, command: `${event.tool_name} ${first}`, ghostRun: false, noClaims: true });
 }

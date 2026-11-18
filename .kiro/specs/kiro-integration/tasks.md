@@ -384,48 +384,48 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
 - [x] 9. Checkpoint - Gate core complete
   - Run `pnpm -r build`, `pnpm --filter @ghost-run/kiro-hook test`, `typecheck`, and `lint`. Confirm that Properties 1 to 6, 9 to 16, and 21 pass with at least 100 runs, that the `[docker]` tests report `skipped (docker unavailable)` where Docker is absent, that the source-scan test passes, and that `ghost-gate.json` exists with `enabled: false`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. ghost-log (Post Tool Use)
-  - [~] 10.1 Implement `ghost-log.mjs` and `lib/provenance-record.mjs`
+- [x] 10. ghost-log (Post Tool Use)
+  - [x] 10.1 Implement `ghost-log.mjs` and `lib/provenance-record.mjs`
     - **Depends on task 1.7** (probe items (c) and (d): the response field name `POST_RESPONSE_FIELDS`, and whether a blocked call fires Post Tool Use), on tasks 4.3 and 4.8, and on the possession implementation (provenance format).
     - `buildProvenanceRecord(event, ctx)` returns `{ record }` or `{ skip: 'secret-path' | 'canary' | 'too-large' | 'unknown-tool' | 'outside-workspace' }` by the table of the design: `read_file` gives `kind: file` and the workspace-relative path as `source`; `web_fetch` gives `kind: web` and the URL with userinfo removed; `mcp_*` tools other than those of the `ghost-run` server give `kind: other` and `mcp:<tool_name>`; shell tools give no record; unknown tools give no record. `kind: issue` is not produced (design D5). The content comes from the response field that task 1.7 recorded (a string is used as is; an object contributes its string leaves joined with newlines, up to 1 MiB). If the host does not deliver a response, a `file` record is built by a bounded read (at most 1 MiB) of the named workspace file, and a path outside the workspace is skipped; other kinds record nothing.
     - Skips: a `file` source matching a `secrets` pattern of an `egress` ward (after `normalizePath`) is not recorded and its path is written nowhere else; content that contains a canary (raw or encoded) is not recorded; content over 1 MiB is not recorded. Each skip appends the Stats_Event `provenance-skipped`. Every Post Tool Use event of a shell tool appends the Stats_Event `executed`. If task 1.7 recorded that a blocked call fires Post Tool Use, implement the duplicate-skip rule of design D10 (skip an event whose `tool_use_id`, or `(tool_name, tool_input digest)`, matches a graveyard entry of the same session written within 60 s); otherwise do not write it.
     - The hook exits 0 after a successful record. A failure writes the failure class on STDERR, exits with a non-zero code, and claims nothing about the tool call. The Ghost_Log never reads the Provenance_Log to decide anything, never writes a Grave_Entry, and never changes the tool call.
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.10, 14.2, 12.11_
 
-  - [~] 10.2 Write the ghost-log tests [no-docker]
+  - [x] 10.2 Write the ghost-log tests [no-docker]
     - `tests/ghost-log.test.mjs`: one example per row of the tool table; the secret-path skip (the path is in no file); the canary skip in raw and encoded form; the over-1 MiB skip; the file-read fallback when the response field is absent; a record of a README with a destination hidden in Tag_Characters (built from code points) followed by the `traceRedThread` of the stored log, which finds it with `hidden` equal to `true`; the `executed` event for a shell tool; exit codes. Include a latency test that a 1 MiB record finishes within 5 s (the Median_Of_5 recorded by task 16.2).
     - _Requirements: 13.1, 13.2, 13.4, 13.5, 13.6, 13.9, 13.10, 23.4_
 
-  - [~] 10.3 Create `.kiro/hooks/ghost-log.json`
+  - [x] 10.3 Create `.kiro/hooks/ghost-log.json`
     - **Depends on task 1.7** (placement of `timeout`) and task 10.1.
     - Version `v1`, four entries, trigger `PostToolUse`, matchers `read`, `web`, `shell`, and `@mcp`, the same `command` `node integrations/kiro-hook/ghost-log.mjs`, entry-level `timeout: 10`, `enabled: true`. The script skips the tools of the `ghost-run` server itself.
     - _Requirements: 2.1, 2.2, 2.3, 2.6_
 
-- [ ] 11. contract-pbt (file save)
-  - [~] 11.1 Implement `contract-pbt.mjs`, `lib/pbt/select.mjs`, `lib/pbt/run.mjs`, and `lib/pbt/reporter.mjs`
+- [x] 11. contract-pbt (file save)
+  - [x] 11.1 Implement `contract-pbt.mjs`, `lib/pbt/select.mjs`, `lib/pbt/run.mjs`, and `lib/pbt/reporter.mjs`
     - **Depends on task 1.7** (file-event path fields) and task 4.8, on the `core` `pbt-config.ts` (`GHOST_PBT_MODE=short`), and on the `ghost-runner` test configuration (design O13: the variable that selects the 20-example on-save count for Docker-bound properties, and the 60 s whole-run limit). The hook defines no count of its own.
     - `selectSuites(relPath)` (pure): `core/...` gives `core`; `worlds/<valid-name>/...` gives `world` with the name; anything else, including `..` paths, absolute paths, and look-alike prefixes such as `corex/` and `worlds-old/`, gives `none` and the hook exits 0 silently. `runSuites(sel, deps)` spawns vitest with `process.execPath` and no shell. `core/**` runs the `core` property tests and then vitest with the root `vitest.worlds.config.ts` over `worlds/*/tests/contract.test.ts`. `worlds/<name>/**` runs that one world's contract test and the `core` judgment-engine property files. The hook sets `GHOST_PBT_MODE=short` and never starts the nightly mode.
     - `reporter.mjs` is a vitest reporter written against the vitest version in `pnpm-lock.yaml` that prints one JSON line per finished test; a test fails when the reporter hook it needs is absent. If the installed vitest cannot stream per-test results, the fallback is parsing `--reporter=verbose` lines (design O14).
     - Deadline: an internal timer at 55 s stops the child process group (SIGTERM, then SIGKILL after 2 s), prints `incomplete: deadline reached` with the names of the tests that did not finish, and never reports `passed` for them. A failing property prints on STDERR the property id, the shrunk counterexample, the violated criterion id, and the seed in the form of the `VerificationError` of `core-contract`, and exits with a non-zero code. A Docker-bound test that the runner marks skipped is printed as `skipped (docker unavailable)` and is not counted as passed. A lock file `locks/pbt.lock` holds the PID of the running child; a new save stops the older child (after checking that the owner is a process of this user and the command line matches) and takes the lock. The summary is written to `.ghost-run/pbt/last.json` and printed on STDOUT; nothing depends on STDOUT reaching the agent (probe item (e)).
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9_
 
-  - [~] 11.2 Write property test for suite selection [no-docker]
+  - [x] 11.2 Write property test for suite selection [no-docker]
     - `tests/prop-19-suite-selection.test.mjs`. Generators: workspace-relative paths of generated segments, paths with `..`, absolute paths, and look-alike prefixes. Check: `selectSuites` returns `core` exactly for paths under `core/`, `world` with the exact name exactly for `worlds/<valid-name>/...`, and `none` for everything else.
     - **Property 19: Suite selection**
     - **Validates: Requirements 15.1, 15.3**
     - _Requirements: 15.1, 15.3_
 
-  - [~] 11.3 Write the contract-pbt tests [no-docker]
+  - [x] 11.3 Write the contract-pbt tests [no-docker]
     - `tests/contract-pbt.test.mjs` with a spawn double: a failing property prints the id, counterexample, criterion, and seed and exits non-zero; the deadline test with fake timers stops the child and reports `incomplete: deadline reached` with the unfinished names and no `passed` for them; a Docker-bound test reported skipped is printed as `skipped (docker unavailable)`; a second save stops the first run and the lock holds one PID; `pbt/last.json` is written once; the hook starts no nightly mode.
     - _Requirements: 15.4, 15.5, 15.6, 15.7, 15.8, 15.9_
 
-  - [~] 11.4 Create `.kiro/hooks/contract-pbt.json`
+  - [x] 11.4 Create `.kiro/hooks/contract-pbt.json`
     - **Depends on task 1.7** (file-event trigger name and `timeout` placement).
     - Version `v1`, one entry, trigger `PostFileSave`, matcher `(^|/)(core|worlds)/` (a prefilter; the script checks the workspace-relative path with `^(core|worlds)/`), command `node integrations/kiro-hook/contract-pbt.mjs`, entry-level `timeout: 60`, `enabled: true`.
     - _Requirements: 2.1, 2.2, 2.3, 2.7_
 
-- [ ] 12. world-scaffold (file create)
-  - [~] 12.1 Implement `world-scaffold.mjs`, `lib/scaffold/templates.mjs`, `lib/scaffold/scaffold.mjs`, and the root `vitest.worlds.config.ts`
+- [x] 12. world-scaffold (file create)
+  - [x] 12.1 Implement `world-scaffold.mjs`, `lib/scaffold/templates.mjs`, `lib/scaffold/scaffold.mjs`, and the root `vitest.worlds.config.ts`
     - **Depends on task 1.7** (probe item (a): the identifier of the file-create trigger, and the file-event path fields) and task 4.8. If the probe found that no file-create trigger exists, record that in `docs/measurements.md` and implement the hook on the confirmed trigger from task 1.7.
     - No `core` change (design D7). Create the root `vitest.worlds.config.ts` (includes `worlds/*/tests/contract.test.ts`; aliases `@ghost-run/core` to `core/src/index.ts` and `@ghost-run/core/verify` to `core/verify.ts`, as `ghost-runner` does for its tests).
     - Control flow: read the file event and the path through `file-event.mjs`; match `^worlds/([^/]+)/`; validate `<name>` against `^[a-z][a-z0-9-]{0,63}$` (an invalid name prints the rule and creates nothing); reject a name or derived path that contains `..`, a path separator, or a symbolic-link component (`lstat` each component below the root); create each missing file with `open(path, 'wx')` so a race cannot overwrite. The files: `worlds/<name>/world.config.ts` (a default export `{ id, deterministic: false, wardsFile: './wards.yaml', create }` with the comment that P2 is claimed only after the world is shown to be deterministic, in the shape of `worlds/playground-shell/world.config.ts`), `worlds/<name>/tests/contract.test.ts` (an `assertWorldConfigShape(config)` of about 12 lines, then `verifyWorld` with the world, `id`, `deterministic`, the loaded `wardSet`, a placeholder `actionArb` that throws `define actionArb for <name>`, and `numRuns` from the owning spec), `worlds/<name>/wards.yaml` (`wards: []` plus a comment; parses with `parseWards`, `ok: true`), and `worlds/<name>/README.md` (the six `World<S, A>` functions, the world-contract checklist, and a claims table that lists P2 as not claimed). Files that exist are never overwritten, truncated, or deleted. The creation events of generated files are a no-op (the existence check), so the hook cannot loop.
@@ -433,31 +433,31 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Dependency note:** the `verifyWorld` entry point `@ghost-run/core/verify` and the `wards-config` parser must exist (core-contract and wards-config implementations).
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 16.11_
 
-  - [~] 12.2 Write property test for scaffold idempotence [no-docker]
+  - [x] 12.2 Write property test for scaffold idempotence [no-docker]
     - `tests/prop-07-scaffold-idempotence.test.mjs` (KI-P7). Generators: world names (valid and invalid, including `..`, separators, upper case, 65 characters) and sets of pre-existing files under `worlds/<name>/` (generated content), in a temporary folder. Check: running the scaffold twice gives the same file set and the same bytes as running it once; no existing file changes; an invalid name, a `..`, a separator, or a symbolic-link component creates no file; the generated `wards.yaml` parses with `ok: true` through `parseWards`; the generated `contract.test.ts` and `world.config.ts` contain the `deterministic: false` default.
     - **Property 7: Scaffold idempotence**
     - **Validates: Requirements 16.1, 16.4, 16.5, 16.6, 16.7**
     - _Requirements: 16.1, 16.4, 16.5, 16.6, 16.7_
 
-  - [~] 12.3 Create `.kiro/hooks/world-scaffold.json`
+  - [x] 12.3 Create `.kiro/hooks/world-scaffold.json`
     - **Depends on task 1.7.** Write this file only with the file-create trigger identifier that the probe confirmed. If the probe found no create trigger, do not write the file, record the reason in `docs/measurements.md`, and report it in the final checkpoint.
     - Version `v1`, one entry, trigger `FILE_CREATE_TRIGGER` (candidate `PostFileCreate`), matcher `(^|/)worlds/[^/]+/` (a prefilter; the script is the authority), command `node integrations/kiro-hook/world-scaffold.mjs`, entry-level `timeout: 10`, `enabled: true`.
     - _Requirements: 2.1, 2.2, 2.3, 2.7_
 
-- [ ] 13. blacklight-steering (file save)
-  - [~] 13.1 Implement `blacklight-steering.mjs` and the `pnpm blacklight` script
+- [x] 13. blacklight-steering (file save)
+  - [x] 13.1 Implement `blacklight-steering.mjs` and the `pnpm blacklight` script
     - **Depends on task 1.7** (file-event path fields) and task 4.8, and on the possession implementation (`scanFiles` from `@ghost-run/core/possession-node`, `formatReport`, `exitCodeFor`).
     - Flow: extract the path (workspace-relative, no `..`); require `^\.kiro/`; call `scanFiles([path], { markdown: 'by-extension' })` (the exact signature is owned by `possession`; verify it against the installed code); print `formatReport(report)` on STDOUT and, when the outcome is not `clean`, on STDERR; write it to `.ghost-run/blacklight/last.txt`; exit with `exitCodeFor(outcome)` (0, 1, 2; a report and not a block). The hook reads the one saved file, never writes, renames, or deletes any scanned file, and finishes within 5 s. The output holds only printable ASCII and line breaks.
     - Add the `blacklight` script to `package.json` (`pnpm blacklight`) that scans the whole `.kiro/` folder through the same functions.
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.7_
 
-  - [~] 13.2 Write property test that the blacklight hook reports and does not write [no-docker]
+  - [x] 13.2 Write property test that the blacklight hook reports and does not write [no-docker]
     - `tests/prop-20-blacklight-hook.test.mjs`. Generators: file contents with and without hidden code points built from escapes, in markdown and non-markdown files, in a temporary workspace folder. Check: the exit code equals `exitCodeFor(outcome)`, `outcome` is `findings` exactly when the scanner reports a finding, and the file bytes are unchanged afterwards.
     - **Property 20: Blacklight hook reports and does not write**
     - **Validates: Requirements 17.1, 17.2, 17.3, 17.4**
     - _Requirements: 17.1, 17.2, 17.3, 17.4_
 
-  - [~] 13.3 Create `.kiro/hooks/blacklight-steering.json` and the example test
+  - [x] 13.3 Create `.kiro/hooks/blacklight-steering.json` and the example test
     - **Depends on task 1.7** (file-event trigger name and `timeout` placement).
     - Version `v1`, one entry, trigger `PostFileSave`, matcher `(^|/)\.kiro/` (the script checks `^\.kiro/`), command `node integrations/kiro-hook/blacklight-steering.mjs`, entry-level `timeout: 10`, `enabled: true`.
     - `tests/blacklight-hook.test.mjs`: the outcome `findings` for a `.kiro` markdown file with a hidden character built from an escape, exit code 1, and the report on STDOUT and STDERR; the outcome `clean` for an ordinary file; a path outside `.kiro/` is ignored.
