@@ -327,23 +327,30 @@ const dockerAvailable =
   docker(['version', '--format', '{{.Server.Version}}']).ok && docker(['image', 'ls', '-q', 'ghost-run/box']).out.trim() !== '';
 if (!dockerAvailable) console.info('ghost_run docker test: skipped (docker unavailable)');
 
-const labeled = () => docker(['ps', '-a', '-q', '--filter', `label=${LABEL_RUN_ID}`]).out.split(/\s+/).filter(Boolean);
-const volumes = () => docker(['volume', 'ls', '-q']).out.split(/\s+/).filter(Boolean);
-const containersBefore = new Set(dockerAvailable ? labeled() : []);
-const volumesBefore = new Set(dockerAvailable ? volumes() : []);
+// Matched by the run id of this test's own run: another test file may run the box at the same time.
+const labeled = (/** @type {string} */ runId) =>
+  docker(['ps', '-a', '-q', '--filter', `label=${LABEL_RUN_ID}=${runId}`]).out.split(/\s+/).filter(Boolean);
+const volumes = (/** @type {string} */ runId) =>
+  docker(['volume', 'ls', '-q', '--filter', `label=${LABEL_RUN_ID}=${runId}`]).out.split(/\s+/).filter(Boolean);
+/** @type {Set<string>} */
+const seenRunIds = new Set();
 
 afterAll(() => {
   if (!dockerAvailable) return;
-  const mine = labeled().filter((id) => !containersBefore.has(id));
-  if (mine.length > 0) docker(['rm', '-f', '-v', ...mine]);
-  const vols = volumes().filter((v) => !volumesBefore.has(v) && v.includes('ghost-run'));
-  if (vols.length > 0) docker(['volume', 'rm', '-f', ...vols]);
+  for (const runId of seenRunIds) {
+    const mine = labeled(runId);
+    if (mine.length > 0) docker(['rm', '-f', '-v', ...mine]);
+    const vols = volumes(runId);
+    if (vols.length > 0) docker(['volume', 'rm', '-f', ...vols]);
+  }
 });
 
 describe('ghost_run with the real box', () => {
   it.skipIf(!dockerAvailable)('blocks a delete of a protected path, leaves reality unchanged, and leaves no container or volume', async () => {
     const client = await connect(root);
     const r = await call(client, 'ghost_run', { plan: [{ command: 'rm -rf data' }] });
+    const runId = String(r.structuredContent?.runId);
+    seenRunIds.add(runId);
     expect(r.isError).toBeUndefined();
     expect(r.structuredContent).toMatchObject({ verdict: 'block', rehearsed: true, isolation: { mode: 'docker-box', p1Claimed: true } });
     expect(r.structuredContent.graveId).toBe(`g-${r.structuredContent.runId}`);
@@ -351,8 +358,8 @@ describe('ghost_run with the real box', () => {
     const diff = await call(client, 'ghost_diff', { id: r.structuredContent.runId });
     expect(diff.structuredContent.diffSummary).toContain('deleted');
     await client.close();
-    expect(labeled().filter((id) => !containersBefore.has(id))).toEqual([]);
-    expect(volumes().filter((v) => !volumesBefore.has(v))).toEqual([]);
+    expect(labeled(runId)).toEqual([]);
+    expect(volumes(runId)).toEqual([]);
   });
 
   it.skipIf(dockerAvailable)('skipped (docker unavailable)', () => {

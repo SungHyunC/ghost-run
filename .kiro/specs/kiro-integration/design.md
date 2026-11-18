@@ -792,6 +792,8 @@ Testing without a live Kiro host: `decide(input, deps)` takes injected `runPlan`
 | Timing: Median_Of_5 and maximum for Safe_Command (1.0 s), Write_Judgment (1.0 s), gate overhead above the runner (1.0 s), ghost-log (5 s); recorded in `docs/devlog.md` | measurement task | Requirements 4.8, 6.9, 8.11, 13.9 |
 | Host tasks: exit-code behavior in IDE and CLI, `ask` test (trusted and untrusted), install of the power in a second project, approvals per day after 2026-11-22 | manual, recorded in `docs/devlog.md` | Requirements 2.9, 10.3, 10.11, 20.8 |
 
+Real-box tests and parallel runs (fix of 2026-11-18). Tests that start the Docker box count containers and volumes that carry the `ghost-run.run-id` label. Two package runs at the same time (`pnpm -r test`) started containers of each other and broke those counts. Two changes: (1) `integrations/kiro-hook` and `integrations/mcp` each have `tests/global-box-lock.mjs` (identical files), a vitest `globalSetup` that takes a machine-wide lock directory in the OS temp folder when a Docker daemon answers, so only one of the two packages runs its tests at a time; a lock whose owner process is gone, or older than one hour, is taken over. (2) The two real-box tests in `integrations/mcp` (`ghost-tools`, `power-bundle-box`) check only the run id of their own run (`label=ghost-run.run-id=<id>` for containers and volumes) instead of diffing the global lists, because files of one package still run in parallel. `tests/hygiene.test.mjs` also scans `.kiro/agents`.
+
 Unit tests stay few because the properties cover input space; unit tests pin fixed strings (the Plan B lines, the pass line, the floor lines), integration points (SDK stdio, vitest reporter), and error paths.
 
 ---

@@ -15,6 +15,7 @@ export default defineConfig({
   },
   test: {
     include: ['tests/**/*.test.mjs'],
+    globalSetup: ['tests/global-box-lock.mjs'],
     testTimeout: 60_000,
     passWithNoTests: true,
   },

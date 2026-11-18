@@ -14,7 +14,7 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.ghost-run']);
 
 /** The folders of this feature that the possession scan covers (Requirement 22 criterion 2). */
-const SCAN_ROOTS = ['integrations', '.kiro/hooks', '.kiro/specs/kiro-integration'];
+const SCAN_ROOTS = ['integrations', '.kiro/hooks', '.kiro/agents', '.kiro/specs/kiro-integration'];
 /** The new-world template is part of this feature (task: _new-world). It is added when it exists. */
 const TEMPLATE_ROOT = '.kiro/specs/_new-world';
 

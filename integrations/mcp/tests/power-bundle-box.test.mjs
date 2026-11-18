@@ -24,18 +24,27 @@ const dockerAvailable =
   docker(['version', '--format', '{{.Server.Version}}']).ok && docker(['image', 'ls', '-q', 'ghost-run/box']).out.trim() !== '';
 if (!dockerAvailable) console.info('power bundle box test: skipped (docker unavailable)');
 
-const labeled = () => docker(['ps', '-a', '-q', '--filter', 'label=ghost-run.run-id']).out.split(/\s+/).filter(Boolean);
-const volumes = () => docker(['volume', 'ls', '-q']).out.split(/\s+/).filter(Boolean);
-const containersBefore = new Set(dockerAvailable ? labeled() : []);
-const volumesBefore = new Set(dockerAvailable ? volumes() : []);
+// Containers and volumes are matched by the run id of this test's own run. Another test file of this
+// package (or, without the box lock, another package) may run the box at the same time, so a diff of the
+// global lists would count its containers.
+const labeled = (/** @type {string} */ runId) =>
+  docker(['ps', '-a', '-q', '--filter', `label=ghost-run.run-id=${runId}`]).out.split(/\s+/).filter(Boolean);
+const volumes = (/** @type {string} */ runId) =>
+  docker(['volume', 'ls', '-q', '--filter', `label=ghost-run.run-id=${runId}`]).out.split(/\s+/).filter(Boolean);
+/** @type {Set<string>} */
+const seenRunIds = new Set();
 /** @type {string[]} */
 const dirs = [];
 
 afterAll(async () => {
   while (dirs.length > 0) await rm(String(dirs.pop()), { recursive: true, force: true });
   if (!dockerAvailable) return;
-  const mine = labeled().filter((id) => !containersBefore.has(id));
-  if (mine.length > 0) docker(['rm', '-f', '-v', ...mine]);
+  for (const runId of seenRunIds) {
+    const mine = labeled(runId);
+    if (mine.length > 0) docker(['rm', '-f', '-v', ...mine]);
+    const vols = volumes(runId);
+    if (vols.length > 0) docker(['volume', 'rm', '-f', ...vols]);
+  }
 });
 
 describe('power bundle with the real box', () => {
@@ -56,15 +65,20 @@ describe('power bundle with the real box', () => {
     });
     const client = new Client({ name: 'bundle-box-test', version: '0.0.0' });
     await client.connect(transport);
+    /** @type {string | undefined} */
+    let runId;
     try {
       const r = /** @type {any} */ (await client.callTool({ name: 'ghost_run', arguments: { plan: [{ command: 'ls' }] } }));
+      runId = r.structuredContent?.runId;
+      if (typeof runId === 'string') seenRunIds.add(runId);
       expect(r.isError).toBeUndefined();
       expect(r.structuredContent).toMatchObject({ rehearsed: true, isolation: { mode: 'docker-box', p1Claimed: true } });
     } finally {
       await client.close();
     }
-    expect(labeled().filter((id) => !containersBefore.has(id))).toEqual([]);
-    expect(volumes().filter((v) => !volumesBefore.has(v))).toEqual([]);
+    expect(typeof runId).toBe('string');
+    expect(labeled(String(runId))).toEqual([]);
+    expect(volumes(String(runId))).toEqual([]);
   }, 90_000);
 
   it.skipIf(dockerAvailable)('skipped (docker unavailable)', () => {
