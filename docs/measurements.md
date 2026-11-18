@@ -203,7 +203,30 @@ Not measured by this task: the 3D overlay frame time (task 17.3), the real app p
 
 ## 3D overlay frame time with 8 and 20 ghost arms
 
-unmeasured
+Measured by task 17.3 of the ghost-hand spec (Requirement 13.10). Result: the target is met.
+
+- Date: 2026-11-18, 21:07 KST (`date`: Wed Nov 18 21:06:45 KST 2026 before the run).
+- Chrome: 157.0.8103.79, `--headless=new`, real time, no `--virtual-time-budget`. Command: `node tests/browser/run-chrome.mjs --frame-only` (from `apps/ghost-hand`).
+- Machine: MacBookPro17,1, Apple M1, macOS.
+- Load average (1, 5, 15 min): start 4.69, 8.52, 11.96; end 4.76, 8.35, 11.84. The machine was not idle: system daemons (CacheDelete, mobileassetd, cloudd, WindowServer) and the Orca app used CPU during the run. No other build or test job of this repository ran.
+- GL: `ANGLE (Apple, ANGLE Metal Renderer: Apple M1)`, so the GPU path was used, not software GL. Canvas 800x450 CSS px, devicePixelRatio 1.
+- Scene: the real `createOverlayRenderer` with the view model of a real ghost run of `REFERENCE_PLAN` (231 frames), the base arm plus 8 or 20 ghost arms.
+
+| Ghost arms | Median frame interval (rAF delta) | p95 / max of the interval | Median render call (setFrame + `gl.finish()`) | p95 / max render call |
+|---|---|---|---|---|
+| 8 | 16.7 ms | 16.7 ms / 16.8 ms | 0.7 ms | 1.1 ms / 1.4 ms |
+| 20 | 16.7 ms | 16.7 ms / 16.8 ms | 0.6 ms | 1.7 ms / 2.1 ms |
+
+Requirement 13.10: median at most 33 ms with 8 arms. Measured 16.7 ms (frame interval) and 0.7 ms (render call). Met.
+
+How frames were timed: 30 warm-up frames, then 300 samples. Each sample is one `requestAnimationFrame` callback that calls `setFrame(i)` (pose update and `WebGLRenderer.render`) and then `gl.finish()`. The renderer ran in its static (reduced-motion) mode so its own animation loop did not compete with the timed loop. Two numbers per sample: the difference between consecutive rAF timestamps, and `performance.now()` around the render call.
+
+Caveats:
+- The frame interval of 16.7 ms is the 60 Hz vsync period. It shows that Chrome delivered a frame every vsync with no dropped frame in 300 samples, but it cannot show how much headroom there is below 16.7 ms.
+- The render-call time is main-thread time. In Chrome, `gl.finish()` is a call into the GPU process and may not wait for the GPU to finish drawing, so 0.6 to 0.7 ms is a lower bound on the GPU cost, not a proof of it.
+- Headless Chrome has no visible window. Compositing and presentation cost of a real window is not included.
+- One run per arm count, on one machine at a non-idle load. No claim beyond Chrome 157 on the Apple M1 Reference_Machine.
+- The first draw of a run, shader compilation, and the ghost run itself (executed before timing) are not part of the frame time.
 
 ## Wards task 4.1 baseline
 
@@ -852,3 +875,15 @@ Date: 2026-11-18. Node v20.20.2, Apple M1.
 - Build output (apps/ghost-hand): dist 12,452 KiB total; wasm 11,201,302 bytes; main js 1,351,888 bytes; worker js 144,750 bytes; css 10,875 bytes; dist-node/cli.js 521,060 bytes.
 - CLI exit codes: first plan 2, revised plan 0, validate 0, usage error 64, invalid plan 65.
 - `vite preview` (via its JS API on a local port): `/` 200, wasm asset 200 (application/wasm).
+
+Playwright: not needed (2026-11-18). The installed Chrome headless command line with node:http ran the harness in task 17.1, so no Playwright dependency was added.
+
+## world-smith agent: live call
+
+Date: 2026-11-18. kiro-cli 3.4.0.
+
+- `kiro-cli agent validate --path .kiro/agents/world-smith.json` exits 0; `kiro-cli agent list` shows `world-smith` as a Workspace agent in the V3 format.
+- `kiro-cli chat --agent world-smith --trust-workspace --no-interactive "<read-only question>"` fails with `Mode 'world-smith' not found`. Adding `--agent-engine v3` loads the agent. Without that flag, `--no-interactive` selects the V2 engine, which does not see the V3-format file.
+- With `--trust-workspace --agent-engine v3` the agent answered the question: the eight steps, the hook-or-command fallback, and the limits, in the order of its prompt. It named the four resource files (template README, world-contract, structure, security steering), so the resources were loaded into its context. It also listed the workspace rules `tech` and `product`, which come from the workspace and not from this file. `git status` was the same before and after the call; no file was changed.
+- Not checked: that an allowed `corepack pnpm --filter ... test` command runs without a prompt, that a non-listed command asks, and that `excludedTools` blocks the Crew MCP server. The `match` syntax is taken from the official example.
+- `integrations/kiro-hook`: 47 files, 609 tests passed; typecheck and lint exit 0.

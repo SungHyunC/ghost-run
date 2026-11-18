@@ -108,6 +108,10 @@ Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and on
 - **State.** Every hook file in `.kiro/hooks/` is disabled except the probe hook. The gate is switched on by a human after a checklist. Facts measured only in the Kiro CLI are marked "pending (task 1.4)" for the IDE.
 - Supported on macOS and Linux. Windows is unverified.
 
+### Build a world with the `world-smith` agent
+
+`.kiro/agents/world-smith.json` is a workspace custom agent that follows the steps above for you. Trust the workspace, then start it in the CLI with `kiro-cli chat --agent world-smith` (the IDE lists it in the agent picker). The file uses the V3 format, so a non-interactive call needs `--agent-engine v3`. It asks for the world name, copies the template, writes the world spec one file at a time for your approval, implements the six functions in `worlds/<world-name>/`, registers the world, and runs the `verifyWorld` gate and the wards. It uses the `world-scaffold` and `contract-pbt` hooks when they are enabled and runs the same work by command when they are not. It runs only `corepack pnpm --filter ... test`, `typecheck`, and `lint` without asking, uses no Kiro Crew tools, Powers, or MCP servers from your config, leaves the model on Auto, and changes nothing outside the new spec folder and `worlds/<world-name>/`. It does not replace the gate: deletes and other commands still need your approval or `ghost-gate`.
+
 ### Start a new world from the template
 
 `.kiro/specs/_new-world/` is a fill-in template for the three spec files of a new world (the six `World<S, A>` functions, the `verifyWorld` registration gate, the registration file, the wards, the claim-scope table, and the hygiene rules). It is not a real spec and has no `.config.kiro`.
