@@ -122,7 +122,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Dependency note:** process-level tests need `pnpm -r build` (see Cross-spec dependencies).
     - _Requirements: 1.1, 1.2, 1.3, 1.5, 22.5_
 
-  - [~] 2.2 Add the `integrations/` import bans to the other packages and verify that lint fails on a violation [no-docker]
+  - [x] 2.2 Add the `integrations/` import bans to the other packages and verify that lint fails on a violation [no-docker]
     - **Isolated task: must not run at the same time as any other task that edits `core/`, in this spec or in another spec.** Before starting, confirm that no other core-editing task is in progress.
     - Scope of this round: `core`, `ghost-runner`, `ui`, `wards-config`, `worlds/playground-shell`, and `apps/ghost-shell`. For each, check the existing `no-restricted-imports` rule and add only what is missing: the pattern `**/integrations/**` and the package names `@ghost-run/kiro-hook` and `@ghost-run/mcp`. If `ui/eslint.config.mjs` does not exist yet (the `ui-kit` scaffold has not run), skip `ui`, record the gap in the test file header, and report it in the final checkpoint.
     - Create `integrations/kiro-hook/tests/import-ban.test.mjs`: it covers these six packages. For each package that has an ESLint configuration, write a temporary file under that package's `src/` that imports `@ghost-run/kiro-hook`, run ESLint in a child process (one per probe), assert a `no-restricted-imports` error, and remove the file in `finally`. The `ui` case reports `skipped (ui package missing)` when absent.

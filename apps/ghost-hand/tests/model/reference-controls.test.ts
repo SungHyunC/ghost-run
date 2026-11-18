@@ -19,7 +19,7 @@ import {
   p2CheckLines,
   referenceOverlayInput,
 } from '../../src/reference';
-import { P2_CHECK_SCOPE_TEXT, P2_MATCH_TEXT, P2_MISMATCH_TEXT, P2_TEXT_ENABLED } from '../../src/texts';
+import { P2_CHECK_SCOPE_TEXT, P2_MATCH_TEXT, P2_MISMATCH_TEXT, P2_SCOPE_TEXT, P2_TEXT_ENABLED } from '../../src/texts';
 
 const worldDir = new URL('../../../../worlds/drawer-arm/', import.meta.url);
 const plansDir = new URL('../../plans/', import.meta.url);
@@ -52,13 +52,13 @@ describe('deepEqual and p2CheckLines', () => {
 
   it('renders P2 lines only when enabled, the self-check passed, and a comparison exists', () => {
     const ok = { state: 'ok', hash: 'ab', restoreOk: true } as const;
-    expect(P2_TEXT_ENABLED).toBe(false);
+    expect(P2_TEXT_ENABLED).toBe(true);
     expect(p2CheckLines(false, ok, true)).toBeNull();
     expect(p2CheckLines(true, { state: 'pending' }, true)).toBeNull();
     expect(p2CheckLines(true, { state: 'failed', reason: 'not-reproduced' }, true)).toBeNull();
     expect(p2CheckLines(true, ok, null)).toBeNull();
-    expect(p2CheckLines(true, ok, true)).toEqual([P2_MATCH_TEXT, P2_CHECK_SCOPE_TEXT]);
-    expect(p2CheckLines(true, ok, false)).toEqual([P2_MISMATCH_TEXT, P2_CHECK_SCOPE_TEXT]);
+    expect(p2CheckLines(true, ok, true)).toEqual([P2_MATCH_TEXT, P2_CHECK_SCOPE_TEXT, P2_SCOPE_TEXT]);
+    expect(p2CheckLines(true, ok, false)).toEqual([P2_MISMATCH_TEXT, P2_CHECK_SCOPE_TEXT, P2_SCOPE_TEXT]);
   });
 });
 

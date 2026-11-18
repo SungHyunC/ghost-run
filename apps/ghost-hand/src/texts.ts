@@ -4,9 +4,9 @@
 
 /**
  * Build switch for every P2 text (the P2 claim sentence and the P2 check lines).
- * Stays false until the world-contract steering update (S5) has landed.
+ * Enabled: the world-contract steering carries the P2 scope wording (task 3.2).
  */
-export const P2_TEXT_ENABLED = false;
+export const P2_TEXT_ENABLED = true;
 
 /** Req 2.8: engine start failure (element with role `alert`). */
 export const ENGINE_START_FAILURE_TEXT = 'The physics engine could not start in this browser.';

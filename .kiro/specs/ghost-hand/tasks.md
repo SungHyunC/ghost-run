@@ -428,50 +428,50 @@ Decisions reflected in this plan:
 - [x] 16. Checkpoint - app assembled
   - Run after all tasks of waves 14 to 17 are complete. Run the full test suites of both packages, `typecheck`, `lint`, `build`, and `test:dist`. Confirm: the Node entry point exit codes work; the hygiene scan is `clean`; no P2 text appears in the page; the fallback texts appear while PR-1, PR-2, or PR-3 is missing; the notices file is in `dist`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 17. Browser harness and unmeasured timings
-  - [ ] 17.1 Implement the Chrome harness without a new dependency
+- [x] 17. Browser harness and unmeasured timings
+  - [x] 17.1 Implement the Chrome harness without a new dependency
     - `apps/ghost-hand/tests/browser/run-chrome.mjs`: builds a harness page with Vite, serves it with `node:http`, starts the installed Chrome headless through its command line, and receives a JSON result by `POST`. Record `Chrome --version` first; if it is not Chrome 157, record the version and make no Tested_Environments claim from this run. Checks: the Trajectory_Hash of `REFERENCE_PLAN` on the main thread and in a Web Worker equals `golden.json` (a differing hash fails the suite; the hash is never edited), and only then set `recordedWith.chrome` in `golden.json`; Property 5 and Property 10 with real Workers; the page ready time (target 3.0 s) and the Ghost_Run time with 8 variants (target 2.0 s) and with 20 (target 5.0 s, when enabled); the memory growth over repeated runs and the WebAssembly heap size after run 40; and a cross-environment script that compares the Node hash and the two Chrome hashes with `golden.json`. If the harness cannot run on the Reference_Machine, record `harness: failed` with the reason in `docs/measurements.md` and report it for task 17.2.
     - Append the results to the `Browser timings` section of `docs/measurements.md` with the date, Chrome version, and machine. A run outside the Tested_Environments is recorded as additional evidence only.
     - _Requirements: 2.6, 3.14, 8.8, 10.7, 17.7, 17.9, 17.10_
 
-  - [ ] 17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)
+  - [x] 17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)
     - **Run only if task 17.1 recorded `harness: failed`.** If the harness worked, append `Playwright: not needed` to `docs/measurements.md` and mark this task done with no other change. Otherwise add `playwright` (Apache-2.0) as a development dependency of `apps/ghost-hand/`, driving the installed Chrome through the `channel` option and with no browser download (`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`), re-implement the same checks of task 17.1 on top of it, and add a README table row with the exact version and the license read from the installed package on the day it was added.
     - _Requirements: 1.3, 1.12, 17.7_
 
-  - [ ] 17.3 Measure the 3D overlay frame time
+  - [x] 17.3 Measure the 3D overlay frame time
     - **The frame time is unmeasured until this task runs.** Add a frame-time page to the harness and measure, on the Reference_Machine in Chrome, the median frame time of the Ghost_Overlay with 8 Ghost_Arms and with 20 Ghost_Arms. The requirement is a median of at most 33 ms with 8 arms. If it is not met, record the measured values and the cause and stop for the user's decision; do not change the target. Fill the `3D overlay frame time with 8 and 20 ghost arms` section of `docs/measurements.md` with the medians, the date, the Chrome version, and the machine. A test fails if the section still says `unmeasured`.
     - _Requirements: 13.10_
 
-- [ ] 18. Claim scopes, disclosures, and README
-  - [ ] 18.1 Write the claim-scope tests
+- [x] 18. Claim scopes, disclosures, and README
+  - [x] 18.1 Write the claim-scope tests
     - `apps/ghost-hand/tests/model/claim-scope.test.ts`: the page texts of Requirement 10 are exactly the pinned strings of `texts.ts`; P1 is claimed only from equal fingerprints; P5 and P6 are never claimed; no Docker or physical-arm claim appears; the P8 scope sentence names Node.js 20.20.2 and Chrome 157 on an Apple M1 Mac and is visible; P2 and P8 claim text is absent when the self-check failed or is pending; no P2 text at all while `P2_TEXT_ENABLED` is false; the recorded and scripted plan-origin texts and the reference-simulation line appear where required; no text uses the words `sealed` or `isolated`; no test file contains a measured pass count.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.8, 10.9, 10.10, 10.11, 11.6, 12.12_
 
-  - [ ] 18.2 Switch the P2 text on after the steering update
+  - [x] 18.2 Switch the P2 text on after the steering update
     - **Blocked until task 3.2 has landed and the user confirmed it.** Check that `.kiro/steering/world-contract.md` carries the P2 scope wording of task 3.2. If it does not, stop and report; do not flip anything. If it does, set `P2_TEXT_ENABLED = true` in `texts.ts` (the only edit of that file after task 6.2), render the P2 check line in the page with the scope wording "On the same build and in the tested environments, the ghost run's result equals the reference simulation run's result. Not claimed for physical hardware.", and update the claim-scope tests of task 18.1 to the enabled state. The P2 text is still hidden when the self-check failed.
     - _Requirements: 10.6, 10.9_
 
-  - [ ] 18.3 Check the landed state of PR-1, PR-2, and PR-3
+  - [x] 18.3 Check the landed state of PR-1, PR-2, and PR-3
     - **Depends on PR-1, PR-2, and PR-3 (other specs).** Run the capability probes and compare them with `tests/capabilities.expected.json`. For each prerequisite that has landed: update the expected file, run the post-landing legs of the prerequisite tests (they now report `passed`, not `skipped`), confirm the fallback note or status text for it no longer appears, and only then allow the README to claim the dependent behavior (joint-limit and self-collision ward for PR-1, the message without the lowered-claim line for PR-2, "not applicable" for P5 and P6 for PR-3). For each prerequisite that has not landed: leave the fallback texts in place and the README without the dependent claim. List the result per prerequisite in the final checkpoint report.
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 8.6, 9.9_
 
-  - [ ] 18.4 Write the Ghost Hand README section
+  - [x] 18.4 Write the Ghost Hand README section
     - Edit the README: the claim table of the Introduction (P1 per run for the in-memory page world, P2 for the base ghost against the reference execution within the Tested_Environments and only with the scope wording of task 3.2 and only if task 18.2 ran, P3 for all worlds, P4 as evidence from `core`, P8 within the Tested_Environments only, P5 and P6 not claimed); that the "real" arm is a reference simulation executed by the same engine and no physical robot is involved; that plan revision in the page is a replay of a recorded plan or a scripted plan and which one the shipped revised plan is (the `origin` of `plans/revised.plan.json`), plus the recording procedure of design D18 (run `ghost-hand-run`, read the block message, write the revised Plan_File with `revisionOf` and `recordedWith`, run `validate`, run again); the Tested_Environments, that Firefox, Safari, Linux, and x86 machines were not tested, and that the Determinism_Self_Check is a measurement in one browser and not a proof; macOS and Linux supported, Windows unverified, Chrome 157 the only tested browser; the single-thread build and Web Workers and that no special response headers are needed; the MuJoCo pitfalls (explicit model memory size, views that become empty when the WebAssembly memory grows, the deviation of the package README from the actual API, and `.delete()` of every wrapped object); the licenses (complete the table of task 4.3 and add the notices file and the asset sources); the `deterministic` flag is limited to the Tested_Environments; the variants the shipped seed produces and the measured numbers of the demo runs copied from `docs/measurements.md`, each labelled with the date and environment.
     - Claim the joint-limit and self-collision ward, the message without the lowered-claim line, or the "not applicable" banner only where task 18.3 reported the prerequisite as landed. Claim the possession scenario only if task 21.1 was done.
     - _Requirements: 1.9, 1.10, 1.12, 2.7, 3.13, 12.12, 15.9, 16.8, 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8_
 
-  - [ ] 18.5 Write the README consistency tests
+  - [x] 18.5 Write the README consistency tests
     - `apps/ghost-hand/tests/scan/readme.test.ts`: the Ghost Hand README section contains the claim table rows, the reference-simulation statement, the recorded-or-scripted statement that matches the `origin` of `plans/revised.plan.json`, the Tested_Environments and not-tested list, the pitfalls list, the three license facts (`@mujoco/mujoco` 4.0.1 Apache-2.0 with no LICENSE file in the tarball, `three` 0.187.0 MIT, `@types/three` 0.187.0 MIT) and the Playwright row if and only if `playwright` is in a `package.json`; the README states no P2 claim unless `P2_TEXT_ENABLED` is true; it states the joint-limit ward only when the probe says `jointSelfWard`; every measured number in it appears with a date; no word `sealed` or `isolated` is used for the page.
     - _Requirements: 1.10, 12.12, 19.1, 19.2, 19.3, 19.4, 19.6, 19.8_
 
-- [ ] 19. Cross-package lint bans (isolated task)
-  - [ ] 19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`
+- [x] 19. Cross-package lint bans (isolated task)
+  - [x] 19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`
     - **Isolated task. It must NOT run at the same time as any other task that edits `core/`, `ui/`, or `wards-config/` in this spec or in another spec.** Precondition: the other specs have finished their changes to those packages, their test suites pass, and no other core-editing task is in progress.
     - Add the patterns `@ghost-run/drawer-arm`, `@ghost-run/drawer-arm/**`, `@ghost-run/ghost-hand`, `@ghost-run/ghost-hand/**`, `**/worlds/drawer-arm/**`, and `**/apps/ghost-hand/**` to the `no-restricted-imports` rule of `core/eslint.config.mjs`, `ui/eslint.config.mjs`, and `wards-config/eslint.config.mjs`, next to the existing entries. Change nothing else. Add one lint fixture test per package (a temporary file that imports `@ghost-run/drawer-arm` or `@ghost-run/ghost-hand`, ESLint run programmatically, a `no-restricted-imports` error asserted, the file removed in `finally`).
     - Run the `core`, `ui`, and `wards-config` suites and `pnpm lint`. Confirm `core/package.json` is unchanged.
     - _Requirements: 1.6_
 
-- [ ] 20. Final checkpoint
+- [x] 20. Final checkpoint
   - Run `pnpm --filter @ghost-run/drawer-arm test`, `pnpm --filter @ghost-run/ghost-hand test`, `typecheck`, `lint`, `build`, `test:dist`, and `pnpm lint` for the workspace. Confirm: every property of the design (1 to 23) has a test with at least 100 examples in a Short_Run (engine-bound properties use `shortRuns`, with the written rationale if it is below 100); the Nightly_Run command was run at least once for the world contract tests, or the reason it was not is recorded in `docs/measurements.md`; `docs/measurements.md` has no `unmeasured` section left; the possession scan of the three folders is `clean`; the README license table lists every dependency with its license; the Ghost Hand claims match the landed prerequisites and the steering state; no task wrote to `docs/devlog.md`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 21. Optional: forbidden-contact red thread (last task)

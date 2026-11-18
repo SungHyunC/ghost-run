@@ -887,3 +887,20 @@ Date: 2026-11-18. kiro-cli 3.4.0.
 - With `--trust-workspace --agent-engine v3` the agent answered the question: the eight steps, the hook-or-command fallback, and the limits, in the order of its prompt. It named the four resource files (template README, world-contract, structure, security steering), so the resources were loaded into its context. It also listed the workspace rules `tech` and `product`, which come from the workspace and not from this file. `git status` was the same before and after the call; no file was changed.
 - Not checked: that an allowed `corepack pnpm --filter ... test` command runs without a prompt, that a non-listed command asks, and that `excludedTools` blocks the Crew MCP server. The `match` syntax is taken from the official example.
 - `integrations/kiro-hook`: 47 files, 609 tests passed; typecheck and lint exit 0.
+
+## Prerequisite landing state (18.3)
+
+Date: 2026-11-18. Probes: `probeCapabilities()` in apps/ghost-hand/src/capabilities.ts, run through tests/model/capabilities.test.ts and tests/model/prerequisites.test.ts (30 tests passed, none skipped).
+
+- PR-1 (joint-limit and self-collision ward): landed. Probe `jointSelfWard` = true; the real WardEngine returns `block` for both `jointLimitExceeded` and `selfCollisionOccurred`.
+- PR-2 (message without the lowered-claim line): landed. Probe `claimsOptional` = true; `renderMessage` with no `claims` returns text without the lowered-claim line.
+- PR-3 (P5 and P6 shown as "not applicable"): landed. Probe `bannerNotApplicable` = true; the Candle banner renders "not applicable" for P5 and P6.
+- tests/capabilities.expected.json already held true for all three; no change was needed. The fallback notices (joint-limit inactive, provisional wording) are not built when the probes are true.
+
+## Ghost Hand final checkpoint (task 20)
+
+Date: 2026-11-18. Node v20.20.2, Apple M1.
+
+- Nightly_Run of the world contract tests (`worlds/drawer-arm/tests/contract.test.ts`, `GHOST_PBT_MODE=nightly`): not run. Reason: that test calls `verifyWorld` with `numRuns` fixed at `shortRuns` (35) in both modes, so a Nightly_Run gives the same count, and it is time-guarded. Scaling it to 10,000 examples would take about 0.17 s per example, so about 30 minutes per call and two calls, with no time limit. The ghost-shell nightly `verifyWorld` already ran out of memory at a similar size (see "ghost-shell final checkpoint (task 18)"). The engine-bound properties (5, 10, 11, 12, 13 engine leg, 14 to 18, 20, 22) use `ENGINE_RUNS` or `RUNS`, which is `NUM_RUNS` (10,000) in nightly mode, at about 0.7 s worst case per example (hours per property); they were not run in nightly mode either.
+- Nightly_Run of the pure properties in `worlds/drawer-arm` (`p02-variant-config-roundtrip`, `p03-variant-ranges`, `variant`): ran, 3 files and 22 tests passed in 1.4 s.
+- The sentence in "Ghost Hand checkpoint 13" that the "Demo scenario numbers" section still reads `unmeasured` is out of date: that section now holds the measured numbers. No section is left marked `unmeasured`; the word remains only in explanatory text (the file introduction and the checkpoint 13 note).

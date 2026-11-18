@@ -14,7 +14,7 @@ export interface ClaimsPanelProps {
 }
 
 /**
- * Claim and scope texts. No P2 text is rendered here: the P2 flag is off (texts.ts, P2_TEXT_ENABLED).
+ * Claim and scope texts. No P2 text is rendered here: the P2 check lines live in ReferencePanel (texts.ts, P2_TEXT_ENABLED).
  */
 export function ClaimsPanel({ notices, unknownContactNames, selfCheck, p1Failed }: ClaimsPanelProps) {
   const check = selfCheckText(selfCheck);

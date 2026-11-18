@@ -26,8 +26,8 @@ describe('texts.ts', () => {
     for (const t of allFixedTexts()) expect(t).not.toMatch(hidden);
   });
 
-  it('keeps the P2 text switched off', () => {
-    expect(texts.P2_TEXT_ENABLED).toBe(false);
+  it('keeps the P2 text switched on', () => {
+    expect(texts.P2_TEXT_ENABLED).toBe(true);
   });
 
   it('formats the dynamic texts as required', () => {

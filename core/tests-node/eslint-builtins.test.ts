@@ -123,7 +123,8 @@ describe('ESLint built-in import bans', () => {
   describe('real files', () => {
     it('lint with zero errors', async () => {
       const results = await eslint.lintFiles(['src', 'possession-node.ts']);
-      const errors = results.flatMap((r) => r.messages.map((m) => `${r.filePath}: ${m.ruleId} ${m.message}`));
+      // Skip the temporary files that the import-ban fixture tests write into src/ in parallel.
+      const errors = results.filter((r) => !/__[\w-]+-probe\.ts$/.test(r.filePath)).flatMap((r) => r.messages.map((m) => `${r.filePath}: ${m.ruleId} ${m.message}`));
       expect(results.length).toBeGreaterThan(10);
       expect(errors).toEqual([]);
     });

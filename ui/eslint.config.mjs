@@ -12,6 +12,7 @@ const FORBIDDEN_IMPORTS = [
   { group: ['three', 'three/*', '@mujoco/mujoco', '@mujoco/mujoco/*'], message: '3D libraries are out of scope for ui.' },
   { group: ['**/core/**', '@ghost-run/core/*'], message: 'Import @ghost-run/core through its public entry only.' },
   { group: ['@ghost-run/playground-shell', '@ghost-run/playground-shell/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-shell/**', '**/worlds/playground-shell/**', '**/apps/ghost-shell/**'], message: 'ui must not import the playground packages.' },
+  { group: ['@ghost-run/drawer-arm', '@ghost-run/drawer-arm/**', '@ghost-run/ghost-hand', '@ghost-run/ghost-hand/**', '**/worlds/drawer-arm/**', '**/apps/ghost-hand/**'], message: 'ui must not import the Ghost Hand packages.' },
 ];
 
 // Declared once and spread into every block that sets no-restricted-syntax:

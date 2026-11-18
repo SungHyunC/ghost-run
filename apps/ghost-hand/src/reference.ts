@@ -4,7 +4,7 @@ import { STATIC_LAYOUT, WORLD_CONFIG } from '@ghost-run/drawer-arm';
 import type { GhostHandState, ReferenceResult } from '@ghost-run/drawer-arm';
 import type { OverlayInput } from './pipeline/types';
 import type { SelfCheckResult } from './self-check';
-import { P2_CHECK_SCOPE_TEXT, P2_MATCH_TEXT, P2_MISMATCH_TEXT } from './texts';
+import { P2_CHECK_SCOPE_TEXT, P2_MATCH_TEXT, P2_MISMATCH_TEXT, P2_SCOPE_TEXT } from './texts';
 
 const FRAMES_PER_SECOND = 1 / (WORLD_CONFIG.timeStepS * WORLD_CONFIG.frameStrideSteps);
 
@@ -54,7 +54,7 @@ export function p2CheckLines(
   match: boolean | null,
 ): readonly string[] | null {
   if (!enabled || selfCheck.state !== 'ok' || match === null) return null;
-  return [match ? P2_MATCH_TEXT : P2_MISMATCH_TEXT, P2_CHECK_SCOPE_TEXT];
+  return [match ? P2_MATCH_TEXT : P2_MISMATCH_TEXT, P2_CHECK_SCOPE_TEXT, P2_SCOPE_TEXT];
 }
 
 /** Overlay input that animates the reference execution (one arm, no variants), or null without frames. */

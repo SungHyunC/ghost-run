@@ -1392,6 +1392,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000662684
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144114
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003149216
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003523363
       }
     ],
     "17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)": [
@@ -1409,6 +1424,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000662696
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144119
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003528894
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003545726
       }
     ],
     "17.3 Measure the 3D overlay frame time": [
@@ -1426,6 +1456,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000663030
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144128
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003546006
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003735727
       }
     ],
     "18.1 Write the claim-scope tests": [
@@ -1443,6 +1488,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000663534
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144130
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003743230
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004075366
       }
     ],
     "18.2 Switch the P2 text on after the steering update": [
@@ -1460,6 +1520,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000664330
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144133
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004081117
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004188516
       }
     ],
     "18.3 Check the landed state of PR-1, PR-2, and PR-3": [
@@ -1477,6 +1552,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000665132
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144135
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004081302
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004188534
       }
     ],
     "18.4 Write the Ghost Hand README section": [
@@ -1494,6 +1584,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000665684
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144137
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004191663
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004296395
       }
     ],
     "18.5 Write the README consistency tests": [
@@ -1511,6 +1616,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000666200
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144139
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004299510
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004371650
       }
     ],
     "19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`": [
@@ -1528,6 +1648,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000667087
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144142
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003743441
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004075378
       }
     ],
     "20. Final checkpoint": [
@@ -1545,6 +1680,21 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795000667449
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003144144
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004371960
+      },
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004603150
       }
     ],
     "7. Engine, controller, and world": [
@@ -1594,6 +1744,27 @@
         "executionId": "93f75133-6306-4dde-b480-13ef6252d82d",
         "chatSessionId": "sess_b9ff5824-3beb-43da-9c66-854e9e0d151f",
         "timestamp": 1795002793355
+      }
+    ],
+    "17. Browser harness and unmeasured timings": [
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795003735733
+      }
+    ],
+    "19. Cross-package lint bans (isolated task)": [
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004075380
+      }
+    ],
+    "18. Claim scopes, disclosures, and README": [
+      {
+        "executionId": "bc2aa332-6a7a-423a-99b3-3df20e9596ed",
+        "chatSessionId": "sess_6614d983-546f-42c0-9283-7342b9ec9564",
+        "timestamp": 1795004371654
       }
     ]
   }

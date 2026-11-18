@@ -6,7 +6,7 @@ const BAN_COMMON = [
   { group: ['@ghost-run/ui', '@ghost-run/ui/*'], message: 'The world must not import the UI kit.' },
   { group: ['@ghost-run/wards-config', '@ghost-run/wards-config/*'], message: 'The world must not import wards-config.' },
   { group: ['@ghost-run/ghost-runner', '@ghost-run/ghost-runner/*'], message: 'The world must not import ghost-runner.' },
-  { group: ['**/apps/**', '**/integrations/**'], message: 'The world must not import apps or integrations.' },
+  { group: ['**/apps/**', '**/integrations/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: 'The world must not import apps or integrations.' },
   { group: ['@ghost-run/core/*'], message: 'Import core only through its public entry point.' },
 ];
 const MUJOCO = { group: ['@mujoco/mujoco', '@mujoco/mujoco/*'], message: '@mujoco/mujoco may only be imported inside src/engine/.' };

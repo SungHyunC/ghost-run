@@ -14,6 +14,7 @@ const WORKSPACE_PATTERNS = [
   { group: ['**/ghost-runner/**', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**'], message: 'core must not import ghost-runner.' },
   { group: ['**/wards-config/**', '@ghost-run/wards-config', '@ghost-run/wards-config/**'], message: 'core must not import wards-config.' },
   { group: ['@ghost-run/playground-shell', '@ghost-run/playground-shell/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-shell/**', '**/worlds/playground-shell/**', '**/apps/ghost-shell/**'], message: 'core must not import the playground packages.' },
+  { group: ['@ghost-run/drawer-arm', '@ghost-run/drawer-arm/**', '@ghost-run/ghost-hand', '@ghost-run/ghost-hand/**', '**/worlds/drawer-arm/**', '**/apps/ghost-hand/**'], message: 'core must not import the Ghost Hand packages.' },
 ];
 const NODE_PREFIX_PATTERN = { group: ['node:*'], message: 'core/src must not import Node built-ins.' };
 // Exact specifier match: './fs.js' is never matched.

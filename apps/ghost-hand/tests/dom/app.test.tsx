@@ -633,15 +633,14 @@ describe('Reference arm (Requirements 10.6, 10.10, 12.7)', () => {
     expect(within(section()).getByText(REFERENCE_SIMULATION_TEXT)).toBeTruthy();
   });
 
-  it('shows no P2 text while P2_TEXT_ENABLED is false', async () => {
-    expect(P2_TEXT_ENABLED).toBe(false);
+  it('shows the P2 check lines after the reference execution while P2_TEXT_ENABLED is true', async () => {
+    expect(P2_TEXT_ENABLED).toBe(true);
     render(<App services={services()} />);
     await runScenario(SLOW);
     fireEvent.click(button('Execute on reference arm'));
     await screen.findByText(/Final drawer displacement/);
-    for (const text of [P2_MATCH_TEXT, P2_MISMATCH_TEXT, P2_CHECK_SCOPE_TEXT, P2_SCOPE_TEXT]) {
-      expect(screen.queryByText(text)).toBeNull();
-    }
-    expect(document.body.textContent).not.toMatch(/\bP2\b/);
+    expect(screen.queryByText(P2_MATCH_TEXT) ?? screen.queryByText(P2_MISMATCH_TEXT)).not.toBeNull();
+    expect(screen.queryByText(P2_CHECK_SCOPE_TEXT)).not.toBeNull();
+    expect(screen.queryByText(P2_SCOPE_TEXT)).not.toBeNull();
   });
 });

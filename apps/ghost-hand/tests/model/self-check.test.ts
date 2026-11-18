@@ -120,8 +120,8 @@ describe('selfCheckText', () => {
     },
   );
 
-  it('produces no P2 text for any self-check state while P2 text is disabled', () => {
-    expect(P2_TEXT_ENABLED).toBe(false);
+  it('produces no P2 text in the self-check lines for any state', () => {
+    expect(P2_TEXT_ENABLED).toBe(true);
     const states: SelfCheckResult[] = [
       { state: 'pending' },
       { state: 'failed', reason: 'not-reproduced' },
