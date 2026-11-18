@@ -143,7 +143,7 @@ Task 7.7. Script: `worlds/drawer-arm/scripts/measure-budget.mjs` (run `node scri
 | 3 | 99.7 | 99.3 | 699.1 | 33.44 |
 
 - Median worst example 694.2 ms (spread 691.1 to 699.1 ms, about 1.2 percent). Median step cost 33.44 microseconds per step, including monitors and the controller.
-- `shortRuns = clamp(floor(25000 / 694.2), 20, 100) = 36`. 20 examples (13.9 s) fit the 25 s allowance, so design D14 stays as written. The value is written to `worlds/drawer-arm/tests/pbt-budget.json`. It is below 100; the Nightly_Run uses the full count of Requirement 18.
+- `shortRuns = clamp(floor(25000 / 694.2), 20, 100) = 36` at this first measurement; the current value is 35 after the scene tuning (task 11.5, 700.4 ms worst example). 20 examples (13.9 s) fit the 25 s allowance, so design D14 stays as written. The value is written to `worlds/drawer-arm/tests/pbt-budget.json`. It is below 100; the Nightly_Run uses the full count of Requirement 18.
 - `verifyWorld` on the Base_World with `numRuns: 36`, the `gentle-hands` ward set, a random action generator over the declared ranges, and the `createReferenceTestAdapter` adapter: 6.86 s in one call (random plans are shorter than the worst plan, so this is below the 36 x 0.694 s = 25 s bound). The world is still registered `deterministic: false` in `world.config.ts`; the call was made with `deterministic: true` in the options, because the option is independent of the registration flag.
 - Not measured here: the call on a sampled-variant world (task 12 repeats the timing there) and the value after the scene is tuned (task 11.5 re-checks it).
 
@@ -155,11 +155,51 @@ Task 7.7. Script: `worlds/drawer-arm/scripts/measure-budget.mjs` (run `node scri
 
 ## Demo scenario numbers
 
-unmeasured
+Measured in task 11.5 (section "Ghost Hand demo plans, tuned scene, and re-measured budget", 2026-11-18, seed 42, 8 variants):
+
+- `fast pull`: verdict block (ward `gentle-hands`); 1 variant success:false, 7 success:true; max contact force 27.53 N (limit 30 N); Base_World drawer opening 0.1216 m (target 0.12 m).
+- `slow pull, strong grip`: verdict pass; 0 variants success:false, 8 success:true; max contact force 28.53 N; Base_World drawer opening 0.1300 m.
+- `shortRuns` 35; worst example 700.4 ms; `verifyWorld` with 35 examples 6040 ms.
 
 ## Browser timings
 
-unmeasured
+Task 17.1. Harness: `apps/ghost-hand/tests/browser/run-chrome.mjs` (run `node tests/browser/run-chrome.mjs --out result.json` from `apps/ghost-hand`). `harness: ok`. It builds the harness page (`tests/browser/harness/`) with Vite into a temporary folder, serves it with `node:http` on localhost, starts the installed Chrome headless (`--headless=new`) from the command line, and receives the JSON result by `POST`. Real time is measured; `--virtual-time-budget` is not used. No dependency was added. The cross-environment comparison is `tests/browser/cross-env.mjs` (the Node leg runs `scripts/node-hash.measure.ts` through vitest).
+
+- Date: 2026-11-18. Chrome version (`Chrome --version`): `Google Chrome 157.0.8103.79` (Chrome 157, so this run is inside the Tested_Environments). Node v20.20.2. Machine: Apple M1 Mac (MacBookPro17,1, 8 cores, 16 GB), macOS.
+- Machine load (`os.loadavg()`, 1, 5, and 15 minute averages): at the start `1.69 9.67 13.31`, at the end `2.81 9.31 13.08`. The 5 and 15 minute averages still carry load from before the run.
+- What the page measures: the harness page, not the app (design D17). "Page ready" is the time from the start of the navigation until the MuJoCo_Module is initialized and one Base_World has produced its first snapshot, on a warm local static server (same Chrome profile for the three loads, so the second and third loads read the cache). The Ghost_Run is `runGhostHand` with `REFERENCE_PLAN` (about 4.1 simulated seconds) through the real executor selection (a pool of real Web Workers, size `clamp(hardwareConcurrency - 1, 1, 4)` = 4), workers started and terminated per run, so every timed run includes the worker start and the wasm load of each worker.
+
+Hashes (Trajectory_Hash of `REFERENCE_PLAN`, each context run twice on fresh Base_World instances):
+
+| Context | Hash equal to `golden.json` |
+|---|---|
+| Node v20.20.2 | yes (2 of 2) |
+| Chrome 157 main thread | yes (2 of 2) |
+| Chrome 157 Web Worker | yes (2 of 2) |
+
+Golden hash `2cf8283de204eae50fbc4db3660e57d6b19b799cbc557ad31af56ba14e191d9f` was not edited. After the three contexts matched, `recordedWith.chrome` was set to `157.0.8103.79` in `worlds/drawer-arm/tests/golden.json`.
+
+Property checks with real Workers (fast-check inside the page, small run counts because each run starts real workers):
+
+- Property 5 (variant determinism and partition independence): passed. Real pool of 1 to 4 Workers against the inline executor, equal Variant_Params, Trajectory_Hashes, indices, Variant_Results, and `GhostRun`. 10 executions (2 fixed examples including 20 variants on 4 workers, plus 8 generated).
+- Property 10 (a ghost run leaves reality unchanged): passed. Pooled runs with 3 workers, fingerprints before and after equal, and a second run with `Date.now` and `Math.random` throwing equal to the first. 8 executions (2 fixed, plus 6 generated).
+
+Timings:
+
+| Check | Target | Measured | Result |
+|---|---|---|---|
+| Page ready, 3 loads | 3.0 s | 368 ms (first load), 241 ms, 281 ms (median of the warm loads 261 ms) | within target |
+| Ghost_Run, 8 variants, 5 runs | 2.0 s | first 313 ms, median 308 ms, max 313 ms | within target |
+| Ghost_Run, 20 variants, 3 runs | 5.0 s | first 553 ms, median 518 ms, max 553 ms | within target |
+
+Memory:
+
+- WebAssembly heap (byte length of the module heap, `heapBytes()`): 40 pipeline runs on one reference world (`runGhostHand`, 2 inline variants each): 76,218,368 bytes after run 1, 76,218,368 after run 40, maximum over all 40 runs 76,218,368. 40 variant jobs on one long-lived world (what a worker does): 76,218,368 after run 1 and after run 40, maximum equal. Requirement 3.14 and 17.9 hold in this run.
+- JavaScript heap of the main thread (`performance.memory.usedJSHeapSize`, with `--enable-precise-memory-info` and a forced GC before each sample), pipeline runs 1, 10, 20, 30, 40: 30.9 MB, 9.4 MB, 12.3 MB, 34.9 MB, 34.8 MB. This is not monotone and run 1 includes the startup state, so it shows no steady growth, but it also does not settle; the samples are few and a single GC can move them. Pooled runs with 8 variants (workers started and terminated per run): 9.7 MB after run 2, 19.0 MB after run 12 (worker heaps are not visible from the main thread). Treat the JavaScript heap numbers as indicative only. The requirement-bound number is the WebAssembly heap above.
+
+Second run (same date, Chrome 157.0.8103.79, final script that serves on `localhost`; load at start `18.43 12.40 13.98`, at end `15.51 12.25 13.87`, higher because lint and tests had just run): all hashes equal again, Property 5 and 10 passed, ready loads 416, 248, and 291 ms, Ghost_Run with 8 variants 436, 758, 414, 379, and 362 ms (median 414 ms), with 20 variants 557, 543, and 560 ms (median 557 ms), WebAssembly heap 76,218,368 bytes after run 1 and after run 40. `golden.json` was left as it was. Run-to-run spread under load is about 35 percent for 8 variants; both runs are far inside the targets.
+
+Not measured by this task: the 3D overlay frame time (task 17.3), the real app page ready time (the harness page ready time above stands in for it; the app page also runs the Determinism_Self_Check and draws the UI), Firefox, Safari, Linux, and x86.
 
 ## 3D overlay frame time with 8 and 20 ghost arms
 
@@ -749,3 +789,66 @@ The "Demo scenario numbers" section above still reads `unmeasured`; the demo num
 - Real check: the rebuilt bundle was started as a child process with the repository root as working directory (no `GHOST_RUN_BOX_DIR`), and one `ghost_run` call with the plan `ls` returned `isolation.mode` `docker-box`, `p1Claimed`, `p5Claimed`, and `p6Claimed` all true, `rehearsed` true, exit codes `[0]`, verdict `pass` (3 wards). Afterwards `docker ps -a` and `docker volume ls` listed no Ghost Run container or volume.
 - Bundle hygiene: a search of the bundle for `/Users/`, `/home/`, and the local user name found no match.
 - Test runs: ghost-runner unit project 58 files, 294 tests (includes `box-dir-lookup.test.ts`); core 555 passed, 1 skipped; MCP 58 passed, 2 skipped (the byte comparison of the bundle passes).
+
+## kiro-integration task 16.2: hook timing (2026-11-18, Node v20.20.2, vitest 3.2.7, Apple M1, macOS, Docker 29.8.2)
+
+Method. `node integrations/kiro-hook/tests/measure/measure-timing.mjs` (not a test; run by hand after `pnpm -r build`). Each hook runs as a real child process with one Hook_Event on STDIN, in a temporary workspace outside the repository (Ghost Shell wards file, a small project, a real SQLite file, one canary `.env`). Every sample is one warm-up run (not counted) and then five runs; the table shows the median of the five and the maximum. The runner column calls `runPlan` in process on the same workspace and plan, so the overhead is the difference of two medians and includes the Node start of the gate process, the wards load, and the Ghost_Store writes. A negative or very different value is measurement noise, not a gain.
+
+Runs per sample: 5 after one warm-up run. Node v20.20.2, platform darwin/arm64.
+
+| Measurement | Median_Of_5 (s) | Maximum (s) | Budget (s) | Result | Exit codes |
+|---|---|---|---|---|---|
+| Gate, Safe_Command `ls` | 0.104 | 0.123 | 1.0 | within | 0,0,0,0,0  |
+| Gate, Write_Judgment (`fs_write`, ordinary path) | 0.092 | 0.113 | 1.0 | within | 0,0,0,0,0  |
+| ghost-log, record of 1,000,000 characters | 0.131 | 0.141 | 5.0 | within | 0,0,0,0,0  |
+
+### Gate overhead above the runner (five Ghost Shell scenarios)
+
+| Scenario | Gate median (s) | Gate max (s) | Runner median (s) | Runner max (s) | Overhead of medians (s) | Budget 1.0 s | Gate exit codes |
+|---|---|---|---|---|---|---|---|
+| 1 DROP TABLE | 1.764 | 2.048 | 0.938 | 1.294 | 0.826 | within | 2,2,2,2,2 |
+| 2 rm data | 0.765 | 0.854 | 0.529 | 0.597 | 0.236 | within | 2,2,2,2,2 |
+| 3 secret egress | 1.051 | 1.265 | 0.548 | 0.601 | 0.503 | within | 2,2,2,2,2 |
+| 4 npm test | 0.789 | 0.833 | 0.623 | 0.713 | 0.166 | within | 0,0,0,0,0 |
+| 5 npm run clean | 0.788 | 0.910 | 0.791 | 1.098 | -0.003 | within | 2,2,2,2,2 |
+
+Containers with the ghost-run label left after the run: none
+
+Stats table of the measured session (`formatStatsTable`):
+
+```
+Commands seen          42
+Commands ghosted       30
+Commands blocked       18
+Commands warned        0
+Commands safe-skipped  6
+Commands executed      0
+```
+
+Notes on the numbers.
+
+- Every budget was met in this run: the gate for a Safe_Command and for a Write_Judgment (budget 1.0 s) took 0.104 s and 0.092 s at the median, the ghost-log record of 1,000,000 characters (budget 5 s) took 0.131 s, and the largest overhead of the gate above the runner was 0.826 s (budget 1.0 s).
+- The Docker-bound overhead is noisy. Scenario 1 (`DROP TABLE`) took 1.764 s at the gate median in this run. In the first of two earlier runs of the same script on this machine the overhead of medians stayed between -0.17 s and 0.40 s (scenario 1: 0.13 s). The cause of the slow scenario 1 in this run was not investigated. All three runs are within the 1.0 s budget; if a later run exceeds it, report it here and do not hide it.
+- The stats table counts the warm-up runs too (7 samples of 6 gate runs each = 42 seen; 30 ghosted = the five scenarios; 6 safe-skipped = `ls`). The `blocked` count (18) is lower than the 24 blocked runs expected from four blocking scenarios times six runs; this was not investigated (the Ghost_Store may drop repeated identical records). Do not read the table as a count of calls.
+- No container or volume with the ghost-run label was left after the runs.
+
+Other hook runs recorded earlier in this file (single or few runs, not the Median_Of_5): `blacklight-steering` 61 to 75 ms, `world-scaffold` about 80 ms, `contract-pbt` 7.8 s (a world file) and 28.5 s (a `core` file), both under the 55 s internal deadline and the 60 s host limit.
+
+Short_Run of the package `integrations/kiro-hook` (`corepack pnpm exec vitest --run`, 100 runs per property, per-file timeout 60 s):
+
+| Condition | Wall clock | Result |
+|---|---|---|
+| Docker hidden from `PATH` (run 1) | 11.66 s | 44 files passed, 1 skipped (`[docker]` file, `skipped (docker unavailable)`); 575 tests passed, 4 skipped |
+| Docker hidden from `PATH` (run 2) | 11.72 s | same |
+| Docker available | 25.40 s | 45 files, 579 tests passed |
+
+The Short_Run without Docker (budget 60 s) is within the budget at about 12 s, and with Docker at about 25 s. Budgets exceeded: none. Follow-up: none; recheck the scenario overhead on the next machine or Docker upgrade.
+
+## Ghost Hand checkpoint: app assembled (task 16)
+
+Date: 2026-11-18. Node v20.20.2, Apple M1.
+
+- Tests: worlds/drawer-arm 23 files, 141 tests; apps/ghost-hand 32 files, 239 tests; `test:dist` 15 tests. Typecheck and lint exit 0 in both packages.
+- Build output (apps/ghost-hand): dist 12,452 KiB total; wasm 11,201,302 bytes; main js 1,351,888 bytes; worker js 144,750 bytes; css 10,875 bytes; dist-node/cli.js 521,060 bytes.
+- CLI exit codes: first plan 2, revised plan 0, validate 0, usage error 64, invalid plan 65.
+- `vite preview` (via its JS API on a local port): `/` 200, wasm asset 200 (application/wasm).

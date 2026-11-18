@@ -94,6 +94,28 @@ Only the behavior criterion catches these cases: a network attempt to a host tha
 
 The Mirror world hides the value of any field whose key name contains `secret`, `token`, `password`, `passwd`, `apikey`, `api_key`, `authorization`, `cookie`, `credential`, `private_key`, or `session`, ignoring letter case, and shows `[hidden: secret-like field]` instead. This is a heuristic. It matches key names by case-insensitive containment and never inspects values. It can miss a secret under an innocent key name (for example `pwd`, or `privateKey`, which does not contain `private_key`), and it can hide a harmless value (for example `session_count`). It does not detect a secret typed into a command string or any other displayed text. The producer of the changes and scenes remains responsible for redaction.
 
+## Kiro integration
+
+Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and one power. Details, claims, and limits are in the READMEs of each part:
+
+- [`integrations/kiro-hook/`](integrations/kiro-hook/README.md): the hooks `ghost-gate` (Pre Tool Use), `ghost-log` (Post Tool Use), `contract-pbt`, `world-scaffold`, and `blacklight-steering`. The note on [cross-call exfiltration](integrations/kiro-hook/docs/cross-call-exfiltration.md) states what the records can and cannot do.
+- [`integrations/mcp/`](integrations/mcp/README.md): the advisory MCP server `ghost-run` with the tools `ghost_run`, `ghost_diff`, `ghost_trace`, `wards_check`, and `blacklight`.
+- [`integrations/power/`](integrations/power/README.md): the Kiro power (plugin file, skill, and a bundled server). It gives the advisory tools and the skill, not the enforcing gate.
+
+- **P1 is claimed per run, never as a property of a hook.** The gate and `ghost_run` repeat the flags `p1Claimed`, `p5Claimed`, and `p6Claimed` of the run they report, and claim nothing when the flag is `false`.
+- **Plan B.** Without Docker and the built box image the run is static analysis only. P1, P5, and P6 are not claimed, the message says `P1 isolation is NOT guaranteed`, and the verdict is at least `warn`.
+- **A seatbelt, not full isolation.** A `pass` is not an approval of the real command, text analysis does not catch every injection, and the hooks are not tamper-resistant against a process with the developer's privileges. P6 holds within one tool call only.
+- **State.** Every hook file in `.kiro/hooks/` is disabled except the probe hook. The gate is switched on by a human after a checklist. Facts measured only in the Kiro CLI are marked "pending (task 1.4)" for the IDE.
+- Supported on macOS and Linux. Windows is unverified.
+
+### Start a new world from the template
+
+`.kiro/specs/_new-world/` is a fill-in template for the three spec files of a new world (the six `World<S, A>` functions, the `verifyWorld` registration gate, the registration file, the wards, the claim-scope table, and the hygiene rules). It is not a real spec and has no `.config.kiro`.
+
+1. Copy it: `cp -r .kiro/specs/_new-world .kiro/specs/<world-name>`.
+2. Remove the copied `README.md`, replace every `<placeholder>`, `Fill in:` line, and `TBD`, and delete the "Template notice" block of each file.
+3. Ask Kiro to run the tasks of the copy. When the agent creates a file in `worlds/<world-name>/`, the `world-scaffold` hook adds `world.config.ts`, `tests/contract.test.ts`, `wards.yaml`, and `README.md`; each save in `worlds/` then runs the `contract-pbt` hook within its 60 s limit (both hooks must be enabled).
+
 ## Dependencies and data
 
 | Name | Version | Use | License |

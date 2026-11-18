@@ -543,12 +543,12 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Real check: the bundle started with the repository root as working directory gave `ghost_run` isolation mode `docker-box`, verdict `pass`, and no leftover container or volume (recorded in `docs/measurements.md`, section "Box folder lookup and bundled ghost_run"). MCP suite: 58 passed, 2 skipped before the two new test files; typecheck and lint clean.
     - _Requirements: 19.13, 19.14, 19.15, 19.16_
 
-- [ ] 16. Repository hygiene and timing measurement
-  - [~] 16.1 Write the repository hygiene tests [no-docker]
+- [x] 16. Repository hygiene and timing measurement
+  - [x] 16.1 Write the repository hygiene tests [no-docker]
     - `tests/hygiene.test.mjs`: run the Scan_Entry_Point of `possession` over `integrations/` (excluding `node_modules` and `dist`), `.kiro/hooks/`, and `.kiro/specs/kiro-integration/` and expect `clean`; require that all five hook files (`ghost-gate.json`, `ghost-log.json`, `contract-pbt.json`, `world-scaffold.json`, `blacklight-steering.json`) exist and pass the format test (if task 12.3 recorded that no create trigger exists, require the recorded reason instead of the file); scan fixtures, tests, and docs of this feature for hosts and require only reserved domains, `registry.npmjs.org`, or `192.0.2.x`, and only canary values as secrets; require that no file of this feature contains a literal hidden character or the HTML comment opener; require that after a full test run `git status --porcelain` shows no `.ghost-run/` content and no stray file; require that the files of this feature are ASCII text in English.
     - _Requirements: 22.1, 22.2, 22.3, 22.4, 22.5, 22.6, 2.1_
 
-  - [~] 16.2 Measure the gate, ghost-log, and Short_Run timings and record them in `docs/measurements.md`
+  - [x] 16.2 Measure the gate, ghost-log, and Short_Run timings and record them in `docs/measurements.md`
     - Measurement task on the Reference_Machine (Apple M1): record the Median_Of_5 and the maximum of the gate latency for a Safe_Command (budget 1.0 s), a Write_Judgment (1.0 s), the gate overhead above the runner for the five Ghost Shell scenarios (1.0 s above the runner budget; Docker needed, otherwise write `skipped (docker unavailable)`), a ghost-log record of 1 MiB (5 s), and the whole Short_Run of the package (60 s without Docker). Append one entry to `docs/measurements.md` with the numbers, the versions of Node and vitest, and a statement of any budget that was exceeded and the follow-up. A budget that is exceeded is reported and not hidden. Print the stats table produced by `formatStatsTable` for the session as an example.
     - _Requirements: 23.6, 4.8, 6.9, 8.11, 13.9_
 
@@ -578,27 +578,27 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Save a screen capture or a log of the three observations (server listed with the five tools, keyword activates the skill, `wards_check` answer) for the Kiro usage report. Append the result and the displayed tool names to `docs/measurements.md`, and write the displayed names into `integrations/power/README.md` (design O3).
     - _Requirements: 20.6, 20.8_
 
-- [ ] 18. Documentation
-  - [~] 18.1 Write the Hook_Package README: claims, host facts, and limits
+- [x] 18. Documentation
+  - [x] 18.1 Write the Hook_Package README: claims, host facts, and limits
     - Create or extend `integrations/kiro-hook/README.md` with: the claims and non-claims table of the Introduction of `requirements.md` and the "Claims by component" table of the design, stating that P1 is claimed per run from `isolation.p1Claimed` and never as a property of the hook, that P2 is not claimed, and that P5 and P6 follow the scopes of the design; the statement that the gate is a seatbelt and not a full isolation tool, that text analysis does not catch every injection, and that compression, encryption, and DNS exfiltration are caught by the action criterion only; that the gate, the Ghost_Log, and the MCP server run on the host and are not tamper-resistant against a process with the developer's privileges; that `pass` is not an approval of the real command and the real run can differ from the ghost run; the Safe_List and that a Safe_Command is not rehearsed; the Plan_B limitation, the macOS and Linux support scope, and Windows unverified; that one tool call is one Plan, so a secret read in one call and a network attempt in a later call are not linked; the host facts of Requirement 2 criterion 8 (file events fire only for files the agent changed; the IDE runs hooks only for a trusted folder after a window reload; a hook created during a session applies from the next session; in the CLI the `write` matcher also covers `delete_file`; the file-event matcher is a regular expression over the path); the `world-scaffold` and `contract-pbt` host notes; the `blacklight-steering` limits (agent saves only, HTML comments in code fences, no invisible character outside the possession categories); the experiment B note (measurement only); the only supported disable path (`enabled: false` in the hook entry) and the build-on-fresh-clone note; the timeout behavior (a long command is denied with the timeout line and the human runs it outside the gate); the self-protection scope and the dogfooding consequence; that tools outside the matchers are outside the gate; the failure before Node starts (no `node` binary, exit 127, the CLI lets the call through); and the `WARN_MODE` outcome of task 17.3 in plain words (a `warn` is a block in `exit2` mode).
     - The fixed gate strings quoted in the README never contain `sealed` or `isolated` (Requirement 11 criterion 6). No hidden character, no real host.
     - **Depends on tasks 17.2 and 17.3.**
     - _Requirements: 2.8, 4.9, 5.11, 5.12, 8.5, 8.6, 8.7, 9.5, 10.7, 10.8, 10.9, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 13.11, 15.10, 16.10, 17.6, 21.5_
 
-  - [~] 18.2 Write the cross-call exfiltration note
+  - [x] 18.2 Write the cross-call exfiltration note
     - Create `integrations/kiro-hook/docs/cross-call-exfiltration.md` and link it from the Hook_Package README. It states what the Ghost_Log records CAN do: after the fact, `ghost_trace` and the Grave_Entry `links` can show that text read in an earlier call (for example a README with a destination hidden in Tag_Characters) contains the destination of a later blocked or warned action, and the stats and the log support a human review. It states what they CANNOT do: block, warn on, or change the verdict of a later call; a secret read in call A and sent in call B are two separate Plans, the gate rehearses B alone, and the P6 behavior criterion does not fire. It states that the gate never reads the Provenance_Log to decide (a source-scan test enforces it), that the red thread is built after the verdict is fixed, that it finds literal occurrences only, and that P6 stays "within one tool call".
     - _Requirements: 13.11, 13.13, 5.11_
 
-  - [~] 18.3 Write the MCP server README
+  - [x] 18.3 Write the MCP server README
     - Create `integrations/mcp/README.md`: the five tools and their inputs and results, the advisory notice (the tools help an agent that chooses to call them, only the Ghost_Gate enforces a verdict, and a `ghost_run` call does not make a command safe), the claims per tool (the `ghost_run` flags are copied from `isolation`; `wards_check` claims nothing; `ghost_trace` `not-found` does not mean safe), the result cap of 64 KiB, the path confinement rule, and how to run the server and its tests.
     - _Requirements: 18.8, 19.2, 19.6, 19.8, 19.10_
 
-  - [~] 18.4 Update the repository README: dependency license table, claims, and links
+  - [x] 18.4 Update the repository README: dependency license table, claims, and links
     - In the root `README.md`: verify that the dependency table lists every new dependency of this feature with name, version, and license (`@modelcontextprotocol/sdk` 1.32.2 MIT, `zod` 4.6.7 MIT, `esbuild` MIT, and any other added by this plan; read each license from the installed package), add a short section for Kiro integration that links the Hook_Package, MCP, and power READMEs and repeats the per-run claim rule (P1 only when `isolation.p1Claimed`), the Plan_B statement, and the Windows note. Keep every claim inside its declared scope.
     - **Depends on tasks 14.1, 15.2, and 18.1.**
     - _Requirements: 1.8, 11.1, 9.5_
 
-  - [~] 18.5 Record the spec bookkeeping items
+  - [x] 18.5 Record the spec bookkeeping items
     - Edit `requirements.md` and `design.md` of this spec only for these items: extend the property table of Requirement 23 with Properties 10 to 21 of the design (design O17), mark design open items O7, O8, O10, O11, O12, O13, O14, O16, and O17 as resolved or still open with the date and the value found by the tasks that settled them (O7 `safeCommands` present or still `[]`; O12 `runId` present or not), and record in the Requirement 10 notes the result of task 17.3. Change no other text.
     - _Requirements: 23.1, 23.2, 10.3_
 
