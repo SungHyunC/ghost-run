@@ -38,7 +38,7 @@ Each property declares where it is claimed. Do not assert a property outside its
 | ID | Property | Claimed in |
 |---|---|---|
 | P1 | Ghost run never changes reality: fingerprint before = fingerprint after, for any action list | Playground; real mode with Docker box. **Not claimed** when Docker is unavailable (Plan B fallback). |
-| P2 | A plan that passes produces the same diff when executed for real as the ghost produced | Playground's deterministic worlds (in-memory FS + sql.js) only. **Not claimed** for shell worlds where time, PIDs, or network responses vary. |
+| P2 | A plan that passes produces the same diff when executed for real as the ghost produced | Playground's deterministic worlds (in-memory FS + sql.js) only. **Not claimed** for shell worlds where time, PIDs, or network responses vary. Ghost Hand (narrow scope): On the same build and in the tested environments, the ghost run's result equals the reference simulation run's result. Not claimed for physical hardware. |
 | P3 | Restoring a snapshot returns the world to exactly its pre-snapshot state; in physics worlds the subsequent trajectory also matches | All worlds |
 | P4 | Making a ward stricter never increases the set of passing plans | All worlds (wards engine logic) |
 | P5 | Any plan that deletes or overwrites a protected path produces a `block` diff — P5 depends on P1 | Where P1 holds |

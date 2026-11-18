@@ -1,0 +1,30 @@
+{
+  "name": "@ghost-run/drawer-arm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Hand world: MuJoCo drawer arm for Ghost Run+",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./wards.yaml": "./wards.yaml"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "test": "vitest run",
+    "test:nightly": "GHOST_PBT_MODE=nightly vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src world.config.ts"
+  },
+  "dependencies": {
+    "@ghost-run/core": "workspace:*",
+    "@mujoco/mujoco": "4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^3.2.7"
+  }
+}

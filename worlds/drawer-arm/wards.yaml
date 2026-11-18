@@ -1,0 +1,7 @@
+wards:
+  - id: gentle-hands
+    kind: physics
+    min_success_rate: 0.95
+    max_contact_force_n: 30
+    forbidden_contacts:
+      - vase

@@ -1,0 +1,122 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Probe the `@mujoco/mujoco` 4.0.1 API and create `docs/measurements.md`": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794978923058
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979261182
+      }
+    ],
+    "1.2 Reconcile `design.md` with the probe result (gate)": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979263629
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979336380
+      }
+    ],
+    "1. MuJoCo API probe (first task)": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979336385
+      }
+    ],
+    "3.1 Update `.kiro/steering/structure.md` (S1 to S4)": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979344109
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979373139
+      }
+    ],
+    "3.2 Update `.kiro/steering/world-contract.md` for the narrow Ghost Hand P2 (S5)": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979344127
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979373653
+      }
+    ],
+    "4.1 Complete the `worlds/drawer-arm/` package scaffold": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979380323
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979447462
+      }
+    ],
+    "4.2 Create the `apps/ghost-hand/` package scaffold and install": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979447474
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979528440
+      }
+    ],
+    "4.3 Record dependency licenses in the README table": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979532227
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979593638
+      }
+    ],
+    "4.4 Write the package guard test": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979532234
+      },
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979594424
+      }
+    ],
+    "4. Package scaffolds, dependencies, and licenses": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979594429
+      }
+    ],
+    "2. Checkpoint - probe gate": [
+      {
+        "executionId": "315d1b7c-80e5-4e46-93e6-b4b70a8677c9",
+        "chatSessionId": "sess_38b8c831-935f-4b03-9625-580345541daf",
+        "timestamp": 1794979604958
+      }
+    ]
+  }
+}

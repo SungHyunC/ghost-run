@@ -28,3 +28,8 @@ ghost-runner/box/*.local
 id_rsa*
 box/ca/
 **/ghost/ca/
+
+# Ghost Hand and drawer-arm build output
+apps/ghost-hand/dist
+apps/ghost-hand/dist-node
+worlds/drawer-arm/dist

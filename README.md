@@ -36,3 +36,22 @@ The emoji and tag-sequence rules use numeric tables generated from Unicode 16.0.
 | vitest | 3.2.7 | Dev dependency, test runner | MIT |
 | typescript | 5.9.3 | Dev dependency, compiler | Apache-2.0 |
 | @types/node | 20.19.43 | Dev dependency, Node type definitions | MIT |
+| @mujoco/mujoco | 4.0.1 | Runtime dependency of `apps/ghost-hand` and `worlds/drawer-arm`, MuJoCo physics (WebAssembly) | Apache-2.0 (`package.json` license field; the tarball has no LICENSE file) |
+| three | 0.187.0 | Runtime dependency of `apps/ghost-hand`, 3D ghost-arm overlay | MIT |
+| react | 19.3.1 | Runtime dependency of `apps/ghost-hand`, UI | MIT |
+| react-dom | 19.3.1 | Runtime dependency of `apps/ghost-hand`, UI | MIT |
+| @types/three | 0.187.0 | Dev dependency of `apps/ghost-hand`, three type definitions | MIT |
+| @types/react | 19.3.0 | Dev dependency of `apps/ghost-hand`, React type definitions | MIT |
+| @types/react-dom | 19.3.0 | Dev dependency of `apps/ghost-hand`, React DOM type definitions | MIT |
+| @testing-library/react | 16.3.3 | Dev dependency of `apps/ghost-hand`, component tests | MIT |
+| jsdom | 26.1.0 | Dev dependency of `apps/ghost-hand`, test DOM | MIT |
+| vite | 7.3.8 | Dev dependency of `apps/ghost-hand`, dev server and build | MIT |
+| eslint | 10.15.0 | Dev dependency of `apps/ghost-hand` and `worlds/drawer-arm`, linter | MIT |
+| typescript-eslint | 8.73.0 | Dev dependency of `apps/ghost-hand` and `worlds/drawer-arm`, TypeScript lint rules | MIT |
+| Fonts, icons, and assets of `apps/ghost-hand` | none | The app uses only primitive shapes and system fonts | none |
+
+Notes for the Ghost Hand rows:
+
+- fast-check, vitest, typescript, and @types/node (rows above) are also dev dependencies of `apps/ghost-hand` and `worlds/drawer-arm`, at the same installed versions.
+- The `@mujoco/mujoco` `package.json` license field says Apache-2.0, but the published tarball contains no LICENSE file.
+- The MuJoCo WebAssembly file bundles components with their own licenses. They are listed in `docs/research.md`: Qhull, tinyxml2, tinyobjloader, libccd, miniz, and lodepng. The third-party notices file is produced by task 15.1 of the ghost-hand spec.
