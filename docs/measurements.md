@@ -251,3 +251,13 @@ Recorded on macOS (Apple Silicon) with `corepack pnpm`, in `wards-config`.
 - The first runs failed because of three defects in the shared fixture arbitraries (no defect in `print.ts`, `parse.ts` or `schema.ts`). Shrunk counterexamples: `{"wards":[{"id":"a","kind":"path","deny":["delete"],"paths":["/**"]}]}` with `[]` (rooted globs are rejected as `absolute-pattern`); `{"wards":[{"id":"a","kind":"sql","tables":["7a"],"max_rows_lost":0}]}` with `[]` (table names must start with a letter or `_`); `{"wards":[{"id":"a","kind":"egress","secrets":[".env"],"allow_hosts":["::1"]}]}` with `[]` (an IPv6 host entry must be written `[::1]`). The ward id arbitrary also allowed `_`, which the id pattern rejects. All four were fixed in `tests/fixtures/ward-arbitraries.ts`.
 - Added `safeCommandEntryArb` and `safeCommandsArb` (0 to 256 distinct entries of 1 to 256 characters over the entry charset) to the fixtures.
 - `tsc --noEmit` and `eslint .` exit 0; `vitest run`: 9 files, 92 tests passed.
+
+## Wards tasks 8-11: final verification
+
+Recorded on macOS (Apple Silicon) with `corepack pnpm`.
+
+- `core`: vitest 73 files, 549 passed, 1 skipped. `wards-config`: vitest 13 files, 122 passed. `tsc`, `eslint`, and the build are clean for `core` and `wards-config`. `ghost-runner` and `ui` typecheck clean. No hidden Unicode in the changed files.
+- Checks: `core/package.json` has no `dependencies`. The README table lists `yaml` 2.9.1 under ISC. `core/tests/p4-monotonicity.test.ts` is unchanged (`git diff` is empty).
+- Property-based tests in short mode run `NUM_RUNS=100` per property. The parse-safety test with a 256 KiB list runs 20 times. The engine-determinism property also passed in the nightly mode at 10,000 runs per property.
+- Property 13 found one bug in `core/src/wards.ts` `checkPath`. When two spellings of one protected path appeared in a single step, the displayed spelling depended on the order of the changes. Counterexample: `data/a.txt` and `DATA/A.TXT` in one step. The fix keeps the smallest code-point spelling. The regression test is kept.
+- Open Item 16 is closed. The default `safe_commands` list is `ls`, `pwd`, `cat`, `git status`, `git diff`.

@@ -1,0 +1,14 @@
+wards:
+  - id: protect-data
+    kind: path
+    deny: [delete, overwrite]
+    paths: ["data/**", "db/*.sqlite", ".env"]
+  - id: no-data-loss
+    kind: sql
+    tables: [users, orders]
+    max_rows_lost: 0
+  - id: no-secret-egress
+    kind: egress
+    secrets: [".env", "**/*.pem"]
+    allow_hosts: [registry.npmjs.org]
+safe_commands: [ls, pwd, cat, "git status", "git diff"]

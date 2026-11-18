@@ -3,6 +3,18 @@
     "6.7 Write property test for the print and parse round trip": {
       "status": "passed",
       "lastRunTimestamp": 1794984732083
+    },
+    "10.3 Write property test for configuration defects reported at their line": {
+      "status": "passed",
+      "lastRunTimestamp": 1794985244464
+    },
+    "10.2 Write property test for determinism, order invariance, and totality": {
+      "status": "passed",
+      "lastRunTimestamp": 1794985330711
+    },
+    "10.4 Write property test for parser totality and safety": {
+      "status": "passed",
+      "lastRunTimestamp": 1794985430255
     }
   },
   "executionHistory": {
@@ -624,6 +636,21 @@
         "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
         "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
         "timestamp": 1794983942790
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794984968557
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794984977560
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985022567
       }
     ],
     "9. Checkpoint - Default wards and scenarios verified": [
@@ -636,6 +663,16 @@
         "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
         "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
         "timestamp": 1794983943325
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794984968564
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985489355
       }
     ],
     "10.5 Write the README sections for claims, policies, and limits": [
@@ -648,6 +685,21 @@
         "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
         "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
         "timestamp": 1794983944164
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794984968575
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985028940
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985117766
       }
     ],
     "11. Final checkpoint - Ensure all tests pass": [
@@ -660,6 +712,21 @@
         "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
         "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
         "timestamp": 1794983944673
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794984968578
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985493040
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985520444
       }
     ],
     "6. The `wards-config` package": [
@@ -701,6 +768,92 @@
         "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
         "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
         "timestamp": 1794984744466
+      }
+    ],
+    "8. Default `wards.yaml` and scenario verification": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985022570
+      }
+    ],
+    "8.2 Write the default-file test `wards-config/tests/default-wards.test.ts`": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985028930
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985117241
+      }
+    ],
+    "8.3 Write the scenario verification test `wards-config/tests/scenarios.test.ts`": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985028935
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985117250
+      }
+    ],
+    "10. Leak, determinism, and error-line properties; documentation": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985117768
+      }
+    ],
+    "10.1 Write property test for secrecy of all outputs": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985118313
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985344061
+      }
+    ],
+    "10.2 Write property test for determinism, order invariance, and totality": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985119117
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985344070
+      }
+    ],
+    "10.3 Write property test for configuration defects reported at their line": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985119555
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985344131
+      }
+    ],
+    "10.4 Write property test for parser totality and safety": [
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985344713
+      },
+      {
+        "executionId": "e334e748-311b-470b-b49a-5940e810432e",
+        "chatSessionId": "sess_6be5fc27-00c1-4f42-8e81-8764533c9091",
+        "timestamp": 1794985451462
       }
     ]
   }

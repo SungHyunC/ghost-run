@@ -222,8 +222,16 @@ function checkPath(
     if (!r.matched) continue;
     const normalized = normalizePath(c.path);
     const key = `${op}\u0000${caseSensitive ? normalized : foldPath(c.path)}`;
-    if (!found.has(key)) {
-      found.set(key, { display: sanitizeJudgeText(c.path), sortKey: normalized, op });
+    // Spellings of one path share a key (case folding, dot segments). Keep the smallest
+    // spelling so the message does not depend on the order of `changes`.
+    const display = sanitizeJudgeText(c.path);
+    const prev = found.get(key);
+    if (
+      prev === undefined ||
+      compareCodePoints(normalized, prev.sortKey) < 0 ||
+      (normalized === prev.sortKey && compareCodePoints(display, prev.display) < 0)
+    ) {
+      found.set(key, { display, sortKey: normalized, op });
     }
   }
   const sorted = [...found.values()].sort(

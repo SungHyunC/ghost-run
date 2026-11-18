@@ -27,7 +27,7 @@ Decisions reflected in this plan:
 3. **Claims.** P4 is claimed for all worlds. P5 is claimed only where P1 holds. P6 is claimed only where network attempts are recorded. In Plan B (`static-analysis`) neither P5 nor P6 is claimed, and the Message_Builder lowers the claim through the optional `RenderContext.claims` field (`reason` `static-analysis` or `unsupported-step`; no `claims` means no line, for worlds where P5 and P6 do not apply) (tasks 1.7, 2.13, 4.9, 4.10, 4.11).
 4. `core` keeps zero runtime dependencies. The `yaml` library lives only in `wards-config`.
 5. **D21 (browser-safe entry).** The default entry of `wards-config` imports no Node built-in so the Ghost Shell playground can parse `wards.yaml` in the browser; `loadWardsFile` is exported only from `@ghost-run/wards-config/node` (tasks 1.1, 6.5, 6.6, 6.8).
-6. **D22 (`safe_commands`).** The optional top-level key `safe_commands` is parsed, validated, and printed by `wards-config` for `ghost-gate`; `core` is unchanged; the default list in `apps/ghost-shell/wards.yaml` is an open item (tasks 6.2, 6.3, 6.4, 6.7, 6.8, 8.1, 10.3, 10.4).
+6. **D22 (`safe_commands`).** The optional top-level key `safe_commands` is parsed, validated, and printed by `wards-config` for `ghost-gate`; `core` is unchanged; the default list in `apps/ghost-shell/wards.yaml` is `ls`, `pwd`, `cat`, `git status`, `git diff` (Open Item 16, resolved; tasks 6.2, 6.3, 6.4, 6.7, 6.8, 8.1, 10.3, 10.4).
 7. The default wards file lives at `apps/ghost-shell/wards.yaml` (design D13). Its Docker-box run belongs to ghost-runner Requirement 18 and is not part of this plan.
 
 ## Conventions
@@ -303,52 +303,52 @@ Decisions reflected in this plan:
 - [x] 7. Checkpoint - wards-config complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Default `wards.yaml` and scenario verification
-  - [ ] 8.1 Create `apps/ghost-shell/wards.yaml`
+- [x] 8. Default `wards.yaml` and scenario verification
+  - [x] 8.1 Create `apps/ghost-shell/wards.yaml`
     - Write exactly the three wards of Requirement 18 criterion 2 in this order: `protect-data` (`path`, `deny: [delete, overwrite]`, `paths: ["data/**", "db/*.sqlite", ".env"]`), `no-data-loss` (`sql`, `tables: [users, orders]`, `max_rows_lost: 0`), and `no-secret-egress` (`egress`, `secrets: [".env", "**/*.pem"]`, `allow_hosts: [registry.npmjs.org]`).
     - No `physics` ward, no `github.com`, and only reserved domains plus `registry.npmjs.org`. Commit no `.env` file; fixture `.env` content is built in test code from Canary strings.
-    - Do not add a `safe_commands` key yet: its default content is an open item (Open Item 16 of the requirements; owned by the kiro-integration spec). The file keeps exactly the three wards.
+    - After the wards add the top-level key `safe_commands: [ls, pwd, cat, "git status", "git diff"]` (exactly these five entries, Open Item 16 resolved; matching rules are owned by the kiro-integration spec). The file keeps exactly the three wards.
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.12, 18.13_
 
-  - [ ]* 8.2 Write the default-file test `wards-config/tests/default-wards.test.ts`
-    - Load `apps/ghost-shell/wards.yaml` (resolve the path relative to the test file, so no package imports another package's source) with `loadWardsFile` (import it from `@ghost-run/wards-config/node`, or from `../src/node.ts` through the relative source alias), require `ok: true`, require exactly the three wards in order with the exact values, and require `safeCommands` equal to `[]`.
+  - [x]* 8.2 Write the default-file test `wards-config/tests/default-wards.test.ts`
+    - Load `apps/ghost-shell/wards.yaml` (resolve the path relative to the test file, so no package imports another package's source) with `loadWardsFile` (import it from `@ghost-run/wards-config/node`, or from `../src/node.ts` through the relative source alias), require `ok: true`, require exactly the three wards in order with the exact values, and require `safeCommands` equal to `["ls", "pwd", "cat", "git status", "git diff"]`.
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.13_
 
-  - [ ]* 8.3 Write the scenario verification test `wards-config/tests/scenarios.test.ts`
+  - [x]* 8.3 Write the scenario verification test `wards-config/tests/scenarios.test.ts`
     - Run the rows of the verification table of `design.md` on synthetic `GhostReport` values with the default file, without Docker: row 1 (`DROP TABLE users`, 1,206 rows, `block`, first violation `would delete 1,206 rows from users`) and row 1b (backup copy plus soft delete, `pass`); row 2 (`rm -rf ./data ./build`, `block`, one violation per deleted path under `data/`; compute the expected count from the Changes of the fixture instead of hard-coding it, because the playground also emits folder-entry deletions), row 2b (`rm -rf ./build`, `pass`), and row 2c (`rm -rf ./DATA`, `block`); row 3 (`curl -d @.env`, `secret-read` and `network-attempt` to `setup-check.example:443` at the same step, `block`), row 3b (plus a `secretValues` entry and a payload with `sk-CANARY-abc123`, also the content violation with encoding `raw`), row 3c (allowed host after the read, `warn` with two notices and no violation), and row 3d (a Canary payload sent to `registry.npmjs.org:443`, `block`); row 4 (`npm test`, `pass`); row 5 (`npm run clean`, `block` by `protect-data` from the `file-deleted` Changes under `data/`).
     - Check the exact `renderMessage` strings of rows 1 and 2 against the design (with `seance.id = '42'`, the default base, and `claims = { p5: true, p6: true }`), and that the same report with `claimsFor('static-analysis')` gets the lowered-claim line. P5 and P6 are not asserted as claimed for `static-analysis`.
     - _Requirements: 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11, 16.5, 17.5_
 
-- [ ] 9. Checkpoint - Default wards and scenarios verified
+- [x] 9. Checkpoint - Default wards and scenarios verified
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Leak, determinism, and error-line properties; documentation
-  - [ ]* 10.1 Write property test for secrecy of all outputs
+- [x] 10. Leak, determinism, and error-line properties; documentation
+  - [x]* 10.1 Write property test for secrecy of all outputs
     - **Property 12: No secret value in any output**
     - **Validates: Requirements 9.9, 9.10, 11.4, 11.5, 17.6, 19.8**
     - File: `core/tests/leak.test.ts`. Place the Canary also in destinations, paths, event ids, and table names in raw, base64 (standard and URL-safe, padded and unpadded), hex (both cases), and percent forms; check `JSON.stringify` of the verdict, the `renderMessage` output, and thrown error messages for malformed or absent `secretValues`. Use Canaries of the form `sk-CANARY-` plus generated alphanumerics.
 
-  - [ ]* 10.2 Write property test for determinism, order invariance, and totality
+  - [x]* 10.2 Write property test for determinism, order invariance, and totality
     - **Property 13: Evaluation is deterministic, order-invariant, and total**
     - **Validates: Requirements 1.5, 5.4, 8.6, 9.2, 9.3, 9.10, 11.7, 17.3**
     - File: `core/tests/engine-determinism.test.ts`. Shuffle changes within a step, observed events, and the insertion order of `payloads` and `secretValues`; include hostile casts and malformed `secretValues` entries; compare with a reference implementation of the old rules for reports without glob characters, symlink changes, or ports when `inputs` is absent.
 
-  - [ ]* 10.3 Write property test for configuration defects reported at their line
+  - [x]* 10.3 Write property test for configuration defects reported at their line
     - **Property 15: Every configuration defect is reported at its line with the expected code**
     - **Validates: Requirements 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 12.13, 13.1, 13.2, 13.9, 13.11**
     - File: `wards-config/tests/parse-errors.test.ts`. Print a valid `WardSet`, apply one mutation (unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host, invalid character, duplicate entry, and the `safe_commands` mutations: non-list value, non-string item, hidden character, over-long entry, 257 entries, an entry with a shell operator such as `;`, `&&`, `|`, `>`, a backtick, `$`, or a quote, and a duplicate entry) to a known node, and require the expected code at the expected line (key line for `unknown-field`, ward mapping line for `missing-field`, `unknown-kind`, `duplicate-id`; the item line for `safe_commands` entry errors, the list value line for a non-list value and for too many entries; codes `wrong-type`, `invalid-character`, `out-of-range`, `unsafe-command-entry`, `duplicate-entry`). Also require that no error message contains the entry text. Hidden characters in the mutated text are written as escapes.
 
-  - [ ]* 10.4 Write property test for parser totality and safety
+  - [x]* 10.4 Write property test for parser totality and safety
     - **Property 16: parseWards is total and safe on hostile input**
     - **Validates: Requirements 12.1, 13.4, 13.5, 13.6, 13.7**
     - File: `wards-config/tests/parse-safety.test.ts`. Cover random text, truncated valid documents, anchors, aliases, merge keys, tags, repeated keys (including a repeated `safe_commands`), a 256 KiB `safe_commands` list, deep nesting, and sizes up to 262,144 bytes plus one. Add a loose timing check that a 262,144-byte input completes (Requirement 13.8 on the Reference_Machine is checked as a smoke, not as a property).
 
-  - [ ] 10.5 Write the README sections for claims, policies, and limits
+  - [x] 10.5 Write the README sections for claims, policies, and limits
     - Add: the case policy and its rationale (APFS case-insensitive by default, over-matching fails safe, possible Linux false positive, `case_sensitive: true` opt-out); the precondition under which P5 holds for symbolic links and moves (the world reports actual resolved paths; the Differ walks with `lstat`); the list of what content inspection does not catch (compression, encryption, multi-layer encodings, splitting over requests, DNS one character at a time, values shorter than 8 bytes, payload bytes beyond 64 KiB), which only the behavior criterion catches; the soundness-without-completeness limit of `isMoreRestrictive`; that `printWards` does not preserve comments; the location of the default file (`apps/ghost-shell/wards.yaml`, with the world-contract note that the repo world uses it instead of `worlds/<name>/wards.yaml`); and the claim table (P4 all worlds, P5 where P1 holds, P6 where network attempts are recorded, neither P5 nor P6 in Plan B, with the lowered-claim wording `CLAIM_LOWERED_LINE`).
     - Keep the text English, free of hidden Unicode, and use reserved domains only.
     - _Requirements: 4.2, 5.5, 5.7, 11.6, 11.8, 14.4, 15.3, 17.5_
 
-- [ ] 11. Final checkpoint - Ensure all tests pass
+- [x] 11. Final checkpoint - Ensure all tests pass
   - Run vitest (short run and explicit profile), `tsc --noEmit`, and eslint for `core` and `wards-config`. Confirm the existing P4 test passes unchanged, `core/package.json` has no `dependencies`, the README table lists `yaml` 2.9.1 (ISC), no hidden Unicode appears literally in any committed file, and no real secret is committed. Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
