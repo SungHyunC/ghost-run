@@ -24,6 +24,15 @@ export interface VerifyWorldOptions<S, A> {
    * verifier cannot produce plans without it.
    */
   actionArb: fc.Arbitrary<A>;
+  /**
+   * Decides whether two world states are the same. Used by P3 criteria 10.1
+   * (immutability) and 10.2 (replay determinism). Defaults to a structural
+   * field-by-field comparison. Supply it for worlds whose state carries
+   * per-step noise (copy paths, timestamps) that no replay can reproduce.
+   * Change lists (P2) and verdicts (ward checks) always use the structural
+   * comparison.
+   */
+  stateEquals?: (a: S, b: S) => boolean;
 }
 
 export class VerificationError extends Error {
@@ -83,6 +92,7 @@ export async function verifyWorld<S, A>(
   options: VerifyWorldOptions<S, A>,
 ): Promise<void> {
   const numRuns = options.numRuns ?? DEFAULT_NUM_RUNS;
+  const stateEquals = options.stateEquals ?? deepEqual;
   const plans = fc.array(options.actionArb, { minLength: 1, maxLength: MAX_PLAN_LENGTH });
 
   // P3: immutability (10.1) and replay determinism (10.2).
@@ -90,7 +100,7 @@ export async function verifyWorld<S, A>(
     const s = await world.snapshot();
     const before = structuredClone(s.state);
     await ghostRun(world, s, actions);
-    return deepEqual(s.state, before);
+    return stateEquals(s.state, before);
   });
   await check('P3', '10.2', numRuns, plans, async (actions) => {
     const s = await world.snapshot();
@@ -98,7 +108,7 @@ export async function verifyWorld<S, A>(
     const r2 = await ghostRun(world, s, actions);
     const last1 = r1.snapshots[r1.snapshots.length - 1];
     const last2 = r2.snapshots[r2.snapshots.length - 1];
-    return last1 !== undefined && last2 !== undefined && deepEqual(last1.state, last2.state);
+    return last1 !== undefined && last2 !== undefined && stateEquals(last1.state, last2.state);
   });
 
   // P1: reality fingerprint unchanged by a ghost run (8.1).

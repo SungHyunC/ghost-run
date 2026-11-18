@@ -43,7 +43,7 @@ The plan follows the implementation order of the design:
 ## Tasks
 
 - [ ] 1. Additive core change (first task, runs alone)
-  - [ ] 1.1 Add `'unsupported-step'` to `WardNotice.kind` in `core/src/types.ts`
+  - [x] 1.1 Add `'unsupported-step'` to `WardNotice.kind` in `core/src/types.ts`
     - **This task must complete before any other task of this spec starts, and it must NOT run at the same time as any other task that edits `core/`, in this spec or in another spec (`possession`, `wards`, `ghost-runner`, `ui-kit` task 13.1).** Before starting, confirm that no other core-editing task is in progress and that the `core` test suite passes.
     - Add the one string `'unsupported-step'` to the `WardNotice.kind` union. Change no existing kind, no field, and no verdict logic. `WardEngine.evaluate` never produces this kind; only the app pipeline does.
     - Add a compile-time assertion to `core/tests/types.test-d.ts` that `'unsupported-step'` is assignable to `WardNotice['kind']` and that the existing kinds still are. Add one runtime example test (in a new file `core/tests/notice-kind.test.ts`) that builds a `WardVerdict` with a notice of that kind and passes it through `renderMessage`, and checks that the message output equals the output for the same verdict without the notice except for the notice line the message builder already prints for any notice.

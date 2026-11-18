@@ -38,6 +38,22 @@ class LeakyFingerprintWorld extends KeyValueWorld {
   }
 }
 
+/** Every step stamps a random value into the state, so two replays never match field by field. */
+class NoisyStateWorld extends KeyValueWorld {
+  override async step(s: Snapshot<KVState>, a: KVAction): Promise<Snapshot<KVState>> {
+    const next = await super.step(s, a);
+    return { ...next, state: { ...next.state, __noise__: String(Math.random()) } };
+  }
+}
+
+const withoutNoise = (s: KVState): KVState => {
+  const { __noise__: _drop, ...rest } = s;
+  return rest;
+};
+const equalIgnoringNoise = (a: KVState, b: KVState): boolean =>
+  JSON.stringify(Object.entries(withoutNoise(a)).sort()) ===
+  JSON.stringify(Object.entries(withoutNoise(b)).sort());
+
 /** Real execution reports nothing, so ghost diff != real diff (breaks P2 only). */
 const silentAdapter: DeterministicTestAdapter<KVState, KVAction> = {
   apply: () => [],
@@ -116,5 +132,50 @@ describe('verifyWorld', () => {
     expect(err.propertyId).toBe('P2');
     expect(err.criterionId).toBe('9.1');
     expect(err.counterexample).toBeDefined();
+  });
+
+  describe('stateEquals option', () => {
+    const base = {
+      id: 'noisy',
+      deterministic: false,
+      wardSet: pathWardSet,
+      actionArb,
+      numRuns: NUM_RUNS,
+    };
+
+    it('uses the structural comparison by default and fails P3 10.2 on a noisy state', async () => {
+      const err = await catchError(verifyWorld(new NoisyStateWorld({ a: '1' }), base));
+      expect(err.propertyId).toBe('P3');
+      expect(err.criterionId).toBe('10.2');
+    });
+
+    it('accepts a custom comparison that ignores the noise', async () => {
+      await expect(
+        verifyWorld(new NoisyStateWorld({ a: '1' }), { ...base, stateEquals: equalIgnoringNoise }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('still fails P3 10.1 for a mutating step when the comparison ignores the noise', async () => {
+      const err = await catchError(
+        verifyWorld(new MutatingStepWorld({ a: '1' }), {
+          ...base,
+          stateEquals: equalIgnoringNoise,
+        }),
+      );
+      expect(err.propertyId).toBe('P3');
+    });
+
+    it('is called once per run by each of P3 10.1 and P3 10.2', async () => {
+      let calls = 0;
+      await verifyWorld(new KeyValueWorld({ a: '1' }), {
+        ...base,
+        numRuns: 5,
+        stateEquals: (a, b) => {
+          calls += 1;
+          return JSON.stringify(a) === JSON.stringify(b);
+        },
+      });
+      expect(calls).toBe(10);
+    });
   });
 });

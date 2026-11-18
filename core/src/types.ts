@@ -221,7 +221,8 @@ export interface WardNotice {
     | 'effect-outside'
     | 'observed-event'
     | 'content-inspection'
-    | 'path-escape';
+    | 'path-escape'
+    | 'unsupported-step';
   readonly reason: string;
   /** Index of the action (effect-outside) or event step (observed-event). */
   readonly stepIndex: number;

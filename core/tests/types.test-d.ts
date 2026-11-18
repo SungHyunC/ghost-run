@@ -205,8 +205,13 @@ describe('core type extensions', () => {
 
   it('WardNotice.kind is widened', () => {
     expectTypeOf<WardNotice['kind']>().toEqualTypeOf<
-      'effect-outside' | 'observed-event' | 'content-inspection' | 'path-escape'
+      'effect-outside' | 'observed-event' | 'content-inspection' | 'path-escape' | 'unsupported-step'
     >();
+    expectTypeOf<'unsupported-step'>().toMatchTypeOf<WardNotice['kind']>();
+    expectTypeOf<'effect-outside'>().toMatchTypeOf<WardNotice['kind']>();
+    expectTypeOf<'observed-event'>().toMatchTypeOf<WardNotice['kind']>();
+    expectTypeOf<'content-inspection'>().toMatchTypeOf<WardNotice['kind']>();
+    expectTypeOf<'path-escape'>().toMatchTypeOf<WardNotice['kind']>();
   });
 });
 

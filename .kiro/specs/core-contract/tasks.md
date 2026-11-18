@@ -142,3 +142,10 @@
   - Export both from `tests/fixtures/index.ts`. All PBT files (tasks 8, 9, 11) and `verify.test.ts` (task 10) import their world and adapter from this fixture.
   - **Requirements:** Req 2.1, Req 3.1, Req 3.2, Req 4.1, Req 4.2, Req 5.1, Req 6.1, Req 6.2, Req 9.1
   - **PBT properties:** P1, P2, P3
+
+- [x] 15. Add optional `stateEquals` to `verifyWorld`
+  - In `core/verify.ts`, add `stateEquals?: (a: S, b: S) => boolean` to `VerifyWorldOptions<S, A>`; default is the existing structural `deepEqual`. P3 10.1 and 10.2 use it; P2 change lists, P1 fingerprints and ward verdict comparisons stay structural.
+  - Add example tests in `core/tests/verify.test.ts` (appended; existing cases unchanged): default comparison fails P3 10.2 on a world whose step stamps random noise into state; a `stateEquals` that ignores the noise passes; a mutating step still fails P3 with that lenient `stateEquals`; `stateEquals` is called once per run by each of 10.1 and 10.2.
+  - Verified: core typecheck, lint, build and `vitest run` pass (71 files, 542 passed, 1 skipped); all existing PBT pass with the default comparison; `core/package.json` unchanged.
+  - Out of scope: switching ghost-runner's `it.fails` test to a plain test belongs to the ghost-runner turn; design.md "State equality" lists the comparison examples it can use.
+  - **Requirements:** Req 12.5, Req 12.6, Req 12.7, Req 12.8

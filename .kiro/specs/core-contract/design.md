@@ -521,6 +521,7 @@ export async function verifyWorld<S, A>(
     testAdapter?: DeterministicTestAdapter<S, A>; // required when deterministic: true
     numRuns?: number;      // defaults to NUM_RUNS from pbt-config
     actionArb: fc.Arbitrary<A>; // generator of valid actions used to build plans
+    stateEquals?: (a: S, b: S) => boolean; // default: structural comparison. Used by P3 10.1 and 10.2 only
   },
 ): Promise<void>;
 ```
@@ -535,6 +536,37 @@ export async function verifyWorld<S, A>(
 4. **Ward properties** — for each ward in `options.wardSet.wards`, run the per-kind PBT suite. On failure throw `VerificationError` with `propertyId: 'ward:<ward-id>'`.
 
 P3 runs first because it is a prerequisite for P1 and P2.
+
+#### State equality (`stateEquals`)
+
+**What it does.** `stateEquals` decides whether two world states are the same in two P3 comparisons: criterion 10.1 (the state of the input snapshot after `ghostRun` versus a clone taken before it) and criterion 10.2 (the final states of two replays of the same plan). When omitted, `verifyWorld` uses the existing structural field-by-field comparison, so `KeyValueWorld` and the existing tests are unchanged. `Change[]` lists for P2, fingerprints for P1, and ward verdict comparisons always stay structural and are never passed to `stateEquals`. This satisfies requirements 12.5 to 12.8.
+
+**Why it is needed.** The ghost-runner `Repo_World` keeps a per-step copy root path, per-file `mtime`/`ctime`, and `lastStep` in its state. Two replays of the same plan can therefore never be structurally equal. This is why one ghost-runner test is marked `it.fails` today.
+
+**Alternatives considered.**
+
+| Option | Description | Decision |
+|---|---|---|
+| A | Optional `stateEquals` with a structural default | Chosen. It is explicit and per-world, keeps the strict default, is a tiny change, and the world author states exactly which fields are noise. |
+| B | Always treat "`world.diff(a, b)` is empty" as equality | Rejected as the default. `diff` is documented as the minimal `Change[]` and each world decides what it reports, so a diff that omits a field (or a buggy diff) would silently hide a real state difference. That weakens P3 for every world, including existing ones. It would also make P3 depend on the correctness of `diff`, which P2 is meant to check separately, and it changes behavior for existing worlds. |
+| C | A fixed ignore-list of field names | Rejected. `core` cannot know world-specific noise. |
+
+Option B stays available without any core change, because a caller can pass a `stateEquals` built on the world's own `diff`.
+
+**Examples for the ghost-runner turn.** These are documentation only; `core` does not ship them.
+
+```ts
+// Content-fingerprint based (preferred: does not rely on diff).
+// contentHash covers relative path, type and content bytes, and excludes
+// rootPath, mtimeNs, ctimeNs and lastStep.
+stateEquals: (a, b) => contentHash(a.files) === contentHash(b.files)
+
+// Diff based: only when the world's diff already ignores the noise fields.
+stateEquals: (a, b) =>
+  world.diff({ ...snapA, state: a }, { ...snapB, state: b }).length === 0
+```
+
+A lenient `stateEquals` must ignore only declared per-step noise. It must not hide differences that the noise does not explain, for example a `step` function that mutates its input snapshot (requirement 12.8).
 
 ```ts
 export class VerificationError extends Error {
