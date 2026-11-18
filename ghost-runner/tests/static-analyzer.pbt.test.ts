@@ -123,7 +123,7 @@ describe('Property 16: Static analysis is exact, pure, and I/O free', () => {
       console.log(`Property 16: runs executed=${runs} (mode=${PBT_MODE}, numRuns=${NUM_RUNS}, k>0 cases=${nonEmpty})`);
       expect(runs).toBeGreaterThanOrEqual(Math.min(NUM_RUNS, 20));
     },
-    testTimeoutMs(false) || undefined,
+    testTimeoutMs(false),
   );
 
   it('imports none of fs, net, dns, child_process (source check)', () => {
@@ -141,4 +141,34 @@ describe('Property 16: Static analysis is exact, pure, and I/O free', () => {
   it('returns [] for an empty command', () => {
     expect(analyze({ command: '' })).toEqual([]);
   });
+
+  it('regression: "${" is reported as an unparseable command instead of throwing', () => {
+    const effects = analyze({ command: '${' });
+    expect(effects).toHaveLength(1);
+    expect(effects[0]?.kind).toBe('unparseable-command');
+    expect(effects[0]?.destination.length).toBeGreaterThan(0);
+  });
+
+  it('still extracts URLs from the raw text of an unparseable command', () => {
+    const effects = analyze({ command: '${ curl https://collect.invalid/x' });
+    expect(effects.map((e) => e.kind).sort()).toEqual(['unparseable-command', 'url']);
+  });
+
+  it('never throws on any string, including shell fragments', () => {
+    const fragment = fc.constantFrom('${', '$(', '`', '"', "'", '\\', '$((', '${a', '$(a', '<(', '|', ';', '&&', ' ');
+    const noisy = fc
+      .array(fc.oneof(fragment, fc.string({ maxLength: 6 }), safeToken), { maxLength: 10 })
+      .map((parts) => parts.join(''));
+    fc.assert(
+      fc.property(fc.oneof(noisy, fc.string({ maxLength: 40 })), (command) => {
+        let effects: ReturnType<typeof analyze> = [];
+        expect(() => {
+          effects = analyze({ command });
+        }).not.toThrow();
+        for (const e of effects) expect(e.destination.length).toBeGreaterThan(0);
+        expect(analyze({ command })).toEqual(effects);
+      }),
+      pbtParams(false),
+    );
+  }, testTimeoutMs(false));
 });

@@ -8,6 +8,8 @@
  */
 import { collectRecorder, type CollectOptions, type CollectResult } from '../recorder/collect.js';
 import type { ResolvedRunnerOptions } from '../config.js';
+import { trackRun, untrackRun } from './reaper.js';
+import { buildCountInvocation, parseCountOutput, type SqliteState } from '../fs/sqlite.js';
 import { remainingMs, type DeadlineClock, type DockerClient } from './cli.js';
 import {
   LABEL_RUN_ID,
@@ -25,6 +27,8 @@ export const CREATE_TIMEOUT_MS = 10_000;
 export const INSPECT_TIMEOUT_MS = 5_000;
 export const KILL_TIMEOUT_MS = 5_000;
 export const COLLECT_TIMEOUT_MS = 10_000;
+/** `ghost-count` limit; the script itself times each sqlite3 call out at 10 s. */
+export const COUNT_TIMEOUT_MS = 15_000;
 /** The recorder read after a kill may run this long past the pipeline deadline (return stays within 60 s). */
 export const COLLECT_GRACE_MS = 2_000;
 /** Cleanup runs after the deadline and uses its own short timeouts (Req 16.2). */
@@ -42,6 +46,8 @@ export interface BoxParams {
   readonly uid: number;
   readonly gid: number;
   readonly poolOwner?: string;
+  /** Seconds until the box stops itself (see BOX_MAX_LIFETIME_SEC). */
+  readonly maxLifetimeSec?: number;
   /** Total execution limit for the whole plan (Req 7.3), in ms. */
   readonly execLimitMs: number;
   /** Absolute pipeline deadline, ms since epoch (Req 7.5). */
@@ -86,6 +92,12 @@ export interface Box {
   readonly killed: boolean;
   /** Execute one action with the remaining execution budget. Kills the container on timeout. */
   exec(stepIndex: number, action: string, cwd?: string): Promise<ExecOutcome>;
+  /**
+   * Count rows per table of SQLite files (Copy-relative paths) with the in-box `ghost-count`.
+   * Not part of the action budget. Never throws: a failed call, timeout, or killed box maps
+   * every path to "unreadable".
+   */
+  countSqlite(relPaths: readonly string[]): Promise<SqliteState>;
   /** Read `/ghost-rec` with `docker cp`. Works after a normal end and after a kill. */
   collect(opts: Omit<CollectOptions, 'deadlineAt' | 'timeoutMs'>): Promise<CollectResult>;
   /** Remove container and volume. Idempotent; never throws. */
@@ -143,6 +155,9 @@ export async function removeRunContainers(
  */
 export async function createBox(client: DockerClient, p: BoxParams): Promise<CreateBoxResult> {
   const clock = p.clock ?? systemClock;
+  // Registered before `docker run` so a process kill or a test timeout in any later await still
+  // finds the container (reaper.ts). Unregistered only when removal is confirmed.
+  trackRun(p.runId);
   const args = buildRunArgs(
     {
       image: p.image,
@@ -150,6 +165,7 @@ export async function createBox(client: DockerClient, p: BoxParams): Promise<Cre
       uid: p.uid,
       gid: p.gid,
       ...(p.poolOwner !== undefined ? { poolOwner: p.poolOwner } : {}),
+      ...(p.maxLifetimeSec !== undefined ? { maxLifetimeSec: p.maxLifetimeSec } : {}),
     },
     p.runId,
     p.mounts,
@@ -162,6 +178,7 @@ export async function createBox(client: DockerClient, p: BoxParams): Promise<Cre
       ? 'docker run timed out'
       : created.spawnError ?? (text(created.stderr).trim() || 'docker run failed');
     const cleanup = await removeRunContainers(client, p.runId);
+    if (cleanup.ok) untrackRun(p.runId);
     return { ok: false, kind: 'create-failed', detail: why.slice(0, 300), cleanup };
   }
 
@@ -192,6 +209,7 @@ export async function createBox(client: DockerClient, p: BoxParams): Promise<Cre
   }
   if (differences !== undefined) {
     const cleanup = await removeRunContainers(client, p.runId, containerId);
+    if (cleanup.ok) untrackRun(p.runId);
     return { ok: false, kind: 'isolation-violation', differences, cleanup };
   }
 
@@ -260,6 +278,18 @@ class DockerBox implements Box {
     return { kind: 'exited', exitCode: res.code, stdout: res.stdout, stderr: res.stderr, durationMs };
   }
 
+  async countSqlite(relPaths: readonly string[]): Promise<SqliteState> {
+    const argv = buildCountInvocation(relPaths);
+    if (argv === undefined) return {};
+    if (this.killed) return parseCountOutput('', 1, relPaths);
+    const res = await this.client.run(['exec', '-w', '/work', this.containerId, ...argv], {
+      timeoutMs: COUNT_TIMEOUT_MS,
+      deadlineAt: this.deadlineAt + COLLECT_GRACE_MS,
+    });
+    const code = res.timedOut || res.spawnError !== undefined ? 1 : (res.code ?? 1);
+    return parseCountOutput(text(res.stdout), code, relPaths);
+  }
+
   collect(opts: Omit<CollectOptions, 'deadlineAt' | 'timeoutMs'>): Promise<CollectResult> {
     return collectRecorder(this.client, this.containerId, {
       ...opts,
@@ -271,6 +301,7 @@ class DockerBox implements Box {
   async cleanup(): Promise<CleanupResult> {
     if (this.cleaned?.ok === true) return this.cleaned;
     this.cleaned = await removeRunContainers(this.client, this.p.runId, this.containerId);
+    if (this.cleaned.ok) untrackRun(this.p.runId);
     return this.cleaned;
   }
 }

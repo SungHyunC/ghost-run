@@ -17,7 +17,7 @@ describe('pbt-config', () => {
 describe('docker-available', () => {
   it('returns a boolean within the 2 s limit', () => {
     const t = Date.now();
-    expect(typeof checkDockerAvailable('ghost-run-box:nonexistent')).toBe('boolean');
+    expect(typeof checkDockerAvailable('ghost-run-box:nonexistent', 2_000)).toBe('boolean');
     expect(Date.now() - t).toBeLessThan(2_500);
     expect(typeof dockerAvailable).toBe('boolean');
   });

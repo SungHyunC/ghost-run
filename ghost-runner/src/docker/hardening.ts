@@ -27,6 +27,15 @@ export const LABEL_RUN_ID = 'ghost-run.run-id';
 export const LABEL_POOL = 'ghost-run.pool';
 export const LABEL_POOL_OWNER = 'ghost-run.pool-owner';
 
+/**
+ * Self-expiry of a box (defense in depth against leaks). `ghost-init` exits after this many
+ * seconds, so a box whose host process was killed does not stay `Up`. A run is bounded by the
+ * 55 s pipeline deadline plus collect and cleanup, so 120 s never cuts a live run.
+ */
+export const BOX_MAX_LIFETIME_SEC = 120;
+/** Pool slots idle until acquired, so they live longer; the pool exit handlers still remove them. */
+export const POOL_BOX_MAX_LIFETIME_SEC = 3_600;
+
 export interface HardeningOptions {
   readonly image: string;
   /** Usually `ResolvedRunnerOptions['limits']`; defaults to DEFAULT_LIMITS. */
@@ -35,6 +44,8 @@ export interface HardeningOptions {
   readonly gid: number;
   /** Set for pool slots. */
   readonly poolOwner?: string;
+  /** Seconds until `ghost-init` exits on its own. Default BOX_MAX_LIFETIME_SEC. */
+  readonly maxLifetimeSec?: number;
 }
 
 export interface ReadonlyMount {
@@ -64,6 +75,7 @@ function assertNoComma(label: string, value: string): void {
 export function buildRunArgs(opts: HardeningOptions, runId: string, mounts: BoxMounts): string[] {
   const limits = opts.limits ?? DEFAULT_LIMITS;
   assertNoComma('copy directory', mounts.copyDir);
+  assertNoComma('run id', runId);
   const args: string[] = [
     'run',
     '-d',
@@ -76,6 +88,10 @@ export function buildRunArgs(opts: HardeningOptions, runId: string, mounts: BoxM
   args.push(
     '--network', 'none',
     '--dns', '127.0.0.1',
+    // PID 1 of the box is Node (`ghost-init`), which does not reap orphans; `--init` puts a
+    // reaping init in front so orphaned children of an action cannot pile up as zombies
+    // and exhaust --pids-limit.
+    '--init',
     '--cap-drop', 'ALL',
     '--security-opt', 'no-new-privileges',
     '--pids-limit', String(limits.pids),
@@ -87,7 +103,9 @@ export function buildRunArgs(opts: HardeningOptions, runId: string, mounts: BoxM
     '--user', `${opts.uid}:${opts.gid}`,
     '--workdir', WORK_DIR,
     '--mount', `type=bind,src=${mounts.copyDir},dst=${WORK_DIR}`,
-    '--mount', `type=volume,dst=${REC_DIR}`,
+    // Anonymous recorder volume (removed by `rm -v`). Anonymous volumes do not inherit container
+    // labels, so the run-id label is set on the volume too; leak checks can then find it.
+    '--mount', `type=volume,dst=${REC_DIR},volume-label=${LABEL_RUN_ID}=${runId}`,
   );
   for (const m of mounts.readonlyMounts ?? []) {
     assertNoComma('read-only mount source', m.source);
@@ -95,7 +113,7 @@ export function buildRunArgs(opts: HardeningOptions, runId: string, mounts: BoxM
     args.push('--mount', `type=bind,src=${m.source},dst=${m.destination},readonly`);
   }
   for (const [k, v] of Object.entries(BOX_ENV)) args.push('-e', `${k}=${v}`);
-  args.push('--entrypoint', 'ghost-init', opts.image);
+  args.push('--entrypoint', 'ghost-init', opts.image, '--max-lifetime', String(opts.maxLifetimeSec ?? BOX_MAX_LIFETIME_SEC));
   return args;
 }
 

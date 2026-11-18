@@ -55,6 +55,18 @@
     "7.6 Write property test for incremental versus full-hash differ [no-docker]": {
       "status": "passed",
       "lastRunTimestamp": 1794965809826
+    },
+    "12.2 Write property test for render [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794968866805
+    },
+    "14.2 Write property test for P1 on the Docker box [docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794974534882
+    },
+    "14.3 Write property test for P3 on the Repo_World [docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794974536391
     }
   },
   "executionHistory": {
@@ -695,6 +707,651 @@
         "executionId": "208f2c9d-07d8-46f1-a89a-a3d8045762be",
         "chatSessionId": "sess_2a0d0079-c990-42c5-9cbe-e2728caf51f6",
         "timestamp": 1794966813335
+      }
+    ],
+    "12. Repo_World and pipeline": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353923
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969980560
+      }
+    ],
+    "12.8a Cap the count and size of `secretValues` read from the Copy": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353927
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968360654
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968365273
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969579663
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969693049
+      }
+    ],
+    "12.1 Implement `src/world/repo-world.ts`, `src/world/render.ts`, and `stepInSession`": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353931
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968360640
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968804646
+      }
+    ],
+    "12.2 Write property test for render [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353935
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968804656
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969293689
+      }
+    ],
+    "12.3 Implement `src/pipeline.ts` (`runPlan`)": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353937
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968804660
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969293701
+      }
+    ],
+    "12.4 Write property test for Plan B disclosure [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353940
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969296565
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969575458
+      }
+    ],
+    "12.5 Write property test for step outcome handling and cleanup under injected failure [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353943
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969297346
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969575469
+      }
+    ],
+    "12.6 Implement `src/index.ts` and the package build": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353945
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969297740
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969575612
+      }
+    ],
+    "12.7 Write unit test that observed events and static Effects are not deduplicated [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353948
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969578401
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969689901
+      }
+    ],
+    "12.8 Read `secretValues` into memory before the first action and release it after evaluation": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353951
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969579268
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969692847
+      }
+    ],
+    "12.9 Write the no-leak test over all output channels [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353953
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969701995
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969882539
+      }
+    ],
+    "13. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353955
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969885681
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969973930
+      }
+    ],
+    "14.1 Create the Docker test reporter label": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353957
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969980573
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434461
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970439270
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970956861
+      }
+    ],
+    "14.2 Write property test for P1 on the Docker box [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353959
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969980583
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434465
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970961564
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973123762
+      }
+    ],
+    "14.3 Write property test for P3 on the Repo_World [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353961
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969981547
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434469
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970961572
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973123772
+      },
+      {
+        "executionId": "b7f22387-138b-47f2-a228-1727bd2633d2",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794974076324
+      },
+      {
+        "executionId": "b7f22387-138b-47f2-a228-1727bd2633d2",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794979245518
+      }
+    ],
+    "14.4 Write property test for P5 and P6 where prerequisites hold [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353964
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969982424
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434471
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970961716
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973123904
+      }
+    ],
+    "14.5 Write property test that the pipeline and Repo_World agree [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353966
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969983141
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434474
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973220930
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973582909
+      }
+    ],
+    "14.6 Write the port 53, 80, and 443 binding test under hardened options (W9) [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353968
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969983985
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434478
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973221747
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973583511
+      }
+    ],
+    "14.7 Write the five scenario acceptance tests [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353969
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969984742
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434481
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973222165
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973584322
+      }
+    ],
+    "14.8 Write the `verifyWorld` conformance test [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353971
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969985558
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434484
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973584932
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973838216
+      }
+    ],
+    "14.9 Write the Plan B transition integration test [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353973
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969986342
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434488
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973126738
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973216591
+      }
+    ],
+    "14.10 Write fake-clock timeout tests [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353975
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969987391
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434490
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973127543
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973217388
+      }
+    ],
+    "14.11 Write the repository scan test for hidden Unicode and credential patterns [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353977
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969988200
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434492
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973127935
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973217805
+      }
+    ],
+    "15.1 Run the secret-read recording trial (W6) [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353978
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969988991
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434494
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973844174
+      }
+    ],
+    "15.2 Run the timing measurement (W7) and record the results [docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353980
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969990677
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434495
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973844816
+      }
+    ],
+    "16.1 Complete `ghost-runner/README.md` and the root README entries (W10)": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353982
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969990689
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434497
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973845354
+      }
+    ],
+    "16.2 Write the `contract-pbt` hook configuration note for the `kiro-integration` spec (W8)": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353984
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969991406
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434499
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973846159
+      }
+    ],
+    "17. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794968353986
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969992069
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794970434501
+      },
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973846967
+      }
+    ],
+    "12.8b Write the `secretValues` cap tests [no-docker]": [
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969701988
+      },
+      {
+        "executionId": "f958b6d1-7a90-4163-93dc-b7542bdb688a",
+        "chatSessionId": "sess_e51ce72e-a4d3-437d-9f1a-56a69b8ebcd5",
+        "timestamp": 1794969882517
+      }
+    ],
+    "14. Docker-dependent and integration tests": [
+      {
+        "executionId": "15f20a50-31f4-4a1b-a0cf-66419cdc02ab",
+        "chatSessionId": "sess_4b806b94-64c6-48a6-962b-670f59fbbc33",
+        "timestamp": 1794973838220
       }
     ]
   }

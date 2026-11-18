@@ -1,3 +1,11 @@
+// Public API of @ghost-run/ghost-runner.
 export * from './config.js';
 export * from './errors.js';
 export * from './result.js';
+export { createRepoWorld } from './world/repo-world.js';
+export type { RepoWorldOptions } from './world/repo-world.js';
+export type { Plan, RepoState, RepoWorld, ShellAction, StepOutcomeKind, StepRecord } from './world/types.js';
+export { runPlan } from './pipeline.js';
+export type { RunPlanOptions } from './pipeline.js';
+export { analyze } from './static/analyzer.js';
+export type { AnalyzableAction } from './static/analyzer.js';

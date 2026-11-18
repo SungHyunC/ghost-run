@@ -72,6 +72,21 @@ export interface FakeDockerOptions {
   readonly mutateInspect?: (inspect: Record<string, unknown>) => void;
   /** Make `docker run` hand out this container id instead of a generated one. */
   readonly containerId?: string;
+  /**
+   * Answer of `docker image inspect`: `present` (default; the build label is taken from the
+   * requested tag), `missing` (No such image), `unreachable` (the CLI cannot reach a daemon).
+   */
+  readonly image?: 'present' | 'missing' | 'unreachable';
+  /**
+   * Row counts `ghost-count` reports for a Copy-relative path (called once per path and call).
+   * Default: `{}` (a database without tables).
+   */
+  readonly count?: (relPath: string, callIndex: number) => Readonly<Record<string, number>> | 'unreadable';
+  /**
+   * Stands in for the action: runs when `ghost-step` executes, with the host directory of the
+   * Copy that is bind-mounted at /work. Lets a test change the Copy the way a real action would.
+   */
+  readonly onStep?: (ctx: { stepIndex: number; action: string; cwd: string; copyDir: string }) => void | Promise<void>;
 }
 
 export interface FakeContainer {
@@ -266,6 +281,8 @@ export class FakeDocker implements DockerClient {
         return this.doInspect(args);
       case 'exec':
         return this.doExec(args, timeoutMs);
+      case 'image':
+        return this.doImage(args);
       case 'cp':
         return this.doCp(args);
       case 'stop':
@@ -309,7 +326,9 @@ export class FakeDocker implements DockerClient {
     const c = this.find(args[args.length - 1]);
     if (c === undefined) return fail('Error: No such object', 1);
     const a = c.runArgs;
-    const image = a[a.length - 1] as string;
+    // `... --entrypoint <cmd> <image> [args...]`: the image follows the entrypoint value.
+    const ep = a.indexOf('--entrypoint');
+    const image = (ep >= 0 ? a[ep + 2] : a[a.length - 1]) as string;
     const mounts: Record<string, unknown>[] = [];
     for (const m of valuesOf(a, '--mount')) {
       const kv = new Map(m.split(',').map((p) => { const i = p.indexOf('='); return i < 0 ? [p, ''] as const : [p.slice(0, i), p.slice(i + 1)] as const; }));
@@ -342,12 +361,56 @@ export class FakeDocker implements DockerClient {
     return ok(`${JSON.stringify([inspect])}\n`);
   }
 
-  private doExec(args: readonly string[], timeoutMs: number): DockerResult {
+  private doImage(args: readonly string[]): DockerResult {
+    const mode = this.opts.image ?? 'present';
+    if (mode === 'unreachable') {
+      return { code: null, stdout: EMPTY, stderr: EMPTY, timedOut: false, spawnError: 'spawn docker ENOENT' };
+    }
+    if (mode === 'missing') return fail('Error response from daemon: No such image', 1);
+    const tag = args[args.length - 1] ?? '';
+    const prefix = 'ghost-run/box:';
+    const labels = tag.startsWith(prefix) ? { 'ghost-run.box.hash': tag.slice(prefix.length) } : {};
+    return ok(`${JSON.stringify([{ Id: `sha256:${'a'.repeat(64)}`, Config: { Env: [], Labels: labels } }])}\n`);
+  }
+
+  private countCalls = 0;
+
+  private doCount(args: readonly string[]): DockerResult {
+    const c = this.find(args[3]);
+    if (c === undefined || !c.running) return fail('Error response from daemon: container is not running', 1);
+    const call = this.countCalls++;
+    const paths = args.slice(args.indexOf('--') + 1);
+    const out: Record<string, unknown> = {};
+    for (const p of paths) out[p] = this.opts.count?.(p.replace(/^\/work\//, ''), call) ?? {};
+    return ok(JSON.stringify(out));
+  }
+
+  /** Host directory bound at /work for a container. */
+  private copyDirOf(c: FakeContainer): string {
+    for (const m of valuesOf(c.runArgs, '--mount')) {
+      if (m.includes('dst=/work') && !m.includes('dst=/work/')) {
+        const src = m.split(',').find((p) => p.startsWith('src='));
+        if (src !== undefined) return src.slice(4);
+      }
+    }
+    return '';
+  }
+
+  private async doExec(args: readonly string[], timeoutMs: number): Promise<DockerResult> {
+    if (args.includes('ghost-count')) return this.doCount(args);
     const stepAt = args.indexOf('ghost-step');
     const index = stepAt >= 0 ? Number(args[stepAt + 1]) : 0;
     const container = args[args.indexOf('ghost-step') - 1] ?? args[1];
     const c = this.find(container);
     if (c === undefined || !c.running) return fail('Error response from daemon: container is not running', 1);
+    if (this.opts.onStep !== undefined && stepAt >= 0) {
+      await this.opts.onStep({
+        stepIndex: index,
+        action: args[stepAt + 3] ?? '',
+        cwd: args[stepAt + 2] ?? '',
+        copyDir: this.copyDirOf(c),
+      });
+    }
     const script = typeof this.opts.exec === 'function' ? this.opts.exec(index) : this.opts.exec?.[index];
     if (script?.timeout === true) {
       this.clock.advance(timeoutMs);

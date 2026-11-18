@@ -112,7 +112,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 5. WHEN the Copier finishes, THE Copier SHALL record `copiedAt` within 10 ms after the last copy operation returns.
 6. THE Copier SHALL complete the copy of the Reference_Repo with a Median_Of_5 of at most 1.0 s on the Reference_Machine.
 7. WHERE a faster folder-level clone helper is configured, THE Copier SHALL use the helper in place of `cp -cR` and SHALL produce a Copy that satisfies criteria 3 and 4.
-8. IF the Copier does not finish within 20 s, THEN THE Box_Runner SHALL abort the copy, remove the partial Copy, return a Run_Result with `status: "copy-timeout"` and Runner_Verdict `warn`, and SHALL NOT start a Box.
+8. IF the Copier does not finish within 20 s, THEN THE Box_Runner SHALL abort the copy, remove the partial Copy, return a Run_Result with `status: "copy-timeout"` and Runner_Verdict `warn`, and SHALL NOT execute any action. THE Box_Runner SHALL remove the Box (if one was created in parallel with the copy to hide its start-up latency) before returning, so that no container with the label `ghost-run.run-id=<uuid>` of that run remains.
 9. WHERE the option `excludedDirMode` is set to `"readonly-mount"`, THE Box_Runner SHALL mount each excluded top-level directory of Original into the Box with the read-only flag at the same relative path and SHALL list each such mount in `isolation.readOnlyMounts`; WHERE the option is not set, THE Box_Runner SHALL use the default `"omit"` and SHALL mount no path other than the Copy.
 10. THE Differ and the Fingerprinter SHALL ignore the excluded directories, so that a change inside an excluded directory of Original produces no entry in `changedPaths` and no Change.
 11. IF a `path` ward in the evaluated `WardSet` protects a path that lies inside an excluded directory (for example `node_modules/.bin/tool` when `node_modules` is excluded), THEN THE Box_Runner SHALL detect this case before the first action runs, SHALL add the diagnostic `protected-path-excluded` listing the ward `id` and the protected path, SHALL state in the report that changes at that path are not visible to the Differ, and SHALL set Runner_Verdict to at least `warn`; this applies in both `excludedDirMode` values.
@@ -123,7 +123,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 
 #### Acceptance Criteria
 
-1. THE Box_Runner SHALL start every Box with `--network none`, `--dns 127.0.0.1`, `--cap-drop ALL`, `--security-opt no-new-privileges`, `--pids-limit`, `--memory`, `--cpus`, `--read-only`, and a `--tmpfs` mount for `/tmp`.
+1. THE Box_Runner SHALL start every Box with `--network none`, `--dns 127.0.0.1`, `--init`, `--cap-drop ALL`, `--security-opt no-new-privileges`, `--pids-limit`, `--memory`, `--cpus`, `--read-only`, and a `--tmpfs` mount for `/tmp`.
 2. THE Box_Runner SHALL use the configurable defaults `--pids-limit 256`, `--memory 1g` (with equal memory-swap), `--cpus 2`, and a 64 MiB tmpfs for `/tmp`, and the scenarios of Requirement 18 SHALL pass under these defaults.
 3. THE Box_Runner SHALL mount exactly one host path read-write, the Copy, and SHALL mount no other host path except the read-only mounts of Requirement 4 criterion 9.
 4. THE Box_Runner SHALL NOT pass `--privileged`, `--cap-add`, `--network` with a value other than `none`, `--pid host`, `--ipc host`, or any mount whose source is the Docker socket, the home directory, or a parent directory of Original.

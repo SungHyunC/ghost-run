@@ -24,14 +24,14 @@ layers and is used only inside the network-less box, never on the host.
 
 ## Libraries and licenses
 
-| Component | Where | License |
-|---|---|---|
-| Node.js 20 (base image `node:20-bookworm-slim`) | box | MIT |
-| strace | box | LGPL-2.1-or-later |
-| sqlite3 | box | Public domain |
-| curl | box | curl license |
-| openssl | box | Apache-2.0 |
-| ca-certificates | box | GPL-2.0-or-later (scripts), MPL-2.0 (certificate data) |
-| shell-quote | host dependency | MIT |
+| Component | Where | Version | License |
+|---|---|---|---|
+| Node.js (base image `node:20-bookworm-slim`) | box | v20.20.2 | MIT |
+| strace | box | 6.1-0.1 | LGPL-2.1-or-later |
+| sqlite3 | box | 3.40.1-2+deb12u2 | Public domain |
+| curl | box | 7.88.1-10+deb12u15 | curl license |
+| openssl | box | 3.0.22-1~deb12u1 | Apache-2.0 |
+| ca-certificates | box | 20250419~deb12u1 | GPL-2.0-or-later (scripts), MPL-2.0 (certificate data) |
+| shell-quote | host dependency | see `package.json` | MIT |
 
-Licenses of the box packages are the upstream Debian package licenses and must be confirmed again before merge.
+Box package versions and licenses are those of the Debian bookworm packages installed in the box image.

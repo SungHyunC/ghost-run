@@ -290,18 +290,18 @@ Decisions reflected in this plan:
     - `ghost-runner/tests/fixtures/fake-docker.ts`: implements the client interface from `cli.ts`, with scripted exit codes and timeouts, a fake clock, one injectable failure at a chosen phase (copy, create, audit, exec, collect, fingerprint, diff), an inventory of containers and volumes per run id, and scripted recorder output (events, captured payloads) so pipeline tests can run without Docker.
     - _Requirements: 7.2, 7.8, 16.2, 16.4_
 
-- [ ] 12. Repo_World and pipeline
-  - [ ] 12.1 Implement `src/world/repo-world.ts`, `src/world/render.ts`, and `stepInSession`
+- [x] 12. Repo_World and pipeline
+  - [x] 12.1 Implement `src/world/repo-world.ts`, `src/world/render.ts`, and `stepInSession`
     - `createRepoWorld(opts)` implementing all six `World<RepoState, ShellAction>` functions, `metadata: { id: "repo", deterministic: false }`, `dispose()` that removes every Copy it created plus a best-effort `process` exit sweep, and the compile-time declaration `const w: World<RepoState, ShellAction> = repoWorld`.
     - `snapshot()` uses the Original fingerprint hashes as baseline (D3); `step` clones the input snapshot's directory, opens a one-action box session, never mounts the input directory, and returns `success: false` with an error text on non-zero exit, timeout, or Docker error; `render` returns `{ kind: "repo-tree", entries: [{ path, type, size }] }` sorted by path.
     - `stepInSession(session, index, action)` is the single shared implementation used by `runPlan` and `Repo_World.step`; `RepoState.lastStep` carries exit code, events, and diagnostics.
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 14.7_
 
-  - [ ] 12.2 Write property test for render [no-docker]
+  - [x] 12.2 Write property test for render [no-docker]
     - **Property 17: Render is JSON-safe**
     - **Validates: Requirements 2.6**
 
-  - [ ] 12.3 Implement `src/pipeline.ts` (`runPlan`)
+  - [x] 12.3 Implement `src/pipeline.ts` (`runPlan`)
     - Orchestrate: option validation, availability check (Plan B on failure), Original fingerprint before (overlapped with box create), copier, box with audit, baseline, step loop through `stepInSession`, recorder collect, fingerprint after with `compareFingerprints`, `WardEngine.evaluate(report, wardSet, { secretValues, payloads })` with the `wardSet` option, runner verdict and claims, `RunResult` assembly with `PhaseDurations`, and `finally` cleanup of container, volume, and Copy directory (cleanup errors go to diagnostics and never mask the original error). The `secretValues` read and release are added in task 12.8.
     - Report assembly: `snapshots[0]` before the first action, `snapshots[i+1]` after action `i`, `changes[i]` from `repoWorld.diff`, `effectsOutside[i]` from the static analyzer, `observedEvents` from the recorder, `variantResults: []`; arrays cut at the last executed step on timeout.
     - Do not deduplicate observed events against static Effects (decision 5).
@@ -310,45 +310,45 @@ Decisions reflected in this plan:
     - Emit `protected-path-excluded`, `baseline-race`, `diff-unstable`, `recorder-failure`, and `sqlite-unreadable` diagnostics.
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 14.1, 14.2, 14.3, 14.4, 15.1, 15.3, 15.4, 16.1, 16.2, 16.3, 16.4_
 
-  - [ ] 12.4 Write property test for Plan B disclosure [no-docker]
+  - [x] 12.4 Write property test for Plan B disclosure [no-docker]
     - Use the fake Docker client configured as unreachable and as image-missing; assert no action or process other than the Docker probe runs.
     - **Property 8: Plan B states what it does not claim**
     - **Validates: Requirements 3.2, 3.3, 3.4, 15.1, 15.3, 15.4, 17.6**
 
-  - [ ] 12.5 Write property test for step outcome handling and cleanup under injected failure [no-docker]
+  - [x] 12.5 Write property test for step outcome handling and cleanup under injected failure [no-docker]
     - **Property 18: Step outcome handling and cleanup under injected failure**
     - **Validates: Requirements 2.4, 7.2, 7.8, 16.2, 16.4**
 
-  - [ ] 12.6 Implement `src/index.ts` and the package build
+  - [x] 12.6 Implement `src/index.ts` and the package build
     - Export the public API: `createRepoWorld`, `runPlan`, `serializeRunResult`, `parseRunResult`, `analyze` (as the static analyzer entry), option and result types, errors.
     - Make `tsconfig.build.json` emit `dist/` with declarations; add `exports` and `files` to `ghost-runner/package.json`.
     - _Requirements: 1.1, 1.2, 14.4_
 
-  - [ ] 12.7 Write unit test that observed events and static Effects are not deduplicated [no-docker]
+  - [x] 12.7 Write unit test that observed events and static Effects are not deduplicated [no-docker]
     - With the fake Docker client, run a plan whose static analysis finds `https://setup-check.example/x` and whose recorder reports a network attempt to `setup-check.example`; assert the report contains both the `Effect` and the `ObservedEvent` and that neither list is reduced.
     - _Requirements: 8.10, 9.2, 15.2, 15.5_
 
-  - [ ] 12.8 Read `secretValues` into memory before the first action and release it after evaluation
+  - [x] 12.8 Read `secretValues` into memory before the first action and release it after evaluation
     - In `runPlan` (`src/pipeline.ts`) and `src/verdict.ts`: when the evaluated `WardSet` contains an `egress` ward, read, after the Copier finishes and before the first action runs, the contents of the files in the Copy (not Original) that match the `secrets` patterns of the `egress` wards into a `Map<string, Uint8Array>` keyed by Copy-relative path (core `SecretValues`). Only egress `secrets` entries select files; the default `secretPatterns` option does not cause content to be read.
     - Hold the contents in process memory only. Never write them to disk, logs, the serialized `RunResult`, or graveyard output; derive at most a byte length or SHA-256. Never place them in `RunOutput.payloads` or `RepoState`, and do not add a `secretValues` field to `RunResult`.
     - Pass `secretValues` to `WardEngine.evaluate(report, wardSet, { secretValues, payloads })`. After it returns, call `.clear()` on the map and drop the reference before the `RunResult` is returned.
     - A matching file that cannot be read from the Copy adds the diagnostic `secret-values-unreadable` with the Copy-relative path only, sets `isolation.p6Claimed` to `false`, and gives at least `warn`.
     - _Requirements: 9.1, 9.4, 9.10, 9.11, 9.12, 9.13, 14.2_
 
-  - [ ] 12.8a Cap the count and size of `secretValues` read from the Copy
+  - [x] 12.8a Cap the count and size of `secretValues` read from the Copy
     - Add `MAX_SECRET_FILES = 16` and `MAX_SECRET_FILE_BYTES = 65536` to `src/config.ts` (fixed constants, not options).
     - In the `secretValues` read of task 12.8: order matching files by UTF-8 byte order of the Copy-relative path; read only the first 16 (an unreadable file counts toward the 16); read each with a bounded read of at most 65,536 bytes, so the first 65,536 bytes are kept and the rest are never loaded. A file beyond the count is not read (size from `lstat`).
     - For each capped file add one Diagnostic `secret-values-capped` with `path` (Copy-relative) and `detail { reason: 'count' | 'size', byteLength, cap }`. No content, hash, or other derived value. It does not change `p6Claimed` and has no verdict effect by itself. Add `secret-values-capped` to the `Diagnostic` name comment in `src/result.ts`.
     - Do not change the Behavior_Criterion path: secret-read events and the network-attempt check do not use `secretValues`, so they still cover every secret file. The caps do not change where `secretValues` may be written (still nowhere).
     - _Requirements: 9.9, 9.11, 9.15_
 
-  - [ ] 12.8b Write the `secretValues` cap tests [no-docker]
+  - [x] 12.8b Write the `secretValues` cap tests [no-docker]
     - With the fake Docker client and a generated Copy fixture, assert: (1) with 17 or more matching secret files, exactly the first 16 in path byte order are in `secretValues` and each skipped file has one `secret-values-capped` Diagnostic with `reason: 'count'`, its original byte length, and cap 16; (2) a file over 65,536 bytes is truncated to its first 65,536 bytes, with a `secret-values-capped` Diagnostic (`reason: 'size'`, original length, cap 65,536); a file of exactly 65,536 bytes gets none; (3) the selection and truncation are identical across repeated runs and across shuffled directory listing order.
     - Assert the Diagnostic holds only path, reason, and the two numbers: with a canary placed in a skipped file and in the truncated tail, no output channel (serialized `RunResult`, diagnostics, notices, logs, graveyard) contains the canary or any 8-byte window of the file content in raw, base64, hex, or URL-encoded form.
     - Assert that the behavior criterion is unaffected: a run that reads a capped (skipped or truncated) secret file and then makes an unapproved network attempt still gives `block` from the `egress` ward with the same violation as without caps, and `p6Claimed` is unchanged by the caps.
     - _Requirements: 9.4, 9.11, 9.15_
 
-  - [ ] 12.9 Write the no-leak test over all output channels [no-docker]
+  - [x] 12.9 Write the no-leak test over all output channels [no-docker]
     - With the fake Docker client, run a plan against a fixture whose `.env` holds the canary `sk-CANARY-abc123` plus filler lines, with an `egress` ward whose `secrets` include `.env`. Collect every output channel: the serialized `RunResult`, the serialized `report`, captured `console` and logger output (spies), the graveyard output, a recursive read of every file written outside the Copy (run directory, temp files, recorder tar extraction target), and the serialized `WardVerdict`.
     - Assert with a sliding window over the secret file content that no channel contains the canary or any contiguous substring longer than 8 bytes, in raw, base64, hex, or URL-encoded form. A second variant spies on the file-system layer and asserts that no write call receives bytes containing a window of the secret content. The captured network payload of scenario 3 is the only allowed exception, and only its length and SHA-256 are serialized.
     - Assert that after `runPlan` returns, `RunOutput` and `RunResult` hold no reference to the `secretValues` map (a structural walk of the returned objects, plus a `WeakRef` check after forced garbage collection when run with `--expose-gc`).
@@ -356,56 +356,56 @@ Decisions reflected in this plan:
     - Keep Property 12 (task 4.5) aligned with this test: same 8-byte window and the same four encodings.
     - _Requirements: 9.4, 9.11, 9.12, 9.13, 9.14, 18.6_
 
-- [ ] 13. Checkpoint - Ensure all tests pass
+- [x] 13. Checkpoint - Ensure all tests pass
   - Run all `[no-docker]` tests, `pnpm lint`, and `pnpm -r build`. Ask the user if questions arise.
 
-- [ ] 14. Docker-dependent and integration tests
-  - [ ] 14.1 Create the Docker test reporter label
+- [x] 14. Docker-dependent and integration tests
+  - [x] 14.1 Create the Docker test reporter label
     - Add a vitest reporter or helper so that suites skipped by `describeDocker` print `skipped (docker unavailable)` in the summary and P1, P5, and P6 are never counted as passed in that case; add a `partial (n of 20 examples)` label for interrupted Docker properties.
     - _Requirements: 17.7_
 
-  - [ ] 14.2 Write property test for P1 on the Docker box [docker]
+  - [x] 14.2 Write property test for P1 on the Docker box [docker]
     - Skipped when Docker is unavailable; not asserted in Plan B. Pool of 2 slots in the on-save profile.
     - **Property 19: P1 for the Docker box (claimed in Docker-box runs, with Docker available)**
     - **Validates: Requirements 17.1**
 
-  - [ ] 14.3 Write property test for P3 on the Repo_World [docker]
+  - [x] 14.3 Write property test for P3 on the Repo_World [docker]
     - The Repo_World `step` runs in a box, so this test needs Docker; report `skipped (docker unavailable)` otherwise.
     - **Property 20: P3 for the Repo_World (claimed in all worlds)**
     - **Validates: Requirements 2.3, 17.3**
 
-  - [ ] 14.4 Write property test for P5 and P6 where prerequisites hold [docker]
+  - [x] 14.4 Write property test for P5 and P6 where prerequisites hold [docker]
     - P5 only where P1 holds; P6 only when `p6Claimed` is true; neither is asserted in Plan B or when Docker is unavailable.
     - **Property 21: P5 and P6 where their prerequisites hold**
     - **Validates: Requirements 17.4, 17.5, 9.2, 8.3**
 
-  - [ ] 14.5 Write property test that the pipeline and Repo_World agree [docker]
+  - [x] 14.5 Write property test that the pipeline and Repo_World agree [docker]
     - **Property 22: Pipeline and Repo_World agree**
     - **Validates: Requirements 14.7**
 
-  - [ ] 14.6 Write the port 53, 80, and 443 binding test under hardened options (W9) [docker]
+  - [x] 14.6 Write the port 53, 80, and 443 binding test under hardened options (W9) [docker]
     - Start the box with the full hardening options (`--cap-drop ALL`, `--user <host uid>:<host gid>`, `--read-only`, `--network none`, `no-new-privileges`) and assert that the fake DNS server binds UDP 53 and the HTTP and TLS listeners bind TCP 80 and 443 as the unprivileged user; report `skipped (docker unavailable)` without Docker.
     - _Requirements: 8.13, 5.1_
 
-  - [ ] 14.7 Write the five scenario acceptance tests [docker]
+  - [x] 14.7 Write the five scenario acceptance tests [docker]
     - Scenario 1: a `sql-row-count` Change for `users`, `rowsBefore` 1206 to `rowsAfter` 0 with `dropped: true`. Scenario 2: `file-deleted` for every file in `data/` and `build/`. Scenario 3: `secret-read` of `.env` followed by a `network-attempt` to `setup-check.example` whose event carries an `eventId` that is a key of `RunOutput.payloads`, captured payload SHA-256 equal to the hash of a body that contains the canary, serialized result free of the canary (and of any secret-content substring over 8 bytes in raw, base64, hex, and URL-encoded form). Scenario 4: `changes[0]` is `[]` for fixture paths, no `registry.npmjs.org` event, total time under the scenario limit. Scenario 5: `npm run clean` produces `file-deleted` for `data/`.
     - Add a grep-based test [no-docker] that fixtures contain only reserved domains (plus `registry.npmjs.org` as the `allow_hosts` example).
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7, 8.11, 8.14, 9.4_
 
-  - [ ] 14.8 Write the `verifyWorld` conformance test [docker]
+  - [x] 14.8 Write the `verifyWorld` conformance test [docker]
     - `verifyWorld(repoWorld, { id: "repo", deterministic: false, wardSet })` imported from `@ghost-run/core/verify` passes; P2 is skipped because `deterministic: false`.
     - Add a compile-time assertion [no-docker] that `repoWorld` is assignable to `World<RepoState, ShellAction>` and `metadata.deterministic === false`.
     - _Requirements: 17.9, 2.1, 2.9_
 
-  - [ ] 14.9 Write the Plan B transition integration test [no-docker]
+  - [x] 14.9 Write the Plan B transition integration test [no-docker]
     - Point `DOCKER_HOST` at a deliberately unreachable address; assert Plan B result, the exact notice text, `rehearsed: false`, all claims false, and that the check returns within 2.0 s.
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 15.3, 15.4_
 
-  - [ ] 14.10 Write fake-clock timeout tests [no-docker]
+  - [x] 14.10 Write fake-clock timeout tests [no-docker]
     - Docker check 2.0 s, copy 20 s with partial-Copy removal, execution 30 s with `docker kill` and partial diff, pipeline 55 s with return within 60 s and cleanup.
     - _Requirements: 4.8, 7.3, 7.4, 7.5, 7.6, 7.7, 3.1_
 
-  - [ ] 14.11 Write the repository scan test for hidden Unicode and credential patterns [no-docker]
+  - [x] 14.11 Write the repository scan test for hidden Unicode and credential patterns [no-docker]
     - Scan `ghost-runner/` and `.kiro/specs/ghost-runner/` for tag characters (U+E0000 to U+E007F), zero-width characters (U+200B to U+200D, U+2060, U+FEFF), and bidi controls (U+202A to U+202E, U+2066 to U+2069); build the character classes from `\u` escapes in the test code. Also assert no real-credential patterns (only canary values).
     - _Requirements: 18.6, 18.7_
 

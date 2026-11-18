@@ -11,12 +11,23 @@
  *   steps.jsonl       one closing marker per step: {"end":i,"exit":code,"probe":true}
  *                     `probe` is the recorder-liveness probe result (the wrapper connected
  *                     to its own listeners after the action).
- *   dns.jsonl, http.jsonl, tls.jsonl   listener logs (a missing file means no events)
+ *   dns.jsonl, http.jsonl, tls.jsonl   listener logs (a missing file means no events).
+ *                     http/tls lines may carry `body`, the captured request body in base64.
+ *
+ * Captured bodies never leave this module as part of a serializable value: they are returned
+ * only in `CollectResult.payloads` (in memory), keyed by the `eventId` of exactly one event.
  */
 import type { ObservedEvent } from '@ghost-run/core';
 import type { DockerClient } from '../docker/cli.js';
-import type { Diagnostic } from '../result.js';
-import { toObservedEvents, SourcedCollector, type PayloadCaptureMeta, type SourcedObservation } from './events.js';
+import type { CaptureSummary, Diagnostic } from '../result.js';
+import { createHash } from 'node:crypto';
+import {
+  EventBuilder,
+  SourcedCollector,
+  toObservedEvents,
+  type PayloadCaptureMeta,
+  type SourcedObservation,
+} from './events.js';
 import { parseDnsLog, parseHttpLog, parseTlsLog } from './parse-logs.js';
 import { parseStrace } from './parse-strace.js';
 
@@ -175,12 +186,21 @@ export interface CollectOptions {
   readonly deadlineAt?: number;
   readonly timeoutMs?: number;
   readonly maxBytes?: number;
+  /**
+   * Per-run eventId counter. Pass the same builder for every collect call of one run so ids
+   * stay unique (Req 8.14). Default: a fresh builder.
+   */
+  readonly eventBuilder?: EventBuilder;
 }
 
 export interface CollectResult {
   readonly observations: readonly SourcedObservation[];
   readonly events: readonly ObservedEvent[];
   readonly captures: readonly PayloadCaptureMeta[];
+  /** Captured bodies keyed by `ObservedEvent.eventId` of exactly one event in `events`. Memory only. */
+  readonly payloads: ReadonlyMap<string, Uint8Array>;
+  /** Serializable summary of `payloads`: id, byte length and SHA-256 of the stored capture (Req 8.11). */
+  readonly payloadCaptures: readonly CaptureSummary[];
   readonly diagnostics: readonly Diagnostic[];
   /** False when any `recorder-failure` was added; the caller then sets `p6Claimed` false and verdict >= warn. */
   readonly recorderOk: boolean;
@@ -202,6 +222,8 @@ function failed(reason: RecorderFailureReason, extra: Diagnostic[] = []): Collec
     observations: [],
     events: [],
     captures: [],
+    payloads: new Map(),
+    payloadCaptures: [],
     diagnostics: [failure(reason), ...extra],
     recorderOk: false,
     recorder: RECORDER,
@@ -304,10 +326,21 @@ export async function collectRecorder(
   }
 
   const observations = merged.observations();
+  const built = (opts.eventBuilder ?? new EventBuilder()).build(toObservedEvents(observations), [
+    ...http.bodies,
+    ...tls.bodies,
+  ]);
+  const payloadCaptures: CaptureSummary[] = [...built.payloads].map(([eventId, bytes]) => ({
+    eventId,
+    byteLength: bytes.length,
+    sha256: createHash('sha256').update(bytes).digest('hex'),
+  }));
   return {
     observations,
-    events: toObservedEvents(observations),
+    events: built.events,
     captures: [...http.captures, ...tls.captures],
+    payloads: built.payloads,
+    payloadCaptures,
     diagnostics,
     recorderOk: diagnostics.length === 0,
     recorder: RECORDER,

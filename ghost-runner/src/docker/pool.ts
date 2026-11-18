@@ -33,7 +33,7 @@ import { join } from 'node:path';
 import type { ResolvedRunnerOptions } from '../config.js';
 import { createBox, type Box } from './box.js';
 import type { DockerClient } from './cli.js';
-import { LABEL_POOL, LABEL_POOL_OWNER, LABEL_RUN_ID } from './hardening.js';
+import { LABEL_POOL, LABEL_POOL_OWNER, LABEL_RUN_ID, POOL_BOX_MAX_LIFETIME_SEC } from './hardening.js';
 
 /** The exit handler must finish within this time (Req 6.7). */
 export const POOL_EXIT_BUDGET_MS = 5_000;
@@ -254,6 +254,7 @@ export function createPool(p: PoolParams): Pool {
         uid: p.uid,
         gid: p.gid,
         poolOwner: info.owner,
+        maxLifetimeSec: POOL_BOX_MAX_LIFETIME_SEC,
         execLimitMs: IDLE_EXEC_LIMIT_MS,
         deadlineAt: now() + SLOT_START_TIMEOUT_MS,
       });

@@ -126,6 +126,8 @@ describe('Property 5: Hardened argv', () => {
           expect(args[0]).toBe('run');
           expect(flagValues(args, '--network')).toEqual(['none']);
           expect(flagValues(args, '--dns')).toEqual(['127.0.0.1']);
+          // Reaping init in front of ghost-init (orphans of an action must not become zombies).
+          expect(args.filter((a) => a === '--init')).toHaveLength(1);
           expect(flagValues(args, '--cap-drop')).toEqual(['ALL']);
           expect(flagValues(args, '--security-opt')).toEqual(['no-new-privileges']);
           expect(flagValues(args, '--pids-limit')).toEqual([String(resolved.limits.pids)]);
@@ -140,8 +142,11 @@ describe('Property 5: Hardened argv', () => {
           expect(flagValues(args, '--workdir')).toEqual([WORK_DIR]);
           expect(flagValues(args, '--name')).toEqual([containerName(runId)]);
           expect(flagValues(args, '--entrypoint')).toEqual(['ghost-init']);
-          expect(args[args.length - 1]).toBe(opts.image);
-          expect(args[args.length - 2]).toBe('ghost-init');
+          // `... --entrypoint ghost-init <image> --max-lifetime <sec>` (self-expiry, see hardening.ts).
+          expect(args[args.length - 3]).toBe(opts.image);
+          expect(args[args.length - 4]).toBe('ghost-init');
+          expect(args[args.length - 2]).toBe('--max-lifetime');
+          expect(Number(args[args.length - 1])).toBeGreaterThan(0);
           expect(args.filter((a) => a === opts.image)).toHaveLength(1);
 
           // Nothing that weakens the box.
@@ -155,7 +160,7 @@ describe('Property 5: Hardened argv', () => {
           expect(mountSpecs).toHaveLength(2 + readonlyMounts.length);
           const rwBinds = mountSpecs.filter((m) => m.startsWith('type=bind,') && !m.endsWith(',readonly'));
           expect(rwBinds).toEqual([`type=bind,src=${copyDir},dst=${WORK_DIR}`]);
-          expect(mountSpecs.filter((m) => m.startsWith('type=volume,'))).toEqual([`type=volume,dst=${REC_DIR}`]);
+          expect(mountSpecs.filter((m) => m.startsWith('type=volume,'))).toEqual([`type=volume,dst=${REC_DIR},volume-label=ghost-run.run-id=${runId}`]);
           const roBinds = mountSpecs.filter((m) => m.endsWith(',readonly'));
           expect(roBinds).toEqual(readonlyMounts.map((m) => `type=bind,src=${m.source},dst=${m.destination},readonly`));
           expect(mountSpecs.length).toBe(rwBinds.length + 1 + roBinds.length);

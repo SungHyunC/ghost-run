@@ -1,6 +1,9 @@
+import { createHash } from 'node:crypto';
 import {
+  PAYLOAD_CAPTURE_CAP_BYTES,
   SourcedCollector,
   type HostLookup,
+  type PayloadBody,
   type PayloadCaptureMeta,
   type SourcedObservation,
 } from './events.js';
@@ -18,10 +21,22 @@ export interface DnsLogResult {
 export interface ListenerLogResult {
   readonly observations: readonly SourcedObservation[];
   readonly captures: readonly PayloadCaptureMeta[];
+  /**
+   * Decoded request bodies from the base64 `body` field, in log order. Memory only: never
+   * serialize or log these (Req 8.11). A body whose length or SHA-256 disagrees with the
+   * logged `bytes`/`sha256` is dropped and counted in `invalidLines`.
+   */
+  readonly bodies: readonly PayloadBody[];
   readonly invalidLines: number;
 }
 
 const SHA256 = /^[0-9a-f]{64}$/;
+const BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+/** Strict base64 decode. `undefined` for anything that is not canonical base64. */
+function decodeBase64(v: string): Buffer | undefined {
+  return BASE64.test(v) ? Buffer.from(v, 'base64') : undefined;
+}
 
 function parseLines(text: string): { value: Record<string, unknown> | undefined }[] {
   const out: { value: Record<string, unknown> | undefined }[] = [];
@@ -87,6 +102,7 @@ function parseListenerLog(
 ): ListenerLogResult {
   const collector = new SourcedCollector();
   const captures: PayloadCaptureMeta[] = [];
+  const bodies: PayloadBody[] = [];
   let invalid = 0;
   for (const { value } of parseLines(text)) {
     let host: string | undefined;
@@ -109,8 +125,23 @@ function parseListenerLog(
     if (typeof bytes === 'number' && Number.isInteger(bytes) && bytes > 0 && typeof sha === 'string' && SHA256.test(sha)) {
       captures.push({ stepIndex: step, destination, source, byteLength: bytes, sha256: sha });
     }
+    const rawBody = value?.['body'];
+    if (rawBody !== undefined) {
+      const decoded = typeof rawBody === 'string' ? decodeBase64(rawBody) : undefined;
+      if (
+        decoded === undefined ||
+        decoded.length === 0 ||
+        decoded.length > PAYLOAD_CAPTURE_CAP_BYTES ||
+        decoded.length !== bytes ||
+        createHash('sha256').update(decoded).digest('hex') !== sha
+      ) {
+        invalid++;
+      } else {
+        bodies.push({ stepIndex: step, destination, body: new Uint8Array(decoded) });
+      }
+    }
   }
-  return { observations: collector.observations(), captures, invalidLines: invalid };
+  return { observations: collector.observations(), captures, bodies, invalidLines: invalid };
 }
 
 /** Parse the HTTP listener log `{ host, port, bytes, sha256, step }`. Never throws. */

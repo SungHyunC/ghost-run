@@ -82,4 +82,10 @@ if (process.argv.includes('--probe')) {
   process.on('uncaughtException', (err) => process.stderr.write(`ghost-init: ${err && err.message ? err.message : err}\n`));
   process.on('unhandledRejection', (err) => process.stderr.write(`ghost-init: ${err && err.message ? err.message : err}\n`));
   await main();
+  // Self-expiry: a box whose host died must not stay Up forever. `--max-lifetime <sec>`.
+  const i = process.argv.indexOf('--max-lifetime');
+  const sec = i > 0 ? Number(process.argv[i + 1]) : NaN;
+  if (Number.isFinite(sec) && sec > 0) {
+    setTimeout(() => process.exit(0), Math.min(sec, 86400) * 1000);
+  }
 }

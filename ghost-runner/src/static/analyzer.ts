@@ -28,6 +28,9 @@ const DB_SCHEMES = [
 // scheme://rest, up to whitespace, quotes, or shell metacharacters.
 const URL_RE = /\b([a-z][a-z0-9+.-]*):\/\/[^\s'"`<>|;&()\\]+/gi;
 
+/** Effect kind recorded when the command text cannot be parsed. */
+export const UNPARSEABLE_KIND = 'unparseable-command';
+
 const isUnderWork = (p: string): boolean => {
   const n = posix.normalize(p);
   return n === WORK_ROOT || n.startsWith(`${WORK_ROOT}/`);
@@ -48,7 +51,7 @@ export interface AnalyzableAction {
 export function analyze(action: AnalyzableAction): Effect[] {
   const effects: Effect[] = [];
   const seen = new Set<string>();
-  const add = (kind: 'external-path' | 'url' | 'db-connection', destination: string): void => {
+  const add = (kind: 'external-path' | 'url' | 'db-connection' | typeof UNPARSEABLE_KIND, destination: string): void => {
     const key = `${kind}\u0000${destination}`;
     if (seen.has(key)) return;
     seen.add(key);
@@ -56,7 +59,21 @@ export function analyze(action: AnalyzableAction): Effect[] {
   };
 
   // Keep variable references literal so `$HOME/x` is not silently dropped.
-  const entries = parse(action.command, (name: string) => `$${name}`);
+  // shell-quote throws on some malformed input (e.g. `${`). The analyzer must never throw:
+  // the command is reported as unparseable (which raises the verdict to at least warn) and
+  // URLs are still extracted from the raw text. The destination never contains command text.
+  let entries: ReturnType<typeof parse>;
+  try {
+    entries = parse(action.command, (name: string) => `$${name}`);
+  } catch (e) {
+    const reason = e instanceof Error && e.message.length > 0 ? e.message.slice(0, 80) : 'parse error';
+    add(UNPARSEABLE_KIND, `unparseable shell command (${reason})`);
+    entries = [];
+    for (const m of action.command.matchAll(URL_RE)) {
+      const scheme = (m[1] ?? '').toLowerCase();
+      add(DB_SCHEMES.includes(scheme) ? 'db-connection' : 'url', m[0]);
+    }
+  }
 
   for (const entry of entries) {
     if (typeof entry !== 'string') continue;

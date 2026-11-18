@@ -272,7 +272,7 @@ Observed events cannot travel through core's `Snapshot`, so each `RepoState` car
 3. `-P` keeps symbolic links as links. A link pointing outside Original is copied as a link; inside the Box its target resolves against the Box file system, not the host, so nothing outside the Copy is reachable. The static analyzer reports such links as findings.
 4. Cloning is attempted on the same device. Placement order: `os.tmpdir()/ghost-run/<runId>` when `st_dev` equals Original's device (on macOS `$TMPDIR` is on the same APFS data volume); otherwise a sibling `<Original parent>/.ghost-run-<runId>` when writable; otherwise `os.tmpdir()` with `copy.cloned: false` (Req 4.2). The Box never mounts the parent directory, only the Copy directory.
 5. `copiedAt`: after the last `cp` returns, the copier writes a sentinel file beside the Copy (not inside it) and reads its `ctime` with nanosecond precision. This uses the file system's own clock, which is the clock that stamps file `ctime`, so there is no skew (Req 4.5). The same trick refreshes the baseline timestamp before every later step.
-6. A 20 s absolute timer aborts the copy, removes the partial Copy, and returns `copy-timeout` (Req 4.8).
+6. A 20 s absolute timer aborts the copy, removes the partial Copy, and returns `copy-timeout` (Req 4.8). The Box is created in parallel with the Original fingerprint and then bind-mounts the (initially empty) Copy directory that the copier fills in place; this hides the container start-up latency (Req 5.10, Req 19). On `copy-timeout` no action has run, and the Box is removed during cleanup. Decision (Req 4.8 wording): requirements.md was aligned to this implementation instead of serializing "copy, then create Box", because serializing adds the Box start time to every run and re-orders the phases that the timing budget and pipeline tests rely on. The guarantee that matters is kept: no action is executed and no container of the run remains.
 7. A folder-level clone helper (Req 4.7) is an optional `copyStrategy` injected into the copier; the exclusion and link properties (Property 3) run against it too.
 
 ### Box lifecycle and hardening (`docker/`)
@@ -283,15 +283,16 @@ Observed events cannot travel through core's `Snapshot`, so each `RepoState` car
 docker run -d --name ghost-<runId>
   --label ghost-run.run-id=<uuid> [--label ghost-run.pool=1 --label ghost-run.pool-owner=<owner>]
   --network none --dns 127.0.0.1
+  --init
   --cap-drop ALL --security-opt no-new-privileges
   --pids-limit 256 --memory 1g --memory-swap 1g --cpus 2
   --read-only --tmpfs /tmp:rw,exec,nosuid,nodev,size=64m
   --user <host uid>:<host gid> --workdir /work
   --mount type=bind,src=<realpath Copy>,dst=/work
-  --mount type=volume,dst=/ghost-rec
+  --mount type=volume,dst=/ghost-rec,volume-label=ghost-run.run-id=<uuid>
   [--mount type=bind,src=<Original>/<dir>,dst=/work/<dir>,readonly]   # excludedDirMode=readonly-mount only
   -e PATH=<fixed> -e HOME=/tmp/home -e CI=true -e NPM_CONFIG_UPDATE_NOTIFIER=false
-  --entrypoint ghost-init <image>
+  --entrypoint ghost-init <image> --max-lifetime <sec>   # 120 s; pool slots 3600 s
 ```
 
 Notes:
@@ -301,6 +302,7 @@ Notes:
 - `--user` is the host uid/gid so the Copy files belong to the host user and cleanup does not need elevated rights.
 - There is no `--privileged`, `--cap-add`, `--pid host`, `--ipc host`, non-`none` network, and no socket, home, or parent-of-Original source. `strace` needs no `SYS_PTRACE` because it only traces its own children (experiment A).
 - Only one host path is mounted read-write: the Copy (Req 5.3). `/ghost-rec` is an anonymous Docker volume, not a host path (D2). The only other host mounts are the optional read-only excluded directories.
+- Leak guards (defense in depth). (a) `ghost-init --max-lifetime` exits PID 1 after the bound, so a box whose host process died (SIGKILL, shell timeout) stops on its own; 120 s is above the 55 s pipeline deadline plus collect and cleanup. A stopped box still needs `docker rm -v`; `--rm` is not used because the recorder must stay readable after a kill. (b) The anonymous `/ghost-rec` volume carries the run-id label (anonymous volumes do not inherit container labels), so `docker volume ls --filter label=ghost-run.run-id=<id>` finds a leaked volume; `rm -v` still removes it. (c) `docker/reaper.ts` registers every run id before `docker run` and drops it only after a confirmed removal; process `exit`, `SIGINT` and `SIGTERM` handlers remove the remaining boxes of this process with `docker rm -f -v` by label, and Docker test files reap boxes created during a test in `afterEach` (a timed-out vitest body is abandoned and never reaches its `finally`). (d) `runPlan` accepts `signal?: AbortSignal`: on abort it removes container, volume and Copy and rejects with `signal.reason`; a step still in flight is cleaned up again when it settles.
 - `readonly-mount` caveat: with the default `"omit"` mode, actions that need `node_modules` fail inside the Box. The fixture's `npm test` therefore runs `node --test` without dependencies.
 
 **Audit** (`auditInspect(expected, inspectJson)`, pure): compares the `docker inspect` JSON to expected values: `HostConfig.NetworkMode == "none"`, `Privileged == false`, `CapAdd` empty, `CapDrop` contains `ALL`, `ReadonlyRootfs == true`, `SecurityOpt` contains `no-new-privileges`, `PidMode` and `IpcMode` not `host`, `Config.Image` equals the expected image id, `Config.Env` is exactly the allowed set plus image-baked variables, and the `Mounts` array equals the expected set (type, source, destination, mode, rw flag). Any difference gives `isolation-violation` and `block`. The container is removed and no action runs (Req 5.7).
@@ -809,6 +811,8 @@ Reflection on merged criteria: criteria that share one generator and one asserti
 | Fingerprints differ, audit failed | `isolation-violation`, `block` |
 | Protected path inside an excluded directory | Diagnostic `protected-path-excluded`, at least `warn` |
 | Any thrown error after the Copier started | `finally` removes container, volume, and Copy directory before the error propagates; cleanup errors are logged to diagnostics and never mask the original error |
+| `runPlan` aborted through `signal` | Container, volume and Copy removed before the promise rejects with `signal.reason`; work that settles later is cleaned up again |
+| Host process exits or gets SIGINT/SIGTERM with a box alive | Reaper removes this process's boxes by run-id label (`rm -f -v`); after SIGKILL the box stops itself after `--max-lifetime` |
 | Process exit with pool slots alive | Exit handler removes this process's slots within 5 s; start-up sweep removes slots whose owner process is dead |
 | Hidden or oversized tar entries from `docker cp` | Entry rejected, treated as `recorder-failure` |
 
