@@ -199,7 +199,7 @@ Hidden characters are never written literally in this document. A hidden charact
 #### Acceptance Criteria
 
 1. THE Ghost_Hand_World package SHALL export `parseVariantConfig(text)` returning either `{ ok: true, config }` or `{ ok: false, errors }`, where each error has `code`, `message`, and `field`, and SHALL NOT throw for any string.
-2. THE `parseVariantConfig` function SHALL report `invalid-json`, `wrong-type`, `missing-field`, `unknown-field`, `out-of-range` (a count outside 1 to 20, a range with `min` greater than `max`, a non-finite bound, or a Seed outside the 32-bit unsigned range), and `input-too-large` for a text above 64 KiB.
+2. THE `parseVariantConfig` function SHALL report `invalid-json`, `wrong-type`, `missing-field`, `unknown-field`, `out-of-range` (a count outside 1 to 20, a range with `min` greater than `max`, a non-finite bound, a Seed outside the 32-bit unsigned range, or the delay range contains no integer), and `input-too-large` for a text above 64 KiB.
 3. THE Ghost_Hand_World package SHALL export `printVariantConfig(config)` that returns canonical JSON with two-space indentation, a fixed key order, and a trailing newline.
 4. FOR ALL valid Variant_Configs, THE `parseVariantConfig` of the printed text SHALL return `ok: true` with a config deep-equal to the original, and printing the parsed printed text SHALL produce an identical string (Property: GH-P2).
 5. THE Ghost_Hand_App SHALL export `parsePlanFile(text)` returning either `{ ok: true, plan }` or `{ ok: false, errors }`, where each error has `code`, `message`, and `field`, and SHALL NOT throw for any string.

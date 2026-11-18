@@ -52,14 +52,15 @@ export function sampleVariant(seed: number, index: number, config: VariantConfig
 }
 
 /**
- * Returns a copy of `base` with `variant`, the noise generator state, and a zeroed
- * delay ring installed. The ring has commandDelaySteps + 1 slots; one slot holds the
+ * Returns a copy of `base` with `variant`, the noise generator state, and a delay ring (every slot holds the current command) installed. The ring has commandDelaySteps + 1 slots; one slot holds the
  * joint targets plus the finger force. `integration` is shared, not copied or changed.
  */
 export function applyVariant(base: GhostHandState, params: VariantParams): GhostHandState {
   const slot = base.controller.jointTarget.length + 1;
+  // Every slot starts as the current command, so a delay never replays a made-up command.
+  const current = [...base.controller.jointTarget, base.controller.fingerForceN];
   const delayBuffer: number[] = [];
-  for (let i = 0; i < (params.commandDelaySteps + 1) * slot; i++) delayBuffer.push(0);
+  for (let i = 0; i < (params.commandDelaySteps + 1) * slot; i++) delayBuffer.push(current[i % slot] as number);
   return {
     ...base,
     variant: params,

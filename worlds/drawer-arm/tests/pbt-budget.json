@@ -1,1 +1,11 @@
-{ "shortRuns": null }
+{
+  "shortRuns": 36,
+  "measuredWorstExampleMs": 694.2,
+  "stepCostMicros": 33.44,
+  "measuredOn": {
+    "node": "v20.20.2",
+    "machine": "Apple M1 (darwin arm64, 8 cores)",
+    "date": "2026-11-18"
+  },
+  "rationale": "shortRuns = clamp(floor(25000 / 694.2), 20, 100) = 36. The worst example (a plan using the whole 3000-step plan limit, 7 plan executions) took a median of 694.2 ms over 3 runs at 33.44 microseconds per step; 36 examples fit the 25 s allowance of one verifyWorld call inside the 60 s hook limit. The Nightly_Run uses the full count of Requirement 18."
+}

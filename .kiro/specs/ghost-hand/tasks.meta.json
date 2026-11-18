@@ -382,6 +382,661 @@
         "chatSessionId": "sess_ffba3f0d-4497-4be4-a87e-7874bf1c3982",
         "timestamp": 1794980372736
       }
+    ],
+    "7.1 Implement the engine layer": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248823
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983259737
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983724393
+      }
+    ],
+    "7.2 Write the engine tests with the real module": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248835
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983729074
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984283557
+      }
+    ],
+    "7.3 Implement the controller, inverse kinematics, and noise and delay": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248857
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983729081
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984283566
+      }
+    ],
+    "7.4 Write the controller unit tests and the banned-function scan": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248861
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984289553
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984653959
+      }
+    ],
+    "7.5 Implement the world, diff, scene, fingerprint, reference execution, and variant job": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248864
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984289558
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984653971
+      }
+    ],
+    "7.6 Write the world example tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248866
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984663177
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984842964
+      }
+    ],
+    "7.7 Measure the short-run budget and write `tests/pbt-budget.json`": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248869
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984976487
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985176409
+      }
+    ],
+    "8.1 Implement the pure pipeline modules": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248873
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984289565
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984654515
+      }
+    ],
+    "8.2 Write the property test for claim honesty": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248877
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984663183
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984842976
+      }
+    ],
+    "8.3 Write the property test for incomplete variants": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248880
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984663384
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984842990
+      }
+    ],
+    "8.4 Write the property test for the variant result derivation": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248883
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984664184
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984843614
+      }
+    ],
+    "8.5 Write the property test for unknown contact names": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248885
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984664976
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984844400
+      }
+    ],
+    "8.6 Write the tests of the behavior before PR-1, PR-2, and PR-3 land": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248889
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984665956
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984845424
+      }
+    ],
+    "8.7 Implement the Determinism_Self_Check": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248892
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984850399
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984968076
+      }
+    ],
+    "8.8 Implement the overlay model and color tokens": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248894
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984850404
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984969176
+      }
+    ],
+    "8.9 Implement the app reducer": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248897
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984851115
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794984969814
+      }
+    ],
+    "8.10 Write the property test for overlay coverage": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248899
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985186160
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985283265
+      }
+    ],
+    "8.11 Write the overlay token contrast test": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248902
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985186337
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985284116
+      }
+    ],
+    "8.12 Write the property test for the graveyard": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248904
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985187438
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985284881
+      }
+    ],
+    "8.13 Write the self-check tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248906
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985188190
+      },
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985285530
+      }
+    ],
+    "9.1 Implement the variant executors and the worker": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248909
+      }
+    ],
+    "9.2 Implement the Three.js renderer": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248913
+      }
+    ],
+    "10. Checkpoint - foundations": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248916
+      }
+    ],
+    "11.1 Implement `runGhostHand`": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248919
+      }
+    ],
+    "11.2 Write the renderer tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248921
+      }
+    ],
+    "11.3 Write the property test for the run result order": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248924
+      }
+    ],
+    "11.4 Write the Wards_File tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248927
+      }
+    ],
+    "11.5 Create the demo plans, tune the provisional numbers, and record them": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248929
+      }
+    ],
+    "11.6 Write the demo scenario tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248932
+      }
+    ],
+    "12.1 Write the property test for ghost isolation": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248934
+      }
+    ],
+    "12.2 Write the property test for bit-exact snapshot reuse": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248937
+      }
+    ],
+    "12.3 Write the property test for no carried state": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248940
+      }
+    ],
+    "12.4 Write the property test for invalid actions": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248943
+      }
+    ],
+    "12.5 Write the property test for the diff": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248945
+      }
+    ],
+    "12.6 Write the property test for the Scene": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248946
+      }
+    ],
+    "12.7 Write the property test for the fingerprint": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248949
+      }
+    ],
+    "12.8 Write the property test for plan limits": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248951
+      }
+    ],
+    "12.9 Write the property test for frame decimation": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248953
+      }
+    ],
+    "12.10 Write the property test for the ghost diff against the reference diff": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248955
+      }
+    ],
+    "12.11 Record the Golden_Hash": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248957
+      }
+    ],
+    "12.12 Add the `verifyWorld` contract test and register `deterministic: true`": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248959
+      }
+    ],
+    "12.13 Write the property test for variant determinism and partition independence": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248961
+      }
+    ],
+    "13. Checkpoint - world properties and demo": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248964
+      }
+    ],
+    "14.1 Build the React screens": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248965
+      }
+    ],
+    "14.2 Add plan controls, the reference execution, and `Play demo`": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248968
+      }
+    ],
+    "14.3 Implement the Node entry point": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248970
+      }
+    ],
+    "14.4 Write the Node entry point tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248971
+      }
+    ],
+    "14.5 Write the DOM behavior tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248974
+      }
+    ],
+    "14.6 Write the network, storage, and start-up failure tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248976
+      }
+    ],
+    "15.1 Add the third-party notices build step": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248979
+      }
+    ],
+    "15.2 Write the source hygiene tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248981
+      }
+    ],
+    "15.3 Write the build output tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248983
+      }
+    ],
+    "16. Checkpoint - app assembled": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248986
+      }
+    ],
+    "17.1 Implement the Chrome harness without a new dependency": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248988
+      }
+    ],
+    "17.2 Playwright fallback (only if task 17.1 recorded `harness: failed`)": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248990
+      }
+    ],
+    "17.3 Measure the 3D overlay frame time": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248992
+      }
+    ],
+    "18.1 Write the claim-scope tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248994
+      }
+    ],
+    "18.2 Switch the P2 text on after the steering update": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983248998
+      }
+    ],
+    "18.3 Check the landed state of PR-1, PR-2, and PR-3": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983249001
+      }
+    ],
+    "18.4 Write the Ghost Hand README section": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983249003
+      }
+    ],
+    "18.5 Write the README consistency tests": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983249005
+      }
+    ],
+    "19.1 Add the import bans for the Ghost Hand packages to `core`, `ui`, and `wards-config`": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983249008
+      }
+    ],
+    "20. Final checkpoint": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794983249010
+      }
+    ],
+    "7. Engine, controller, and world": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985176412
+      }
+    ],
+    "8. Pure pipeline, self-check, overlay model, and reducer": [
+      {
+        "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
+        "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
+        "timestamp": 1794985285533
+      }
     ]
   }
 }

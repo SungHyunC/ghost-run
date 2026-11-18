@@ -410,6 +410,8 @@ export function runAction(engine: Engine, entry: EngineEntry, s: GhostHandState,
 The controller uses only `+ - * /`, comparisons, `Math.sqrt`, `Math.min`, `Math.max`, `Math.abs`, `Math.floor`, and `Math.ceil` (all exact or correctly rounded in ECMAScript). It calls none of `Math.sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp`, `log`, `pow`, and uses `**` only with integer exponents. A source-scan test checks this on `controller.ts`, `ik.ts`, `prng.ts`, `variant.ts`, and the noise and delay code (Requirement 5.6). Angles come from the engine (it computes them in WebAssembly), not from JavaScript trigonometry.
 
 - **Inverse kinematics.** Solve for the four arm joints so that the hand site reaches the target. Work on the scratch `MjData` of the entry (so the main data is untouched): copy `qpos`, loop `ikIterations` times: `mj_kinematics`, `mj_jacSite` for the position Jacobian J (3 by 4), error e = target minus site position, `dq = J^T (J J^T + damping I)^-1 e`, with the 3 by 3 inverse by cofactors (only `+ - * /`), add `dq`, clamp each joint to its range with `Math.min` and `Math.max`. The iteration count is fixed, so the work and the result do not depend on convergence. The residual is not an error.
+- **IK posture term.** `IkSpec` has an optional `posture` field (`weights`, `target`, `gain`). The controller passes weights `[0, 1, 1, 1]` and target `pi / 2` (a constant), so the term pulls `j2 + j3 + j4` toward `pi / 2` and keeps the hand level, pointing along -y. It is a null-space term: the null vector of the 3 by 4 Jacobian is built from signed 3 by 3 minors, and the step is that vector scaled by `gain * (target - sum) / (n . weights)`, so it does not move the hand to first order. It runs only in the second half of the iterations, because from a singular start (arm straight up) it would otherwise choose the wrong elbow branch before the position task converges. It is skipped when the null vector is nearly blind to the posture sum. It uses only `+ - * /` and comparisons.
+- **Waypoint in front of the drawer.** Reach interpolates joint targets in joint space, so the hand does not travel on a straight line in the world and can sweep through the cabinet. A plan therefore needs a `reach` waypoint in front of the drawer (clear of the front face) before the `reach` to the handle.
 - **reach(target, speed).** IK from the current `qpos`. Duration in steps `n = max(ceil(minMoveS / dt), ceil(distance / (speed * dt)))`, with `distance` the Euclidean distance from the current hand site to the target. Commanded joint targets move from the current command to the IK result by the smoothstep `3t^2 - 2t^3`, `t = k / n`.
 - **grasp(force).** Command finger force from 0 to `force` over `0.1` s (linear ramp), hold for `graspSettleS`. At the end, `holding = true` if both fingers touched the handle geom in the last step.
 - **pull(distance, speed).** Precondition `controller.holding`. Build `pullWaypoints` points on a straight line from the current hand position along +y up to `distance + pullOvershootM`, IK at each, and interpolate joint targets piecewise-linearly (duration `(distance + overshoot) / speed`). The sensed drawer displacement is the true displacement plus the noise draw times `sensorNoiseM`; when the sensed value reaches `distance`, the commanded joint targets are frozen at their current values and the action ends after `0.1` s. If the sensed value never reaches `distance`, the action ends when the planned path ends. The noise therefore moves the stopping point by up to its amplitude, and slipping fingers leave the drawer short.
@@ -875,7 +877,7 @@ Claim scope: pure functions, all environments.
 
 ### Property 2: Variant config round trip (GH-P2)
 
-*For any* valid Variant_Config (generated ranges with `min <= max`, counts from 1 to 20, seeds from 0 to 4294967295, both values of `largeCountEnabled`), `parseVariantConfig(printVariantConfig(config))` should return `ok: true` with a config deep-equal to the original, and printing the parsed text again should give an identical string.
+*For any* valid Variant_Config (generated ranges with `min <= max`, counts from 1 to 20, seeds from 0 to 4294967295, both values of `largeCountEnabled`, and a delay range that contains at least one integer), `parseVariantConfig(printVariantConfig(config))` should return `ok: true` with a config deep-equal to the original, and printing the parsed text again should give an identical string.
 
 Claim scope: pure functions, all environments.
 
@@ -883,7 +885,7 @@ Claim scope: pure functions, all environments.
 
 ### Property 3: Variant parameters stay inside their ranges (GH-P3)
 
-*For any* Seed, any variant index, and any valid Variant_Config, every field of `sampleVariant(seed, index, config)` should be finite and lie inside its declared closed range, `commandDelaySteps` should be an integer, and `noiseSeed` should be an integer from 0 to 4294967295.
+*For any* Seed, any variant index, and any valid Variant_Config (including that the delay range contains at least one integer), every field of `sampleVariant(seed, index, config)` should be finite and lie inside its declared closed range, `commandDelaySteps` should be an integer, and `noiseSeed` should be an integer from 0 to 4294967295.
 
 Claim scope: pure integer and basic IEEE-754 arithmetic; claimed in the Tested_Environments (P8, range part).
 

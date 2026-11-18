@@ -130,7 +130,22 @@ Shipped scene compiled by `worlds/drawer-arm/src/engine/mjcf.ts` with `<size mem
 
 ## Short-run budget and verifyWorld timing
 
-unmeasured
+Task 7.7. Script: `worlds/drawer-arm/scripts/measure-budget.mjs` (run `node scripts/measure-budget.mjs` from `worlds/drawer-arm`). The script has no runner of its own that can load TypeScript, so it starts the env-gated vitest file `scripts/measure-budget.measure.ts` (not a `*.test.ts` file, so a normal test run skips it; it lives in `scripts/` because the package scan forbids importing `@ghost-run/core/verify` from `tests/`). No dependency was added. Date 2026-11-18, Node v20.20.2, Apple M1 (darwin arm64, 8 cores).
+
+- Worst-case plan: 19 actions (reach, grasp, pull, release, and slow reaches) that run 2981 of the 3000 steps of the per-plan limit on the Base_World.
+- One verifyWorld example costs 7 plan executions (6 ghost runs with a fingerprint each, plus one adapter run). Each timing below is the median of 5 repetitions after one warm-up.
+- Machine load (`sysctl -n vm.loadavg`), other sessions were running: before the script `{ 6.62 9.27 10.23 }`, at the start of the measurement `{ 3.73 7.57 9.47 }`, at the end `{ 2.95 7.02 9.20 }`.
+
+| Run | Ghost run of the worst plan (ms) | Adapter run (ms) | Worst example (ms) | Step cost (microseconds) |
+|---|---|---|---|---|
+| 1 | 100.4 | 99.0 | 694.2 | 33.69 |
+| 2 | 98.5 | 98.3 | 691.1 | 33.04 |
+| 3 | 99.7 | 99.3 | 699.1 | 33.44 |
+
+- Median worst example 694.2 ms (spread 691.1 to 699.1 ms, about 1.2 percent). Median step cost 33.44 microseconds per step, including monitors and the controller.
+- `shortRuns = clamp(floor(25000 / 694.2), 20, 100) = 36`. 20 examples (13.9 s) fit the 25 s allowance, so design D14 stays as written. The value is written to `worlds/drawer-arm/tests/pbt-budget.json`. It is below 100; the Nightly_Run uses the full count of Requirement 18.
+- `verifyWorld` on the Base_World with `numRuns: 36`, the `gentle-hands` ward set, a random action generator over the declared ranges, and the `createReferenceTestAdapter` adapter: 6.86 s in one call (random plans are shorter than the worst plan, so this is below the 36 x 0.694 s = 25 s bound). The world is still registered `deterministic: false` in `world.config.ts`; the call was made with `deterministic: true` in the options, because the option is independent of the registration flag.
+- Not measured here: the call on a sampled-variant world (task 12 repeats the timing there) and the value after the scene is tuned (task 11.5 re-checks it).
 
 ## Determinism golden hash
 

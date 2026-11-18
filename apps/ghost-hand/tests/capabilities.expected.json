@@ -1,6 +1,6 @@
 {
-  "jointSelfWard": false,
-  "claimsOptional": false,
+  "jointSelfWard": true,
+  "claimsOptional": true,
   "bannerNotApplicable": true,
-  "wardsConfigExportsParseWards": false
+  "wardsConfigExportsParseWards": true
 }

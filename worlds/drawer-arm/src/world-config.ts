@@ -44,7 +44,7 @@ export interface BodyShape {
 const Q_ID = [1, 0, 0, 0] as const;
 const Q_Z_TO_X = [0.7071067811865476, 0, 0.7071067811865476, 0] as const;
 
-/** Provisional dimensions in meters. Cabinet front face at y = 0; arm base at (0, 0.45, 0.30). */
+/** Provisional dimensions in meters. Cabinet front face at y = 0; arm base at (0, 0.55, 0.30). */
 export const BODY_SHAPES: readonly BodyShape[] = [
   { body: 'cabinet', geomName: 'cabinet_box', kind: 'box', halfSize: [0.25, 0.2, 0.2], localPos: [0, -0.2, 0.2], localQuat: Q_ID, group: 'cabinet' },
   { body: 'drawer', geomName: 'drawer_front', kind: 'box', halfSize: [0.22, 0.01, 0.06], localPos: [0, -0.01, 0], localQuat: Q_ID, group: 'drawer' },
@@ -57,3 +57,29 @@ export const BODY_SHAPES: readonly BodyShape[] = [
   { body: 'finger_left', geomName: 'finger_left_geom', kind: 'box', halfSize: [0.006, 0.01, 0.025], localPos: [0, 0, 0], localQuat: Q_ID, group: 'arm' },
   { body: 'finger_right', geomName: 'finger_right_geom', kind: 'box', halfSize: [0.006, 0.01, 0.025], localPos: [0, 0, 0], localQuat: Q_ID, group: 'arm' },
 ];
+
+/** One arm hinge: axis in the parent frame, joint limits in radians, position actuator gains. Provisional. */
+export interface ArmJointSpec {
+  readonly name: string;
+  readonly axis: readonly [number, number, number];
+  readonly range: readonly [number, number];
+  readonly kp: number;
+  readonly kv: number;
+}
+
+/** The four arm hinges, in actuator and qpos order (the arm is declared first in the MJCF). */
+export const ARM_JOINTS: readonly ArmJointSpec[] = [
+  { name: 'arm_j1', axis: [0, 0, 1], range: [-1.6, 1.6], kp: 200, kv: 25 },
+  { name: 'arm_j2', axis: [1, 0, 0], range: [-1.8, 1.8], kp: 200, kv: 25 },
+  { name: 'arm_j3', axis: [1, 0, 0], range: [-2.4, 2.4], kp: 100, kv: 12 },
+  { name: 'arm_j4', axis: [1, 0, 0], range: [-2.0, 2.0], kp: 10, kv: 0.6 },
+];
+
+/** Finger slide joints (motor actuators, ctrl is a force in newtons; positive closes). */
+export const FINGER_JOINTS = {
+  names: ['finger_left_slide', 'finger_right_slide'],
+  travelM: 0.02,
+  restOffsetM: 0.03, // distance of each finger body from the hand axis when open
+  maxForceN: 50,
+  damping: 2,
+} as const;

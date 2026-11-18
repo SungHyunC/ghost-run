@@ -147,12 +147,15 @@ describe('applyVariant', () => {
     expect(out.steps).toBe(5);
   });
 
-  it('installs the noise seed and a zeroed delay ring of (delay + 1) slots', () => {
+  it('installs the noise seed and a delay ring of (delay + 1) slots that all hold the current command', () => {
     const params = { ...sampleVariant(42, 2, config), commandDelaySteps: 3 };
-    const out = applyVariant(state, params);
+    const moved: GhostHandState = { ...state, controller: { jointTarget: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], fingerForceN: 7, holding: false } };
+    const out = applyVariant(moved, params);
     expect(out.prng).toBe(params.noiseSeed);
     expect(out.delayHead).toBe(0);
     expect(out.delayBuffer).toHaveLength(4 * 7);
-    expect(out.delayBuffer.every((v) => v === 0)).toBe(true);
+    for (let slot = 0; slot < 4; slot += 1) {
+      expect(out.delayBuffer.slice(slot * 7, slot * 7 + 7)).toEqual([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 7]);
+    }
   });
 });
