@@ -301,8 +301,10 @@ Commits go per spec to the private repository the user created (github.com/SungH
 | 2a1ec6d | update the development log | docs |
 | 3ff1064 | root test, typecheck, and lint scripts run packages one at a time; ui DOM test timeout; README intro, quick start, Ghost Shell, and Built with Kiro sections | repo |
 | 3a8a570 | update the development log | docs |
+| 2e12405 | development log translated into English | docs |
+| 47704b8 | IDE probe results (Kiro IDE 1.4.215) recorded and folded into the spec, probe hooks disabled with a guard test | kiro-integration tasks 1.4, 1.6 (IDE column), 1.7, 1.8 |
 
-Not yet committed: this log, translated into English at the user's request (the log was kept in Korean until 11/18 22:50). From f91d9fa on, the content column is the commit message as written.
+Not yet committed: the latest entries of this log. The log was kept in Korean until 11/18 22:50 and was then translated into English at the user's request. From f91d9fa on, the content column is the commit message as written.
 
 ### Research (Claude Code, official sources only)
 
@@ -385,3 +387,19 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - Credits: the per-turn usage appears in `promptTurnSummaries[].usage` of the `stream-json` output. The account total cannot be seen in the CLI; check it in the web account dashboard or the IDE.
   - Modes and models: the session settings list modes such as `vibe` (Default), `spec`, `quick-spec`, `bug-fix`, `plan`, and `autonomous`, and models such as `auto`, `claude-sonnet-4.5`, `claude-haiku-4.5`, `deepseek-3.2`, and `qwen3-coder-next`. In non-interactive mode, slash commands such as `/usage` are treated as questions, so spec work picks the mode instead, as in `--agent spec`.
 - Kiro disabled the two experiment hooks at 11/18 13:20 (`enabled: false`, see the "Implementation starts" notes above). In the IDE they can also be switched with the eye icon in the Agent Hooks panel.
+
+## 2026-11-19 (Thu)
+
+### Kiro credits
+
+| Time (KST) | Event | Status bar (used / limit) | Estimated use per message | Remaining (estimate) |
+| --- | --- | --- | --- | --- |
+| 00:10 | IDE probe (kiro-integration task 1.4) in Kiro IDE 1.4.215: a new chat session (agent Default, model Auto, permission mode Supervised), messages (a) to (g), the marker question, and one extra message (g2), 7 min | | 0.90 (sum of the 9 "Est. Credits Used" values) | total about 2,291 / 4,050 (without the first turn of run 6) |
+| 00:19 | Probe wrap-up: task 1.4 marked done, IDE column of the probe results table (task 1.6), probe results folded into requirements and design (task 1.7), probe hooks disabled with a guard test (task 1.8), 5 min | | 9.20 | total about 2,300 / 4,050 (without the first turn of run 6) |
+
+### Done
+
+- **IDE probe through UI automation (00:03 to 00:10).** At the user's request, Claude Code ran the manual task 1.4 in place of the human, driving the Kiro IDE window in the background through Orca's computer-use commands (accessibility clicks and setting the chat input value; the window was never brought to the front). Synthetic key presses did not reach the Electron window, so step 3 (Reload Window from the command palette) was skipped. Instead, the Agent Hooks panel was read: the nine probe entries were listed as enabled and `Probe: ask test` as disabled, and every message produced hook records, so the hooks were live. The old `events.jsonl` (11,178 lines from the CLI runs) was renamed rather than deleted, and the new log was kept as `.ghost-run/probe/ide-events.jsonl` (29 lines) with a transcript of the messages and replies.
+- IDE results, the same as the CLI where comparable: a file created with `fs_write` fires `PostFileCreate` and then `PostFileSave`; `str_replace` fires `PostFileSave` only; file events carry `cwd`, `file_path`, `hook_event_name`, and `session_id`; Post Tool Use carries `tool_response`, which is not an object; a call blocked with exit code 2 gets no Post Tool Use, and the agent reported "A PreToolUse hook blocked the command, and it gave no reason" without trying a way around it; file-event hook STDOUT does not reach the agent (the marker answer was "None"); `timeout` is honored at the hook entry level and ignored inside `action`. Differences: the IDE default agent has no `code` tool, no append tool (it appended with `str_replace`), and no delete tool, so `PostFileDelete` could not be triggered in the IDE either. An extra message had it delete the file with a shell `rm`: both Pre Tool Use hooks ran before the approval prompt (Allow, Always allow, Deny, Always deny), Allow was pressed once, and the deletion fired no file event.
+- **Independent check by Codex (00:12).** The user asked for a check with Codex, so a Codex worker (Codex CLI 0.166.0, started through Orca, read-only) got the raw log, the transcript, the probe script, the CLI results, and task 1.4, but not Claude Code's conclusions. Its table matched Claude Code's reading on every fact. It also pointed out two misleading agent narrations: the agent said it created the file "in the workspace root" while the logged path is `probe-scratch/a.txt`, and it blamed the block on `ghost-gate` (disabled) because the probe's deny hook wrote no reason to STDERR. The real gate always writes its reason to STDERR, which is what lets the agent name the ward.
+- Probe wrap-up (00:19): Kiro filled the IDE column, settled the open items that the results decide (`FILE_EVENT_PATH_FIELDS = ['file_path']`, `FILE_CREATE_TRIGGER = 'PostFileCreate'`, `POST_RESPONSE_FIELDS = ['tool_response']`, `CODE_READ_ONLY_OPERATIONS` unchanged, no duplicate-skip rule needed in ghost-log), left O5 (Pre Tool Use overlap), `PostFileDelete`, and the raw path form open with the reason, and disabled all nine probe entries with a test that keeps them disabled now that the results table exists. None of the results contradicted a design decision, so no code changed beyond comments. Claude Code reran kiro-hook: typecheck and lint pass, 617 tests in 48 files pass, 0 containers left.
