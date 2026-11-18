@@ -1,6 +1,6 @@
 // Hook event parsing and tool classification (pure; no I/O, no LLM calls).
 // The table follows design.md, "Tool classification". The `code` tool facts
-// come from the Kiro CLI 3.4.0 probe only (IDE result pending, task 1.4).
+// come from the Kiro CLI 3.4.0 probe only (the IDE 1.4.215 default agent has no `code` tool).
 
 /**
  * @typedef {{

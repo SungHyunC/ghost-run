@@ -10,7 +10,7 @@ Hook scripts that connect Ghost Run+ to Kiro (IDE and CLI). Each script reads on
 | world-scaffold | `world-scaffold.mjs` | File create under `worlds/<name>/` | Generates the registration, test, wards, and README files of a new world. |
 | blacklight-steering | `blacklight-steering.mjs` | File save under `.kiro/` | Reports hidden Unicode in steering, spec, and hook files. |
 
-State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`, except the probe hook. The gate is switched on by a human in task 19.1 after the checklist there. IDE facts that are not confirmed yet are marked "pending (task 1.4)".
+State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`, including the probe hook files (task 1.8; `tests/probe-disabled.test.mjs` keeps them off). The gate is switched on by a human in task 19.1 after the checklist there. Facts that no probe settled are marked "not confirmed".
 
 ## Claims and non-claims
 
@@ -61,16 +61,16 @@ The wards file can add entries with `safe_commands`. Extension entries use the e
 
 ## Host facts this package depends on
 
-Facts below are measured with Kiro CLI 3.4.0 (probe, 2026-11-18, `docs/measurements.md`, heading `Probe results`). The IDE result is pending (task 1.4).
+Facts below are measured with Kiro CLI 3.4.0 (probe, 2026-11-18) and Kiro IDE 1.4.215 (probe, 2026-11-19), `docs/measurements.md`, heading `Probe results`. The IDE run was driven by Claude Code operating the IDE screen. Where a fact names only one host, the other host did not show it.
 
 - A file event fires only for a file that the agent changed. An edit that a human makes in the editor does not fire it.
-- The IDE runs hooks only for a trusted folder, after a window reload that follows the trust decision. A hook that is created during a session applies from the next session. Pending (task 1.4) for the IDE steps as observed.
+- The IDE runs hooks only for a trusted folder, after a window reload that follows the trust decision. A hook that is created during a session applies from the next session. Not confirmed in the IDE run: the window reload was not done, so this statement rests on the documentation. In that run the Agent Hooks panel listed the probe entries as enabled and every message left hook records.
 - In the CLI the `write` matcher also covers the file-delete tool `delete_file`.
 - The matcher of a file-event hook is a regular expression over the file path.
-- A file event has the STDIN fields `cwd`, `file_path`, `hook_event_name`, and `session_id`. Creating a file fires `PostFileCreate` and then `PostFileSave` (CLI). The IDE names are pending (task 1.4).
-- Post Tool Use carries the response in `tool_response`. A call blocked with exit code 2 fires no Post Tool Use (CLI). IDE: pending (task 1.4).
-- The STDOUT of a file-event hook does not reach the agent in the CLI. The hooks therefore also write a result file under `.ghost-run/`.
-- `timeout` is honored at entry level of a hook and ignored inside `action`. All hook files here use the entry-level field.
+- A file event has the STDIN fields `cwd`, `file_path`, `hook_event_name`, and `session_id`. Creating a file with the write tool fires `PostFileCreate` and then `PostFileSave` (CLI and IDE). `PostFileDelete` is not confirmed in either host: neither default agent has a delete tool, and a delete by shell fires no file event. The raw form of `file_path` (absolute or workspace-relative) is not confirmed.
+- Post Tool Use carries the response in `tool_response`. A call blocked with exit code 2 fires no Post Tool Use (CLI and IDE). The IDE default agent has no `code` tool.
+- The STDOUT of a file-event hook does not reach the agent in the CLI or the IDE. The hooks therefore also write a result file under `.ghost-run/`.
+- `timeout` is honored at entry level of a hook and ignored inside `action` (CLI and IDE). All hook files here use the entry-level field.
 - A file created or changed by a shell command fires no file event, so the file-event hooks do not see it.
 
 ## Hook notes

@@ -8,7 +8,7 @@
       "matcher": "*",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: deny test",
@@ -17,7 +17,7 @@
       "matcher": "shell",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --deny-test" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: Post Tool Use facts",
@@ -26,7 +26,7 @@
       "matcher": "*",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: file save",
@@ -35,7 +35,7 @@
       "matcher": ".*",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: file create",
@@ -44,7 +44,7 @@
       "matcher": ".*",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: file delete",
@@ -53,7 +53,7 @@
       "matcher": ".*",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: stdout test",
@@ -62,7 +62,7 @@
       "matcher": "probe-scratch/",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --stdout-test" },
       "timeout": 10,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: timeout test (entry level)",
@@ -71,7 +71,7 @@
       "matcher": "probe-scratch/",
       "action": { "type": "command", "command": "node integrations/kiro-hook/probe-host-facts.mjs --timeout-test=entry" },
       "timeout": 1,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "Probe: timeout test (action level)",
@@ -83,7 +83,7 @@
         "command": "node integrations/kiro-hook/probe-host-facts.mjs --timeout-test=action",
         "timeout": 1
       },
-      "enabled": true
+      "enabled": false
     }
   ]
 }

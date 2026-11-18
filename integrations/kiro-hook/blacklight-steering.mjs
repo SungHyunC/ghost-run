@@ -2,9 +2,8 @@
 // Reads one JSON event from STDIN (field `file_path`), prints the report on STDOUT (and on STDERR
 // when not clean), and writes it to .ghost-run/blacklight/last.txt. It reports and never blocks.
 // Exit code: exitCodeFor(outcome) (0 clean, 1 findings, 2 error). With `--all` it scans all of .kiro/
-// (the `blacklight` package script). CLI 3.4.0 does not pass file-event STDOUT to the agent, so read
-// last.txt; recheck after the IDE probe (task 1.4). Files saved by a shell command fire no file event
-// (known limit).
+// (the `blacklight` package script). Neither CLI 3.4.0 nor IDE 1.4.215 passes file-event STDOUT to the
+// agent, so read last.txt. Files saved by a shell command fire no file event (known limit).
 import { STDIN_MAX_BYTES } from './gate-config.mjs';
 import { readStdinBounded } from './lib/hook-io.mjs';
 import { runBlacklightAll, runBlacklightHook } from './lib/blacklight/run.mjs';

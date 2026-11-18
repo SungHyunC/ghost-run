@@ -1,5 +1,5 @@
 // Path extraction from file events (pure; no I/O, no LLM calls).
-// The field names come from gate-config.mjs (CLI-3.4.0-measured). The raw
+// The field names come from gate-config.mjs (measured in CLI 3.4.0 and IDE 1.4.215). The raw
 // form of the path (absolute or workspace-relative) is unconfirmed, so both
 // are accepted.
 

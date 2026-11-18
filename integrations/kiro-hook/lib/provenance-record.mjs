@@ -7,7 +7,7 @@ import { POST_RESPONSE_FIELDS, STORE_CAPS } from '../gate-config.mjs';
 import { TOOL_TABLE } from './event.mjs';
 import { containsCanary } from './store/redact.mjs';
 
-/** Response field names, in lookup order: the measured name first, then the design candidates (IDE pending). */
+/** Response field names, in lookup order: the measured name first, then the design candidates (the CLI and the IDE both use the measured name). */
 export const RESPONSE_FIELD_CANDIDATES = Object.freeze([...POST_RESPONSE_FIELDS, 'tool_result', 'response']);
 
 /** Built-in read tools that give a `file` record. */

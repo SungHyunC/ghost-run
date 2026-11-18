@@ -37,8 +37,8 @@ export const STORE_CAPS = Object.freeze({
 /** True once the runner accepts a caller-supplied run id (see Cross-spec dependencies). */
 export const RUNNER_SUPPORTS_RUN_ID = true;
 
-// File-event and Post Tool Use constants. These values are CLI-3.4.0-measured
-// (probe, 2026-11-18). They must be re-checked after the IDE probe, task 1.4.
+// File-event and Post Tool Use constants. Measured by the probe in Kiro CLI 3.4.0
+// (2026-11-18) and Kiro IDE 1.4.215 (2026-11-19); both hosts gave the same values.
 
 /** STDIN fields that carry the path of a file event, in lookup order. */
 export const FILE_EVENT_PATH_FIELDS = Object.freeze(['file_path']);
