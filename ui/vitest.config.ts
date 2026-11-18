@@ -22,6 +22,9 @@ export default defineConfig({
           environment: 'jsdom',
           include: ['tests/dom/**/*.test.tsx', 'tests/regressions.test.tsx'],
           setupFiles: ['tests/support/setup-dom.ts'],
+          // These tests mount 250-row lists in jsdom. They take about 2 s alone and passed 5 s under load.
+          // No requirement sets a time limit for them, so the limit is only a guard against a hang.
+          testTimeout: 30_000,
         },
       },
       { extends: true, test: { name: 'scan', environment: 'node', include: ['tests/scan/**/*.test.ts'] } },

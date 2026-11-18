@@ -958,3 +958,26 @@ Command: `GHOST_PBT_MODE=nightly corepack pnpm exec vitest run tests/verify-worl
 Cause of the earlier out-of-memory end (about 3.7 GB of heap, two runs): the memo of `tests/support/journal-adapter.ts` kept the outcome of every executed step, with a hex key of the whole project state, for the whole run. Probe with 600 runs and a forced garbage collection before and after the fix: 2054 MB of live heap before, 37 MB after. The fix clears the memo at the start of each plan. Property, generators, and run count are unchanged.
 
 Result after the fix: passed in one run, `verifyWorld` 1,130,597 ms (18 min 51 s), 50,911 world SQL steps and 44,425 oracle SQL steps. Maximum resident set size of the process tree's largest process reported by `time -l`: 718,749,696 bytes (about 685 MiB). Sampled worker size during the run grew from about 300 MB to about 680 MB; the slow growth is the per-snapshot Trace map of the world object (see the ghost-shell design.md).
+
+## Repository-wide test run, one package at a time (2026-11-18)
+
+Cause of the earlier failures: `corepack pnpm -r --no-bail test` runs the test scripts of several packages at the same time. Under that load, two DOM tests of `ui` (`tests/dom/network.test.tsx`, "MirrorWorld: reveal rows, open the scene, reveal scene entries" and "Graveyard and SeanceView: reveal tombstones, open a seance, go back") passed the vitest default limit of 5 s (about 2 s alone), and `worlds/drawer-arm/tests/contract.test.ts` "passes on the Base_World" took 48.0 s against its 45 s guard. No requirement sets a time limit for the two DOM tests, so the `dom` project of `ui/vitest.config.ts` now has `testTimeout: 30_000`. The 45 s guard of the drawer-arm test comes from the 60 s save-time limit of the `contract-pbt` hook and is unchanged.
+
+Change: the root `package.json` has the scripts `test`, `typecheck`, and `lint`, each `"$npm_execpath" -r --workspace-concurrency=1 --no-bail <script>`. They run the packages one after another, keep going after a failure, and exit non-zero at the end if any package failed.
+
+Command: `/usr/bin/time -p corepack pnpm test` in the repository root (Node.js 20.20.2, macOS, Apple M1, Docker running, box image built). Exit code 0, wall time 816.97 s (about 13 min 37 s), 10 of 10 packages passed:
+
+| Package | Test files | Tests | Duration |
+|---|---|---|---|
+| `core` | 76 | 557 passed, 1 skipped | 11.15 s |
+| `ghost-runner` (includes the Docker tests) | 58 | 294 passed | 657.35 s |
+| `ui` | 71 | 701 passed | 28.22 s |
+| `wards-config` | 15 | 126 passed | 6.74 s |
+| `worlds/drawer-arm` | 24 | 145 passed | 23.30 s |
+| `integrations/kiro-hook` | 47 | 609 passed | 21.92 s |
+| `worlds/playground-shell` | 34 | 397 passed | 13.72 s |
+| `apps/ghost-hand` | 36 | 272 passed | 34.78 s |
+| `integrations/mcp` | 11 | 60 passed, 3 skipped | 3.94 s |
+| `apps/ghost-shell` | 35 | 196 passed | 11.96 s |
+
+drawer-arm "passes on the Base_World" (45 s guard): passed in this run, `verifyWorld` elapsed 15.2 s (numRuns 35); the second call ("a world whose start state is a sampled variant") took 6.9 s. The machine was not idle during the run, so the numbers are indicative. After the run `docker ps -a` listed no container.

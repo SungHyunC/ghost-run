@@ -2,6 +2,225 @@
 
 Let your agent's ghost try it first.
 
+## What it is
+
+Ghost Run+ lets an AI agent rehearse an irreversible action in a copy of the world before it runs for real. A "ghost" plays the agent's plan against a mirror world (a copy of the files, the database, or the physics scene). Declared guard rules, called wards and written in `wards.yaml`, judge the result, and the real action proceeds only if every ward passes. It addresses two failures: a plain mistake, such as an agent deleting a production database during a code freeze (reported publicly for a Replit agent in July 2025), and possession, where hidden instructions in a document the agent reads steer it. A blocked agent gets the ward id, the numbers, and a seance link, so it can fix the plan and try again.
+
+## One skeleton, two apps
+
+This repository is a Kiroween 2026 entry in the Skeleton Crew category: one reusable skeleton and two apps built on it.
+
+| Part | Where | What it is |
+|---|---|---|
+| Skeleton | `core/` | World contract, ghost runner logic, wards engine, possession detector, blacklight |
+| Skeleton | `wards-config/` | `wards.yaml` parser, validator, and printer |
+| Skeleton | `ui/` | Shared screens: mirror world, candle, blacklight, red thread, graveyard, lights-on mode |
+| Skeleton | `ghost-runner/` | Docker box runner, Repo_World, Plan B static analysis |
+| Skeleton | `integrations/` | Kiro hooks (`kiro-hook/`), the `ghost-run` MCP server (`mcp/`), and the Kiro power (`power/`) |
+| Skeleton | `.kiro/specs/_new-world/` | Fill-in spec template for a new world |
+| Skeleton | `.kiro/agents/world-smith.json` | The `world-smith` agent, which builds a new world from that template |
+| App 1 | `apps/ghost-shell/` with `worlds/playground-shell/` | Shell and SQL plans run against an in-memory project and an in-browser SQLite database |
+| App 2 | `apps/ghost-hand/` with `worlds/drawer-arm/` | A browser MuJoCo robot arm tries a plan on 8 haunted variants before the "real" arm runs it |
+
+A new world implements the six functions of `World<S, A>` (`core/src/types.ts`). Four are primary: `snapshot`, `step`, `diff`, and `render`. Two are auxiliary: `fingerprint` and `effectsOutside`. The world then inherits the ghost runner, the wards engine, the possession detector, and the UI kit. See "Build a world with the `world-smith` agent" and "Start a new world from the template" below.
+
+## How a ghost run works
+
+```mermaid
+flowchart LR
+  A[Agent plan] --> B[Copy the world: mirror world]
+  B --> C[Ghost runs the plan<br/>in the box or on haunted variants]
+  C --> D[Wards judge the result]
+  D -->|pass: candle lit| E[Real execution]
+  D -->|warn: candle flickering| H[Human approval needed]
+  D -->|block: candle out| F[Block message with ward id and numbers]
+  F --> G[Agent fixes the plan] --> A
+```
+
+1. The agent proposes a plan.
+2. The runner copies the real state (files, database, or physics scene). Reality is not touched.
+3. The ghost runs the plan on the copy: inside a Docker box in real mode, or on the base world and the haunted variants in Ghost Hand.
+4. The wards judge the changes and observed events.
+5. The candle shows the verdict: `pass` (lit), `warn` (flickering, a human approves), or `block` (out).
+6. On `pass` the real action runs. On `block` the agent receives the ward id, the numbers, and a seance link, fixes the plan, and rehearses again.
+
+## Quick start
+
+Tested on Node.js 20.20.2, macOS, Apple M1. Linux is supported and Windows is unverified.
+
+Needed:
+
+- Node.js 20 or later and `corepack` (every command below uses `corepack pnpm`; the pnpm version is pinned in `package.json`).
+- Docker, only for the real-mode box. Without Docker the runner falls back to Plan B (static analysis only), which does not claim P1.
+- Chrome, for Ghost Hand. Chrome 157 is the only tested browser.
+
+Install:
+
+```
+corepack pnpm install --frozen-lockfile
+```
+
+Open Ghost Shell (static page, no server logic; serves `http://localhost:4173/`):
+
+```
+corepack pnpm --filter @ghost-run/ghost-shell build
+corepack pnpm --filter @ghost-run/ghost-shell preview
+```
+
+Open Ghost Hand (Vite dev server, `http://localhost:5173/`):
+
+```
+corepack pnpm --filter @ghost-run/ghost-hand dev
+```
+
+Both addresses are the Vite defaults; Vite picks another port when one is busy. Both commands were started and answered with HTTP 200 on 2026-11-18.
+
+Run every test, one package at a time:
+
+```
+corepack pnpm test
+```
+
+The root `test`, `typecheck`, and `lint` scripts run the 10 packages one after another and keep going after a failure. Running them in parallel (`pnpm -r test`) made some time-limited tests fail under load. The full `corepack pnpm test` took 816.97 s (about 13 min 37 s) on 2026-11-18 on an Apple M1 Mac with Docker running, and all 10 packages passed; the Docker tests of `ghost-runner` take 657 s of that. Per-package numbers are at the end of `docs/measurements.md`. `corepack pnpm typecheck` took 21.9 s and `corepack pnpm lint` 8.3 s, both with exit code 0. One package alone: `corepack pnpm --filter @ghost-run/ui test`.
+
+Build the Docker box image for real-mode runs:
+
+```
+corepack pnpm --filter @ghost-run/ghost-runner box:build
+```
+
+The image tag carries a hash of the box files. With the image already built, the command finished in 2.4 s. The first build downloads Debian packages and needs network access. Details are in [ghost-runner/README.md](ghost-runner/README.md).
+
+Run Ghost Hand from the terminal with `ghost-hand-run`:
+
+```
+corepack pnpm --filter @ghost-run/ghost-hand build:node
+cd apps/ghost-hand
+node dist-node/cli.js plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml
+node dist-node/cli.js plans/revised.plan.json --wards ../../worlds/drawer-arm/wards.yaml
+node dist-node/cli.js validate plans/revised.plan.json
+```
+
+The first plan prints `GHOST RUN BLOCKED by ward gentle-hands` and exits with code 2. The revised plan prints `GHOST RUN PASSED: all 1 ward cleared.` and exits with code 0. `validate` exits with 0 for a valid plan file and 65 for an invalid one.
+
+## Ghost Shell
+
+Ghost Shell (`apps/ghost-shell/`, with the world in `worlds/playground-shell/`) is a static web page: no server, no API key, and no runtime LLM call. A ghost runs a plan against an in-memory virtual project (an in-memory file system and an SQLite database in `sql.js`). The page shows the mirror world, the candle, the claims for the run, the message the agent would receive, and the graveyard. It runs no real command and touches no real file. You can also load your own plan file and edit `wards.yaml` in the page.
+
+Five scenarios are bundled:
+
+| # | Scenario | Result |
+|---|---|---|
+| 1 | Drop the users table | `block` by `no-data-loss` ("would delete 1,206 rows from users"); the fixed plan passes |
+| 2 | Remove data and build | `block` by `protect-data`, one violation per deleted path under `data/`; the fixed plan passes |
+| 3 | Possession by README | `block` by `no-secret-egress`: the plan reads `.env` and then makes a network attempt to `setup-check.example:443`, which is caught by behavior and by content. The page shows the red thread to the hidden text and the blacklight |
+| 4 | Run the tests | `pass`, with no change, no event, and no notice |
+| 5 | Run npm clean | `block` by `protect-data` (the script runs `rm -rf data`) |
+
+Claims, in short (the full table and limits are in [apps/ghost-shell/README.md](apps/ghost-shell/README.md)):
+
+- P1, P2, and P3 are claimed for the in-memory playground world only. P2 means that the diff equals an independent derivation from the action journal. It is not a test of fidelity to a real shell.
+- P5 and P6 are claimed where P1 holds for the run and no step was unsupported.
+- Nothing is claimed for the Docker box or for Plan B on this page. The page lowers a claim in the UI when its scope does not hold.
+- Text analysis does not catch every injection. The possession scenario uses a fake canary value and a reserved example domain only.
+
+## Ghost Hand
+
+Ghost Hand (`apps/ghost-hand/`, with the world in `worlds/drawer-arm/`) is a browser page. A MuJoCo robot arm (WebAssembly) tries a plan on a base copy of a drawer scene and on 8 haunted variants (perturbed friction, mass, handle offset, sensor noise, and command delay) before the "real" arm runs the plan. The page draws a 3D ghost-arm overlay with Three.js. The `ghost-hand-run` command (`dist-node/cli.js`) runs the same pipeline from the terminal.
+
+### What the "real" arm is
+
+The "real" arm is a reference simulation run by the same MuJoCo engine. No physical robot is involved, and nothing here claims anything for physical hardware.
+
+### Claims
+
+| Property | Claimed where | Not claimed |
+|---|---|---|
+| P1 (a ghost run leaves reality unchanged) | Per run, for the in-memory page world: the page shows the claim only when the fingerprints before and after the run are equal. | Physical hardware, and any run whose fingerprints differ. |
+| P2 (the ghost result equals the reference execution) | The base ghost run against the reference execution, within the Tested_Environments. Scope wording: "On the same build and in the tested environments, the ghost run's result equals the reference simulation run's result. Not claimed for physical hardware." The page shows this text only when the Determinism_Self_Check passed. | Physical hardware, other browsers, other machines. |
+| P3 (restoring a snapshot returns the exact pre-snapshot state; the trajectory after it also matches) | All worlds, including this one. | Nowhere. |
+| P4 (a stricter ward never lets more plans pass) | Evidence from `core` (wards engine logic). Ghost Hand adds no ward engine of its own. | Nowhere. |
+| P5, P6 | Not claimed. The page shows "not applicable" for both. | Always: the world has no protected path and no secret file. |
+| P8 (same seed and same plan give identical variant outcomes) | Within the Tested_Environments only. | Any other environment. |
+
+The joint-limit and self-collision ward, the message without the lowered-claim line, and the "not applicable" banner for P5 and P6 are available because the prerequisites PR-1, PR-2, and PR-3 landed (state checked on 2026-11-18, see `docs/measurements.md`, section "Prerequisite landing state (18.3)").
+
+### Plan revision: recorded or scripted
+
+Plan revision in the page is a replay. The page does not call an LLM. It replays a Plan_File of `origin: "recorded"` (written by a Kiro session) or of `origin: "scripted"` (written by hand), and it states which one it shows.
+
+The shipped revised plan `apps/ghost-hand/plans/revised.plan.json` has `origin: "recorded"`. A Kiro CLI session decided its values: it ran the first plan, read the block message, and chose the numbers from that message, the Wards_File, and the declared ranges (`recordedWith`: "Kiro CLI 3.4.0, model Auto, 2026-11-18"). The page replays the file and says so with the text "Recorded plan: replayed here, not decided by an LLM in this page." The first plan, `plans/first.plan.json`, stays `origin: "scripted"`. The attempts and the messages of the recording are in `docs/measurements.md`, section "Plan revision recording".
+
+How to record a revision (design decision D18):
+
+1. Run `ghost-hand-run plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml` (from `apps/ghost-hand`, after `corepack pnpm --filter @ghost-run/ghost-hand build:node`) and read the block message. The exit code is 2 for a blocked plan.
+2. Write the revised Plan_File with `origin: "recorded"`, `revisionOf` (the name of the first plan), and `recordedWith` (the tool and version that decided the revision, at most 120 characters).
+3. Run `ghost-hand-run validate <revised plan>`. It exits 0 for a valid file and 65 for an invalid one.
+4. Run `ghost-hand-run <revised plan> --wards ...` again. Exit code 0 means pass.
+
+### Tested environments and platforms
+
+- Tested_Environments: Node.js 20.20.2 and Chrome 157 (157.0.8103.79) on an Apple M1 Mac (macOS). Firefox, Safari, Linux, and x86 machines were not tested.
+- The Determinism_Self_Check runs in the page and reproduces the reference trajectory hash. It is a measurement in one browser on one machine, not a proof. If it fails, the page shows no P2 or P8 claim.
+- The `deterministic: true` flag of `worlds/drawer-arm/world.config.ts` is limited to the Tested_Environments.
+- macOS and Linux are the supported platforms for the commands. Windows is unverified. Chrome 157 is the only tested browser.
+- Hosting: the page uses the single-thread MuJoCo build and Web Workers. It needs no `SharedArrayBuffer` and no special response headers (no COOP or COEP). It runs on any static host.
+
+### MuJoCo pitfalls
+
+Measured details are in `docs/measurements.md`, section "Probe results".
+
+- Set the model memory size explicitly (`<size memory="1M"/>` in the scene). Without it each `MjData` takes about 13.6 MB, and the WebAssembly heap grows by about 14 MB per object.
+- Typed-array views over the WebAssembly memory become empty (length 0) when the memory grows. Read a view fresh at every use and copy it at once. Never keep one across a call.
+- The README of `@mujoco/mujoco` deviates from the actual API: `DoubleBuffer` takes an element count, not an array (use `DoubleBuffer.FromArray`); the view accessor is `GetView()`, not `getView()`; and a plain `Float64Array` passed as an output parameter is accepted but never written.
+- Call `.delete()` on every wrapped object you construct, and never on the non-owning accessors `data.warning`, `data.solver`, and `data.timer` (that aborts the module).
+
+### Variants of the shipped seed
+
+The shipped seed is 42 and the default count is 8 (`worlds/drawer-arm/variant-config.json`). The configuration allows up to 20 variants, but the page limits the count to the default of 8 while `largeCountEnabled` is `false`. These values were read from a run of the pipeline on 2026-11-18 (Node.js 20.20.2, Apple M1 Mac, `@mujoco/mujoco` 4.0.1).
+
+| Variant | drawerFrictionN | drawerMassKg | handleOffsetM (x, y, z) | sensorNoiseM | commandDelaySteps |
+|---|---|---|---|---|---|
+| variant-0 | 0.821 | 1.187 | 0.0036, 0.0012, 0.0022 | 0.0023 | 2 |
+| variant-1 | 1.870 | 0.607 | 0.0022, -0.0012, -0.0049 | 0.0023 | 3 |
+| variant-2 | 0.926 | 1.075 | 0.0015, 0.0012, -0.0048 | 0.0026 | 5 |
+| variant-3 | 3.355 | 0.599 | 0.0032, -0.0010, -0.0023 | 0.0002 | 2 |
+| variant-4 | 3.267 | 1.059 | 0.0017, 0.0000, 0.0020 | 0.0020 | 3 |
+| variant-5 | 1.893 | 0.862 | -0.0018, -0.0014, 0.0025 | 0.0016 | 3 |
+| variant-6 | 0.602 | 0.516 | 0.0001, 0.0007, -0.0013 | 0.0004 | 4 |
+| variant-7 | 1.932 | 0.397 | 0.0013, -0.0004, -0.0020 | 0.0018 | 0 |
+
+### Measured numbers of the demo runs
+
+All numbers below were measured on 2026-11-18 on an Apple M1 Mac (macOS). Plan results and timing: Node.js 20.20.2, seed 42, 8 variants, the shipped `wards.yaml` (ward `gentle-hands`: success rate at least 0.95, contact force at most 30 N, no contact with the vase). Browser numbers: Chrome 157.0.8103.79, headless, real time. The machine was not idle, so timings are indicative. The full records are in `docs/measurements.md`.
+
+| Plan | Verdict | Variants with success:false | Max contact force | Base_World drawer opening |
+|---|---|---|---|---|
+| `fast pull` | block (ward `gentle-hands`) | 1 of 8 | 27.53 N (limit 30 N) | 0.1216 m (target 0.12 m) |
+| `slow pull, gentle grip` (recorded) | pass | 0 of 8 | 29.24 N (limit 30 N) | 0.1276 m (target 0.12 m) |
+
+Browser timings (the page-ready number is of the test harness page, not of the app page, which also runs the Determinism_Self_Check; the 3D overlay number is of the real overlay renderer):
+
+| Check | Measured (2026-11-18, Chrome 157.0.8103.79, Apple M1 Mac) |
+|---|---|
+| Page ready (harness page, 3 loads) | 368 ms first load, 241 ms and 281 ms warm loads |
+| Ghost run, 8 variants, 5 runs | median 308 ms, maximum 313 ms |
+| Ghost run, 20 variants, 3 runs | median 518 ms, maximum 553 ms |
+| 3D overlay frame time, 8 ghost arms | median frame interval 16.7 ms (the 60 Hz vsync period), median render call 0.7 ms |
+| 3D overlay frame time, 20 ghost arms | median frame interval 16.7 ms, median render call 0.6 ms |
+
+A second browser run under higher machine load gave a median of 414 ms for 8 variants and 557 ms for 20 variants. The frame interval shows no dropped frame in 300 samples; it gives no headroom below 16.7 ms, and headless Chrome has no visible window.
+
+Trajectory_Hash of the reference plan (`reference-plan-v1`, Base_World), measured on 2026-11-18: the hash from Chrome 157 on the main thread and in a Web Worker equals the hash from Node.js 20.20.2 (each context run twice). The stored golden hash is `2cf8283de204eae50fbc4db3660e57d6b19b799cbc557ad31af56ba14e191d9f`. This holds for the Tested_Environments only.
+
+Run time of `verifyWorld` on the drawer-arm world (2026-11-18, Node.js 20.20.2, Apple M1 Mac): 35 examples took 6040 ms in the budget measurement. The contract test took 12.8 s to 14.0 s for both calls over several runs. The save-time budget is 60 s.
+
+### Licenses and assets
+
+The Ghost Hand rows are in the table of the section "Dependencies and data". The build writes `dist/THIRD_PARTY_NOTICES.txt` (`corepack pnpm --filter @ghost-run/ghost-hand build`, or `notices` alone). It is generated from `apps/ghost-hand/notices/sources.json` and the upstream license texts in `apps/ghost-hand/notices/`. It lists MuJoCo, Qhull, TinyXML-2, tinyobjloader, libccd, miniz, and lodepng (bundled in `mujoco.wasm`), plus react, react-dom, scheduler, and three. `@mujoco/mujoco` 4.0.1 declares Apache-2.0 in its `package.json`, but its tarball has no LICENSE file, so the MuJoCo license text comes from the upstream repository at tag 4.0.1.
+
+Assets: the page uses only primitive Three.js shapes and system fonts. It has no image, no font file, no icon file, and no audio. The shared UI kit draws its icons as original SVG paths (MIT, this repository). The scene is written as MJCF text in `worlds/drawer-arm/src/engine/` with no mesh file.
+
 ## Possession detector
 
 The possession detector (`core/src/possession/`, plus the Node file helpers in `core/possession-node.ts`) scans text for hidden characters that can carry instructions an agent should not obey. The scanner is a pure function.
@@ -120,102 +339,50 @@ Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and on
 2. Remove the copied `README.md`, replace every `<placeholder>`, `Fill in:` line, and `TBD`, and delete the "Template notice" block of each file.
 3. Ask Kiro to run the tasks of the copy. When the agent creates a file in `worlds/<world-name>/`, the `world-scaffold` hook adds `world.config.ts`, `tests/contract.test.ts`, `wards.yaml`, and `README.md`; each save in `worlds/` then runs the `contract-pbt` hook within its 60 s limit (both hooks must be enabled).
 
-## Ghost Hand
+## Built with Kiro
 
-Ghost Hand (`apps/ghost-hand/`, with the world in `worlds/drawer-arm/`) is a browser page. A MuJoCo robot arm (WebAssembly) tries a plan on a base copy of a drawer scene and on 8 haunted variants (perturbed friction, mass, handle offset, sensor noise, and command delay) before the "real" arm runs the plan. The page draws a 3D ghost-arm overlay with Three.js. The `ghost-hand-run` command (`dist-node/cli.js`) runs the same pipeline from the terminal.
+Everything below is in this repository. Counts were taken from the files on 2026-11-18.
 
-### What the "real" arm is
+**Specs** (`.kiro/specs/<name>/` with `requirements.md`, `design.md`, and `tasks.md`). "Tasks" is the number of checked items out of all checklist items in `tasks.md`. "Properties" is the number of `### Property` headings in `design.md`.
 
-The "real" arm is a reference simulation run by the same MuJoCo engine. No physical robot is involved, and nothing here claims anything for physical hardware.
+| Spec | What it decided | Tasks | Properties |
+|---|---|---|---|
+| `core-contract` | The `World<S, A>` contract with six functions and the safety contract | 15 of 15 | 8 |
+| `possession` | The blacklight scan for hidden Unicode, the red thread, and the P7 claim | 65 of 65 | 22 |
+| `wards` | The judging rules, the `wards.yaml` format, the parser in `wards-config`, and the block message | 64 of 64 | 17 |
+| `ghost-runner` | The Docker box (`--network none`, copy-only mount), Repo_World, and Plan B | 97 of 97 | 22 |
+| `ui-kit` | The shared screens and their render properties | 87 of 87 | 11 |
+| `kiro-integration` | The five hooks, the MCP server, and the power | 94 of 98 | 21 |
+| `ghost-shell` | App 1: the playground page and the playground world | 79 of 80 | 26 |
+| `ghost-hand` | App 2: the MuJoCo arm page, the drawer-arm world, and the 8 haunted variants | 103 of 105 | 23 |
+| `world-smith` | The `world-smith` agent | 9 of 9 | none |
 
-### Claims
+`.kiro/specs/_new-world/` is the fill-in template for a new world, not a real spec, so it has no counts. The unchecked tasks are still open.
 
-| Property | Claimed where | Not claimed |
+**Steering** (`.kiro/steering/`): `product.md`, `structure.md`, `tech.md`, `security.md`, `world-contract.md`, and `halloween-ui.md`. The `halloween-ui.md` file applies only to `ui/**` and `apps/**`.
+
+**Hooks** (`.kiro/hooks/`, state as committed):
+
+| Hook | Trigger | State |
 |---|---|---|
-| P1 (a ghost run leaves reality unchanged) | Per run, for the in-memory page world: the page shows the claim only when the fingerprints before and after the run are equal. | Physical hardware, and any run whose fingerprints differ. |
-| P2 (the ghost result equals the reference execution) | The base ghost run against the reference execution, within the Tested_Environments. Scope wording: "On the same build and in the tested environments, the ghost run's result equals the reference simulation run's result. Not claimed for physical hardware." The page shows this text only when the Determinism_Self_Check passed. | Physical hardware, other browsers, other machines. |
-| P3 (restoring a snapshot returns the exact pre-snapshot state; the trajectory after it also matches) | All worlds, including this one. | Nowhere. |
-| P4 (a stricter ward never lets more plans pass) | Evidence from `core` (wards engine logic). Ghost Hand adds no ward engine of its own. | Nowhere. |
-| P5, P6 | Not claimed. The page shows "not applicable" for both. | Always: the world has no protected path and no secret file. |
-| P8 (same seed and same plan give identical variant outcomes) | Within the Tested_Environments only. | Any other environment. |
+| `ghost-gate` | Pre Tool Use (`shell`, `write`) | disabled |
+| `ghost-log` | Post Tool Use | disabled |
+| `contract-pbt` | File Save in `core/**` and `worlds/**` | disabled |
+| `world-scaffold` | File Create in `worlds/*/` | disabled |
+| `blacklight-steering` | File Save in `.kiro/**` | disabled |
+| Probe hooks (`probe-host-facts.json`) | Record host facts of tool events | enabled |
 
-The joint-limit and self-collision ward, the message without the lowered-claim line, and the "not applicable" banner for P5 and P6 are available because the prerequisites PR-1, PR-2, and PR-3 landed (state checked on 2026-11-18, see `docs/measurements.md`, section "Prerequisite landing state (18.3)").
+The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json` are experiment hooks and are disabled. The scripts are in `integrations/kiro-hook/`. The gate is switched on by a human, as described under "Kiro integration".
 
-### Plan revision: recorded or scripted
+**MCP server**: `integrations/mcp/` is the stdio server `ghost-run` with the tools `ghost_run`, `ghost_diff`, `ghost_trace`, `wards_check`, and `blacklight`.
 
-Plan revision in the page is a replay. The page does not call an LLM. It replays a Plan_File of `origin: "recorded"` (written by a Kiro session) or of `origin: "scripted"` (written by hand), and it states which one it shows.
+**Power**: `integrations/power/` has `plugin.json`, the skill `skills/ghost-run/SKILL.md`, and `mcp.json` for the bundled server.
 
-The shipped revised plan `apps/ghost-hand/plans/revised.plan.json` has `origin: "recorded"`. A Kiro CLI session decided its values: it ran the first plan, read the block message, and chose the numbers from that message, the Wards_File, and the declared ranges (`recordedWith`: "Kiro CLI 3.4.0, model Auto, 2026-11-18"). The page replays the file and says so with the text "Recorded plan: replayed here, not decided by an LLM in this page." The first plan, `plans/first.plan.json`, stays `origin: "scripted"`. The attempts and the messages of the recording are in `docs/measurements.md`, section "Plan revision recording".
+**Custom agent**: `.kiro/agents/world-smith.json` (see "Build a world with the `world-smith` agent").
 
-How to record a revision (design decision D18):
+**Property-based tests**: the properties of the table above are tested with vitest and fast-check. The safety contract properties P1 to P8 are defined in `.kiro/steering/world-contract.md`.
 
-1. Run `ghost-hand-run plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml` (from `apps/ghost-hand`, after `corepack pnpm --filter @ghost-run/ghost-hand build:node`) and read the block message. The exit code is 2 for a blocked plan.
-2. Write the revised Plan_File with `origin: "recorded"`, `revisionOf` (the name of the first plan), and `recordedWith` (the tool and version that decided the revision, at most 120 characters).
-3. Run `ghost-hand-run validate <revised plan>`. It exits 0 for a valid file and 65 for an invalid one.
-4. Run `ghost-hand-run <revised plan> --wards ...` again. Exit code 0 means pass.
-
-### Tested environments and platforms
-
-- Tested_Environments: Node.js 20.20.2 and Chrome 157 (157.0.8103.79) on an Apple M1 Mac (macOS). Firefox, Safari, Linux, and x86 machines were not tested.
-- The Determinism_Self_Check runs in the page and reproduces the reference trajectory hash. It is a measurement in one browser on one machine, not a proof. If it fails, the page shows no P2 or P8 claim.
-- The `deterministic: true` flag of `worlds/drawer-arm/world.config.ts` is limited to the Tested_Environments.
-- macOS and Linux are the supported platforms for the commands. Windows is unverified. Chrome 157 is the only tested browser.
-- Hosting: the page uses the single-thread MuJoCo build and Web Workers. It needs no `SharedArrayBuffer` and no special response headers (no COOP or COEP). It runs on any static host.
-
-### MuJoCo pitfalls
-
-Measured details are in `docs/measurements.md`, section "Probe results".
-
-- Set the model memory size explicitly (`<size memory="1M"/>` in the scene). Without it each `MjData` takes about 13.6 MB, and the WebAssembly heap grows by about 14 MB per object.
-- Typed-array views over the WebAssembly memory become empty (length 0) when the memory grows. Read a view fresh at every use and copy it at once. Never keep one across a call.
-- The README of `@mujoco/mujoco` deviates from the actual API: `DoubleBuffer` takes an element count, not an array (use `DoubleBuffer.FromArray`); the view accessor is `GetView()`, not `getView()`; and a plain `Float64Array` passed as an output parameter is accepted but never written.
-- Call `.delete()` on every wrapped object you construct, and never on the non-owning accessors `data.warning`, `data.solver`, and `data.timer` (that aborts the module).
-
-### Variants of the shipped seed
-
-The shipped seed is 42 and the default count is 8 (`worlds/drawer-arm/variant-config.json`). The configuration allows up to 20 variants, but the page limits the count to the default of 8 while `largeCountEnabled` is `false`. These values were read from a run of the pipeline on 2026-11-18 (Node.js 20.20.2, Apple M1 Mac, `@mujoco/mujoco` 4.0.1).
-
-| Variant | drawerFrictionN | drawerMassKg | handleOffsetM (x, y, z) | sensorNoiseM | commandDelaySteps |
-|---|---|---|---|---|---|
-| variant-0 | 0.821 | 1.187 | 0.0036, 0.0012, 0.0022 | 0.0023 | 2 |
-| variant-1 | 1.870 | 0.607 | 0.0022, -0.0012, -0.0049 | 0.0023 | 3 |
-| variant-2 | 0.926 | 1.075 | 0.0015, 0.0012, -0.0048 | 0.0026 | 5 |
-| variant-3 | 3.355 | 0.599 | 0.0032, -0.0010, -0.0023 | 0.0002 | 2 |
-| variant-4 | 3.267 | 1.059 | 0.0017, 0.0000, 0.0020 | 0.0020 | 3 |
-| variant-5 | 1.893 | 0.862 | -0.0018, -0.0014, 0.0025 | 0.0016 | 3 |
-| variant-6 | 0.602 | 0.516 | 0.0001, 0.0007, -0.0013 | 0.0004 | 4 |
-| variant-7 | 1.932 | 0.397 | 0.0013, -0.0004, -0.0020 | 0.0018 | 0 |
-
-### Measured numbers of the demo runs
-
-All numbers below were measured on 2026-11-18 on an Apple M1 Mac (macOS). Plan results and timing: Node.js 20.20.2, seed 42, 8 variants, the shipped `wards.yaml` (ward `gentle-hands`: success rate at least 0.95, contact force at most 30 N, no contact with the vase). Browser numbers: Chrome 157.0.8103.79, headless, real time. The machine was not idle, so timings are indicative. The full records are in `docs/measurements.md`.
-
-| Plan | Verdict | Variants with success:false | Max contact force | Base_World drawer opening |
-|---|---|---|---|---|
-| `fast pull` | block (ward `gentle-hands`) | 1 of 8 | 27.53 N (limit 30 N) | 0.1216 m (target 0.12 m) |
-| `slow pull, gentle grip` (recorded) | pass | 0 of 8 | 29.24 N (limit 30 N) | 0.1276 m (target 0.12 m) |
-
-Browser timings (the page-ready number is of the test harness page, not of the app page, which also runs the Determinism_Self_Check; the 3D overlay number is of the real overlay renderer):
-
-| Check | Measured (2026-11-18, Chrome 157.0.8103.79, Apple M1 Mac) |
-|---|---|
-| Page ready (harness page, 3 loads) | 368 ms first load, 241 ms and 281 ms warm loads |
-| Ghost run, 8 variants, 5 runs | median 308 ms, maximum 313 ms |
-| Ghost run, 20 variants, 3 runs | median 518 ms, maximum 553 ms |
-| 3D overlay frame time, 8 ghost arms | median frame interval 16.7 ms (the 60 Hz vsync period), median render call 0.7 ms |
-| 3D overlay frame time, 20 ghost arms | median frame interval 16.7 ms, median render call 0.6 ms |
-
-A second browser run under higher machine load gave a median of 414 ms for 8 variants and 557 ms for 20 variants. The frame interval shows no dropped frame in 300 samples; it gives no headroom below 16.7 ms, and headless Chrome has no visible window.
-
-Trajectory_Hash of the reference plan (`reference-plan-v1`, Base_World), measured on 2026-11-18: the hash from Chrome 157 on the main thread and in a Web Worker equals the hash from Node.js 20.20.2 (each context run twice). The stored golden hash is `2cf8283de204eae50fbc4db3660e57d6b19b799cbc557ad31af56ba14e191d9f`. This holds for the Tested_Environments only.
-
-Run time of `verifyWorld` on the drawer-arm world (2026-11-18, Node.js 20.20.2, Apple M1 Mac): 35 examples took 6040 ms in the budget measurement. The contract test took 12.8 s to 14.0 s for both calls over several runs. The save-time budget is 60 s.
-
-### Licenses and assets
-
-The Ghost Hand rows are in the table of the section "Dependencies and data". The build writes `dist/THIRD_PARTY_NOTICES.txt` (`corepack pnpm --filter @ghost-run/ghost-hand build`, or `notices` alone). It is generated from `apps/ghost-hand/notices/sources.json` and the upstream license texts in `apps/ghost-hand/notices/`. It lists MuJoCo, Qhull, TinyXML-2, tinyobjloader, libccd, miniz, and lodepng (bundled in `mujoco.wasm`), plus react, react-dom, scheduler, and three. `@mujoco/mujoco` 4.0.1 declares Apache-2.0 in its `package.json`, but its tarball has no LICENSE file, so the MuJoCo license text comes from the upstream repository at tag 4.0.1.
-
-Assets: the page uses only primitive Three.js shapes and system fonts. It has no image, no font file, no icon file, and no audio. The shared UI kit draws its icons as original SVG paths (MIT, this repository). The scene is written as MJCF text in `worlds/drawer-arm/src/engine/` with no mesh file.
+**Plan revision recorded with the Kiro CLI**: the revised Ghost Hand plan `apps/ghost-hand/plans/revised.plan.json` was decided by a Kiro CLI 3.4.0 session (model Auto, 2026-11-18). It ran the first plan, read the block message, and chose the grasp force and pull values over several attempts. The attempts and messages are in `docs/measurements.md`, section "Plan revision recording".
 
 ## Dependencies and data
 
