@@ -107,6 +107,16 @@
         "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
         "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
         "timestamp": 1794986149749
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986604593
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986762239
       }
     ],
     "3. Retirement of the experiment B hooks and hook file format tests": [
@@ -114,6 +124,195 @@
         "executionId": "500999b5-d866-4371-978a-65b7b24851e1",
         "chatSessionId": "sess_1f8ce439-5dbb-44a5-8b15-ab0f85ff16d0",
         "timestamp": 1794986149751
+      }
+    ],
+    "1.5 MANUAL (human, Kiro CLI V3 3.4.x): run the probe and read the log": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986603807
+      }
+    ],
+    "1.6 Record the probe results as a table in `docs/measurements.md`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986604999
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986762219
+      }
+    ],
+    "4.1 Implement `gate-config.mjs` and `lib/hook-io.mjs`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986609170
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986762197
+      }
+    ],
+    "4.2 Implement `lib/store/ghost-store.mjs`, `lib/store/redact.mjs`, and `lib/store/session-key.mjs`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986766745
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986987094
+      }
+    ],
+    "5.1 Implement `lib/event.mjs`: `parseHookEvent`, `TOOL_TABLE`, and `classifyTool`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986766888
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986987105
+      }
+    ],
+    "5.3 Implement `lib/gate/safe-list.mjs`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986767489
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986987238
+      }
+    ],
+    "4.3 Implement `lib/store/stats.mjs`, `lib/store/provenance.mjs`, and `lib/store/runs.mjs`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986990348
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987112601
+      }
+    ],
+    "5.2 Implement `lib/wards-file.mjs`: `resolveWardsFile` and `loadWardsForHook`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986991404
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987112588
+      }
+    ],
+    "5.5 Implement `lib/gate/self-protect.mjs` and `lib/gate/approval-guard.mjs`": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794986992033
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987112775
+      }
+    ],
+    "4.4 Write property test for the session key [no-docker]": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987116519
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987219300
+      }
+    ],
+    "4.5 Write property test for the store caps [no-docker]": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987117322
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987219313
+      }
+    ],
+    "4.6 Write property test for the provenance and stats round trip [no-docker]": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987118070
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987220027
+      }
+    ],
+    "4.7 Write property test that no secret reaches disk or output (store level) [no-docker]": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987226180
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987354484
+      }
+    ],
+    "5.4 Write property test for safe-list soundness [no-docker]": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987226350
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987356314
+      }
+    ],
+    "4.8 Implement `lib/file-event.mjs` and the file-event constants": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987226376
+      },
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987355218
+      }
+    ],
+    "4. Shared modules: gate constants, hook I/O, and the Ghost_Store": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987355220
+      }
+    ],
+    "5. Gate input: classification, wards file loading, safe list, and self-protection": [
+      {
+        "executionId": "01a20b49-cb5f-4c9d-91b4-10ea78159e67",
+        "chatSessionId": "sess_6230e230-e522-443f-9341-1744cea1bcc3",
+        "timestamp": 1794987356316
       }
     ]
   }

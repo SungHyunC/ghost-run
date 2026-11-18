@@ -85,7 +85,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Step 9. Judge and save: copy the file to `.ghost-run/probe/ide-events.jsonl` (right-click, Copy, Paste, Rename) so that the CLI run starts clean, delete `events.jsonl`, and delete the `probe-scratch/` folder. Keep your written answers for task 1.6.
     - _Requirements: 24.4, 2.9, 2.7, 13.2, 14.2, 15.8_
 
-  - [ ] 1.5 MANUAL (human, Kiro CLI V3 3.4.x): run the probe and read the log
+  - [x] 1.5 MANUAL (human, Kiro CLI V3 3.4.x): run the probe and read the log
     - Prerequisites: task 1.4 is done and `events.jsonl` was moved to `ide-events.jsonl`. Use a terminal outside the IDE.
     - Step 1. In the terminal run `kiro-cli --version` and write the version down (expect 3.4.0 or later).
     - Step 2. Run `cd <path-to>/ghost-run` and recreate the empty folder `probe-scratch/` (`mkdir probe-scratch`).
@@ -96,7 +96,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Step 7. Save: `cp .ghost-run/probe/events.jsonl .ghost-run/probe/cli-events.jsonl`, then remove `events.jsonl` and `probe-scratch/`. Exit the CLI.
     - _Requirements: 24.4, 2.9, 13.2, 14.2, 15.8_
 
-  - [ ] 1.6 Record the probe results as a table in `docs/measurements.md`
+  - [x] 1.6 Record the probe results as a table in `docs/measurements.md`
     - Append one entry that holds a results table with the columns `Fact`, `IDE 1.4.x`, `CLI 3.4.x`, `Evidence`, and one row per fact: (a) file-create and file-delete trigger identifiers; (b) file-event STDIN fields and the path form; (c) Post Tool Use response field name; (d) whether a blocked call fires Post Tool Use; (e) whether file-event STDOUT reaches the agent context; (f) `timeout` placement honored; (h) the `code` tool fields and the operation list, with each difference from `CODE_READ_ONLY_OPERATIONS`; and whether two Pre Tool Use events overlapped in time (design O5). Give the IDE and CLI versions. Put only field names, trigger names, tool names, and path forms in the table.
     - Use the exact heading `Probe results` so that the test of task 1.8 and task 3.2 can detect that the table exists. The `ask` row is filled by task 17.2.
     - _Requirements: 24.5_
@@ -158,14 +158,14 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Presence of all five required files is checked later by task 16.1, because the hook files are created by later tasks.
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.10, 21.3_
 
-- [ ] 4. Shared modules: gate constants, hook I/O, and the Ghost_Store
-  - [ ] 4.1 Implement `gate-config.mjs` and `lib/hook-io.mjs`
+- [x] 4. Shared modules: gate constants, hook I/O, and the Ghost_Store
+  - [x] 4.1 Implement `gate-config.mjs` and `lib/hook-io.mjs`
     - `gate-config.mjs` exports the constants of the design: `WARN_MODE = 'exit2'`, `WATCHDOG_MS = 50_000`, `RUNNER_DEADLINE_SEC = 44`, `SEMAPHORE_SLOTS = 2`, `SEMAPHORE_WAIT_MS = 5_000`, `STDIN_MAX_BYTES = 1_048_576`, `COMMAND_MAX_CODE_POINTS = 4096`, `DELETE_ENUM_MAX = 10_000`, `STORE_CAPS = { sessions: 20, runs: 200, graveyardLines: 2000, provenancePerSession: 1000, recordBytes: 1_048_576 }`, and the flag `RUNNER_SUPPORTS_RUN_ID = false` (see Cross-spec dependencies). The file is a Self_Protected_Path. It reads no environment variable. `WARN_MODE` stays `'exit2'` until task 17.3.
     - `lib/hook-io.mjs`: `readStdinBounded(stream, maxBytes)` (reads at most 1 MiB, rejects with `{ code: 'too-large' }`, decodes as UTF-8), `runHook(name, load, opts)` (the bootstrap helper), `fatal(kind)` that prints one fixed line from the design table and exits 2, and a writer that uses `process.stdout.write(text, cb)` and `process.stderr.write(text, cb)` and calls `process.exit(code)` in the callback so a pipe is flushed first. A gate exit code is always 0 or 2.
     - Write unit tests: too-large input, valid input, the fixed lines (no stack trace, no input text), and flush-before-exit with a pipe.
     - _Requirements: 3.1, 7.8, 8.1, 8.3, 8.4, 8.7, 1.7_
 
-  - [ ] 4.2 Implement `lib/store/ghost-store.mjs`, `lib/store/redact.mjs`, and `lib/store/session-key.mjs`
+  - [x] 4.2 Implement `lib/store/ghost-store.mjs`, `lib/store/redact.mjs`, and `lib/store/session-key.mjs`
     - `ghost-store.mjs`: `storePaths(root)`, `appendLine(file, line)` (one `fs.write` of the whole line plus `\n` to a descriptor opened with `O_APPEND`, file mode `0600`, folders `0700`), `readLines(text)` (pure; returns `{ lines, corrupt }`), `enforceCaps(root, caps)` (20 session folders, oldest by modification time removed first; 200 Run_Records, oldest first; 2,000 graveyard lines; 1,000 provenance records per session; a record over 1 MiB is not written), and `storeWrite(text)` that redacts first. `approvals/` is not created (design D1). This module is the only place that writes under `.ghost-run/` (task 2.5 scans this).
     - `redact.mjs`: `loadCanaries(root, wardSet)` (reads the files that match the `secrets` patterns of the `egress` wards from the workspace into memory only, at most 16 files in code-point order of the path and 65,536 bytes each, runs `extractCanaries`), and `redactCanaries(text, canaries)` that replaces every raw occurrence with `[redacted]` and, with the `createInspector` of `core`, also the base64, base64url, hex, and percent-encoded forms.
     - `session-key.mjs`: `sessionKey(id)` returns `id` when it matches `^[A-Za-z0-9_-]{1,64}$`, else the lowercase SHA-256 hexadecimal digest of the UTF-8 bytes of `id`.
@@ -173,7 +173,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Write example tests: modes `0700` and `0600`, a torn line counted as `corrupt`, a failed write reports the failure class, canary redaction in all five forms, and an unreadable secret file is skipped without leaking its path.
     - _Requirements: 12.2, 12.3, 12.4, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11_
 
-  - [ ] 4.3 Implement `lib/store/stats.mjs`, `lib/store/provenance.mjs`, and `lib/store/runs.mjs`
+  - [x] 4.3 Implement `lib/store/stats.mjs`, `lib/store/provenance.mjs`, and `lib/store/runs.mjs`
     - `stats.mjs`: `statsLine(kind, clock)` (a line `{"kind":"<token>","at":"YYYY-MM-DDTHH:MM:SSZ"}` for the tokens `seen`, `safe-skip`, `ghosted`, `passed`, `warned`, `blocked`, `executed`, `provenance-skipped`; no command, path, or text), `summarizeStats(lines)` (pure; counts `commandsSeen`, `commandsGhosted`, `commandsBlocked`, `commandsWarned`, `commandsSafeSkipped`, `commandsExecuted`; corrupt lines ignored), and `formatStatsTable(summary)`.
     - `provenance.mjs`: `appendProvenance(root, sessionKey, record)` (validates the single record with `parseProvenanceLog` of `possession` before writing, writes nothing for a record that does not parse, defines no clock, session, or secret field) and `readProvenance(root, sessionKey)` (splits lines, parses each alone, skips and counts corrupt lines, validates the survivors as one log).
     - `runs.mjs`: `writeRunRecord(root, result)` (the output of `serializeRunResult` of `ghost-runner`; no `secretValues`, no payload byte) and `readRunRecord(root, id)` (accepts a Run_Id or a Grave_Id with a leading `g-`).
@@ -181,38 +181,38 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Write example tests for the fixed line formats and for a record that fails `parseProvenanceLog`.
     - _Requirements: 12.2, 12.3, 12.5, 13.3, 13.7, 13.8, 14.7_
 
-  - [ ] 4.4 Write property test for the session key [no-docker]
+  - [x] 4.4 Write property test for the session key [no-docker]
     - `tests/prop-21-session-key.test.mjs`. Generators: arbitrary strings (including empty, over 64 characters, hidden characters built from code points, path separators) and arbitrary strings that match the pattern. Check: the result always matches `^[A-Za-z0-9_-]{1,64}$`, equals the input when the input matches, is deterministic, and differs for two different inputs whose digests differ.
     - **Property 21: Session key**
     - **Validates: Requirements 12.2, 13.1**
     - _Requirements: 12.2, 13.1_
 
-  - [ ] 4.5 Write property test for the store caps [no-docker]
+  - [x] 4.5 Write property test for the store caps [no-docker]
     - `tests/prop-16-store-caps.test.mjs`. Generators: sequences of appends and session creations against injected small caps and a temporary store, with records of generated sizes around the 1 MiB bound. Check after every step: at most 20 sessions, 200 Run_Records, 2,000 graveyard lines, and 1,000 provenance records per session; the oldest item is removed first; a record over 1 MiB is not written and is counted as the Stats_Event `provenance-skipped`.
     - **Property 16: Store caps**
     - **Validates: Requirements 12.8, 13.1**
     - _Requirements: 12.8, 13.1_
 
-  - [ ] 4.6 Write property test for the provenance and stats round trip [no-docker]
+  - [x] 4.6 Write property test for the provenance and stats round trip [no-docker]
     - `tests/prop-05-provenance-stats.test.mjs`. Generators: Provenance_Records (source, kind, content with hidden code points built from code points), Stats_Event line lists with corrupt lines mixed in, and several concurrent writers appending lines to one file. Check: each written line parses with `parseProvenanceLog`; `parseProvenanceLog(serializeProvenanceLog(readBack))` equals `readBack`; `summarizeStats` returns `commandsSeen` equal to the number of `seen` events and every other count equal to the number of events of its kind; for the concurrent appends every line either parses or is counted `corrupt`, and the number of parseable lines equals the number of appends.
     - **Property 5: Provenance and stats round trip**
     - **Validates: Requirements 12.3, 13.3, 13.6, 13.7, 13.8, 13.12**
     - _Requirements: 12.3, 13.3, 13.6, 13.7, 13.8, 13.12_
 
-  - [ ] 4.7 Write property test that no secret reaches disk or output (store level) [no-docker]
+  - [x] 4.7 Write property test that no secret reaches disk or output (store level) [no-docker]
     - `tests/prop-04-no-secret.test.mjs`. Generators: canaries (`sk-CANARY-` plus generated characters) placed in a command, a path, a reason string, a tool response, a Grave_Entry-shaped object, and a Run_Record-shaped object, each in raw, base64, base64url, hex, and percent-encoded form. Check: after `storeWrite`, `appendProvenance`, `writeRunRecord`, and the output formatters, no byte sequence of the canary appears in any file of the temporary Ghost_Store, in captured STDOUT, or in captured STDERR, and the serialized Run_Record has no `secretValues` entry and no payload byte. Tasks 8.9 and 14.8 repeat the check end to end for the gate and the MCP server as example tests.
     - **Property 4: No secret on disk or output**
     - **Validates: Requirements 3.9, 5.7, 12.5, 12.6, 12.7, 14.4**
     - _Requirements: 3.9, 5.7, 12.5, 12.6, 12.7, 14.4_
 
-  - [ ] 4.8 Implement `lib/file-event.mjs` and the file-event constants
+  - [x] 4.8 Implement `lib/file-event.mjs` and the file-event constants
     - **Depends on task 1.7** (probe items (a) and (b): the file-create trigger identifier, the STDIN fields of file events, and the form of the path).
     - `file-event.mjs`: `extractFilePath(event, root)` returns the workspace-relative path with `/` separators from the field names that task 1.7 recorded (`FILE_EVENT_PATH_FIELDS`), makes an absolute path relative to the root, and returns `null` for a path outside the workspace or one that contains `..` after normalization. Add `FILE_CREATE_TRIGGER` and `POST_RESPONSE_FIELDS` to `gate-config.mjs` with the values that task 1.7 recorded.
     - Write example tests with fixture events shaped like the recorded ones: absolute path, relative path, outside path, `..` path, missing field.
     - _Requirements: 2.7, 13.2, 15.1, 16.1, 17.1_
 
-- [ ] 5. Gate input: classification, wards file loading, safe list, and self-protection
-  - [ ] 5.1 Implement `lib/event.mjs`: `parseHookEvent`, `TOOL_TABLE`, and `classifyTool`
+- [x] 5. Gate input: classification, wards file loading, safe list, and self-protection
+  - [x] 5.1 Implement `lib/event.mjs`: `parseHookEvent`, `TOOL_TABLE`, and `classifyTool`
     - **Depends on task 1.7** (probe item (h): the `code` tool fields and operation list).
     - `parseHookEvent(text)` requires a JSON object, `hook_event_name` equal to `PreToolUse`, string `cwd`, `session_id`, `tool_name`, and an object `tool_input` (not null, not an array). It reads own properties only and rebuilds a fresh object so a `__proto__` key is never assigned. It returns `{ ok: true, event }` or `{ ok: false, field }`.
     - `TOOL_TABLE` and `classifyTool(event)`: `execute_bash` is `shell` (`command`, `cwd`, `description`, `run_in_background`, `timeout`; `description` is never printed); `fs_write` and `fs_append` read `path` and `text`; `str_replace` reads `path` and `newStr`; `delete_file` reads `targetFile`; `code` reads `file_path` and `path` and the text fields `replacement` and `new_name`; anything else is `unknown`. The classifier reads every Target_Path_Field (`path`, `targetFile`, `file_path`) that is present, also on a tool for which the table does not list it. A write tool with no non-empty string target, or a non-string target, gives `deny` with the exact message `tool or input not recognized by the gate: not allowed.`. An unknown tool gives the same deny.
@@ -220,14 +220,14 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Write example tests of the table against the logged tool schemas of the Introduction of `requirements.md`: one test per tool, a present target field on a tool that does not list it, and a `code` call with a directory in `path`.
     - _Requirements: 3.2, 3.3, 3.4, 6.11_
 
-  - [ ] 5.2 Implement `lib/wards-file.mjs`: `resolveWardsFile` and `loadWardsForHook`
+  - [x] 5.2 Implement `lib/wards-file.mjs`: `resolveWardsFile` and `loadWardsForHook`
     - `resolveWardsFile(root, env)`: `GHOST_RUN_WARDS_FILE` when set, else `<root>/wards.yaml`, else `<root>/apps/ghost-shell/wards.yaml`. One function, shared with the MCP server.
     - `loadWardsForHook(root, env, loader?)` calls `loadWardsFile` of `@ghost-run/wards-config/node` (injectable `loader` for tests) and returns `{ ok: true, wardSet, safeCommands, file }` or `{ ok: false, errors }` with at most 5 strings from `formatConfigError`. A missing file gives `ok: false`. It never returns a partial WardSet. It reads `result.safeCommands ?? []`.
     - **Dependency note:** `ParseResult.safeCommands` comes from wards task 6 and is not present today. Until it lands the value is `[]`. Tests inject a loader result with and without the field.
     - Write example tests: the three resolution cases, a missing file, an invalid file with more than 5 errors, and `safeCommands` present and absent.
     - _Requirements: 3.7, 3.8, 4.6_
 
-  - [ ] 5.3 Implement `lib/gate/safe-list.mjs`
+  - [x] 5.3 Implement `lib/gate/safe-list.mjs`
     - `BUILTIN_GRAMMAR` with exactly the entries of Requirement 4 criterion 2: `pwd`; `ls` with `-a -l -la -al` and path words; `cat`, `head`, `tail`, `wc` with path words, `-n <integer>` for `head` and `tail`, `-l -w -c` for `wc`; `git status`; `git diff` and `git log` (no further word, or path words after `--`); `git show`; `git branch`; `echo` with word arguments.
     - `tokenize(line)` is a hand-written scanner (whitespace separates words; single quotes take everything literally; double quotes take everything to the next double quote; an unterminated quote is not safe; no escape, expansion, or comment syntax; a word that starts with `#` is not safe). `classifySafe(line, grammar, secretMatcher)` runs these steps in order and returns `not safe` at the first failure: reject the raw line when it contains `;`, `&`, `|`, `<`, `>`, a backtick, `$`, `\`, a newline, a carriage return, a NUL, or a code point in the hidden ranges of `hasHiddenChar`; tokenize; reject a word with `*`, `?`, or `[` outside quotes, a word that starts with `~`, or a `..` path segment; match the command (and the second word for `git`) to an entry and require every remaining word to be a listed option, an integer after an `intOptions` option, or a path word where the entry allows paths (`after--` means only after a literal `--`); an unlisted option, including `git diff --output=file`, is not safe; for `cat`, `head`, `tail`, `wc`, `git show`, and `git diff -- <path>` words, test `normalizePath` against a `compilePathSet` of every `secrets` pattern of the `egress` wards (case-insensitive) and treat a match as not safe.
     - Extension entries from `safeCommands` use the same grammar shape and the same steps. An extension entry is validated at load: its command name must not be a shell or interpreter word. An extension entry can never make safe a command that the character screen or the secret rule excludes.
@@ -235,13 +235,13 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Write example tests: each built-in entry, `ls; rm x`, `cat .env` (with the default wards), `git diff --output=out`, an unterminated quote, an extension entry named `sh`.
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7_
 
-  - [ ] 5.4 Write property test for safe-list soundness [no-docker]
+  - [x] 5.4 Write property test for safe-list soundness [no-docker]
     - `tests/prop-02-safe-list.test.mjs` (KI-P2). Generators: command-like strings built from safe words plus an injected forbidden character or construct (`;`, `&`, `|`, `<`, `>`, a backtick, `$`, `\`, newline, glob characters, a leading `~`, a `..` segment, a hidden code point built from code points), an unlisted option, a word outside the grammar, an appended `;`, `&&`, pipe, or redirect, secret-matching path words under `cat`, `head`, `tail`, `wc`, `git show`, and `git diff --`, and extension entries (including entries with forbidden names). Check: `classifySafe` returns `not safe` for every such input and for every unparsable line.
     - **Property 2: Safe-list soundness**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.7, 4.10**
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.7, 4.10_
 
-  - [ ] 5.5 Implement `lib/gate/self-protect.mjs` and `lib/gate/approval-guard.mjs`
+  - [x] 5.5 Implement `lib/gate/self-protect.mjs` and `lib/gate/approval-guard.mjs`
     - `self-protect.mjs`: `SELF_PROTECTED = ['.kiro/hooks/**', 'integrations/kiro-hook/**', 'integrations/mcp/**', '.ghost-run/**', <resolved Wards_File, workspace-relative>]` compiled with `compilePathSet` (case-insensitive). `isSelfProtected(path)` and `selfProtectedChanges(changes)` that returns the Changes of kind `file-created`, `file-overwritten`, `file-deleted`, or `symlink-changed` whose path matches. A Wards_File outside the workspace is protected only through the tools the gate judges.
     - `approval-guard.mjs`: `isApprovalCommand(commandText)` lowercases the text, removes quote characters, and returns true when it contains `ghost-run approve` or `ghost-run-approve` (the reserved names). It reads the command text and can only deny. No gate module reads any file under `.ghost-run/` as a decision input (task 2.5 scans this).
     - Write example tests for the spellings: `.kiro/hooks/x.json`, `integrations/kiro-hook/lib/a.mjs`, `.ghost-run/graveyard.jsonl`, an upper-case spelling, the resolved wards file; and the guard on plain, quoted, mixed-case, and `sh -c` forms.

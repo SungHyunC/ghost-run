@@ -1,0 +1,37 @@
+{
+  "source": "Kiro CLI 3.4.0 probe (docs/measurements.md, Probe results); IDE result pending task 1.4",
+  "operations": [
+    "search_symbols",
+    "lookup_symbols",
+    "get_document_symbols",
+    "generate_codebase_overview",
+    "search_codebase_map",
+    "pattern_search",
+    "pattern_rewrite",
+    "goto_definition",
+    "find_references",
+    "rename_symbol",
+    "format_code",
+    "hover",
+    "completion",
+    "diagnostics"
+  ],
+  "readOnly": [
+    "search_symbols",
+    "lookup_symbols",
+    "get_document_symbols",
+    "generate_codebase_overview",
+    "search_codebase_map",
+    "pattern_search",
+    "goto_definition",
+    "find_references",
+    "hover",
+    "completion",
+    "diagnostics"
+  ],
+  "writing": ["pattern_rewrite", "rename_symbol", "format_code"],
+  "observedInputFields": [
+    ["file_path", "operation"],
+    ["operation", "symbol_name"]
+  ]
+}

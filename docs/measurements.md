@@ -305,3 +305,27 @@ Recorded on macOS (Apple Silicon), Node v20.20.2, with `corepack pnpm --filter @
 - `http://[` (main chunk): prefix string in the host-parsing code of the egress judge (`new URL("http://[" + host + "]")` to validate a bracketed IPv6 literal). The URL is parsed, not fetched.
 
 Host allowlist: the suffixes `.example`, `.test`, `.localhost`, `.invalid`, and `registry.npmjs.org`; none of them occurs in the build. No `node:` specifier, no non-relative worker URL, and no protocol-relative URL was found. The `.wasm` name is referenced from the worker chunk, and `_headers` is present.
+
+## Probe results
+
+Recorded 2026-11-18 for task 1.6 of `.kiro/specs/kiro-integration`. Source: `.ghost-run/probe/cli-events.jsonl` (37 lines), read for field names, trigger names, tool names, and path forms only. CLI version: 3.4.0. The IDE column is pending until task 1.4; nothing in this table claims that the IDE behaves like the CLI. The paths in the log are workspace-relative because the probe script normalizes them (an outside path would read `<outside>`); the raw form of `file_path` on the wire was not recorded.
+
+| Fact | IDE 1.4.x | CLI 3.4.x | Evidence |
+|---|---|---|---|
+| (a) File create through the `fs_write` tool fires `PostFileCreate`, then `PostFileSave` | pending (task 1.4) | Confirmed: `PostFileCreate` followed by `PostFileSave` for the same path, between `PreToolUse` and `PostToolUse` of `fs_write` | `cli-events.jsonl` lines 1 to 8 |
+| (a) `str_replace` on an existing file fires `PostFileSave` only (no `PostFileCreate`) | pending (task 1.4) | Confirmed | lines 12 and 19 |
+| (a) File delete by shell (`rm`) fires a file event | pending (task 1.4) | No file event fired | no event after the `execute_bash` events, lines 27 to 37 |
+| (a) `PostFileDelete` trigger | pending (task 1.4) | Not confirmed: the CLI default agent and the spec agent have no delete tool (only sub-agents have `delete_file`), so no delete went through a file tool | no `PostFileDelete` line in the log |
+| (b) File-event STDIN fields | pending (task 1.4) | `cwd`, `file_path`, `hook_event_name`, `session_id` (no `tool_name`, no `tool_input`) | lines 2, 3, 12, 19 |
+| (b) File-event path field | pending (task 1.4) | `file_path`; the logged value is workspace-relative (raw form not recorded) | same lines |
+| (c) Post Tool Use STDIN fields | pending (task 1.4) | `cwd`, `hook_event_name`, `session_id`, `tool_input`, `tool_name`, `tool_response`; `tool_response` is not an object (`objectFields` is empty) | lines 8, 10, 17, 24, 26, 30, 33, 34, 37 |
+| (d) Call blocked with exit code 2 fires `PostToolUse` | pending (task 1.4) | No `PostToolUse` for the blocked `execute_bash` call. The agent receives the text "hook blocked, no reason given" (the deny test wrote no STDERR) | line 28 has a `PreToolUse` only, with `denyTest` set |
+| (e) File-event hook STDOUT reaches the agent context | pending (task 1.4) | No: the file-save hook printed a marker (`stdoutTest` records) and the agent reported it saw no marker | lines 4, 13, 20 |
+| (f) `code` tool operations | pending (task 1.4) | 14 operations: `search_symbols`, `lookup_symbols`, `get_document_symbols`, `generate_codebase_overview`, `search_codebase_map`, `pattern_search`, `pattern_rewrite`, `goto_definition`, `find_references`, `rename_symbol`, `format_code`, `hover`, `completion`, `diagnostics`. File-modifying: `pattern_rewrite`, `rename_symbol`, `format_code` | tool description seen by the CLI agent (not in the jsonl) |
+| (f) `CODE_READ_ONLY_OPERATIONS` of design.md against the CLI list | pending (task 1.4) | No difference: the 11 read-only names of the design equal the 11 read-only names of the CLI; the 3 writing names are the same 3 | design.md section "Tool classification" against the row above |
+| (f) Observed `code` input fields | pending (task 1.4) | `{file_path, operation}` and `{operation, symbol_name}`, both read-only operations; the input fields of the three writing operations were not observed | lines 31, 32, 33, 34 |
+| (f) Other tools seen in Pre and Post Tool Use | pending (task 1.4) | `tool_load` (`tool_ids`), `read_file` (`limit`, `offset`, `path`), `fs_write` (`path`, `text`), `str_replace` (`newStr`, `oldStr`, `path`, `replace_all`), `execute_bash` (`command`, `cwd`, `description`, `run_in_background`, `timeout`) | lines 1, 9, 10, 11, 27, 29, 30 |
+| (g) Parallel Pre Tool Use hooks overlap (design O5) | pending (task 1.4) | Not measured: the `PreToolUse` lines carry no timestamps, so overlap cannot be read from the log | lines 35 and 36 are two consecutive `PreToolUse` events and have no `at` field |
+| (h) `timeout` at entry level (`hooks[].timeout`) | pending (task 1.4) | Honored: a 3 s wait with `timeout: 1` was cut after about 1 s (the `entry` run has a `start` and no `end`; the next record starts 1.03 s later) | lines 5 and 6 |
+| (h) `timeout` inside `action` | pending (task 1.4) | Ignored: the 3 s wait ran to the end (`start` and `end` 3.00 s apart) | lines 6 and 7 |
+| (i) `ask` permission decision | pending (task 17.2) | pending (task 17.2) | `probe-ask.json` (disabled) |
