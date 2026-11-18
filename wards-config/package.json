@@ -1,0 +1,41 @@
+{
+  "name": "@ghost-run/wards-config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Run+ wards.yaml parser, schema validator, and printer",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:pbt": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@ghost-run/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^3.2.7"
+  }
+}

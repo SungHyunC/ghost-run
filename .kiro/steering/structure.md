@@ -7,7 +7,14 @@ inclusion: always
 ```
 ghost-run/
 ├─ core/                    # World contract, ghost runner, wards engine,
-│                           # possession detector, blacklight checker
+│                           # possession detector, blacklight checker.
+│                           # core/src/judge/: path normalizer, glob matcher,
+│                           # host matcher, content inspector, message builder
+│                           # (pure and dependency-free)
+├─ wards-config/            # Separate workspace package (@ghost-run/wards-config):
+│                           # wards.yaml parser, validator, printer.
+│                           # Not under integrations/. Depends on core/ only
+│                           # (wards-config -> core)
 ├─ ui/                      # Shared UI kit: mirror world, candle verdict,
 │                           # blacklight toggle, red-thread trace, graveyard,
 │                           # lights-on mode, 3D ghost overlay
@@ -21,6 +28,7 @@ ghost-run/
 │  └─ power/                # plugin.json, skills/ghost-run/, mcp.json
 ├─ apps/
 │  ├─ ghost-shell/          # App 1: shell/SQL ghost execution + playground
+│  │                        # wards.yaml: default Ghost Shell wards file
 │  └─ ghost-hand/           # App 2: browser MuJoCo robot arm variants
 ├─ worlds/                  # Drop-in folder for additional World implementations
 ├─ docs/
@@ -40,7 +48,8 @@ ghost-run/
 - `apps/*` and `integrations/*` may depend on `core/` and `ui/`.
 - `ui/` may depend on `core/`.
 - `ghost-runner/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only (`ghost-runner -> core`), through the public entry point of `@ghost-run/core`.
-- `core/` must not import `ghost-runner/` (enforced by an ESLint `no-restricted-imports` rule).
+- `wards-config/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only, through the public entry point `@ghost-run/core`.
+- `core/` must not import `ghost-runner/` or `wards-config/` (enforced by an ESLint `no-restricted-imports` rule).
 - `core/` must not depend on any other folder in this repository.
 
 ## World Contract (`core/`)
@@ -83,6 +92,8 @@ Guards are declared in `wards.yaml`, not in code. Each ward has an `id`, a `kind
 - **Shared UI** → `ui/`
 - **App-specific UI** → `apps/<name>/`
 - **Docker box runner, Repo_World, static (Plan B) analysis** → `ghost-runner/` (its own workspace package, not under `integrations/`; depends on `core/` only)
+- **wards.yaml parsing, validation, and printing** → `wards-config/` (its own workspace package, not under `integrations/`; depends on `core/` only)
+- **Default Ghost Shell wards** → `apps/ghost-shell/wards.yaml`
 - **Hook scripts** → `integrations/kiro-hook/` (`.mjs`, Node 20+, no LLM calls)
 - **MCP tools** → `integrations/mcp/`
 - **Kiro power files** → `integrations/power/`
@@ -91,7 +102,7 @@ Guards are declared in `wards.yaml`, not in code. Each ward has an `id`, a `kind
 
 | Hook | Trigger | Constraint |
 |---|---|---|
-| `ghost-gate` | Pre Tool Use (`shell`, `write`) | No LLM calls; must finish within 60 s |
+| `ghost-gate` | Pre Tool Use (`shell`, `write`) | No LLM calls; must finish within 60 s; loads wards through `wards-config` |
 | `ghost-log` | Post Tool Use | — |
 | `contract-pbt` | File Save in `core/**`, `worlds/**` | — |
 | `world-scaffold` | File Create in `worlds/*/` | — |

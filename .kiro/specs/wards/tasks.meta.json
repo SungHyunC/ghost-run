@@ -1,0 +1,307 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create the `wards-config/` package and register it in the workspace": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970212570
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970265294
+      }
+    ],
+    "1.2 Add the `wards-config` import ban to `core/eslint.config.mjs`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970213336
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970265304
+      }
+    ],
+    "1.4 Add the two additive type changes to `core/src/types.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970213703
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970265873
+      }
+    ],
+    "1.3 Update `.kiro/steering/structure.md` for `wards-config`, `judge/`, and the default wards file": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970266336
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970301444
+      }
+    ],
+    "1.5 Create the `wards-config` test harness": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970306383
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970366123
+      }
+    ],
+    "1.7 Add the claim-scope test helper `core/tests/fixtures/claim-scope.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970306388
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970366131
+      }
+    ],
+    "2.1 Implement `judge/bytes.ts` and `judge/sanitize.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970306550
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970366590
+      }
+    ],
+    "1. Scaffolding, workspace, steering, and core types": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970366132
+      }
+    ],
+    "2.2 Implement `judge/normalize.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970366966
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970482803
+      }
+    ],
+    "2.7 Implement `judge/host.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970373187
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970479968
+      }
+    ],
+    "2.9 Implement `judge/canary.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970373193
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970481003
+      }
+    ],
+    "2.5 Implement `judge/glob.ts` and `judge/pathset.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970482869
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970611538
+      }
+    ],
+    "2.11 Implement `judge/inspect.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970483668
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970611737
+      }
+    ],
+    "2.13 Implement `judge/message.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970484344
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970612541
+      }
+    ],
+    "2.15 Export the judge API from `core/src/index.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970618832
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970710981
+      }
+    ],
+    "2.3 Write property test for path normalization": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970618837
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970711085
+      }
+    ],
+    "2.4 Write unit tests for `bytes.ts` and `sanitize.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970618841
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970711202
+      }
+    ],
+    "2. Pure judge modules in `core/src/judge/`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970710998
+      }
+    ],
+    "2.6 Write property test for the glob matcher": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970712243
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970801476
+      }
+    ],
+    "2.8 Write property test for host matching": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970713368
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970802158
+      }
+    ],
+    "2.10 Write property test for canary extraction": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970714071
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970803209
+      }
+    ],
+    "2.12 Write property test for false positives and the 64 KiB cap": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970804261
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970908674
+      }
+    ],
+    "2.14 Write property test for message building": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970805063
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970908686
+      }
+    ],
+    "2.16 Write unit tests for validators and exact formats": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970805876
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970909688
+      }
+    ],
+    "1.6 Write the import-ban test `wards-config/tests/core-import-ban.test.ts`": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970910472
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970941486
+      }
+    ],
+    "3. Checkpoint - Judge modules complete": [
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794970942244
+      },
+      {
+        "executionId": "08cad234-fa6f-4416-922d-8a34d088c6c0",
+        "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
+        "timestamp": 1794971320965
+      }
+    ]
+  }
+}

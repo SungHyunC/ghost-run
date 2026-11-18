@@ -40,8 +40,8 @@ Decisions reflected in this plan:
 
 ## Tasks
 
-- [ ] 1. Scaffolding, workspace, steering, and core types
-  - [ ] 1.1 Create the `wards-config/` package and register it in the workspace
+- [x] 1. Scaffolding, workspace, steering, and core types
+  - [x] 1.1 Create the `wards-config/` package and register it in the workspace
     - Add `  - wards-config` to the `packages:` list of `pnpm-workspace.yaml` (it is not covered by the existing globs).
     - Create `wards-config/package.json` (`name: "@ghost-run/wards-config"`, `private: true`, `type: "module"`, `engines.node >= 20`, dependency `@ghost-run/core: workspace:*` as the only workspace dependency, dev dependencies `vitest`, `fast-check`, `typescript`, scripts `test`, `test:pbt`, `lint`, `build`, `clean`). The `yaml` dependency is added later in task 6.1.
     - Create `tsconfig.json`, `tsconfig.build.json`, `eslint.config.mjs` (import `@ghost-run/core` only through its public entry point), and `vitest.config.ts` with the alias `@ghost-run/core` to `<root>/core/src/index.ts` so tests never need a prior build.
@@ -49,12 +49,12 @@ Decisions reflected in this plan:
     - Do not call any LLM API anywhere in the package.
     - _Requirements: 1.2, 1.4, 1.6, 1.8_
 
-  - [ ] 1.2 Add the `wards-config` import ban to `core/eslint.config.mjs`
+  - [x] 1.2 Add the `wards-config` import ban to `core/eslint.config.mjs`
     - Add the pattern group `**/wards-config/**`, `@ghost-run/wards-config`, and `@ghost-run/wards-config/**` to the existing `no-restricted-imports` rule, next to the `ghost-runner` patterns.
     - Confirm `core/package.json` lists no entry under `dependencies`.
     - _Requirements: 1.1, 1.3_
 
-  - [ ] 1.3 Update `.kiro/steering/structure.md` for `wards-config`, `judge/`, and the default wards file
+  - [x] 1.3 Update `.kiro/steering/structure.md` for `wards-config`, `judge/`, and the default wards file
     - Add `wards-config/` to the folder tree (`@ghost-run/wards-config`: wards.yaml parser, validator, printer; a separate workspace package, not under `integrations/`).
     - Add `core/src/judge/` to the `core/` entry (path normalizer, glob matcher, host matcher, content inspector, message builder, pure and dependency-free).
     - Add `apps/ghost-shell/wards.yaml` as the default Ghost Shell wards file.
@@ -63,115 +63,115 @@ Decisions reflected in this plan:
     - Keep the text English and free of hidden Unicode; the `blacklight-steering` hook runs on save of `.kiro/**`, so resolve any finding it reports.
     - _Requirements: 1.9, 1.2, 1.3_
 
-  - [ ] 1.4 Add the two additive type changes to `core/src/types.ts`
+  - [x] 1.4 Add the two additive type changes to `core/src/types.ts`
     - Add the optional field `case_sensitive?: boolean` to the `path` variant of `Ward` only (absent means `false`).
     - Widen `WardNotice.kind` to `'effect-outside' | 'observed-event' | 'content-inspection' | 'path-escape'`.
     - Leave `WardViolation` as `{ wardId, wardKind, reason }`. Do not redefine `symlink-changed`, `dropped`, `eventId`, `SecretValues`, or `EvaluateInputs`.
     - Add compile-time assertions to `core/tests/types.test-d.ts` for the new field and the widened kind. Existing callers must compile unchanged.
     - _Requirements: 4.3, 4.4, 9.3, 17.3_
 
-  - [ ] 1.5 Create the `wards-config` test harness
+  - [x] 1.5 Create the `wards-config` test harness
     - Copy `core/tests/pbt-config.ts` to `wards-config/tests/pbt-config.ts` (the `core/tests` folder is not published), exporting `NUM_RUNS` (at least 100 by default, at least 10,000 when `GHOST_PBT_MODE=nightly`) and the 60 s short-run limit.
     - Add a `wards-config/tests/fixtures/` folder with a shared arbitrary for valid `WardSet` values (all four kinds, valid globs, valid host entries, optional `case_sensitive`).
     - _Requirements: 19.1_
 
-  - [ ]* 1.6 Write the import-ban test `wards-config/tests/core-import-ban.test.ts`
+  - [x]* 1.6 Write the import-ban test `wards-config/tests/core-import-ban.test.ts`
     - Write a temporary file under `core/src/` that imports `@ghost-run/wards-config`, run ESLint programmatically on it, assert a `no-restricted-imports` error, and remove the file in `finally`.
     - _Requirements: 1.3_
 
-  - [ ] 1.7 Add the claim-scope test helper `core/tests/fixtures/claim-scope.ts`
+  - [x] 1.7 Add the claim-scope test helper `core/tests/fixtures/claim-scope.ts`
     - Export `describeClaimed(property: 'P4' | 'P5' | 'P6', run)` that labels the suite with its declared scope: P4 for all worlds (pure logic), P5 only where P1 holds, P6 only where network attempts are recorded.
     - Export a `claimsFor(isolationMode)` function returning `{ p5, p6 }` that is `false` for both in `static-analysis` mode and `true` for the Docker box and the playground modes, matching the `claims` field the hook builds from the ghost-runner `RunResult.isolation`.
     - The helper never asserts P5 or P6 for `static-analysis`; tests that need the lowered claim assert the lowered-claim line instead.
     - _Requirements: 5.7, 11.8, 17.4, 17.5, 19.10_
 
-- [ ] 2. Pure judge modules in `core/src/judge/`
-  - [ ] 2.1 Implement `judge/bytes.ts` and `judge/sanitize.ts`
+- [x] 2. Pure judge modules in `core/src/judge/`
+  - [x] 2.1 Implement `judge/bytes.ts` and `judge/sanitize.ts`
     - `bytes.ts`: `utf8Encode` (lone surrogates become U+FFFD, no `TextEncoder` or `Buffer`), `compareCodePoints` (UTF-8 byte order, decision D8; never the default `sort`), and a standard base64 encoder.
     - `sanitize.ts`: `HIDDEN_RANGES` (0000-001F, 007F, 200B-200D, 2060, FEFF, 202A-202E, 2066-2069, E0000-E007F), `hasHiddenChar`, and `sanitizeText(s, maxCodePoints = 120)`: each hidden or control code point becomes `\u{HEX}` in upper case, the result never exceeds the limit (117 code points plus `...`) and never ends inside an escape.
     - No dependency, no I/O, no environment access.
     - _Requirements: 1.1, 1.5, 5.4, 8.6, 17.7, 17.8_
 
-  - [ ] 2.2 Implement `judge/normalize.ts`
+  - [x] 2.2 Implement `judge/normalize.ts`
     - Export `resolvePath` (NFC, split on `/`, stack walk that skips empty and `.` segments and resolves `..` lexically, `escapes` flag for a leading `..`), `normalizePath` (join; `''` for the Copy root), and `foldPath` (one code point to one code point `toLowerCase`, NFC before and after, decision D1).
     - Leading `/` is stripped. No file system access and no symbolic link resolution.
     - _Requirements: 2.1, 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 4.1_
 
-  - [ ]* 2.3 Write property test for path normalization
+  - [x]* 2.3 Write property test for path normalization
     - **Property 2: Path normalization is idempotent and spelling-invariant**
     - **Validates: Requirements 2.1, 2.2, 2.5, 2.6, 2.8**
     - File: `core/tests/normalize.test.ts`. Use NFD and NFC spellings written with escapes.
 
-  - [ ]* 2.4 Write unit tests for `bytes.ts` and `sanitize.ts`
+  - [x]* 2.4 Write unit tests for `bytes.ts` and `sanitize.ts`
     - `compareCodePoints` orders an astral character after U+FFFD (unlike UTF-16 order). `sanitizeText` replaces a newline, `\u200B`, a bidi control, and a tag character with `\u{HEX}`, truncates a 200-character value to 117 code points plus `...`, and never splits an escape. Hidden characters are built from escapes only.
     - _Requirements: 17.7, 8.6, 5.4_
 
-  - [ ] 2.5 Implement `judge/glob.ts` and `judge/pathset.ts`
+  - [x] 2.5 Implement `judge/glob.ts` and `judge/pathset.ts`
     - `validateGlob` with the ten error codes in the validation order of the design (`pattern-too-long`, `empty-pattern`, `invalid-character`, `absolute-pattern`, `unsupported-glob-syntax`, `parent-segment`, then per segment `partial-doublestar`, `unterminated-class`, `empty-class`, `descending-range`), and `normalizePattern`.
     - The matcher is two nested greedy two-pointer loops, no regular expression and no recursion, with an implicit trailing `**` so that a pattern also matches the directory it names and everything below it. The internal function accepts an optional `{ steps }` counter.
     - `compilePathSet(patterns, { caseSensitive })` with a literal fast path (a `Set` of normalized segment strings tested against the path's prefixes, decision D16), lenient compilation (a bad construct degrades to literal characters, decision D15), and a two-spelling test (as written and with `\` replaced by `/`) that reports `matched` and `escapes`.
     - Case-insensitive sets fold literals and match classes against the code point, its single-code-point lower case, and its upper case.
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 2.3, 2.4, 4.1, 4.3_
 
-  - [ ]* 2.6 Write property test for the glob matcher
+  - [x]* 2.6 Write property test for the glob matcher
     - **Property 3: Glob matcher agrees with a reference matcher and stays within the step bound**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 4.1, 4.3**
     - Files: `core/tests/glob.test.ts` and `core/tests/fixtures/glob-oracle.ts` (naive recursive reference matcher). Include a deterministic step-counter check for `a*a*a*a*a*a*a*a*b` against 4,000 `a` characters.
 
-  - [ ] 2.7 Implement `judge/host.ts`
+  - [x] 2.7 Implement `judge/host.ts`
     - `parseDestination` (strip scheme, userinfo at the last `@`, path, query, and fragment; bracketed IPv6; port 1 to 65535; remove exactly one trailing `.`; numeric-looking names rejected before the `URL` parser sees them, decision D17), `validateHostEntry` with its nine error codes, `hostEntryKey`, `compileAllowHosts` (exact name, `*.<name>` with exactly one extra leftmost label, IP literal equality with canonical IPv6, port rule), and `redactDestination` (reduce to `host[:port]`, else `sanitizeText`).
     - Read `URL` through `globalThis` with a narrow structural type; when it is missing, name and IPv6 destinations parse to `null` (fail closed). Entries that fail validation compile to a matcher that allows nothing.
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10_
 
-  - [ ]* 2.8 Write property test for host matching
+  - [x]* 2.8 Write property test for host matching
     - **Property 4: Host matching is spelling-invariant and exact**
     - **Validates: Requirements 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 15.2**
     - Files: `core/tests/host.test.ts` and `core/tests/fixtures/host-oracle.ts`. Include a unit test with `URL` removed that expects fail-closed behavior.
 
-  - [ ] 2.9 Implement `judge/canary.ts`
+  - [x] 2.9 Implement `judge/canary.ts`
     - `extractCanariesDetailed` and `extractCanaries`: candidate (a) is the whole content with trailing `CR` and `LF` bytes removed; candidate (b), for a base name `.env` or starting with `.env.`, is each `KEY=VALUE` or `export KEY=VALUE` value with blanks and one matching quote pair removed; blank and `#` lines are skipped. All work is on bytes.
     - Drop candidates shorter than 8 or longer than 16,384 bytes, de-duplicate by byte equality (first kept), keep at most 256, and count discards into `tooShort`, `tooLong`, `tooMany`. The cap is per file.
     - _Requirements: 9.4, 9.5_
 
-  - [ ]* 2.10 Write property test for canary extraction
+  - [x]* 2.10 Write property test for canary extraction
     - **Property 11: Canary extraction bounds**
     - **Validates: Requirements 9.4, 9.5**
     - File: `core/tests/canary.test.ts`.
 
-  - [ ] 2.11 Implement `judge/inspect.ts`
+  - [x] 2.11 Implement `judge/inspect.ts`
     - `createInspector(payloads)` and `detectKinds`, with `ENCODING_ORDER` and `PAYLOAD_CAP = 65_536`. Truncate each payload to its first 65,536 bytes, then build views V0 (raw), V1 (whitespace removed), V2 (percent-decoded, `+` as space, invalid `%` kept), V3 (V2 whitespace removed), plus lower-case copies for hex.
     - Needles: `raw` in V0; `percent` in V2 only when `raw` is absent from V0; base64 and base64url needles for offsets 0, 1, 2 that cover only characters whose 6-bit groups lie fully inside the Canary, padded or unpadded; lower-case hex in the lower-case views; and, per decision D6, a whitespace-free `raw` needle in V1 and V3 when the Canary contains `CR`, `LF`, space, or tab and the stripped form has at least 8 bytes.
     - Search with a Bloom pre-filter on 8-byte rolling-hash windows (2^18 bits, up to 8 sampled windows) and KMP verification. Return kinds per payload in `ENCODING_ORDER`, each at most once. There is no shared work budget across Canaries (it would break P4).
     - Never place a Canary byte or derived value in a thrown error message.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 9.6, 11.4, 11.5_
 
-  - [ ]* 2.12 Write property test for false positives and the 64 KiB cap
+  - [x]* 2.12 Write property test for false positives and the 64 KiB cap
     - **Property 10: No false positives and a hard 64 KiB cap**
     - **Validates: Requirements 9.6, 10.9, 19.6**
     - Files: `core/tests/p6-content.test.ts` (the Property 10 part) and `core/tests/fixtures/encoders.ts` (independent encoders: base64 and base64url padded and unpadded, hex in three case forms, percent-encoding, line breaking at 76 and 60 characters).
 
-  - [ ] 2.13 Implement `judge/message.ts`
+  - [x] 2.13 Implement `judge/message.ts`
     - `renderMessage(verdict, ctx)` with `RenderContext { wardCount, claims, seance? }` where `claims: { p5, p6 }` is required (decision D14), `CLAIM_LOWERED_LINE`, and `SUGGESTIONS` with the four fixed texts.
     - Templates: `pass` is `GHOST RUN PASSED: all <n> ward(s) cleared.` (`ward` for 1, else `wards`); `warn` is `GHOST RUN NEEDS HUMAN APPROVAL: <k> notice(s) outside the copy or needing review. First: <R(reason)>.`; `block` is line 1 `GHOST RUN BLOCKED by ward <wardId>: <reason>. <suggestion>` for the first violation of the first ward, then at most 3 `Also violated ward <wardId>: <reason>.` lines, then `+<k> more violations. See the seance page.`
     - Append `CLAIM_LOWERED_LINE` to every verdict kind when `claims.p5` or `claims.p6` is `false`. Append ` Seance: <base>/seance/<id>` to the last line when `base` matches `^https?://` (default `http://localhost:5317`, one trailing `/` removed) and `id` matches `^[A-Za-z0-9_-]{1,64}$`; otherwise omit it without throwing.
     - Sanitize every interpolated value with `sanitizeText(x, 120)`, limit each reason to 200 code points (197 plus `...`), limit the message to 1,200 code points by dropping `Also violated` lines from the end first (recomputing the `+<k> more` count), and use the fallback lines for a `block` without violations and a `warn` without notices. The output contains no timestamp, random value, or host-specific text.
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 17.1, 17.2, 17.4, 17.5, 17.6, 17.7, 17.8_
 
-  - [ ]* 2.14 Write property test for message building
+  - [x]* 2.14 Write property test for message building
     - **Property 14: Messages are deterministic, bounded, and injection-safe**
     - **Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 17.1, 17.2, 17.4, 17.5, 17.7, 17.8, 19.10**
     - File: `core/tests/message.test.ts`. Use `claimsFor('static-analysis')` from task 1.7 to require the lowered-claim line. Include the exact string of Requirement 16 criterion 5 as an example test.
 
-  - [ ] 2.15 Export the judge API from `core/src/index.ts`
+  - [x] 2.15 Export the judge API from `core/src/index.ts`
     - Export `validateGlob`, `normalizePattern`, `normalizePath`, `foldPath`, `compilePathSet`, `validateHostEntry`, `hostEntryKey`, `compileAllowHosts`, `parseDestination`, `redactDestination`, `extractCanaries`, `createInspector`, `renderMessage`, `CLAIM_LOWERED_LINE`, `SUGGESTIONS`, `sanitizeText`, `compareCodePoints`, and the related types (`GlobError`, `HostEntryError`, `EncodingKind`, `RenderContext`, `Claims`).
     - Confirm that `core/package.json` still has no `dependencies` and that `pnpm --filter @ghost-run/wards-config exec tsc --noEmit` can import `validateGlob` and `validateHostEntry` through `@ghost-run/core`.
     - _Requirements: 1.1, 1.4, 3.8, 7.9_
 
-  - [ ]* 2.16 Write unit tests for validators and exact formats
+  - [x]* 2.16 Write unit tests for validators and exact formats
     - One example per `validateGlob` code and per `validateHostEntry` code; the examples `Registry.NPMJS.org.` equals `registry.npmjs.org`, `*.example.test` does not allow `example.test` or `a.b.example.test`, and `3232235786` is not allowed by an IPv4 entry.
     - _Requirements: 3.7, 3.8, 7.2, 7.6, 7.8, 7.9_
 
-- [ ] 3. Checkpoint - Judge modules complete
+- [x] 3. Checkpoint - Judge modules complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Engine integration in `core/src/wards.ts`

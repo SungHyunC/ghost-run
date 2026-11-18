@@ -117,6 +117,8 @@ export type Ward =
       /** Operations to deny on matched paths. */
       readonly deny: ReadonlyArray<'delete' | 'overwrite'>;
       readonly paths: readonly string[];
+      /** Match paths case-sensitively. Absent means false. */
+      readonly case_sensitive?: boolean;
     }
   | {
       readonly id: string;
@@ -211,7 +213,11 @@ export interface WardViolation {
  * approval. Independent of wards (it exists even with an empty WardSet).
  */
 export interface WardNotice {
-  readonly kind: 'effect-outside' | 'observed-event';
+  readonly kind:
+    | 'effect-outside'
+    | 'observed-event'
+    | 'content-inspection'
+    | 'path-escape';
   readonly reason: string;
   /** Index of the action (effect-outside) or event step (observed-event). */
   readonly stepIndex: number;

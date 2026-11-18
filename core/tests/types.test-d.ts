@@ -10,6 +10,8 @@ import type {
   SecretValues,
   Snapshot,
   SqlRowCountChange,
+  Ward,
+  WardNotice,
   World,
 } from '../src/types.js';
 
@@ -186,6 +188,23 @@ describe('core type extensions', () => {
     expectTypeOf<EvaluateInputs['secretValues']>().toEqualTypeOf<SecretValues | undefined>();
     expectTypeOf<EvaluateInputs['payloads']>().toEqualTypeOf<
       ReadonlyMap<string, Uint8Array> | undefined
+    >();
+  });
+
+  it('path Ward has optional case_sensitive; other variants do not', () => {
+    type PathWard = Extract<Ward, { kind: 'path' }>;
+    expectTypeOf<PathWard['case_sensitive']>().toEqualTypeOf<boolean | undefined>();
+    const w: Ward = { id: 'p', kind: 'path', deny: ['delete'], paths: ['a'] };
+    const w2: Ward = { id: 'p', kind: 'path', deny: ['delete'], paths: ['a'], case_sensitive: true };
+    void [w, w2];
+    expectTypeOf<Extract<Ward, { kind: 'sql' }>>().not.toHaveProperty('case_sensitive');
+    expectTypeOf<Extract<Ward, { kind: 'egress' }>>().not.toHaveProperty('case_sensitive');
+    expectTypeOf<Extract<Ward, { kind: 'physics' }>>().not.toHaveProperty('case_sensitive');
+  });
+
+  it('WardNotice.kind is widened', () => {
+    expectTypeOf<WardNotice['kind']>().toEqualTypeOf<
+      'effect-outside' | 'observed-event' | 'content-inspection' | 'path-escape'
     >();
   });
 });
