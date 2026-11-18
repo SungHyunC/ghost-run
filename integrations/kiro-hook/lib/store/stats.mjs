@@ -23,6 +23,18 @@ export const STATS_KINDS = Object.freeze([
 const LINE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 
 /**
+ * UTC time to the second, `YYYY-MM-DDTHH:MM:SSZ`.
+ * @param {Date | number | (() => Date | number)} [clock] a Date, epoch ms, or a function returning one
+ * @returns {string}
+ */
+export function utcSecond(clock = () => new Date()) {
+  const raw = typeof clock === 'function' ? clock() : clock;
+  const d = raw instanceof Date ? raw : new Date(raw);
+  if (Number.isNaN(d.getTime())) throw new TypeError('invalid clock value');
+  return `${d.toISOString().slice(0, 19)}Z`;
+}
+
+/**
  * Build one Stats_Event line (no terminator).
  * @param {StatsKind} kind
  * @param {Date | number | (() => Date | number)} [clock] a Date, epoch ms, or a function returning one
@@ -30,11 +42,7 @@ const LINE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
  */
 export function statsLine(kind, clock = () => new Date()) {
   if (!STATS_KINDS.includes(kind)) throw new TypeError('unknown stats kind');
-  const raw = typeof clock === 'function' ? clock() : clock;
-  const d = raw instanceof Date ? raw : new Date(raw);
-  if (Number.isNaN(d.getTime())) throw new TypeError('invalid clock value');
-  const at = `${d.toISOString().slice(0, 19)}Z`;
-  return JSON.stringify({ kind, at });
+  return JSON.stringify({ kind, at: utcSecond(clock) });
 }
 
 /**

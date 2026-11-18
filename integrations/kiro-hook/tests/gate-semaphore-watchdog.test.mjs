@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { LABEL_RUN_ID } from '@ghost-run/ghost-runner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { acquireSlot, BUSY_LINE, withSlot } from '../lib/gate/semaphore.mjs';
 import { armGateWatchdog, armWatchdog, cleanupRun, runnerBudgetSec, TIMEOUT_LINE } from '../lib/gate/watchdog.mjs';
@@ -80,7 +81,7 @@ describe('watchdog', () => {
     };
     await cleanupRun('run-1', { tmpdir: dir, runCommand });
     expect(calls).toEqual([
-      ['docker', 'ps', '-aq', '--filter', 'label=ghost-run.run-id=run-1'],
+      ['docker', 'ps', '-aq', '--filter', `label=${LABEL_RUN_ID}=run-1`],
       ['docker', 'rm', '-f', '-v', 'abcdef123456'],
     ]);
     await expect(fsp.stat(target)).rejects.toThrow();
@@ -140,11 +141,11 @@ describe('cleanupRun with real Docker', () => {
     if (image === undefined) return;
     const name = 'ghost-run-gate-test-' + process.pid;
     execFileSync('docker', [
-      'create', '--name', name, '--network', 'none', '--label', `ghost-run.run-id=${runId}`, image, 'true',
+      'create', '--name', name, '--network', 'none', '--label', `${LABEL_RUN_ID}=${runId}`, image, 'true',
     ]);
     try {
       await cleanupRun(runId, { tmpdir: dir });
-      const left = execFileSync('docker', ['ps', '-aq', '--filter', `label=ghost-run.run-id=${runId}`], { encoding: 'utf8' });
+      const left = execFileSync('docker', ['ps', '-aq', '--filter', `label=${LABEL_RUN_ID}=${runId}`], { encoding: 'utf8' });
       expect(left.trim()).toBe('');
     } finally {
       try {

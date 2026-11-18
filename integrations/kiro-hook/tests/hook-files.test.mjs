@@ -186,6 +186,32 @@ describe('.kiro/hooks files', () => {
   });
 });
 
+describe('ghost-gate.json (task 8.3)', () => {
+  const gate = docs['ghost-gate.json'];
+
+  it('exists with version v1 and exactly the two PreToolUse entries', () => {
+    expect(gate).toBeDefined();
+    expect(gate.version).toBe('v1');
+    expect(gate.hooks.map((/** @type {any} */ h) => [h.name, h.matcher, h.trigger])).toEqual([
+      ['ghost-gate (shell)', 'shell', 'PreToolUse'],
+      ['ghost-gate (write)', 'write', 'PreToolUse'],
+    ]);
+  });
+
+  it('uses one command, entry-level timeout 60, and is disabled until task 19.1', () => {
+    for (const h of gate.hooks) {
+      expect(h.action).toEqual({ type: 'command', command: 'node integrations/kiro-hook/ghost-gate.mjs' });
+      expect(h.timeout).toBe(60);
+      expect('timeout' in h.action).toBe(false);
+      expect(h.enabled).toBe(false);
+    }
+  });
+
+  it('has no @mcp or @powers matcher', () => {
+    for (const h of gate.hooks) expect(h.matcher).not.toMatch(/@mcp|@powers/);
+  });
+});
+
 describe('exp-b retirement', () => {
   it('no exp-b file is enabled while ghost-gate.json is enabled', () => {
     expect(retirementViolations(docs)).toEqual([]);

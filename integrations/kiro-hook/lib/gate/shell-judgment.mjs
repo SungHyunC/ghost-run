@@ -156,17 +156,12 @@ export async function judgeShell(ctx, deps = {}) {
     /** @type {import('@ghost-run/ghost-runner').RunOutput | undefined} */
     let output;
     try {
-      // `pipelineDeadlineSec` is not in ghost-runner's RunPlanOptions yet (design O8): the runner
-      // ignores it and keeps its fixed 55 s deadline. It is passed so the budget takes effect once it lands.
-      const options = /** @type {import('@ghost-run/ghost-runner').RunPlanOptions} */ (
-        /** @type {unknown} */ ({
-          original: ctx.root,
-          wardSet: ctx.wardSet,
-          pipelineDeadlineSec: runnerBudgetSec(elapsed),
-          runId,
-        })
-      );
-      output = await runPlan(plan, options);
+      output = await runPlan(plan, {
+        original: ctx.root,
+        wardSet: ctx.wardSet,
+        pipelineDeadlineSec: runnerBudgetSec(elapsed),
+        runId,
+      });
       return { ok: /** @type {const} */ (true), result: output.result };
     } catch {
       return { ok: /** @type {const} */ (false) };

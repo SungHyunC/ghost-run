@@ -141,6 +141,15 @@ describe('classifyTool', () => {
   });
 });
 
+describe('code tool write operations', () => {
+  it.each(['pattern_rewrite', 'rename_symbol', 'format_code'])('%s is classified write', (operation) => {
+    expect(CODE_READ_ONLY_OPERATIONS.has(operation)).toBe(false);
+    const c = classifyTool(makeHookEvent('code', { operation, file_path: 'a.ts' }));
+    expect(c.class).toBe('write');
+    expect(c.targets).toEqual(['a.ts']);
+  });
+});
+
 describe('code tool operation fixture', () => {
   it('read-only set equals the fixture read-only list', () => {
     expect([...CODE_READ_ONLY_OPERATIONS].sort()).toEqual([...fixture.readOnly].sort());

@@ -4,14 +4,11 @@ import { execFile } from 'node:child_process';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { RUN_ID_RE } from '@ghost-run/ghost-runner';
+import { LABEL_RUN_ID, RUN_ID_RE } from '@ghost-run/ghost-runner';
 import { RUNNER_SUPPORTS_RUN_ID, WATCHDOG_MS } from '../../gate-config.mjs';
 
 /** Fixed line printed when the watchdog fires. */
 export const TIMEOUT_LINE = 'GHOST RUN GATE TIMEOUT: no verdict within 50 s; the tool call was not allowed.';
-
-/** Label the runner puts on every box of a run (ghost-runner `LABEL_RUN_ID`). */
-export const RUN_ID_LABEL = 'ghost-run.run-id';
 
 /** Own timeout of each cleanup command, in milliseconds. */
 const CLEANUP_TIMEOUT_MS = 4_000;
@@ -57,7 +54,7 @@ export async function cleanupRun(runId, deps = {}) {
   const runCommand = deps.runCommand ?? run;
   const timeoutMs = deps.timeoutMs ?? CLEANUP_TIMEOUT_MS;
   try {
-    const ids = (await runCommand('docker', ['ps', '-aq', '--filter', `label=${RUN_ID_LABEL}=${runId}`], timeoutMs))
+    const ids = (await runCommand('docker', ['ps', '-aq', '--filter', `label=${LABEL_RUN_ID}=${runId}`], timeoutMs))
       .split(/\s+/)
       .filter((id) => /^[0-9a-f]{12,64}$/.test(id));
     if (ids.length > 0) await runCommand('docker', ['rm', '-f', '-v', ...ids], timeoutMs);

@@ -323,65 +323,65 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Validates: Requirements 7.7, 14.1, 14.4, 14.5**
     - _Requirements: 7.7, 14.1, 14.4, 14.5_
 
-- [ ] 8. Gate assembly, bootstrap, hook file, and process tests
-  - [~] 8.1 Implement `lib/gate/decide.mjs`
+- [x] 8. Gate assembly, bootstrap, hook file, and process tests
+  - [x] 8.1 Implement `lib/gate/decide.mjs`
     - `decide(input, deps)` is pure given `deps` (`runPlan`, `loadWards`, `fsView`, `clock`, `uuid`, `warnMode`, `store`). Order: parse the event (`parseHookEvent`, failure gives `deny` naming the field); classify; load the Wards_File (failure gives `deny` before any other check, so a broken file blocks every call including `ls`); for a shell call run `isApprovalCommand` (deny with a message that names the rule), then `classifySafe` (a Safe_Command appends the Stats_Event `safe-skip`, prints nothing, calls no `runPlan`, writes no Run_Record or Grave_Entry, and returns exit 0), then `judgeShell`; for a write call run `judgeWrite`; a `read-only` `code` call is allowed. Every call appends `seen`. A ghost run appends `ghosted`, then one of `passed`, `warned`, `blocked`, and writes the Run_Record. `block` and `warn` write the Grave_Entry (with the Run_Record) before returning. If the Run_Record or Grave_Entry write fails, return `deny` with `GHOST RUN GATE ERROR: store-failed; the tool call was not allowed.` even in `ask` mode. The gate emits no permission decision `allow`. The gate never reads the Provenance_Log to decide (the log is read only after the verdict, for the Grave_Entry `links`).
     - `decide` never throws: any exception becomes `GHOST RUN GATE ERROR: internal-error; the tool call was not allowed.`.
     - Write example tests with a `runPlan` double for each branch of the order above.
     - **Depends on tasks 5.1, 5.2, 5.3, 5.5, 6.2, 6.3, 7.1, and 7.5.**
     - _Requirements: 3.2, 3.4, 4.1, 4.8, 5.6, 5.8, 6.1, 7.7, 8.1, 8.10, 10.1, 10.6, 10.10, 13.7, 14.1, 14.2_
 
-  - [~] 8.2 Implement `lib/gate/main.mjs`, the bootstrap `ghost-gate.mjs`, and `index.mjs`
+  - [x] 8.2 Implement `lib/gate/main.mjs`, the bootstrap `ghost-gate.mjs`, and `index.mjs`
     - `ghost-gate.mjs` contains only: imports of `node:` built-ins and `./lib/hook-io.mjs`; the arming of the watchdog; `process.on('uncaughtException' | 'unhandledRejection')` handlers that call `fatal('internal-error')`; a bounded STDIN read; and `await import('./lib/gate/main.mjs')` inside `try/catch`. A failed import prints `GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build).` and exits 2 (not the Node default code 1). No code path ends the process with exit 0 except the `allow` paths of Requirement 7.
     - `lib/gate/main.mjs` wires the real dependencies (the real `runPlan`, `loadWardsForHook`, the `FsView` adapter, the clock, `crypto.randomUUID`, `WARN_MODE`), calls `decide`, writes the outputs through `hook-io`, releases the semaphore and clears the payload map on every path, and disarms the watchdog. It reads no environment variable other than `GHOST_RUN_WARDS_FILE` and `GHOST_RUN_SEANCE_BASE`, and it reads no variable or workspace file that disables the gate.
     - `index.mjs` is the public export of the package for the MCP server and the apps: `resolveWardsFile`, `loadWardsForHook`, `classifySafe`, `decisionFromRunResult`, `diffSummary`, `buildGraveEntry`, `readGraveyard`, `summarizeStats`, `formatStatsTable`, the store functions of tasks 4.2 and 4.3, and `sessionKey`.
     - **Dependency note:** process tests need `pnpm -r build`.
     - _Requirements: 3.10, 5.6, 8.1, 8.3, 8.6, 8.7, 12.10, 7.8_
 
-  - [~] 8.3 Create `.kiro/hooks/ghost-gate.json` (disabled until task 19.1)
+  - [x] 8.3 Create `.kiro/hooks/ghost-gate.json` (disabled until task 19.1)
     - **Depends on task 1.7** (the confirmed `timeout` placement and the matcher behavior) **and task 3.2.**
     - Create the file with version `v1` and two entries (`ghost-gate (shell)` with matcher `shell`, `ghost-gate (write)` with matcher `write`), trigger `PreToolUse`, the same `command` `node integrations/kiro-hook/ghost-gate.mjs`, entry-level `timeout: 60`, and **`enabled: false`**. The gate is switched on only by task 19.1. No matcher covers `@mcp` or `@powers` tools. The test of task 3.2 checks the file.
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-  - [~] 8.4 Write property test for fail-closed totality [no-docker]
+  - [x] 8.4 Write property test for fail-closed totality [no-docker]
     - `tests/prop-03-fail-closed.test.mjs` (KI-P3). Generators: arbitrary byte strings (empty, invalid UTF-8, truncated JSON, valid JSON of the wrong type, JSON with extra fields, deeply nested JSON, input over 1 MiB, a wrong `hook_event_name`, an unknown `tool_name`, write tools with no or non-string target fields). Check: `decide` returns a decision without throwing and the decision is `deny` with exit 2 unless the input is a valid `PreToolUse` event for a known tool whose verdict allows.
     - **Property 3: Fail-closed totality**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 8.1, 8.3, 8.10**
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 8.1, 8.3, 8.10_
 
-  - [~] 8.5 Write property test that a safe-list skip leaves no ghost [no-docker]
+  - [x] 8.5 Write property test that a safe-list skip leaves no ghost [no-docker]
     - `tests/prop-09-safe-skip.test.mjs` (KI-P9). Generators: Safe_Commands built from the grammar (all built-in entries, generated path words and option values that are allowed). Check: `decide` makes no `runPlan` call, writes no Run_Record, writes no Grave_Entry, appends exactly one `seen` and one `safe-skip` Stats_Event, prints nothing, and returns exit 0.
     - **Property 9: Safe-list skip leaves no ghost**
     - **Validates: Requirements 4.1, 4.8, 4.9**
     - _Requirements: 4.1, 4.8, 4.9_
 
-  - [~] 8.6 Write property test that the verdict is independent of provenance [no-docker]
+  - [x] 8.6 Write property test that the verdict is independent of provenance [no-docker]
     - `tests/prop-14-verdict-independent.test.mjs`. Generators: `RunResult` values and Provenance_Logs (empty, matching, non-matching, with hidden-character matches built from code points). Check: the decision kind, exit code, and message are identical with and without the log, and only `detail.sources`, `detail.needles`, and `detail.links` of the Grave_Entry differ.
     - **Property 14: Verdict independent of provenance**
     - **Validates: Requirements 13.13, 14.3**
     - _Requirements: 13.13, 14.3_
 
-  - [~] 8.7 Write property test that approval commands are denied [no-docker]
+  - [x] 8.7 Write property test that approval commands are denied [no-docker]
     - `tests/prop-15-approval-denied.test.mjs`. Generators: shell commands that contain the reserved approval command in wrapper forms (`sh -c '...'`, `env X=1 ...`, quotes, mixed case, a command line built by concatenation inside one call, a script written by the same call) and write-tool calls targeting `.ghost-run/approvals/`. Check: `decide` returns `deny` with exit 2 and the rule message, and no gate module reads approval state.
     - **Property 15: Approval commands are denied**
     - **Validates: Requirements 10.5, 10.10**
     - _Requirements: 10.5, 10.10_
 
-  - [~] 8.8 Write the bootstrap failure tests (process level) [no-docker]
+  - [x] 8.8 Write the bootstrap failure tests (process level) [no-docker]
     - `tests/bootstrap.test.mjs`: spawn `node ghost-gate.mjs` with a temporary workspace and the event on STDIN. Cases: missing `dist/` (rename it in a temporary copy) gives exit 2 and the `GATE UNAVAILABLE` line; a syntax error in a copy of `main.mjs` gives exit 2; an uncaught throw and an unhandled rejection give exit 2 with the `internal-error` line and no stack trace; a hanging runner double with a short test watchdog gives exit 2 and the timeout line; a missing Wards_File gives exit 2; STDIN over 1 MiB gives exit 2; STDOUT and STDERR contain no input text. No exit code other than 0 and 2 ever occurs.
     - _Requirements: 3.2, 8.1, 8.3, 8.4, 8.7, 8.8_
 
-  - [~] 8.9 Write the example event tests for the gate [no-docker]
+  - [x] 8.9 Write the example event tests for the gate [no-docker]
     - `tests/gate-events.test.mjs`, `runPlan` double returning results shaped like the five Ghost Shell scenarios: `rm -rf ./data` (exit 2, the message names `protect-data`, the diff summary counts the deleted files, no ghost stdout is printed); `npm run clean` (blocked by diff, not by shape); `rm tmp-scratch.txt` of a file no ward protects (allowed); `ls` (allowed, no ghost, Stats_Event `safe-skip`); a Plan_B run (exit 2 for the `warn`, the exact Plan_B message, claims `false`); invalid JSON (exit 2); a write call to `.env` (blocked) and to a new `notes.md` (allowed); a write through a symbolic link to `data/`; a Grave_Entry of a blocked run that passes the `ui-kit` id and time checks; the wording of an approval command through the shell tool denied. Add an end-to-end check that no canary appears in any store file, STDOUT, or STDERR of these runs.
     - **Dependency note:** the Grave_Entry check needs the ui-kit implementation (task 7.5).
     - _Requirements: 23.3, 23.4, 4.8, 5.4, 6.8, 9.3, 14.5_
 
-  - [~] 8.10 Write the Docker-bound gate tests [docker]
+  - [x] 8.10 Write the Docker-bound gate tests [docker]
     - `tests/gate-docker.test.mjs`: an end-to-end gate run of the five Ghost Shell scenarios as a hook process with the Hook_Event on STDIN (`describe.skipIf(!dockerAvailable)`, report `skipped (docker unavailable)`, never `passed`); a test that no container labeled `ghost-run.run-id` of a finished gate process remains after a normal finish and after a killed process; the P1, P5, and P6 flags in the messages come from `isolation` only.
     - **Dependency note (ghost-runner next round, `RunnerOptions.runId`):** the sub-test that kills a hung runner and checks cleanup by label reports `skipped (runner runId option missing)` until the option exists (`RUNNER_SUPPORTS_RUN_ID`), and is enabled when it does. All other sub-tests do not need the option.
     - _Requirements: 8.9, 23.3, 5.9, 5.10_
 
-- [~] 9. Checkpoint - Gate core complete
+- [x] 9. Checkpoint - Gate core complete
   - Run `pnpm -r build`, `pnpm --filter @ghost-run/kiro-hook test`, `typecheck`, and `lint`. Confirm that Properties 1 to 6, 9 to 16, and 21 pass with at least 100 runs, that the `[docker]` tests report `skipped (docker unavailable)` where Docker is absent, that the source-scan test passes, and that `ghost-gate.json` exists with `enabled: false`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. ghost-log (Post Tool Use)

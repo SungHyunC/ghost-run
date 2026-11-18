@@ -1,5 +1,10 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "8.6 Write property test that the verdict is independent of provenance [no-docker]": {
+      "status": "passed",
+      "lastRunTimestamp": 1794996216325
+    }
+  },
   "executionHistory": {
     "1.1 Create the minimal Hook_Package skeleton that the probe lives in": [
       {
@@ -535,6 +540,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045568
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794995457233
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794995937069
       }
     ],
     "8.2 Implement `lib/gate/main.mjs`, the bootstrap `ghost-gate.mjs`, and `index.mjs`": [
@@ -542,6 +557,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045571
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794995937280
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996114300
       }
     ],
     "8.3 Create `.kiro/hooks/ghost-gate.json` (disabled until task 19.1)": [
@@ -549,6 +574,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045573
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794995462570
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794995937078
       }
     ],
     "8.4 Write property test for fail-closed totality [no-docker]": [
@@ -556,6 +591,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045575
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996114318
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996228011
       }
     ],
     "8.5 Write property test that a safe-list skip leaves no ghost [no-docker]": [
@@ -563,6 +608,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045577
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996114329
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996227936
       }
     ],
     "8.6 Write property test that the verdict is independent of provenance [no-docker]": [
@@ -570,6 +625,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045579
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996114335
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996227820
       }
     ],
     "8.7 Write property test that approval commands are denied [no-docker]": [
@@ -577,6 +642,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045581
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996228218
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996331276
       }
     ],
     "8.8 Write the bootstrap failure tests (process level) [no-docker]": [
@@ -584,6 +659,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045584
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996228763
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996331286
       }
     ],
     "8.9 Write the example event tests for the gate [no-docker]": [
@@ -591,6 +676,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045586
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996229200
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996331298
       }
     ],
     "8.10 Write the Docker-bound gate tests [docker]": [
@@ -598,6 +693,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045588
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996331758
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996529112
       }
     ],
     "9. Checkpoint - Gate core complete": [
@@ -605,6 +710,16 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990045590
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996536297
+      },
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996753965
       }
     ],
     "10.1 Implement `ghost-log.mjs` and `lib/provenance-record.mjs`": [
@@ -892,6 +1007,13 @@
         "executionId": "37347079-9342-4dc5-a241-858a622fef1e",
         "chatSessionId": "sess_ba3a7656-bfb1-4302-ac14-d85f6c8674a0",
         "timestamp": 1794990968561
+      }
+    ],
+    "8. Gate assembly, bootstrap, hook file, and process tests": [
+      {
+        "executionId": "1c5b1253-d64b-4127-ba6e-8e6b6494b844",
+        "chatSessionId": "sess_c8a05ac2-6374-4f6a-9879-c6cd8703ec94",
+        "timestamp": 1794996529117
       }
     ]
   }
