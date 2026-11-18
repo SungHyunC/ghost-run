@@ -904,3 +904,49 @@ Date: 2026-11-18. Node v20.20.2, Apple M1.
 - Nightly_Run of the world contract tests (`worlds/drawer-arm/tests/contract.test.ts`, `GHOST_PBT_MODE=nightly`): not run. Reason: that test calls `verifyWorld` with `numRuns` fixed at `shortRuns` (35) in both modes, so a Nightly_Run gives the same count, and it is time-guarded. Scaling it to 10,000 examples would take about 0.17 s per example, so about 30 minutes per call and two calls, with no time limit. The ghost-shell nightly `verifyWorld` already ran out of memory at a similar size (see "ghost-shell final checkpoint (task 18)"). The engine-bound properties (5, 10, 11, 12, 13 engine leg, 14 to 18, 20, 22) use `ENGINE_RUNS` or `RUNS`, which is `NUM_RUNS` (10,000) in nightly mode, at about 0.7 s worst case per example (hours per property); they were not run in nightly mode either.
 - Nightly_Run of the pure properties in `worlds/drawer-arm` (`p02-variant-config-roundtrip`, `p03-variant-ranges`, `variant`): ran, 3 files and 22 tests passed in 1.4 s.
 - The sentence in "Ghost Hand checkpoint 13" that the "Demo scenario numbers" section still reads `unmeasured` is out of date: that section now holds the measured numbers. No section is left marked `unmeasured`; the word remains only in explanatory text (the file introduction and the checkpoint 13 note).
+
+## Plan revision recording (design D18, requirements 11 and 12)
+
+Date: 2026-11-18. Tool: Kiro CLI 3.4.0, model Auto. The values were chosen by the session from the block message, `worlds/drawer-arm/wards.yaml`, `plans/first.plan.json`, and the Action_Ranges of `worlds/drawer-arm/src/world-config.ts`. The hand-written `revised.plan.json` was not opened before the values were chosen.
+
+Commands (from `apps/ghost-hand`, after `corepack pnpm --filter @ghost-run/ghost-hand build:node`):
+
+- `node dist-node/cli.js plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml --json`: exit 2.
+- `node dist-node/cli.js validate plans/revised.plan.json`: exit 0.
+- `node dist-node/cli.js plans/revised.plan.json --wards ../../worlds/drawer-arm/wards.yaml --json`: exit 0 on the final values.
+
+First plan, block message (verbatim):
+
+```
+GHOST RUN BLOCKED by ward gentle-hands: success rate 7/8 (0.88) below minimum 0.95. Reduce speed or contact force, or change the plan, and rehearse again.
+Also violated ward gentle-hands: joint limit exceeded in variant variant-6.
+```
+
+JSON line: `{"verdict":"block","wardIds":["gentle-hands"],"failedVariants":["variant-3"]}`.
+
+Attempts. The two reach actions stayed as in the first plan; only the grasp force (N) and the pull (distance m, speed m/s) changed. All runs used the default seed and 8 variants.
+
+| # | grasp force | pull distance, speed | exit | result |
+|---|---|---|---|---|
+| 1 | 25 | 0.15, 0.15 | 2 | success rate 7/8; variant-5 failed |
+| 2 | 25 | 0.15, 0.1 | 2 | success rate 7/8; variant-5 failed (a failed edit made the first run of this attempt repeat attempt 1; the second run had the new speed) |
+| 3 | 28 | 0.15, 0.1 | 2 | success rate 5/8; contact force 30.52 N (variant-1), 35.82 N (variant-2), 34.42 N (variant-3) exceeds 30 N |
+| 4 | 22 | 0.15, 0.1 | 2 | success rate 7/8; variant-5 failed; contact force 32.33 N (variant-2), 32.01 N (variant-3), 30.82 N (variant-5) |
+| 5 | 15 | 0.15, 0.15 | 0 | pass |
+| 6 | 15 | 0.15, 0.3 | 2 | success rate 4/8 (probe after the pass, not used) |
+| 7 | 18 | 0.15, 0.15 | 2 | variant-1 contact force 31.17 N exceeds 30 N (probe after the pass, not used) |
+| 8 | 18 | 0.15, 0.3 | 2 | success rate 4/8 (probe after the pass, not used) |
+
+Reading: a stronger grip raised the finger contact force above 30 N, and a faster pull lowered the success rate, so the final values lower the grasp force to 15 N and pull at 0.15 m/s.
+
+Final values: reach `[0, 0.2, 0.18]` at 0.4, reach `[0, 0.02, 0.18]` at 0.2, grasp force 15, pull distance 0.15 at speed 0.15, release.
+
+Pass message: `GHOST RUN PASSED: all 1 ward cleared.` (JSON line `{"verdict":"pass","wardIds":[],"failedVariants":[]}`).
+
+Check of requirement 12 (`node scripts/measure-demo.mjs`, seed 42, 8 variants): 8 of 8 variants succeed (12.3), maximum contact force 29.24 N against the limit of 30 N (12.3), Base_World drawer opening 0.1276 m against the target 0.12 m (12.4). The margin to the force limit is 0.76 N. These numbers replace the hand-written plan's numbers in "Demo scenario numbers".
+
+## Plan rename after the recording (2026-11-18)
+
+The recorded revised plan was named `slow pull, strong grip` when it was recorded, because that was the name fixed by requirements 12.1 for the hand-written plan. The recorded values lower the grasp force from 20 N to 15 N, so "strong" no longer matched the content. The plan is now named `slow pull, gentle grip`, which matches the lowered grip and the ward `gentle-hands`. Only the name changed; the actions, `origin`, `recordedWith`, and `revisionOf` are the same. The earlier sections of this file keep the old name because they record what was measured under it.
+
+Re-measurement with `node scripts/measure-demo.mjs` (seed 42, 8 variants): `slow pull, gentle grip` passes, 0 of 8 variants with success:false, maximum contact force 29.24 N (limit 30 N), Base_World drawer opening 0.1276 m (target 0.12 m). `fast pull` is unchanged: block, 1 of 8 failed, 27.53 N, 0.1216 m. The README table "Measured numbers of the demo runs" now shows these values.

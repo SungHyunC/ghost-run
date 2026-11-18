@@ -1,15 +1,16 @@
 {
   "format": "ghost-hand-plan",
   "version": 1,
-  "name": "slow pull, strong grip",
-  "origin": "scripted",
+  "name": "slow pull, gentle grip",
+  "origin": "recorded",
+  "recordedWith": "Kiro CLI 3.4.0, model Auto, 2026-11-18",
+  "revisionOf": "fast pull",
   "actions": [
-    { "type": "reach", "target": [0, 0.2, 0.18], "speed": 0.25 },
+    { "type": "reach", "target": [0, 0.2, 0.18], "speed": 0.4 },
     { "type": "reach", "target": [0, 0.02, 0.18], "speed": 0.2 },
-    { "type": "grasp", "force": 22 },
-    { "type": "pull", "distance": 0.15, "speed": 0.1 },
+    { "type": "grasp", "force": 15 },
+    { "type": "pull", "distance": 0.15, "speed": 0.15 },
     { "type": "release" }
   ],
-  "note": "Scripted demo plan: slower pull and a stronger grip than the first plan.",
-  "revisionOf": "fast pull"
+  "note": "Lowered the pull speed from 0.6 to 0.15, the pull distance from 0.2 to 0.15 and the grasp force from 20 to 15, because faster pulls and stronger grips failed variants or exceeded the 30 N limit."
 }

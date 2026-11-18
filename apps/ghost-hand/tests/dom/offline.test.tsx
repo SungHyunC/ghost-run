@@ -197,7 +197,7 @@ describe('offline operation', () => {
     fireEvent.click(back);
     await screen.findByRole('heading', { name: 'Graveyard' });
 
-    fireEvent.click(screen.getByRole('button', { name: 'slow pull, strong grip' }));
+    fireEvent.click(screen.getByRole('button', { name: 'slow pull, gentle grip' }));
     await waitFor(() => {
       expect(runButton().disabled).toBe(false);
     });

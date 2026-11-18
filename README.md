@@ -145,7 +145,7 @@ The joint-limit and self-collision ward, the message without the lowered-claim l
 
 Plan revision in the page is a replay. The page does not call an LLM. It replays a Plan_File of `origin: "recorded"` (written by a Kiro session) or of `origin: "scripted"` (written by hand), and it states which one it shows.
 
-The shipped revised plan `apps/ghost-hand/plans/revised.plan.json` has `origin: "scripted"`. It is a scripted demo plan (slower pull and stronger grip than `plans/first.plan.json`) and was not recorded from a Kiro decision. The page says so with the text "Scripted plan: not decided by an LLM in this page." A recorded plan replaces it only if the file says `origin: "recorded"`.
+The shipped revised plan `apps/ghost-hand/plans/revised.plan.json` has `origin: "recorded"`. A Kiro CLI session decided its values: it ran the first plan, read the block message, and chose the numbers from that message, the Wards_File, and the declared ranges (`recordedWith`: "Kiro CLI 3.4.0, model Auto, 2026-11-18"). The page replays the file and says so with the text "Recorded plan: replayed here, not decided by an LLM in this page." The first plan, `plans/first.plan.json`, stays `origin: "scripted"`. The attempts and the messages of the recording are in `docs/measurements.md`, section "Plan revision recording".
 
 How to record a revision (design decision D18):
 
@@ -193,7 +193,7 @@ All numbers below were measured on 2026-11-18 on an Apple M1 Mac (macOS). Plan r
 | Plan | Verdict | Variants with success:false | Max contact force | Base_World drawer opening |
 |---|---|---|---|---|
 | `fast pull` | block (ward `gentle-hands`) | 1 of 8 | 27.53 N (limit 30 N) | 0.1216 m (target 0.12 m) |
-| `slow pull, strong grip` | pass | 0 of 8 | 28.53 N (limit 30 N) | 0.1300 m (target 0.12 m) |
+| `slow pull, gentle grip` (recorded) | pass | 0 of 8 | 29.24 N (limit 30 N) | 0.1276 m (target 0.12 m) |
 
 Browser timings (the page-ready number is of the test harness page, not of the app page, which also runs the Determinism_Self_Check; the 3D overlay number is of the real overlay renderer):
 

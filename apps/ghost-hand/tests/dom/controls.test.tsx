@@ -5,6 +5,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { App } from '../../src/App';
+import { SCENARIOS } from '../../src/plan/scenarios';
 import type { AppServices } from '../../src/App';
 import {
   P2_MATCH_TEXT,
@@ -66,15 +67,18 @@ describe('plan controls and the reference arm panel', () => {
     expect(screen.queryByText(P2_MATCH_TEXT)).toBeNull();
   });
 
-  it('loads each scenario with its plan and the scripted origin text, and keeps execute off', () => {
+  it('loads each scenario with its plan and the origin text of its file, and keeps execute off', () => {
     render(<App services={services()} />);
-    for (const name of ['fast pull', 'slow pull, strong grip']) {
+    for (const scenario of SCENARIOS) {
+      const name = scenario.label;
+      expect(['recorded', 'scripted']).toContain(scenario.plan.origin);
+      const expected = scenario.plan.origin === 'recorded' ? PLAN_ORIGIN_RECORDED_TEXT : PLAN_ORIGIN_SCRIPTED_TEXT;
       fireEvent.click(button(name));
-      expect(screen.getByText(PLAN_ORIGIN_SCRIPTED_TEXT)).toBeTruthy();
+      expect(screen.getByText(expected)).toBeTruthy();
       expect(screen.getByRole('list', { name: 'Plan actions' }).children.length).toBe(5);
       expect(button('Execute on reference arm').disabled).toBe(true);
     }
-    expect(screen.getAllByText('slow pull, strong grip').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('slow pull, gentle grip').length).toBeGreaterThan(1);
   });
 
   it('loads a recorded Plan_File and shows the recorded text', async () => {

@@ -166,7 +166,7 @@ function services(over: Partial<AppServices> = {}, control: Control = { differ: 
 
 const button = (name: string): HTMLButtonElement => screen.getByRole('button', { name }) as HTMLButtonElement;
 const FAST = 'fast pull';
-const SLOW = 'slow pull, strong grip';
+const SLOW = 'slow pull, gentle grip';
 const BLOCK_LIVE = liveRegionText('out', 8, 8);
 const PASS_LIVE = liveRegionText('lit', 0, 8);
 

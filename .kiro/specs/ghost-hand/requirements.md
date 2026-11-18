@@ -12,7 +12,7 @@ This spec covers these parts:
 4. **Haunted variants**: seeded perturbations inside declared ranges. The same seed and the same plan give the same outcome (P8, within the tested environments only).
 5. **Wards**: one `physics` Ward judges the variants through the existing `WardEngine`. This spec adds no ward logic.
 6. **Plan file and replay**: a JSON plan format. The playground replays a plan that was recorded from a real Kiro agent session, or a scripted plan. No external LLM API is called.
-7. **Demo flow**: a first plan (fast pull) fails in some variants, the violated ward is read, a revised plan (slow pull, strong grip) passes every variant, and the reference simulation then opens the drawer.
+7. **Demo flow**: a first plan (fast pull) fails in some variants, the violated ward is read, a revised plan (slow pull, gentle grip) passes every variant, and the reference simulation then opens the drawer.
 8. **Optional possession scenario**: a hidden instruction in the task text that sends the arm toward the vase is blocked by the forbidden-contact ward, and the red thread points at that line.
 
 The spec reuses the types and functions of the existing specs and defines no second shape for any of them: `World`, `Snapshot`, `Change`, `Scene`, `Effect`, `FingerprintResult`, `GhostReport`, `VariantResult`, `Ward` (kind `physics`), `WardSet`, `WardVerdict`, `WardViolation`, `WardNotice`, `Verdict`, `ghostRun`, `WardEngine.evaluate`, `isMoreRestrictive`, `compareFingerprints`, `verifyWorld`, and `DeterministicTestAdapter` from `core`; `renderMessage` (the Message_Builder) and `Claims` of `wards`; `parseWards` and `formatConfigError` of `wards-config`; `scanText`, `collectNeedles`, `traceRedThread`, `Needle`, `ThreadLink`, `Provenance_Record`, and `Provenance_Log` of `possession`; and the components, `Grave_Entry`, `Isolation_Claims`, and the Display_Escaper of `ui-kit`.
@@ -288,7 +288,7 @@ Hidden characters are never written literally in this document. A hidden charact
 
 #### Acceptance Criteria
 
-1. THE Ghost_Hand_App SHALL offer the scenario `fast pull` (the first plan) and the scenario `slow pull, strong grip` (the revised plan, with `revisionOf` naming the first plan), each with `origin` set in its Plan_File.
+1. THE Ghost_Hand_App SHALL offer the scenario `fast pull` (the first plan) and the scenario `slow pull, gentle grip` (the revised plan, with `revisionOf` naming the first plan), each with `origin` set in its Plan_File.
 2. WHEN the first plan runs with the default Seed, the default variant count of 8, and the Wards_File, THE Run_Verdict SHALL be `block`, at least one Variant_Result SHALL have `success: false`, and the message SHALL name the ward `gentle-hands`.
 3. WHEN the revised plan runs with the same Seed, the same variant count, and the same Wards_File, THE Run_Verdict SHALL be `pass`, every Variant_Result SHALL have `success: true`, and the maximum `contactForceN` over all Variants SHALL be at most `max_contact_force_n` of the Wards_File.
 4. THE Base_World run of both plans SHALL open the Drawer to at least the target opening distance (the unperturbed world passes both plans, so the failure of the first plan is shown only by the variants).

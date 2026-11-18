@@ -35,9 +35,9 @@ describe('scenarios', () => {
     expect(FIRST_SCENARIO.plan).toEqual(planFile('first.plan.json'));
     expect(REVISED_SCENARIO.plan).toEqual(planFile('revised.plan.json'));
     expect(FIRST_SCENARIO.label).toBe('fast pull');
-    expect(REVISED_SCENARIO.label).toBe('slow pull, strong grip');
+    expect(REVISED_SCENARIO.label).toBe('slow pull, gentle grip');
     expect(REVISED_SCENARIO.plan.revisionOf).toBe(FIRST_SCENARIO.plan.name);
-    expect(REVISED_SCENARIO.plan.origin).toBe('scripted');
+    expect(REVISED_SCENARIO.plan.origin).toBe(planFile('revised.plan.json').origin);
   });
 });
 
