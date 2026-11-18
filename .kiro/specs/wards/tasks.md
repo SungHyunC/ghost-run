@@ -24,7 +24,7 @@ Decisions reflected in this plan:
 
 1. **D6 (whitespace-free raw needle).** A Canary that contains `CR`, `LF`, space, or tab also gets a whitespace-free `raw` needle searched in the whitespace-stripped views V1 and V3, only when the stripped form has at least 8 bytes (task 2.11).
 2. **D18 (message joining).** A `sql` violation for several tables reads `would delete <n1> rows from <t1>, <n2> rows from <t2>`, with tables in ascending lower-case order printed in the ward's own spelling, and ` (max allowed <m>)` only when `max_rows_lost > 0` (task 4.2).
-3. **Claims.** P4 is claimed for all worlds. P5 is claimed only where P1 holds. P6 is claimed only where network attempts are recorded. In Plan B (`static-analysis`) neither P5 nor P6 is claimed, and the Message_Builder lowers the claim through the required `RenderContext.claims` field (tasks 1.7, 2.13, 4.9, 4.10, 4.11).
+3. **Claims.** P4 is claimed for all worlds. P5 is claimed only where P1 holds. P6 is claimed only where network attempts are recorded. In Plan B (`static-analysis`) neither P5 nor P6 is claimed, and the Message_Builder lowers the claim through the optional `RenderContext.claims` field (`reason` `static-analysis` or `unsupported-step`; no `claims` means no line, for worlds where P5 and P6 do not apply) (tasks 1.7, 2.13, 4.9, 4.10, 4.11).
 4. `core` keeps zero runtime dependencies. The `yaml` library lives only in `wards-config`.
 5. The default wards file lives at `apps/ghost-shell/wards.yaml` (design D13). Its Docker-box run belongs to ghost-runner Requirement 18 and is not part of this plan.
 
@@ -81,8 +81,8 @@ Decisions reflected in this plan:
 
   - [x] 1.7 Add the claim-scope test helper `core/tests/fixtures/claim-scope.ts`
     - Export `describeClaimed(property: 'P4' | 'P5' | 'P6', run)` that labels the suite with its declared scope: P4 for all worlds (pure logic), P5 only where P1 holds, P6 only where network attempts are recorded.
-    - Export a `claimsFor(isolationMode)` function returning `{ p5, p6 }` that is `false` for both in `static-analysis` mode and `true` for the Docker box and the playground modes, matching the `claims` field the hook builds from the ghost-runner `RunResult.isolation`.
-    - The helper never asserts P5 or P6 for `static-analysis`; tests that need the lowered claim assert the lowered-claim line instead.
+    - Export a `claimsFor(isolationMode)` function returning `{ p5, p6 }` (the `Claims` type of the Message_Builder, `reason` optional) that is `false` for both in `static-analysis` mode and `true` for the Docker box and the playground modes, matching the `claims` field the hook builds from the ghost-runner `RunResult.isolation`.
+    - The helper never asserts P5 or P6 for `static-analysis`; tests that need the lowered claim assert the lowered-claim line instead (`CLAIM_LOWERED_LINE` for `static-analysis` or an absent reason, `CLAIM_LOWERED_UNSUPPORTED_STEP_LINE` for `unsupported-step`).
     - _Requirements: 5.7, 11.8, 17.4, 17.5, 19.10_
 
 - [x] 2. Pure judge modules in `core/src/judge/`
@@ -151,16 +151,16 @@ Decisions reflected in this plan:
     - Files: `core/tests/p6-content.test.ts` (the Property 10 part) and `core/tests/fixtures/encoders.ts` (independent encoders: base64 and base64url padded and unpadded, hex in three case forms, percent-encoding, line breaking at 76 and 60 characters).
 
   - [x] 2.13 Implement `judge/message.ts`
-    - `renderMessage(verdict, ctx)` with `RenderContext { wardCount, claims, seance? }` where `claims: { p5, p6 }` is required (decision D14), `CLAIM_LOWERED_LINE`, and `SUGGESTIONS` with the four fixed texts.
+    - `renderMessage(verdict, ctx)` with `RenderContext { wardCount, claims?, seance? }` where `claims?: { p5, p6, reason?: 'static-analysis' | 'unsupported-step' }` is optional (decision D14), `CLAIM_LOWERED_LINE`, `CLAIM_LOWERED_UNSUPPORTED_STEP_LINE`, and `SUGGESTIONS` with the four fixed texts.
     - Templates: `pass` is `GHOST RUN PASSED: all <n> ward(s) cleared.` (`ward` for 1, else `wards`); `warn` is `GHOST RUN NEEDS HUMAN APPROVAL: <k> notice(s) outside the copy or needing review. First: <R(reason)>.`; `block` is line 1 `GHOST RUN BLOCKED by ward <wardId>: <reason>. <suggestion>` for the first violation of the first ward, then at most 3 `Also violated ward <wardId>: <reason>.` lines, then `+<k> more violations. See the seance page.`
-    - Append `CLAIM_LOWERED_LINE` to every verdict kind when `claims.p5` or `claims.p6` is `false`. Append ` Seance: <base>/seance/<id>` to the last line when `base` matches `^https?://` (default `http://localhost:5317`, one trailing `/` removed) and `id` matches `^[A-Za-z0-9_-]{1,64}$`; otherwise omit it without throwing.
+    - When `claims` is passed and `claims.p5` or `claims.p6` is `false`, append `CLAIM_LOWERED_LINE` (reason `static-analysis` or absent) or `CLAIM_LOWERED_UNSUPPORTED_STEP_LINE` (reason `unsupported-step`) to every verdict kind; when `claims` is not passed (worlds where P5 and P6 do not apply, for example Ghost Hand), append no claim line. Append ` Seance: <base>/seance/<id>` to the last line when `base` matches `^https?://` (default `http://localhost:5317`, one trailing `/` removed) and `id` matches `^[A-Za-z0-9_-]{1,64}$`; otherwise omit it without throwing.
     - Sanitize every interpolated value with `sanitizeText(x, 120)`, limit each reason to 200 code points (197 plus `...`), limit the message to 1,200 code points by dropping `Also violated` lines from the end first (recomputing the `+<k> more` count), and use the fallback lines for a `block` without violations and a `warn` without notices. The output contains no timestamp, random value, or host-specific text.
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 17.1, 17.2, 17.4, 17.5, 17.6, 17.7, 17.8_
 
   - [x]* 2.14 Write property test for message building
     - **Property 14: Messages are deterministic, bounded, and injection-safe**
     - **Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 17.1, 17.2, 17.4, 17.5, 17.7, 17.8, 19.10**
-    - File: `core/tests/message.test.ts`. Use `claimsFor('static-analysis')` from task 1.7 to require the lowered-claim line. Include the exact string of Requirement 16 criterion 5 as an example test.
+    - File: `core/tests/message.test.ts`. Use `claimsFor('static-analysis')` from task 1.7 to require the lowered-claim line, and cover the `unsupported-step` line and the no-`claims` case (no line). Include the exact string of Requirement 16 criterion 5 as an example test.
 
   - [x] 2.15 Export the judge API from `core/src/index.ts`
     - Export `validateGlob`, `normalizePattern`, `normalizePath`, `foldPath`, `compilePathSet`, `validateHostEntry`, `hostEntryKey`, `compileAllowHosts`, `parseDestination`, `redactDestination`, `extractCanaries`, `createInspector`, `renderMessage`, `CLAIM_LOWERED_LINE`, `SUGGESTIONS`, `sanitizeText`, `compareCodePoints`, and the related types (`GlobError`, `HostEntryError`, `EncodingKind`, `RenderContext`, `Claims`).
@@ -168,88 +168,88 @@ Decisions reflected in this plan:
     - _Requirements: 1.1, 1.4, 3.8, 7.9_
 
   - [x]* 2.16 Write unit tests for validators and exact formats
-    - One example per `validateGlob` code and per `validateHostEntry` code; the examples `Registry.NPMJS.org.` equals `registry.npmjs.org`, `*.example.test` does not allow `example.test` or `a.b.example.test`, and `3232235786` is not allowed by an IPv4 entry.
+    - One example per `validateGlob` code and per `validateHostEntry` code; the examples `Registry.NPMJS.org.` equals `registry.npmjs.org`, `*.example.test` does not allow `example.test` or `a.b.example.test`, and the decimal address `3221225994` (= `192.0.2.10`, a documentation address) is not allowed by an IPv4 entry.
     - _Requirements: 3.7, 3.8, 7.2, 7.6, 7.8, 7.9_
 
 - [x] 3. Checkpoint - Judge modules complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Engine integration in `core/src/wards.ts`
-  - [ ] 4.1 Run the existing P4 test and core tests before changing the engine
+- [x] 4. Engine integration in `core/src/wards.ts`
+  - [x] 4.1 Run the existing P4 test and core tests before changing the engine
     - Run `pnpm --filter @ghost-run/core exec vitest --run tests/p4-monotonicity.test.ts tests/wards.test.ts` and then the whole core suite. Record that the existing 43 core tests pass unchanged. Do not edit these test files.
     - Keep this result as the baseline for task 4.6: the existing P4 test and `wards.test.ts` must pass unchanged after `isMoreRestrictive` and `evaluate` change.
     - _Requirements: 15.1, 5.8_
 
-  - [ ] 4.2 Refactor path and SQL judgment, notices, and sanitization in `evaluate`
+  - [x] 4.2 Refactor path and SQL judgment, notices, and sanitization in `evaluate`
     - Delete the header NOTE of `wards.ts` (Open Item 9). Prepare compiled sets once per call: a `PathSet` per `path` ward (`caseSensitive = ward.case_sensitive === true`), a case-insensitive `PathSet` per `egress` ward `secrets`, ASCII lower-case table sets, and payload keys sorted by `compareCodePoints`.
-    - Path ward: judge `file-deleted` as `delete` and `file-overwritten` or `symlink-changed` as `overwrite` when the operation is in `deny`; ignore `file-created`, unknown kinds, and changes without a string `path`; de-duplicate by (ward, display path, operation); sort by `compareCodePoints` of the display path then operation; reason `would <op> protected path <sanitized display path>`. A path with a leading `..` matches no ward and adds one `path-escape` notice per distinct sanitized path (at most 20) when a `path` ward exists.
-    - SQL ward: only well-typed `sql-row-count` changes count; rows lost are `dropped === true ? max(0, rowsBefore) : max(0, rowsBefore - rowsAfter)`, summed per ASCII-lower-case table name across all steps; one violation when the total exceeds `max_rows_lost`. Per decision D18 the reason is `would delete <n1> rows from <t1>[, <n2> rows from <t2>...]`, tables in ascending lower-case order printed in the ward's spelling, numbers with `,` thousands separators, then ` (max allowed <m>)` only when `max_rows_lost > 0`. The scenario 1 reason is exactly `would delete 1,206 rows from users`.
+    - Path ward: judge `file-deleted` as `delete` and `file-overwritten` or `symlink-changed` as `overwrite` when the operation is in `deny`; ignore `file-created`, unknown kinds, and changes without a string `path`; de-duplicate by (ward, normalized path, operation); sort by `compareCodePoints` of the normalized path then operation; reason `would <op> protected path <sanitized path as written>` (the first Change in step order supplies the path as written). A path with a leading `..` matches no ward and adds one `path-escape` notice per distinct sanitized path (at most 20) when a `path` ward exists.
+    - SQL ward: only well-typed `sql-row-count` changes count; rows lost are `dropped === true ? max(0, rowsBefore) : max(0, rowsBefore - rowsAfter)`, summed per ASCII-lower-case table name across all steps; one violation when the total exceeds `max_rows_lost`. Per decision D18 the reason is `would delete <n1> rows from <t1>[, <n2> rows from <t2>...]`, tables sorted by lower-case name and printed in the ward's spelling, numbers with `,` thousands separators, then ` (max allowed <m>)` only when `max_rows_lost > 0`. The scenario 1 reason is exactly `would delete 1,206 rows from users`.
     - Notices keep their text and are ordered `effect-outside`, `observed-event`, `content-inspection`, `path-escape`, each by (`stepIndex`, `reason`). Pass every reason, destination, and path through `sanitizeText`; pass destinations through `redactDestination`. Physics judgment is unchanged apart from sanitizing `variantId` and contact names.
     - _Requirements: 2.3, 2.4, 4.1, 4.3, 4.5, 5.1, 5.2, 5.3, 5.4, 5.8, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 17.3, 17.8, 1.5_
 
-  - [ ] 4.3 Replace the egress judgment with the Host_Matcher and the behavior cap
+  - [x] 4.3 Replace the egress judgment with the Host_Matcher and the behavior cap
     - Remove `hostOf` and use `compileAllowHosts`. `firstRead` is the smallest `stepIndex` of `secret-read` events whose path matches the ward's `secrets` `PathSet` (descendants included).
     - Add one violation per `network-attempt` with `stepIndex >= firstRead` (not `>`) whose destination is not allowed, with the reason `network attempt to <redacted destination> at step <n> after secret read at step <firstRead>; host not in allow_hosts`. Sort by (`stepIndex`, redacted destination), keep the first 20, then add `<k> more network attempts not listed`. No violation when no matching `secret-read` exists; observed events still produce warn notices.
     - _Requirements: 7.10, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 4.5_
 
-  - [ ] 4.4 Add content inspection, notices, and the leak guard to the egress judgment
+  - [x] 4.4 Add content inspection, notices, and the leak guard to the egress judgment
     - Group `secretValues` entries by `normalizePath(key)`; skip malformed entries (non-string key, non-`Uint8Array` value) with a `content-inspection` notice naming the sanitized key and no content, and never throw. For each egress ward, take the files whose path matches `secrets`, sorted by path, extract Canaries, and call the inspector once per file.
     - Add one violation per payload hit: `payload of event <eventId> contains a value from secret file <path> (encoding: <kinds>)`, sorted by (`eventId`, path), at most 20 then `<k> more payload hits not listed`, listed after the behavior violations of the same ward. A hit needs no `secret-read` event and ignores `allow_hosts`. Inspect a payload whose key has no matching event and add the notice `payload <eventId> has no matching observed event`.
-    - Notices: `content inspection did not run for ward <id>: no secret values were provided` when no file matches and a matching `secret-read` or any payload exists; one notice per (file, reason) for discarded candidates only when at least one payload exists (decision D5). Wrap only the inspector call in a try that yields the notice `content inspection failed` (no message text) and at least `warn`.
+    - Notices: `content inspection did not run for ward <id>: no secret values were provided` only when the caller passed `inputs` with an absent or empty `secretValues` and a matching `secret-read` or any payload exists (existing `wards.test.ts` cases require this narrowing); one notice per (file, reason) for discarded candidates only when at least one payload exists (decision D5). Wrap only the inspector call in a try that yields the notice `content inspection failed` (no message text) and at least `warn`.
     - Leak guard: when any entry yielded candidates, run all Canaries of all entries over the UTF-8 bytes of every string field in the violations and notices (`reason`, `destination`, `path`, `wardId`) and replace a string with a hit by `[redacted: contains a secret value]`. It changes text only, never the verdict class. The engine never retains, mutates, or serializes `secretValues`.
     - The number and size of `secretValues` entries are capped by ghost-runner (16 files, 65,536 bytes per file, diagnostic `secret-values-capped`). Reference that cap in a code comment and do not re-implement it.
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.7, 9.8, 9.9, 9.10, 11.1, 11.2, 11.3, 11.4, 11.5, 11.7, 17.6_
 
-  - [ ] 4.5 Extend `isMoreRestrictive` with normalized keys and `case_sensitive`
+  - [x] 4.5 Extend `isMoreRestrictive` with normalized keys and `case_sensitive`
     - Compare `path.paths` and `egress.secrets` by `normalizePattern` (no case folding, decision D11), `egress.allow_hosts` by `hostEntryKey` (reversed direction, as today), and `sql.tables` by ASCII lower-case. Treat `case_sensitive` as `value === true`: `true` to absent or `false` is tighter, the reverse is looser, absent versus `false` is equal.
     - Keep everything else unchanged: wards paired by `id`, duplicate ids refuse, a different `kind` for one `id` is a loosening, removing a ward loosens, adding a ward tightens.
     - Add a code comment stating that the predicate is sound and incomplete (it compares sets by string containment, so `data/**` versus `data/**` plus `data/x`, `*.example.test` versus `a.example.test`, and a port entry versus a portless entry may return `false`).
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.8_
 
-  - [ ] 4.6 Run the existing P4 test again after the `isMoreRestrictive` change
+  - [x] 4.6 Run the existing P4 test again after the `isMoreRestrictive` change
     - Run `pnpm --filter @ghost-run/core exec vitest --run tests/p4-monotonicity.test.ts tests/wards.test.ts`, then the whole core suite, and compare with the baseline of task 4.1. All existing tests must pass without any edit to `core/tests/p4-monotonicity.test.ts` or the existing cases of `core/tests/wards.test.ts`. If a test fails, fix `wards.ts`, not the test.
     - _Requirements: 15.1, 5.8_
 
-  - [ ]* 4.7 Write property test for path ward violations
+  - [x]* 4.7 Write property test for path ward violations
     - **Property 6: Path ward violations agree with the reference matcher**
     - **Validates: Requirements 5.3, 5.4, 5.8, 4.3**
     - File: `core/tests/path-ward.test.ts`. Reuse `core/tests/fixtures/glob-oracle.ts`; shuffle the change lists.
 
-  - [ ]* 4.8 Write property test for SQL row-loss accounting
+  - [x]* 4.8 Write property test for SQL row-loss accounting
     - **Property 7: SQL row-loss accounting**
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.5, 6.6**
     - File: `core/tests/sql-ward.test.ts`. Include the example of 1,206 rows lost against `max_rows_lost: 0` and the multi-table joining of decision D18.
 
-  - [ ]* 4.9 Write property test for path ward protection completeness (P5)
+  - [x]* 4.9 Write property test for path ward protection completeness (P5)
     - **Property 5: Path ward protection completeness (P5, judgment half)**
     - **Validates: Requirements 4.1, 5.1, 5.2, 5.5, 5.6, 19.2, 19.3, 19.4**
     - Files: `core/tests/p5-protection.test.ts` and `core/tests/fixtures/fs-world.ts` (deterministic in-memory `World<FsState, FsAction>` with `rm`, `rm-recursive`, `rm-glob`, `find-delete`, `mv`, `overwrite`, `ln`, and `script`, using its own independent path resolver and reporting resolved real paths, a move as delete plus create).
     - Wrap the suite in `describeClaimed('P5', ...)` from task 1.7: the claim applies only where P1 holds and is not asserted for `static-analysis` mode. The fixture world models symbolic links only through the paths it reports, and the test does not claim that the engine resolves links.
 
-  - [ ]* 4.10 Write property test for the egress behavior criterion (P6, action)
+  - [x]* 4.10 Write property test for the egress behavior criterion (P6, action)
     - **Property 8: Secret read then unapproved network attempt blocks (P6, action criterion)**
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 11.6, 11.7, 19.5**
     - File: `core/tests/p6-egress.test.ts`. Include a same-step case (`j == i`), the cap of 20 plus `<k> more`, and transformed payloads (gzip-like, XOR, reversed, split) that content inspection does not report while the run is still `block`. Wrap in `describeClaimed('P6', ...)`: claimed only where network attempts are recorded, not for `static-analysis` mode.
 
-  - [ ]* 4.11 Write property test for content inspection of every encoding (P6, content)
+  - [x]* 4.11 Write property test for content inspection of every encoding (P6, content)
     - **Property 9: Content inspection detects every supported encoding at every offset (P6, content criterion)**
     - **Validates: Requirements 9.3, 9.7, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 11.1, 11.3, 11.4, 19.6, 19.7**
     - File: `core/tests/p6-content.test.ts` (the Property 9 part). Use the independent encoders of task 2.12, base64 offsets 0, 1, 2, prefixes and suffixes of 0 to 64 bytes, and line-broken base64 and hex. Include payloads sent to a host in `allow_hosts` (must still be `block`), with and without a `secret-read`, and a multi-line Canary that exercises decision D6. Wrap in `describeClaimed('P6', ...)`.
 
-  - [ ]* 4.12 Write property test for refined ward monotonicity (P4)
+  - [x]* 4.12 Write property test for refined ward monotonicity (P4)
     - **Property 1: Ward monotonicity with the refined rules (P4)**
     - **Validates: Requirements 4.6, 11.2, 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8**
     - File: `core/tests/p4-refined-monotonicity.test.ts`. The existing `p4-monotonicity.test.ts` stays untouched. Extend the generators with glob patterns, bypass spellings, host entries with ports and wildcards, `case_sensitive` values, encoded-Canary payloads, and `secretValues` bound to secret paths. Check soundness only, require at least 15% of pairs to show a strictly higher verdict, and run at least 100 examples in a short run. Wrap in `describeClaimed('P4', ...)` (all worlds).
 
-  - [ ]* 4.13 Add example tests to `core/tests/wards.test.ts`
+  - [x]* 4.13 Add example tests to `core/tests/wards.test.ts`
     - Append new cases only (do not edit existing cases): glob and normalized spellings, the case policy default and `case_sensitive: true`, `symlink-changed` under a glob ward, `dropped` tables, allow-host forms with ports and IPv6, the content violation reasons, the `content-inspection` and `path-escape` notices, and the allowed-host-after-secret-read case that is `warn` with two notices and no violation.
     - _Requirements: 4.3, 5.2, 6.4, 7.4, 8.5, 9.3, 11.4, 2.3_
 
-  - [ ]* 4.14 Write performance tests `core/tests/perf.test.ts`
+  - [x]* 4.14 Write performance tests `core/tests/perf.test.ts`
     - Glob step-counter bound for `a*a*a*a*a*a*a*a*b` against 4,000 `a` characters (deterministic, with a loose wall-clock check skipped in a short run); inspection of 16 payloads of 64 KiB against 256 Canaries of 4 KiB within 2.0 s; evaluation of 10,000 Changes, 100 observed events, 16 payloads of 64 KiB, and 256 Canaries within 3.0 s. Also run the largest input the ghost-runner caps allow (16 files of 65,536 bytes each) as a regression check, without re-implementing the cap.
     - _Requirements: 3.9, 10.10, 19.11_
 
-- [ ] 5. Checkpoint - Engine integration complete
+- [x] 5. Checkpoint - Engine integration complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Confirm the existing P4 test and the existing `wards.test.ts` cases pass unchanged and that `core/package.json` still has no `dependencies`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. The `wards-config` package
@@ -309,7 +309,7 @@ Decisions reflected in this plan:
     - _Requirements: 18.1, 18.2, 18.3, 18.4_
 
   - [ ]* 8.3 Write the scenario verification test `wards-config/tests/scenarios.test.ts`
-    - Run the rows of the verification table of `design.md` on synthetic `GhostReport` values with the default file, without Docker: row 1 (`DROP TABLE users`, 1,206 rows, `block`, first violation `would delete 1,206 rows from users`) and row 1b (backup copy plus soft delete, `pass`); row 2 (`rm -rf ./data ./build`, `block`, one violation per deleted file under `data/`), row 2b (`rm -rf ./build`, `pass`), and row 2c (`rm -rf ./DATA`, `block`); row 3 (`curl -d @.env`, `secret-read` and `network-attempt` to `setup-check.example:443` at the same step, `block`), row 3b (plus a `secretValues` entry and a payload with `sk-CANARY-abc123`, also the content violation with encoding `raw`), row 3c (allowed host after the read, `warn` with two notices and no violation), and row 3d (a Canary payload sent to `registry.npmjs.org:443`, `block`); row 4 (`npm test`, `pass`); row 5 (`npm run clean`, `block` by `protect-data` from the `file-deleted` Changes under `data/`).
+    - Run the rows of the verification table of `design.md` on synthetic `GhostReport` values with the default file, without Docker: row 1 (`DROP TABLE users`, 1,206 rows, `block`, first violation `would delete 1,206 rows from users`) and row 1b (backup copy plus soft delete, `pass`); row 2 (`rm -rf ./data ./build`, `block`, one violation per deleted path under `data/`; compute the expected count from the Changes of the fixture instead of hard-coding it, because the playground also emits folder-entry deletions), row 2b (`rm -rf ./build`, `pass`), and row 2c (`rm -rf ./DATA`, `block`); row 3 (`curl -d @.env`, `secret-read` and `network-attempt` to `setup-check.example:443` at the same step, `block`), row 3b (plus a `secretValues` entry and a payload with `sk-CANARY-abc123`, also the content violation with encoding `raw`), row 3c (allowed host after the read, `warn` with two notices and no violation), and row 3d (a Canary payload sent to `registry.npmjs.org:443`, `block`); row 4 (`npm test`, `pass`); row 5 (`npm run clean`, `block` by `protect-data` from the `file-deleted` Changes under `data/`).
     - Check the exact `renderMessage` strings of rows 1 and 2 against the design (with `seance.id = '42'`, the default base, and `claims = { p5: true, p6: true }`), and that the same report with `claimsFor('static-analysis')` gets the lowered-claim line. P5 and P6 are not asserted as claimed for `static-analysis`.
     - _Requirements: 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11, 16.5, 17.5_
 
@@ -352,6 +352,10 @@ Decisions reflected in this plan:
 - Task 4.1 and task 4.6 bracket every change to `isMoreRestrictive` and `evaluate` with a run of the existing P4 test and the existing `wards.test.ts` cases, which must pass unchanged. The new refined P4 test is a separate file (task 4.12).
 - The `secretValues` cap (16 files, 65,536 bytes per file, diagnostic `secret-values-capped`) is owned by ghost-runner. This plan references it and does not implement it.
 - The Docker-box run of the five scenarios loads `apps/ghost-shell/wards.yaml` in ghost-runner Requirement 18 and is not part of this plan.
+- Nightly-timeout handling: the long property tests yield to the event loop through `makeYielder` in `core/tests/pbt-config.ts` and run as `fc.asyncProperty`, so a Nightly_Run does not starve the vitest worker (no `onTaskUpdate` timeout).
+- Performance fix: `prepareCanaries` got a leak-guard performance fix (the leak guard no longer rebuilds work per output string), keeping task 4.14 inside its time limits.
+- Kiro integration: `ghost-gate` expects the `warn` template of `renderMessage` for `warn` verdicts that have notices only; this is covered by the examples of task 4.13 in `core/tests/wards.test.ts`. Scenario tests (task 8.3) compute violation counts from the Changes instead of hard-coding them, because the playground also emits folder-entry deletions.
+- Measurements and records go to `docs/measurements.md` (English). `docs/devlog.md` is a separate log kept outside this plan and is not edited by these tasks.
 - This workflow only creates the plan. Open this file and click "Start task" next to a task to begin implementation.
 
 ## Task Dependency Graph

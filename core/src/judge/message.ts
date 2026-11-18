@@ -6,20 +6,31 @@
 import type { Ward, WardVerdict } from '../types.js';
 import { sanitizeText } from './sanitize.js';
 
+/** Why a claim is lowered: Plan B static analysis, or a step the playground could not rehearse. */
+export type ClaimLoweredReason = 'static-analysis' | 'unsupported-step';
+
 export interface Claims {
   readonly p5: boolean;
   readonly p6: boolean;
+  /** Only read when a claim is false. Absent means `static-analysis` (backward compatible). */
+  readonly reason?: ClaimLoweredReason;
 }
 
 export interface RenderContext {
   readonly wardCount: number;
-  /** Required on purpose (D14): callers must state which claims hold. */
-  readonly claims: Claims;
+  /**
+   * Omit for worlds where P5 and P6 do not apply (for example Ghost Hand): no claim line is added.
+   * When given and a claim is false, a lowered-claim line is appended (see `Claims.reason`).
+   */
+  readonly claims?: Claims;
   readonly seance?: { readonly id: string; readonly base?: string };
 }
 
 export const CLAIM_LOWERED_LINE =
   'P5 and P6 protections are NOT guaranteed for this run: no ghost rehearsal took place (static analysis only).';
+
+export const CLAIM_LOWERED_UNSUPPORTED_STEP_LINE =
+  'Some steps could not be rehearsed in the playground; P5 and P6 are not claimed for this run.';
 
 export const SUGGESTIONS: Readonly<Record<Ward['kind'], string>> = {
   path: 'Limit the command to paths the ward does not protect, or back up the protected paths first.',
@@ -67,7 +78,12 @@ function seanceLink(seance: RenderContext['seance']): string | undefined {
 
 function assemble(lines: string[], ctx: RenderContext, link: string | undefined): string {
   const out = [...lines];
-  if (!ctx.claims.p5 || !ctx.claims.p6) out.push(CLAIM_LOWERED_LINE);
+  const claims = ctx.claims;
+  if (claims !== undefined && (!claims.p5 || !claims.p6)) {
+    out.push(
+      claims.reason === 'unsupported-step' ? CLAIM_LOWERED_UNSUPPORTED_STEP_LINE : CLAIM_LOWERED_LINE,
+    );
+  }
   if (link !== undefined && out.length > 0) {
     out[out.length - 1] = `${out[out.length - 1]} Seance: ${link}`;
   }

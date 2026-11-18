@@ -94,10 +94,9 @@ describe('host matching examples', () => {
     expect(allow.allows(parseDestination('a.example.test'))).toBe(true);
   });
 
-  it('3232235786 is not allowed by an IPv4 entry', () => {
-    const ref = parseDestination('3232235786');
+  it('3221225994 is not allowed by an IPv4 entry', () => {
+    const ref = parseDestination('3221225994');
     expect(ref?.kind).toBe('name');
-    expect(compileAllowHosts(['192.168.1.10']).allows(ref)).toBe(false);
     expect(compileAllowHosts(['192.0.2.10']).allows(ref)).toBe(false);
   });
 });

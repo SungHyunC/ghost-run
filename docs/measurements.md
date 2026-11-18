@@ -189,3 +189,15 @@ Measured on macOS (Apple Silicon), `corepack pnpm test` in `ui/` (Short_Run, all
 - UI-P5 (`tests/dom/p5-inert.test.tsx`) calls `renderToStaticMarkup` from `react-dom/server` directly in jsdom (Open Question Q3). The Testing Library fallback was not needed.
 - UI-P5 skips the `javascript:` check for `aria-*` and `data-*` attributes, because those carry plain display text that begins with the hostile string. Every other attribute is checked, and `href`, `src`, `style` and `on*` are banned everywhere.
 - Axe audit (`tests/dom/a11y.test.tsx`): 49 tests, about 0.25 s per axe run alone, so the file sets a 60 s test timeout (a loaded full run exceeded the 5 s default). One real defect was found and fixed: `<li role="group">` in `RedThreadView` became a `li` with an inner `div` carrying the role.
+
+## Wards checkpoint 5 verification
+
+Run on macOS (Apple Silicon) with `corepack pnpm`, in sequence, after the spec text update (requirements, design, tasks of `.kiro/specs/wards`).
+
+- `core`: `tsc --noEmit` exit 0; `eslint .` exit 0; `build` exit 0; `vitest --run`: 70 test files passed, 536 tests passed, 1 skipped (537 total), no type errors, 6.7 s.
+- Nightly run (`GHOST_PBT_MODE=nightly`) of `path-ward`, `sql-ward`, `p5-protection`, `p6-egress`, `p6-content`, `p4-refined-monotonicity`, `canary`, `perf`, `message`, `wards-engine`: exit 0, 10 files and 91 tests passed, 79 s, no `onTaskUpdate` warnings. Visible run counts: P4 refined 10,000 runs (v1 stricter than v2 in 2,741 of them), P6 egress 20,000 runs (2,652 with violations). `canary.test.ts` took about 51 s because of the 256-canary cap property.
+- `wards-config`: `tsc --noEmit` exit 0; `eslint .` exit 0; `vitest run`: 2 files, 4 tests passed.
+- `ghost-runner`: `tsc --noEmit` exit 0; full `test`: 53 files, 258 tests passed, exit 0, 627 s (Docker tests included). Not modified.
+- Unchanged files: `core/tests/p4-monotonicity.test.ts` has an empty `git diff`. `core/tests/wards.test.ts` has one removed line (the import statement, widened to import `renderMessage` and the claim-line constants); all existing cases are untouched and new cases are appended only.
+- `core/package.json` has no `dependencies` field (only `devDependencies`, `peerDependencies`, `peerDependenciesMeta`).
+- Hidden Unicode (U+200B to U+200D, U+2060, U+FEFF, U+202A to U+202E, U+2066 to U+2069, U+E0000 to U+E007F) scan over `core/`, `wards-config/`, `.kiro/specs/wards/` and this file (148 text files, `node_modules` and `dist` excluded): 0 literal occurrences. The three spec files pass `validate_spec_format` with no issues, and contain no HTML-comment openers.

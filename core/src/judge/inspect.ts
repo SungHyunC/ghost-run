@@ -233,36 +233,62 @@ function hasWs(c: Uint8Array): boolean {
   return false;
 }
 
-function kindsFor(views: Views, canaries: readonly Uint8Array[]): readonly EncodingKind[] {
+/** Needles derived once per canary, so repeated inspections do not rebuild them. */
+export interface PreparedCanary {
+  readonly canary: Uint8Array;
+  readonly stripped: Uint8Array | undefined;
+  readonly b64: readonly { std: Uint8Array; url: Uint8Array }[];
+  readonly hex: Uint8Array;
+}
+
+export function prepareCanaries(canaries: readonly Uint8Array[]): readonly PreparedCanary[] {
+  return canaries.map((canary) => {
+    const stripped = hasWs(canary) ? stripWs(canary) : undefined;
+    const b64: { std: Uint8Array; url: Uint8Array }[] = [];
+    for (let o = 0; o < 3; o++) {
+      const nd = base64Needles(canary, o);
+      if (nd) b64.push(nd);
+    }
+    return { canary, stripped, b64, hex: hexNeedle(canary) };
+  });
+}
+
+function kindsFor(views: Views, prepared: readonly PreparedCanary[]): readonly EncodingKind[] {
   const seen = new Set<EncodingKind>();
-  for (const canary of canaries) {
+  for (const pc of prepared) {
+    const canary = pc.canary;
     const rawInV0 = found(views.v0, canary);
     if (rawInV0) seen.add('raw');
     else {
-      if (!seen.has('raw') && hasWs(canary)) {
-        const stripped = stripWs(canary);
+      if (!seen.has('raw') && pc.stripped !== undefined) {
+        const stripped = pc.stripped;
         if (stripped.length >= WINDOW && (found(views.v1, stripped) || found(views.v3, stripped))) seen.add('raw');
       }
       if (!seen.has('percent') && found(views.v2, canary)) seen.add('percent');
     }
 
-    for (let o = 0; o < 3; o++) {
+    for (const nd of pc.b64) {
       if (seen.has('base64') && seen.has('base64url')) break;
-      const nd = base64Needles(canary, o);
-      if (!nd) continue;
       if (!seen.has('base64') && (found(views.v1, nd.std) || found(views.v3, nd.std))) seen.add('base64');
       if (!seen.has('base64url') && (found(views.v1, nd.url) || found(views.v3, nd.url))) seen.add('base64url');
     }
     if (!seen.has('hex')) {
-      const hx = hexNeedle(canary);
-      if (found(views.v1l, hx) || found(views.v3l, hx)) seen.add('hex');
+      if (found(views.v1l, pc.hex) || found(views.v3l, pc.hex)) seen.add('hex');
     }
   }
   return ENCODING_ORDER.filter((k) => seen.has(k));
 }
 
-export function detectKinds(payload: Uint8Array, canaries: readonly Uint8Array[]): readonly EncodingKind[] {
-  return kindsFor(buildViews(payload), canaries);
+export function detectKinds(
+  payload: Uint8Array,
+  canaries: readonly Uint8Array[] | readonly PreparedCanary[],
+): readonly EncodingKind[] {
+  const prepared = isPrepared(canaries) ? canaries : prepareCanaries(canaries as readonly Uint8Array[]);
+  return kindsFor(buildViews(payload), prepared);
+}
+
+function isPrepared(c: readonly Uint8Array[] | readonly PreparedCanary[]): c is readonly PreparedCanary[] {
+  return c.length > 0 && !(c[0] instanceof Uint8Array);
 }
 
 export function createInspector(payloads: ReadonlyMap<string, Uint8Array>): Inspector {
@@ -272,9 +298,10 @@ export function createInspector(payloads: ReadonlyMap<string, Uint8Array>): Insp
     hits(canaries) {
       const out = new Map<string, readonly EncodingKind[]>();
       if (canaries.length === 0) return out;
+      const prepared = prepareCanaries(canaries);
       for (const e of entries) {
         e.views ??= buildViews(e.payload);
-        const kinds = kindsFor(e.views, canaries);
+        const kinds = kindsFor(e.views, prepared);
         if (kinds.length > 0) out.set(e.id, kinds);
       }
       return out;

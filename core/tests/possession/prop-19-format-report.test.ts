@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { escapeAscii } from '../../src/possession/classify.js';
 import { buildReport, formatReport } from '../../src/possession/entry.js';
 import type { BlacklightReport, FileScan, Finding, HiddenCategory } from '../../src/possession/types.js';
-import { NUM_RUNS, PBT_TIMEOUT } from '../pbt-config.js';
+import { NUM_RUNS, PBT_TIMEOUT, makeYielder } from '../pbt-config.js';
 import { createCounter } from '../pbt-stats.js';
 import { asciiReporter, toCodePoints } from './arbitraries.js';
 
@@ -132,15 +132,17 @@ function parseQuoted(s: string): { content: string; tail: string } {
 describe('Property 19: The formatted report is bounded ASCII', () => {
   it(
     'formatReport output is printable ASCII plus LF, one line per Finding and error, quoted and capped renderings',
-    () => {
+    async () => {
+      const tick = makeYielder();
       const counter = createCounter('P19 buckets');
       let runs = 0;
       // One fc.assert per outcome kind, each with ceil(NUM_RUNS / 3) runs: every outcome gets a
       // fixed third of the runs, so the ratio check below cannot flake.
       const runsPerKind = Math.ceil(NUM_RUNS / KINDS.length);
       for (const kind of KINDS) {
-      fc.assert(
-        fc.property(reportArbOf(kind), (report) => {
+      await fc.assert(
+        fc.asyncProperty(reportArbOf(kind), async (report) => {
+          await tick();
           runs++;
           expect(report.outcome).toBe(kind);
           const out = formatReport(report);

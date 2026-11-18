@@ -22,7 +22,12 @@ export type { HostEntryError, HostEntryErrorCode, HostRef } from './judge/host.j
 export { extractCanaries } from './judge/canary.js';
 export { createInspector } from './judge/inspect.js';
 export type { EncodingKind, Inspector } from './judge/inspect.js';
-export { renderMessage, CLAIM_LOWERED_LINE, SUGGESTIONS } from './judge/message.js';
-export type { RenderContext, Claims } from './judge/message.js';
+export {
+  renderMessage,
+  CLAIM_LOWERED_LINE,
+  CLAIM_LOWERED_UNSUPPORTED_STEP_LINE,
+  SUGGESTIONS,
+} from './judge/message.js';
+export type { RenderContext, Claims, ClaimLoweredReason } from './judge/message.js';
 export { sanitizeText as sanitizeJudgeText } from './judge/sanitize.js';
 export { compareCodePoints } from './judge/bytes.js';

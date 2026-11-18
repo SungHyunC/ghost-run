@@ -5,6 +5,7 @@ import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   CLAIM_LOWERED_LINE,
+  CLAIM_LOWERED_UNSUPPORTED_STEP_LINE,
   SUGGESTIONS,
   renderMessage,
   type Claims,
@@ -145,7 +146,17 @@ const seanceArb: fc.Arbitrary<RenderContext['seance']> = fc.oneof(
   fc.record({ id: idArb }),
 );
 
-const claimsArb: fc.Arbitrary<Claims> = fc.record({ p5: fc.boolean(), p6: fc.boolean() });
+const claimsArb: fc.Arbitrary<Claims | undefined> = fc.oneof(
+  fc.constant(undefined),
+  fc.record({ p5: fc.boolean(), p6: fc.boolean() }),
+  fc.record({
+    p5: fc.boolean(),
+    p6: fc.boolean(),
+    reason: fc.constantFrom('static-analysis', 'unsupported-step') as fc.Arbitrary<
+      'static-analysis' | 'unsupported-step'
+    >,
+  }),
+);
 
 const ctxArb: fc.Arbitrary<RenderContext> = fc.record({
   wardCount: fc.nat(30),
@@ -170,7 +181,11 @@ describe('Property 14: Messages are deterministic, bounded, and injection-safe',
         // No control or hidden char except the separator (17.7, 17.8)
         expect(hasForbiddenChar(msg)).toBe(false);
 
-        const lowered = !ctx.claims.p5 || !ctx.claims.p6;
+        const lowered = ctx.claims !== undefined && (!ctx.claims.p5 || !ctx.claims.p6);
+        const loweredLine =
+          ctx.claims?.reason === 'unsupported-step'
+            ? CLAIM_LOWERED_UNSUPPORTED_STEP_LINE
+            : CLAIM_LOWERED_LINE;
         let lines = msg.split('\n');
 
         // Seance link (16.5, 16.6, 16.7): exactly when valid, on the last line.
@@ -182,11 +197,14 @@ describe('Property 14: Messages are deterministic, bounded, and injection-safe',
         }
 
         // Lowered-claim line (17.5): present iff a claim is false, placed before the link.
-        const claimLineCount = lines.filter((l) => l.startsWith(CLAIM_LOWERED_LINE)).length;
+        const claimLineCount = lines.filter(
+          (l) =>
+            l.startsWith(CLAIM_LOWERED_LINE) || l.startsWith(CLAIM_LOWERED_UNSUPPORTED_STEP_LINE),
+        ).length;
         expect(claimLineCount).toBe(lowered ? 1 : 0);
         if (lowered) {
           const expectedLast =
-            link === undefined ? CLAIM_LOWERED_LINE : `${CLAIM_LOWERED_LINE} Seance: ${link}`;
+            link === undefined ? loweredLine : `${loweredLine} Seance: ${link}`;
           expect(lines[lines.length - 1]).toBe(expectedLast);
           lines = lines.slice(0, -1);
         } else if (link !== undefined) {
@@ -416,6 +434,44 @@ describe('message examples', () => {
       expect(msg).toBe(
         `GHOST RUN PASSED: all 2 wards cleared.\n${CLAIM_LOWERED_LINE} Seance: http://localhost:5317/seance/9`,
       );
+    });
+  });
+
+  describe('lowered-claim wording', () => {
+    const pass: WardVerdict = { verdict: 'pass', violations: [], notices: [] };
+    const base = { wardCount: 1 };
+
+    it('static-analysis reason keeps the original line', () => {
+      const msg = renderMessage(pass, { ...base, claims: { p5: false, p6: false, reason: 'static-analysis' } });
+      expect(msg).toBe(`GHOST RUN PASSED: all 1 ward cleared.\n${CLAIM_LOWERED_LINE}`);
+    });
+
+    it('an absent reason defaults to static-analysis for a false claim', () => {
+      expect(renderMessage(pass, { ...base, claims: { p5: true, p6: false } })).toBe(
+        `GHOST RUN PASSED: all 1 ward cleared.\n${CLAIM_LOWERED_LINE}`,
+      );
+    });
+
+    it('unsupported-step reason uses its own fixed line', () => {
+      expect(CLAIM_LOWERED_UNSUPPORTED_STEP_LINE).toBe(
+        'Some steps could not be rehearsed in the playground; P5 and P6 are not claimed for this run.',
+      );
+      const msg = renderMessage(pass, {
+        ...base,
+        claims: { p5: false, p6: false, reason: 'unsupported-step' },
+        seance: { id: '3' },
+      });
+      expect(msg).toBe(
+        `GHOST RUN PASSED: all 1 ward cleared.\n${CLAIM_LOWERED_UNSUPPORTED_STEP_LINE} Seance: http://localhost:5317/seance/3`,
+      );
+      expect(msg).not.toContain(CLAIM_LOWERED_LINE);
+    });
+
+    it('adds no line when claims is not passed, or when both claims hold', () => {
+      expect(renderMessage(pass, base)).toBe('GHOST RUN PASSED: all 1 ward cleared.');
+      expect(
+        renderMessage(pass, { ...base, claims: { p5: true, p6: true, reason: 'unsupported-step' } }),
+      ).toBe('GHOST RUN PASSED: all 1 ward cleared.');
     });
   });
 

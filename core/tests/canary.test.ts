@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
 import { extractCanaries, extractCanariesDetailed } from '../src/judge/canary.js';
-import { NUM_RUNS, PBT_TIMEOUT } from './pbt-config.js';
+import { NUM_RUNS, PBT_TIMEOUT, makeYielder } from './pbt-config.js';
 
 const enc = new TextEncoder();
 const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
@@ -162,13 +162,15 @@ describe('canary extraction', () => {
 
   it(
     'Property 11: more than 256 distinct values are capped and counted as tooMany',
-    () => {
-      fc.assert(
-        fc.property(
+    async () => {
+      const tick = makeYielder();
+      await fc.assert(
+        fc.asyncProperty(
           fc.constantFrom('.env', '.env.local'),
           fc.array(smallLineArb, { minLength: 0, maxLength: 20 }),
           fc.integer({ min: 250, max: 300 }),
-          (path, extra, n) => {
+          async (path, extra, n) => {
+            await tick();
             const many: Line[] = Array.from({ length: n }, (_, i) => ({
               kind: 'assign',
               key: `K${i}`,

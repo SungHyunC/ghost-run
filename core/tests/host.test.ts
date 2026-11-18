@@ -142,7 +142,7 @@ describe('Property 4: host matching', () => {
       fc.tuple(fc.integer({ min: 0, max: 255 }), fc.integer({ min: 0, max: 0xffffff })).map(
         ([a, b]) => '0x' + a.toString(16) + '.' + String(b),
       ),
-      fc.constantFrom('3232235786', '3221226026', '0x7f.1', '0xc0.0.2.10', '192.0.2'),
+      fc.constantFrom('3221225994', '3221226026', '0x7f.1', '0xc0.0.2.10', '192.0.2'),
     );
     fc.assert(
       fc.property(fc.array(ipv4Entry, { minLength: 1, maxLength: 3 }), numeric, port, decoration, (es, n, p, deco) => {
@@ -189,7 +189,7 @@ describe('Property 4: examples', () => {
 
   it('numeric-looking names are not allowed by an IPv4 entry', () => {
     expect(allows(['192.0.2.10'], '192.0.2.10')).toBe(true);
-    expect(allows(['192.0.2.10'], '3232235786')).toBe(false);
+    expect(allows(['192.0.2.10'], '3221225994')).toBe(false);
     expect(allows(['192.0.2.10'], '3221226026')).toBe(false);
     expect(allows(['192.0.2.10'], '0x7f.1')).toBe(false);
   });

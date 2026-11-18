@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { isMoreRestrictive, WardEngine } from '../src/index.js';
+import {
+  CLAIM_LOWERED_LINE,
+  CLAIM_LOWERED_UNSUPPORTED_STEP_LINE,
+  isMoreRestrictive,
+  renderMessage,
+  WardEngine,
+} from '../src/index.js';
 import type { GhostReport, Ward, WardSet } from '../src/index.js';
 
 const set = (...wards: Ward[]): WardSet => ({ wards });
@@ -293,5 +299,353 @@ describe('WardEngine.evaluate', () => {
     expect(WardEngine.evaluate(r, loose).verdict).toBe('warn');
     expect(WardEngine.evaluate(r, tight).verdict).toBe('block');
     expect(WardEngine.evaluate(r, set()).notices).toEqual(WardEngine.evaluate(r, tight).notices);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 4.13: refined judgment examples (appended; cases above are unchanged).
+// Test data: reserved domains, 192.0.2.x, canary secrets, hidden Unicode via escapes.
+// ---------------------------------------------------------------------------
+
+const del = (path: string) => ({ kind: 'file-deleted', path });
+const ovr = (path: string) => ({ kind: 'file-overwritten', path });
+
+/**
+ * Expected violation count computed from the Changes: distinct deleted/overwritten
+ * paths (directory entries included) that equal `root` or lie below it.
+ */
+function expectedUnder(changes: readonly { kind: string; path?: unknown }[], root: string, kinds: string[]): number {
+  const seen = new Set<string>();
+  for (const c of changes) {
+    if (!kinds.includes(c.kind) || typeof c.path !== 'string') continue;
+    const p = c.path.replace(/^\/+/, '');
+    if (p === root || p.startsWith(`${root}/`)) seen.add(`${c.kind}\u0000${p}`);
+  }
+  return seen.size;
+}
+
+describe('wards refined examples (task 4.13): path wards', () => {
+  it('glob and normalized spellings of one path are all judged against the ward', () => {
+    const ward = set(pathWard(['data/**']));
+    for (const spelling of ['data/x', './data/../data/x', 'data//x', 'data/./x', '/data/x', 'data\\x']) {
+      const v = WardEngine.evaluate(report({ changes: [[del(spelling)]] }), ward);
+      expect(v.verdict, spelling).toBe('block');
+      expect(v.violations, spelling).toHaveLength(1);
+    }
+    expect(WardEngine.evaluate(report({ changes: [[del('database/x')]] }), ward).verdict).toBe('pass');
+  });
+
+  it('a pattern is anchored at the copy root; ** prefix reaches nested paths', () => {
+    const changes = { changes: [[del('sub/.env')]] };
+    expect(WardEngine.evaluate(report(changes), set(pathWard(['.env']))).verdict).toBe('pass');
+    expect(WardEngine.evaluate(report(changes), set(pathWard(['**/.env']))).verdict).toBe('block');
+    expect(WardEngine.evaluate(report({ changes: [[del('.env')]] }), set(pathWard(['**/.env']))).verdict).toBe('block');
+  });
+
+  it('violation count equals the matching delete Changes, including directory entries', () => {
+    const changes = [
+      del('data'),
+      del('data/a'),
+      del('data/a/f1.txt'),
+      del('data/b.txt'),
+      del('other/c.txt'),
+      ovr('data/kept.txt'),
+    ];
+    const v = WardEngine.evaluate(report({ changes: [changes] }), set(pathWard(['data/**'])));
+    const expected = expectedUnder(changes, 'data', ['file-deleted']);
+    expect(expected).toBe(4);
+    expect(v.verdict).toBe('block');
+    expect(v.violations).toHaveLength(expected);
+    // Ascending order of the normalized path.
+    const reasons = v.violations.map((x) => x.reason);
+    expect(reasons).toEqual([...reasons].sort());
+  });
+
+  it('violation count equals matching delete and overwrite Changes when both are denied', () => {
+    const changes = [del('data'), del('data/a'), ovr('data/b.txt'), ovr('data/b.txt'), ovr('elsewhere/z')];
+    const v = WardEngine.evaluate(report({ changes: [changes] }), set(pathWard(['data/**'], ['delete', 'overwrite'])));
+    expect(v.violations).toHaveLength(expectedUnder(changes, 'data', ['file-deleted', 'file-overwritten']));
+  });
+
+  it('the case policy defaults to case-insensitive; case_sensitive: true compares exactly', () => {
+    const r = report({ changes: [[del('DATA/Secret.txt')]] });
+    const insensitive = WardEngine.evaluate(r, set(pathWard(['data/**'])));
+    expect(insensitive.verdict).toBe('block');
+    expect(insensitive.violations[0]?.reason).toBe('would delete protected path DATA/Secret.txt');
+    const sensitive = WardEngine.evaluate(
+      r,
+      set({ id: 'p', kind: 'path', deny: ['delete'], paths: ['data/**'], case_sensitive: true }),
+    );
+    expect(sensitive.verdict).toBe('pass');
+    const exact = WardEngine.evaluate(
+      r,
+      set({ id: 'p', kind: 'path', deny: ['delete'], paths: ['DATA/**'], case_sensitive: true }),
+    );
+    expect(exact.verdict).toBe('block');
+  });
+
+  it('symlink-changed counts as overwrite under a glob ward and is ignored when only delete is denied', () => {
+    const r = report({
+      changes: [[{ kind: 'symlink-changed', path: 'db/current.sqlite', targetBefore: 'a', targetAfter: 'b' }]],
+    });
+    const blocked = WardEngine.evaluate(r, set(pathWard(['db/*.sqlite'], ['overwrite'])));
+    expect(blocked.verdict).toBe('block');
+    expect(blocked.violations).toHaveLength(1);
+    expect(blocked.violations[0]?.reason).toBe('would overwrite protected path db/current.sqlite');
+    expect(WardEngine.evaluate(r, set(pathWard(['db/*.sqlite'], ['delete']))).verdict).toBe('pass');
+  });
+
+  it('created files and changes without a string path are not violations', () => {
+    const r = report({ changes: [[{ kind: 'file-created', path: 'data/new.txt' }, { kind: 'file-deleted' }]] });
+    expect(WardEngine.evaluate(r, set(pathWard(['data/**'], ['delete', 'overwrite']))).verdict).toBe('pass');
+  });
+
+  it('a path that leaves the copy root matches no ward and adds a path-escape notice', () => {
+    const v = WardEngine.evaluate(report({ changes: [[del('../data/x')]] }), set(pathWard(['data/**'])));
+    expect(v.verdict).toBe('warn');
+    expect(v.violations).toEqual([]);
+    expect(v.notices).toHaveLength(1);
+    expect(v.notices[0]?.kind).toBe('path-escape');
+    expect(v.notices[0]?.reason).toBe('change path escapes the copy root: ../data/x');
+  });
+
+  it('hidden characters in an escaping path are escaped in the notice', () => {
+    const v = WardEngine.evaluate(
+      report({ changes: [[del('../a\u200Bb\nc')]] }),
+      set(pathWard(['data/**'])),
+    );
+    const reason = v.notices[0]?.reason ?? '';
+    expect(reason).toBe('change path escapes the copy root: ../a\\u{200B}b\\u{A}c');
+    expect(reason).not.toMatch(/[\u0000-\u001F\u200B]/);
+  });
+});
+
+describe('wards refined examples (task 4.13): sql wards', () => {
+  it('a dropped table counts all rows as lost, even with a nonzero rowsAfter', () => {
+    const r = report({
+      changes: [[{ kind: 'sql-row-count', table: 'USERS', rowsBefore: 1206, rowsAfter: 3, dropped: true }]],
+    });
+    const v = WardEngine.evaluate(r, set(sqlWard(0)));
+    expect(v.verdict).toBe('block');
+    expect(v.violations).toHaveLength(1);
+    expect(v.violations[0]?.reason).toBe('would delete 1,206 rows from users');
+  });
+
+  it('dropped table at the limit passes and above it reports the maximum', () => {
+    const r = report({
+      changes: [[{ kind: 'sql-row-count', table: 'users', rowsBefore: 2500, rowsAfter: 0, dropped: true }]],
+    });
+    expect(WardEngine.evaluate(r, set(sqlWard(2500))).verdict).toBe('pass');
+    expect(WardEngine.evaluate(r, set(sqlWard(2499))).violations[0]?.reason).toBe(
+      'would delete 2,500 rows from users (max allowed 2,499)',
+    );
+  });
+});
+
+describe('wards refined examples (task 4.13): egress wards', () => {
+  const hosts = ['example.test:443', '[2001:db8::1]', '*.example.test', '192.0.2.10'];
+  const ward = set(egressWard(['.env'], hosts));
+  const withDestination = (destination: string) =>
+    WardEngine.evaluate(
+      report({
+        observedEvents: [
+          { kind: 'secret-read', path: '.env', stepIndex: 0 },
+          { kind: 'network-attempt', destination, stepIndex: 1 },
+        ],
+      }),
+      ward,
+    );
+
+  it.each([
+    ['example.test:443', true],
+    ['https://example.test:443/path?q=1', true],
+    ['Example.TEST.:443', true],
+    ['example.test:8443', false],
+    ['example.test', false],
+    ['a.example.test', true],
+    ['a.example.test:8080', true],
+    ['example.test.invalid', false],
+    ['a.b.example.test', false],
+    ['[2001:db8::1]', true],
+    ['[2001:DB8:0:0:0:0:0:1]:8080', true],
+    ['https://[2001:db8::1]:8443/x', true],
+    ['[2001:db8::2]', false],
+    ['192.0.2.10', true],
+    ['192.0.2.10:443', true],
+    ['192.0.2.11', false],
+    ['3221226122', false],
+  ])('destination %s allowed = %s', (destination, allowed) => {
+    const v = withDestination(destination);
+    expect(v.violations.length === 0).toBe(allowed);
+    expect(v.verdict).toBe(allowed ? 'warn' : 'block');
+  });
+
+  it('an allowed host after a secret read is warn with two notices and no violation', () => {
+    const v = WardEngine.evaluate(
+      report({
+        observedEvents: [
+          { kind: 'secret-read', path: '.env', stepIndex: 0 },
+          { kind: 'network-attempt', destination: 'https://registry.example.test/pkg', stepIndex: 1 },
+        ],
+      }),
+      set(egressWard(['.env'], ['registry.example.test'])),
+    );
+    expect(v.verdict).toBe('warn');
+    expect(v.violations).toEqual([]);
+    expect(v.notices).toHaveLength(2);
+    expect(v.notices.every((n) => n.kind === 'observed-event')).toBe(true);
+  });
+
+  it('a network attempt before the secret read is not a violation; one in the same step is', () => {
+    const run = (netStep: number) =>
+      WardEngine.evaluate(
+        report({
+          observedEvents: [
+            { kind: 'network-attempt', destination: 'evil.example', stepIndex: netStep },
+            { kind: 'secret-read', path: '.env', stepIndex: 1 },
+          ],
+        }),
+        set(egressWard(['.env'], [])),
+      );
+    expect(run(0).violations).toEqual([]);
+    const same = run(1);
+    expect(same.violations).toHaveLength(1);
+    expect(same.violations[0]?.reason).toBe(
+      'network attempt to evil.example at step 1 after secret read at step 1; host not in allow_hosts',
+    );
+  });
+});
+
+describe('wards refined examples (task 4.13): content inspection', () => {
+  const SECRET = 'sk-CANARY-abc123';
+  const enc = (s: string) => new TextEncoder().encode(s);
+  const ward = set(egressWard(['.env'], ['registry.example.test']));
+  const events = [
+    { kind: 'secret-read' as const, path: '.env', stepIndex: 0 },
+    { kind: 'network-attempt' as const, destination: 'https://registry.example.test/x', stepIndex: 1, eventId: 'ev-1' },
+  ];
+  const run = (payload: string, evs: typeof events = events) =>
+    WardEngine.evaluate(report({ observedEvents: evs }), ward, {
+      secretValues: new Map([['.env', enc(`API_KEY=${SECRET}\n`)]]),
+      payloads: new Map([['ev-1', enc(payload)]]),
+    });
+
+  it.each([
+    ['raw', `token=${SECRET}`],
+    // No '+' or '/' in this value, so base64 and base64url spellings coincide.
+    ['base64, base64url', Buffer.from(SECRET).toString('base64')],
+    ['hex', Buffer.from(SECRET).toString('hex')],
+    ['percent', encodeURIComponent(SECRET).replace(/-/g, '%2D')],
+  ])('a %s hit blocks even though the host is allowed', (kind, payload) => {
+    const v = run(payload);
+    expect(v.verdict).toBe('block');
+    expect(v.violations).toHaveLength(1);
+    expect(v.violations[0]?.reason).toBe(
+      `payload of event ev-1 contains a value from secret file .env (encoding: ${kind})`,
+    );
+    const json = JSON.stringify(v);
+    expect(json).not.toContain(SECRET);
+    expect(json).not.toContain(Buffer.from(SECRET).toString('base64'));
+  });
+
+  it('a content hit needs no secret-read event', () => {
+    const v = run(`x=${SECRET}`, [events[1]!]);
+    expect(v.verdict).toBe('block');
+    expect(v.violations).toHaveLength(1);
+  });
+
+  it('an unrelated payload on an allowed host stays warn', () => {
+    const v = run('hello world, nothing secret here');
+    expect(v.verdict).toBe('warn');
+    expect(v.violations).toEqual([]);
+  });
+
+  it('adds a content-inspection notice when a secret was read but no secret values were given', () => {
+    const v = WardEngine.evaluate(report({ observedEvents: events }), ward, { secretValues: new Map() });
+    expect(v.verdict).toBe('warn');
+    const n = v.notices.filter((x) => x.kind === 'content-inspection');
+    expect(n).toHaveLength(1);
+    expect(n[0]?.reason).toBe('content inspection did not run for ward e: no secret values were provided');
+  });
+
+  it('adds a content-inspection notice for a secret value that is too short to inspect', () => {
+    const v = WardEngine.evaluate(report({ observedEvents: events }), ward, {
+      secretValues: new Map([['.env', enc('KEY=short')]]),
+      payloads: new Map([['ev-1', enc('nothing')]]),
+    });
+    const n = v.notices.filter((x) => x.kind === 'content-inspection');
+    expect(n).toHaveLength(1);
+    expect(n[0]?.reason).toContain('shorter than 8 bytes');
+    expect(JSON.stringify(v)).not.toContain('short"');
+  });
+});
+
+describe('wards refined examples (task 4.13): warn message with notices only', () => {
+  const FIRST = 'observed secret-read (.env) at step 0';
+  const warnVerdict = () =>
+    WardEngine.evaluate(
+      report({
+        observedEvents: [
+          { kind: 'secret-read', path: '.env', stepIndex: 0 },
+          { kind: 'network-attempt', destination: 'https://registry.example.test/pkg', stepIndex: 1 },
+        ],
+      }),
+      set(egressWard(['.env'], ['registry.example.test'])),
+    );
+  const warnTemplate = (k: number, first: string) =>
+    `GHOST RUN NEEDS HUMAN APPROVAL: ${k} notice(s) outside the copy or needing review. First: ${first}.`;
+
+  it('renders the warn template for an allowed host after a secret read', () => {
+    const v = warnVerdict();
+    expect(v.verdict).toBe('warn');
+    expect(v.violations).toEqual([]);
+    expect(renderMessage(v, { wardCount: 1 })).toBe(warnTemplate(2, FIRST));
+  });
+
+  it('renders the warn template for an effect-outside notice, which sorts first', () => {
+    const v = WardEngine.evaluate(
+      report({
+        effectsOutside: [[{ kind: 'network', destination: 'api.example.test' }]],
+        observedEvents: [{ kind: 'secret-read', path: '.env', stepIndex: 0 }],
+      }),
+      set(egressWard(['.env'], [])),
+    );
+    expect(v.verdict).toBe('warn');
+    expect(v.notices[0]?.kind).toBe('effect-outside');
+    expect(renderMessage(v, { wardCount: 1 })).toBe(warnTemplate(2, v.notices[0]!.reason));
+  });
+
+  it('adds no claim line when claims is omitted or both claims hold', () => {
+    const v = warnVerdict();
+    expect(renderMessage(v, { wardCount: 1 }).split('\n')).toHaveLength(1);
+    expect(renderMessage(v, { wardCount: 1, claims: { p5: true, p6: true } })).toBe(warnTemplate(2, FIRST));
+  });
+
+  it('appends the lowered-claim line for each reason when a claim is false', () => {
+    const v = warnVerdict();
+    for (const claims of [
+      { p5: false, p6: true },
+      { p5: true, p6: false },
+      { p5: false, p6: false },
+    ]) {
+      expect(renderMessage(v, { wardCount: 1, claims })).toBe(`${warnTemplate(2, FIRST)}\n${CLAIM_LOWERED_LINE}`);
+      expect(renderMessage(v, { wardCount: 1, claims: { ...claims, reason: 'static-analysis' } })).toBe(
+        `${warnTemplate(2, FIRST)}\n${CLAIM_LOWERED_LINE}`,
+      );
+      expect(renderMessage(v, { wardCount: 1, claims: { ...claims, reason: 'unsupported-step' } })).toBe(
+        `${warnTemplate(2, FIRST)}\n${CLAIM_LOWERED_UNSUPPORTED_STEP_LINE}`,
+      );
+    }
+  });
+
+  it('appends the seance link to the last line, after the claim line when present', () => {
+    const v = warnVerdict();
+    const seance = { id: '42' };
+    expect(renderMessage(v, { wardCount: 1, seance })).toBe(
+      `${warnTemplate(2, FIRST)} Seance: http://localhost:5317/seance/42`,
+    );
+    expect(renderMessage(v, { wardCount: 1, seance, claims: { p5: false, p6: false } })).toBe(
+      `${warnTemplate(2, FIRST)}\n${CLAIM_LOWERED_LINE} Seance: http://localhost:5317/seance/42`,
+    );
   });
 });

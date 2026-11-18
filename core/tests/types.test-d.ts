@@ -10,6 +10,7 @@ import type {
   SecretValues,
   Snapshot,
   SqlRowCountChange,
+  VariantResult,
   Ward,
   WardNotice,
   World,
@@ -206,5 +207,21 @@ describe('core type extensions', () => {
     expectTypeOf<WardNotice['kind']>().toEqualTypeOf<
       'effect-outside' | 'observed-event' | 'content-inspection' | 'path-escape'
     >();
+  });
+});
+
+describe('VariantResult physics hard-failure flags', () => {
+  it('has optional jointLimitExceeded and selfCollisionOccurred like forbiddenContactOccurred', () => {
+    expectTypeOf<VariantResult['jointLimitExceeded']>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<VariantResult['selfCollisionOccurred']>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<VariantResult['forbiddenContactOccurred']>().toEqualTypeOf<boolean | undefined>();
+    const minimal: VariantResult = { variantId: 'v', success: true };
+    const full: VariantResult = {
+      variantId: 'v',
+      success: false,
+      jointLimitExceeded: true,
+      selfCollisionOccurred: true,
+    };
+    void [minimal, full];
   });
 });

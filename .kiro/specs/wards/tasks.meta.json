@@ -302,6 +302,193 @@
         "chatSessionId": "sess_d9be3b34-4ba2-42b3-96af-6677cef13b6e",
         "timestamp": 1794971320965
       }
+    ],
+    "4.1 Run the existing P4 test and core tests before changing the engine": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794979421296
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794979467850
+      }
+    ],
+    "4.2 Refactor path and SQL judgment, notices, and sanitization in `evaluate`": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794979467861
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794980175736
+      }
+    ],
+    "4.3 Replace the egress judgment with the Host_Matcher and the behavior cap": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794980183431
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981052791
+      }
+    ],
+    "4.4 Add content inspection, notices, and the leak guard to the egress judgment": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981058275
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981234520
+      }
+    ],
+    "4.7 Write property test for path ward violations": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981058279
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981235312
+      }
+    ],
+    "4.8 Write property test for SQL row-loss accounting": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981058709
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981236031
+      }
+    ],
+    "4.5 Extend `isMoreRestrictive` with normalized keys and `case_sensitive`": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981240874
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981445934
+      }
+    ],
+    "4.9 Write property test for path ward protection completeness (P5)": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981240878
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981446978
+      }
+    ],
+    "4.10 Write property test for the egress behavior criterion (P6, action)": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981241295
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981447653
+      }
+    ],
+    "4.11 Write property test for content inspection of every encoding (P6, content)": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794981452778
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982095921
+      }
+    ],
+    "4.6 Run the existing P4 test again after the `isMoreRestrictive` change": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982096685
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982127972
+      }
+    ],
+    "4. Engine integration in `core/src/wards.ts`": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982127974
+      }
+    ],
+    "4.12 Write property test for refined ward monotonicity (P4)": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982129224
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982429382
+      }
+    ],
+    "4.13 Add example tests to `core/tests/wards.test.ts`": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982135427
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982430444
+      }
+    ],
+    "4.14 Write performance tests `core/tests/perf.test.ts`": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982135611
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982571328
+      }
+    ],
+    "5. Checkpoint - Engine integration complete": [
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794982572019
+      },
+      {
+        "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
+        "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
+        "timestamp": 1794983554424
+      }
     ]
   }
 }

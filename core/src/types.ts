@@ -183,6 +183,10 @@ export interface VariantResult {
   readonly success: boolean;
   readonly contactForceN?: number;
   readonly forbiddenContactOccurred?: boolean;
+  /** True when a joint exceeded its limit in this variant. Hard failure for physics wards. */
+  readonly jointLimitExceeded?: boolean;
+  /** True when the arm collided with itself in this variant. Hard failure for physics wards. */
+  readonly selfCollisionOccurred?: boolean;
 }
 
 // -- Evaluate hand-off types -------------------------------------------------

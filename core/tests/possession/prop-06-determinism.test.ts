@@ -8,7 +8,7 @@ import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { scanText } from '../../src/possession/scan.js';
 import { createCounter } from '../pbt-stats.js';
-import { NUM_RUNS, PBT_TIMEOUT } from '../pbt-config.js';
+import { NUM_RUNS, PBT_TIMEOUT, makeYielder } from '../pbt-config.js';
 import { OPENER, anyText, asciiReporter, loneSurrogate } from './arbitraries.js';
 
 type Opts = { readonly markdown?: boolean } | undefined;
@@ -56,11 +56,13 @@ function deepFreeze<T>(o: T): T {
 describe('Property 6: Scan is deterministic, total, and JSON-safe', () => {
   it(
     'scanText never throws, is deterministic, leaves options unchanged, and round-trips through JSON',
-    () => {
+    async () => {
+      const tick = makeYielder();
       const counter = createCounter('P6 buckets');
       let runs = 0;
-      fc.assert(
-        fc.property(textArb, optionsArb, ({ kind, text }, { kind: optKind, options, frozen }) => {
+      await fc.assert(
+        fc.asyncProperty(textArb, optionsArb, async ({ kind, text }, { kind: optKind, options, frozen }) => {
+          await tick();
           runs++;
           counter.add('text=' + kind);
           counter.add('options=' + optKind);
