@@ -9,11 +9,11 @@
     "drawerFrictionN": { "min": 0.5, "max": 4 },
     "drawerMassKg": { "min": 0.3, "max": 1.2 },
     "handleOffsetM": {
-      "x": { "min": -0.012, "max": 0.012 },
-      "y": { "min": -0.01, "max": 0.01 },
-      "z": { "min": -0.012, "max": 0.012 }
+      "x": { "min": -0.004, "max": 0.004 },
+      "y": { "min": -0.0015, "max": 0.0015 },
+      "z": { "min": -0.005, "max": 0.005 }
     },
-    "sensorNoiseM": { "min": 0, "max": 0.006 },
+    "sensorNoiseM": { "min": 0, "max": 0.003 },
     "commandDelaySteps": { "min": 0, "max": 6 }
   }
 }

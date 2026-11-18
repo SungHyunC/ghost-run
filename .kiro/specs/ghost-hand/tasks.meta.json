@@ -20,6 +20,10 @@
       "status": "passed",
       "failingExample": "Earlier counterexample (now fixed): seed 0, index 0, commandDelaySteps range min=max=-5e-324 (no integer inside). The parser now rejects such a range.",
       "lastRunTimestamp": 1794980388328
+    },
+    "11.3 Write the property test for the run result order": {
+      "status": "passed",
+      "lastRunTimestamp": 1794997262909
     }
   },
   "executionHistory": {
@@ -728,6 +732,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248909
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794996880423
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997011119
       }
     ],
     "9.2 Implement the Three.js renderer": [
@@ -735,6 +749,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248913
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794996880442
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997011593
       }
     ],
     "10. Checkpoint - foundations": [
@@ -742,6 +766,11 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248916
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997789243
       }
     ],
     "11.1 Implement `runGhostHand`": [
@@ -749,6 +778,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248919
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997015217
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997169496
       }
     ],
     "11.2 Write the renderer tests": [
@@ -756,6 +795,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248921
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997015226
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997169935
       }
     ],
     "11.3 Write the property test for the run result order": [
@@ -763,6 +812,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248924
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997174669
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997668664
       }
     ],
     "11.4 Write the Wards_File tests": [
@@ -770,6 +829,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248927
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997174690
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997668993
       }
     ],
     "11.5 Create the demo plans, tune the provisional numbers, and record them": [
@@ -777,6 +846,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248929
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997174845
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997669715
       }
     ],
     "11.6 Write the demo scenario tests": [
@@ -784,6 +863,16 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794983248932
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997672689
+      },
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997761225
       }
     ],
     "12.1 Write the property test for ghost isolation": [
@@ -1036,6 +1125,20 @@
         "executionId": "32e44b5b-f0b3-435f-9939-9f2d9c5e776a",
         "chatSessionId": "sess_d5afaf5f-44ba-49c7-b3ba-09fa16a1be53",
         "timestamp": 1794985285533
+      }
+    ],
+    "9. Variant executors and the 3D renderer": [
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997011596
+      }
+    ],
+    "11. Run pipeline and demo scenarios": [
+      {
+        "executionId": "710616b3-833c-4d7e-982a-73b398d4f3ad",
+        "chatSessionId": "sess_33faa09c-f9b8-431b-94bf-f78e41ebe045",
+        "timestamp": 1794997761227
       }
     ]
   }

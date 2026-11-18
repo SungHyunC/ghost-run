@@ -1,0 +1,15 @@
+{
+  "format": "ghost-hand-plan",
+  "version": 1,
+  "name": "slow pull, strong grip",
+  "origin": "scripted",
+  "actions": [
+    { "type": "reach", "target": [0, 0.2, 0.18], "speed": 0.25 },
+    { "type": "reach", "target": [0, 0.02, 0.18], "speed": 0.2 },
+    { "type": "grasp", "force": 22 },
+    { "type": "pull", "distance": 0.15, "speed": 0.1 },
+    { "type": "release" }
+  ],
+  "note": "Scripted demo plan: slower pull and a stronger grip than the first plan.",
+  "revisionOf": "fast pull"
+}

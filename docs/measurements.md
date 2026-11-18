@@ -499,3 +499,54 @@ Build: `corepack pnpm --filter @ghost-run/ui build` (Vite 7.3.8, React productio
 No `fetch(` token is in the bundle (only `prefetchDNS` and `fetchPriority`), so no `network-api` entry is needed. The runtime proof stays the throwing-stub test of task 8.17.
 
 Scanner fix found by this run: Vite writes the CSP attribute with `&#39;` for apostrophes, so `attr()` now decodes HTML entities before comparing the policy string.
+
+## Ghost Hand demo plans, tuned scene, and re-measured budget (task 11.5)
+
+Date: 2026-11-18. Environment: Node v20.20.2, Apple M1 (darwin arm64, 8 cores), macOS. `@mujoco/mujoco` 4.0.1 single-thread build. Machine load was not controlled (1-minute load at the start of the budget script: 14.21; at the end: 10.33), so the timing values are indicative.
+
+Command for the plan results: `node scripts/measure-demo.mjs` from `apps/ghost-hand` (pure pipeline `runGhostHand`, inline executor, the shipped `wards.yaml`, `variant-config.json`). Command for the timing: `node scripts/measure-budget.mjs` from `worlds/drawer-arm`.
+
+Shipped seed: 42 (`defaultSeed`), count 8 (`defaultCount`). The variants it produces are listed in the tables below; the per-variant noise seeds are 2535471579, 1666942303, 3654041993, 3884284345, 1856709703, 248294535, 3224030081, 3313902903 (variant-0 to variant-7). The failed and passed counts are read from the Variant_Results of the run, not typed in.
+
+Ward result by plan: `fast pull` is blocked by ward `gentle-hands` (success rate below `min_success_rate`, plus a joint-limit report on one variant). `slow pull, strong grip` passes with no ward violated.
+
+### Plan: fast pull
+
+Verdict block; success:false variants 1, success:true variants 7 (of 8); max contactForceN over the variants 27.53 N (limit 30 N); Base_World drawer opening 0.1216 m (target 0.12 m); ward violated: gentle-hands.
+
+| Variant | drawerFrictionN | drawerMassKg | handleOffsetM (x, y, z) | sensorNoiseM | commandDelaySteps | drawer opening (m) | max contact force (N) | row status |
+|---|---|---|---|---|---|---|---|---|
+| variant-0 | 0.821 | 1.187 | 0.0036, 0.0012, 0.0022 | 0.0023 | 2 | 0.1431 | 21.20 | passed |
+| variant-1 | 1.870 | 0.607 | 0.0022, -0.0012, -0.0049 | 0.0023 | 3 | 0.1234 | 22.93 | passed |
+| variant-2 | 0.926 | 1.075 | 0.0015, 0.0012, -0.0048 | 0.0026 | 5 | 0.1438 | 26.07 | passed |
+| variant-3 | 3.355 | 0.599 | 0.0032, -0.0010, -0.0023 | 0.0002 | 2 | 0.1185 | 27.31 | failed |
+| variant-4 | 3.267 | 1.059 | 0.0017, 0.0000, 0.0020 | 0.0020 | 3 | 0.1200 | 22.98 | passed |
+| variant-5 | 1.893 | 0.862 | -0.0018, -0.0014, 0.0025 | 0.0016 | 3 | 0.1215 | 22.70 | passed |
+| variant-6 | 0.602 | 0.516 | 0.0001, 0.0007, -0.0013 | 0.0004 | 4 | 0.1390 | 21.54 | failed |
+| variant-7 | 1.932 | 0.397 | 0.0013, -0.0004, -0.0020 | 0.0018 | 0 | 0.1205 | 27.53 | passed |
+
+### Plan: slow pull, strong grip
+
+Verdict pass; success:false variants 0, success:true variants 8 (of 8); max contactForceN over the variants 28.53 N (limit 30 N); Base_World drawer opening 0.1300 m (target 0.12 m); ward violated: none.
+
+| Variant | drawerFrictionN | drawerMassKg | handleOffsetM (x, y, z) | sensorNoiseM | commandDelaySteps | drawer opening (m) | max contact force (N) | row status |
+|---|---|---|---|---|---|---|---|---|
+| variant-0 | 0.821 | 1.187 | 0.0036, 0.0012, 0.0022 | 0.0023 | 2 | 0.1317 | 19.33 | passed |
+| variant-1 | 1.870 | 0.607 | 0.0022, -0.0012, -0.0049 | 0.0023 | 3 | 0.1309 | 20.03 | passed |
+| variant-2 | 0.926 | 1.075 | 0.0015, 0.0012, -0.0048 | 0.0026 | 5 | 0.1335 | 21.26 | passed |
+| variant-3 | 3.355 | 0.599 | 0.0032, -0.0010, -0.0023 | 0.0002 | 2 | 0.1276 | 28.53 | passed |
+| variant-4 | 3.267 | 1.059 | 0.0017, 0.0000, 0.0020 | 0.0020 | 3 | 0.1263 | 19.79 | passed |
+| variant-5 | 1.893 | 0.862 | -0.0018, -0.0014, 0.0025 | 0.0016 | 3 | 0.1287 | 21.22 | passed |
+| variant-6 | 0.602 | 0.516 | 0.0001, 0.0007, -0.0013 | 0.0004 | 4 | 0.1337 | 23.14 | passed |
+| variant-7 | 1.932 | 0.397 | 0.0013, -0.0004, -0.0020 | 0.0018 | 0 | 0.1305 | 19.63 | passed |
+
+Row status `failed` means the row did not reach the target opening or exceeded a joint limit; "success:false variants" above counts the Variant_Results with `success: false`. In `fast pull`, variant-3 stays below the target opening and variant-6 exceeds a joint limit.
+
+### Re-measured verifyWorld timing (after the scene tuning)
+
+| Measurement | Value |
+|---|---|
+| Worst example, median of 3 runs (ms) | 700.4 (spread 698.2 to 739.9) |
+| Step cost (microseconds per step) | 33.51 |
+| `verifyWorld` with 35 examples (ms) | 6040 |
+| `shortRuns` in `tests/pbt-budget.json` | 35 (was 36 before the tuning) |

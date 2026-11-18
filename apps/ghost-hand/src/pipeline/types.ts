@@ -9,7 +9,14 @@ import type {
   WardVerdict,
 } from '@ghost-run/core';
 import type { IsolationClaims } from '@ghost-run/ui';
-import type { GhostHandAction, VariantConfig, VariantOutcome, VariantParams } from '@ghost-run/drawer-arm';
+import type {
+  GhostHandAction,
+  GhostHandWorld,
+  VariantConfig,
+  VariantOutcome,
+  VariantParams,
+} from '@ghost-run/drawer-arm';
+import type { VariantExecutor } from '../exec/executor';
 import type { ClaimEvidence } from '../evidence';
 
 /** The real outcome type of the world package (type-only import: the pipeline stays engine-free at runtime). */
@@ -58,26 +65,15 @@ export interface GhostRun {
   readonly links: readonly ThreadLink[];
 }
 
-/**
- * Minimal structural views of the world and the executor that the run needs. The full
- * GhostHandWorld and VariantExecutor types arrive with worlds/drawer-arm task 7.5 and exec/.
- */
-export interface RunWorld {
-  fingerprint(): Promise<string | { readonly hash: string }>;
-}
-export interface RunExecutor {
-  run(jobs: readonly unknown[]): Promise<readonly VariantOutcome[]>;
-  dispose(): void;
-}
-
 export interface RunInput {
   readonly plan: readonly GhostHandAction[];
   readonly wardSet: WardSet;
   readonly variantConfig: VariantConfig;
   readonly seed: number;
   readonly variantCount: number;
-  readonly world: RunWorld;
-  readonly executor: RunExecutor;
+  /** The reference world (recordFrames on). */
+  readonly world: GhostHandWorld;
+  readonly executor: VariantExecutor;
   readonly evidence: ClaimEvidence;
   readonly planOrigin?: 'recorded' | 'scripted';
 }

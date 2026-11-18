@@ -276,43 +276,43 @@ Decisions reflected in this plan:
     - `tests/model/self-check.test.ts`: the `ok` and `failed` outcomes with a stubbed Golden_Hash (the two texts of Requirement 10.7); the restore-failure text; `no-secure-context` when `crypto.subtle` is missing; no P2 or P8 claim text is produced when the check failed or is pending (Requirement 10.9).
     - _Requirements: 10.7, 10.9, 18.4_
 
-- [ ] 9. Variant executors and the 3D renderer
-  - [~] 9.1 Implement the variant executors and the worker
+- [x] 9. Variant executors and the 3D renderer
+  - [x] 9.1 Implement the variant executors and the worker
     - `apps/ghost-hand/src/exec/executor.ts` (`VariantExecutor` with `run(jobs)` returning outcomes ordered by `index`, and `dispose`), `inline.ts` (`createInlineExecutor(factory)` with its own world, never the reference world), `pool.ts` (`createPoolExecutor({ size, spawn })`: a queue, at most `clamp(hardwareConcurrency - 1, 1, 4)` workers, results written into `results[job.index]`, frames sent as transferables, one inline retry after a worker error or `messageerror`, then an outcome with `engineError`; the pool never sorts by arrival), and `src/worker/sim-worker.ts` (a message loop around `runVariantJob`). Without `Worker`, and in Node, the inline executor is used. No `SharedArrayBuffer`.
     - _Requirements: 2.2, 8.7, 8.10, 6.5_
 
-  - [~] 9.2 Implement the Three.js renderer
+  - [x] 9.2 Implement the Three.js renderer
     - `apps/ghost-hand/src/overlay/renderer.ts` is the only module that imports `three`. `createOverlayRenderer(canvas)` returns an `OverlayRenderer` (`setModel`, `setFrame`, `play`, `setCameraPreset('front' | 'side')`, `setTheme`, `dispose`) or `{ unavailable: true }` when no WebGL context can be created. Geometry from `CapsuleGeometry`, `BoxGeometry`, `CylinderGeometry` only, no external model, texture, or font file. Ghost arms are translucent and desaturated; a failed arm uses the red token and a fade of at most 900 ms once per run; under `prefers-reduced-motion: reduce` there is no autoplay and no fade, the final frame is shown, failed arms use a fixed reduced opacity, and the frame stepping is by an `<input type="range">` supplied by the component. No element flashes more than 3 times per second; no full-screen flash. `dispose` disposes every geometry, material, and the `WebGLRenderer`. The renderer computes no verdict or failure state.
     - _Requirements: 13.1, 13.2, 13.4, 13.5, 13.6, 13.11, 13.12, 13.13, 15.5, 15.6_
 
-- [~] 10. Checkpoint - foundations
+- [x] 10. Checkpoint - foundations
   - Run after all tasks of waves 0 to 9 are complete. Run `pnpm --filter @ghost-run/drawer-arm test`, `pnpm --filter @ghost-run/ghost-hand test`, `typecheck`, and `lint`. Confirm: `docs/measurements.md` holds the probe results and the budget entry; `tests/pbt-budget.json` exists; the property tests of Properties 1, 2, 3, 4, 6, 7, 8, 9, 19, 21, and 23 pass; the steering files changed only as approved; `capabilities.expected.json` matches the probes. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Run pipeline and demo scenarios
-  - [~] 11.1 Implement `runGhostHand`
+- [x] 11. Run pipeline and demo scenarios
+  - [x] 11.1 Implement `runGhostHand`
     - **Depends on the `wards-config` implementation (`parseWards`), on PR-1 and PR-2 only through the capability probes (task 6.8), and on tasks 7.5, 8.1, 8.7, and 9.1.** `apps/ghost-hand/src/pipeline/run.ts`: validate every action first (`GhostHandRunError('invalid-plan')` before any engine call); fingerprint before; one snapshot; `ghostRun` on the Base_World; one `VariantJob` per index from `sampleVariant`; executor run; fingerprint after; `p1.equal` from the two hashes; `variantResults` in ascending index order; `WardEngine.evaluate`; the P1 floor; the message from `renderMessage` (context without `claims` once `claimsOptional`, with `claims: { p5: false, p6: false }` plus the provisional note before; no Seance link base; the fixed P1-failure text when the hashes differ); rows, claims, overlay input, notices, unknown contact names; `world.releaseTraces` after copying what is needed. The function reads no clock, random source, or environment variable and implements no ward rule, threshold, or message text of its own.
     - _Requirements: 4.7, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.9, 8.10, 8.11, 9.3, 9.6, 9.8, 9.9, 10.1, 10.2, 10.3_
 
-  - [~] 11.2 Write the renderer tests
+  - [x] 11.2 Write the renderer tests
     - `tests/dom/overlay.test.ts` with a stubbed `three` renderer: counters prove every geometry, material, and renderer is disposed on `dispose` and repeated runs do not grow the live-object count; `getContext` returning `null` gives `{ unavailable: true }`; reduced motion gives no autoplay, no fade, a fixed reduced opacity for failed arms, and a keyboard-operable slider that steps frames; the fade runs at most once per run and lasts at most 900 ms; no more than 3 visual flashes per second in the fade schedule; the two camera presets are reachable by buttons.
     - _Requirements: 13.2, 13.5, 13.6, 13.11, 13.12, 13.13, 15.5_
 
-  - [~] 11.3 Write the property test for the run result order
+  - [x] 11.3 Write the property test for the run result order
     - **Property 22: The run holds one variant result per variant, in order**
     - **Validates: Requirements 6.10, 8.1, 8.3, 9.3**
     - File: `tests/model/p22-run-order.test.ts` with a stub executor (the engine is not replaced; only the pool is). Generators: plans, seeds, counts 1 to 20. Assert `variantResults` has the count length with `variant-0` to `variant-<count-1>` in ascending order, the `base` row first and not counted among the variants, and `engineVerdict` equal to `WardEngine.evaluate` of the same report.
 
-  - [~] 11.4 Write the Wards_File tests
+  - [x] 11.4 Write the Wards_File tests
     - **Depends on the `wards-config` implementation.** `tests/model/wards.test.ts`: `parseWards` of `worlds/drawer-arm/wards.yaml` returns `ok: true`; the file holds exactly one `physics` ward `gentle-hands` with the declared thresholds and `vase` in `forbidden_contacts` and no `path`, `sql`, or `egress` ward; the bundled `?raw` text equals the file bytes (and the Variant_Config text likewise); exactly one canonical wards file exists for Ghost Hand; with a WardSet that has no `physics` ward the run still happens and the notice text is produced; a `forbidden_contacts` entry that matches no body produces the `Ward entry "<name>" matches no body in this world.` text; the app offers no wards editor.
     - _Requirements: 4.7, 9.1, 9.2, 9.4, 9.7, 9.10_
 
-  - [~] 11.5 Create the demo plans, tune the provisional numbers, and record them
+  - [x] 11.5 Create the demo plans, tune the provisional numbers, and record them
     - Create `apps/ghost-hand/plans/first.plan.json` (`fast pull`, `origin: scripted`) and `plans/revised.plan.json` (`slow pull, strong grip`, `origin: scripted`, `revisionOf` naming the first plan), both valid by `parsePlanFile` and written in ASCII with `\u` escapes only. Create `apps/ghost-hand/scripts/measure-demo.mjs` that runs both plans with the default seed, count 8, and the Wards_File on the pure pipeline in Node.
     - Tune the provisional values (scene dimensions, ranges, plan values, `targetOpeningM`, the variant ranges, and the plan values) in `world-config.ts`, `variant-config.json`, and the plan files until: the first plan gives `block`, names `gentle-hands`, and has at least one failed variant; the revised plan gives `pass`, every variant has `success: true`, and the maximum `contactForceN` is at most `max_contact_force_n`; the unperturbed Base_World opens the drawer to the target in both; the arm reach covers both the handle and the vase. Do not copy any number from Experiment C into a test.
     - Re-run the budget script of task 7.7 and update `pbt-budget.json` if `shortRuns` changes. Append to `docs/measurements.md`: the shipped seed and the variants it produces, the failed and passed variant counts derived from the results, the maximum contact force, the re-measured `verifyWorld` timing, each labelled with the date and environment.
     - _Requirements: 11.4, 12.1, 12.2, 12.3, 12.4, 12.6, 17.11, 19.8_
 
-  - [~] 11.6 Write the demo scenario tests
+  - [x] 11.6 Write the demo scenario tests
     - **Depends on PR-2 only through the message path (the provisional note appears while PR-2 has not landed).** `tests/model/demo.test.ts` on the pure pipeline in Node without a browser: the first plan gives `block`, the message names `gentle-hands`, at least one Variant_Result has `success: false`; the revised plan gives `pass`, every Variant_Result has `success: true`, and the maximum `contactForceN` is at most `max_contact_force_n`; both plans open the drawer in the Base_World; the failed-variant count is derived from the results and never hard-coded; the Plan of each demo scenario equals the actions of its Plan_File; the revised file's `revisionOf` names the first plan; the P4-direction example: a copy of the WardSet whose `max_contact_force_n` is set below the maximum `contactForceN` read from the results gives a verdict not lower than the original, and the threshold is derived from the measured values.
     - _Requirements: 9.5, 9.11, 11.4, 12.2, 12.3, 12.4, 12.5_
 

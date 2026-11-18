@@ -42,7 +42,7 @@ const GRAVITY_Z = -9.81;
 const VASE_MASS_KG = 0.3;
 const DRAWER_DAMPING = 2;
 const DRAWER_TRAVEL_M = 0.3;
-const VASE_POSITION: readonly [number, number, number] = [0.12, -0.15, 0.4705]; // rests on the cabinet top (z = 0.40)
+const VASE_POSITION: readonly [number, number, number] = [0.12, -0.1, 0.3305]; // rests on the cabinet top (z = 0.26)
 const ARM_BASE_POSITION: readonly [number, number, number] = [0, 0.55, 0.3];
 const LINK_LENGTH_M = 0.32;
 const HAND_SITE_Z = 0.2;

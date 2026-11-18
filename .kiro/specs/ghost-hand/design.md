@@ -1155,3 +1155,19 @@ With the change: the Plan_File carries `taskText` with a visible task line (whic
 - **Short-run count** may be below 100 (D14). The justification is recorded when measured.
 - **PR-1, PR-2, PR-3** are outside this spec. The fallbacks of "Prerequisites and fallback" apply until the probes report them.
 - **Third-party notices.** The upstream license texts (MuJoCo Apache-2.0, Qhull, and the other components bundled in `mujoco.wasm` that `docs/research.md` lists) are copied from the upstream source distribution by a task, with URL and version in `notices/sources.json`.
+
+## Tuned values (task 11.5)
+
+Measured 2026-11-18 (Node v20.20.2, Apple M1, macOS) with `apps/ghost-hand/scripts/measure-demo.mjs`. The numbers are in `docs/measurements.md`; this section lists what changed and why.
+
+| Value | Before | After | Reason |
+|---|---|---|---|
+| Cabinet box (`BODY_SHAPES`, `cabinet_box`) | half height 0.2, top at z = 0.40 | half height 0.13, top at z = 0.26 | The arm swept into the cabinet top during the front approach and produced contact forces of 25 to 35 N in the Base_World, close to `max_contact_force_n` (30 N). The lower top still covers the drawer front (z 0.12 to 0.24). |
+| Vase rest position (`VASE_POSITION` in `engine/mjcf.ts`) | `[0.12, -0.15, 0.4705]` | `[0.12, -0.1, 0.3305]` | The vase rests on the lower cabinet top (z = 0.26 plus the capsule half extent 0.0705). A reach to the vase touches it, so the arm reach covers the vase; the handle is reached by the two-step plan. |
+| `handleOffsetM` range (x, y, z) | 0.012, 0.010, 0.012 | 0.004, 0.0015, 0.005 | With the larger offsets the grip missed the handle in several variants (drawer stayed closed) for both plans, so the revised plan could not pass. The y range is the tightest because a handle shifted toward the cabinet is not wrapped by the fingers. |
+| `sensorNoiseM` max | 0.006 | 0.003 | Same cause, smaller effect. |
+| Unchanged | | | `targetOpeningM` 0.12, friction, mass, and delay ranges, action ranges, ward values, `REFERENCE_PLAN`. |
+
+Plan values: `fast pull` approaches at 0.4 m/s, grasps with 20 N, and pulls 0.2 m at 0.6 m/s. `slow pull, strong grip` approaches at 0.25 m/s, grasps with 22 N, and pulls 0.15 m at 0.1 m/s. The slow approach and the 22 N grip keep the contact force below the ward limit; the slow pull keeps the grip from slipping. The whole plan stays inside the 3000-step plan limit. Which variants fail, and how many, is derived from the results and is not stored in any test.
+
+The short-run count changed from 36 to 35 after the re-measurement (`tests/pbt-budget.json`). Golden hash and capability expectations that depended on the provisional scene are re-checked by the test suites.

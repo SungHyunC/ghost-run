@@ -46,7 +46,7 @@ const Q_Z_TO_X = [0.7071067811865476, 0, 0.7071067811865476, 0] as const;
 
 /** Provisional dimensions in meters. Cabinet front face at y = 0; arm base at (0, 0.55, 0.30). */
 export const BODY_SHAPES: readonly BodyShape[] = [
-  { body: 'cabinet', geomName: 'cabinet_box', kind: 'box', halfSize: [0.25, 0.2, 0.2], localPos: [0, -0.2, 0.2], localQuat: Q_ID, group: 'cabinet' },
+  { body: 'cabinet', geomName: 'cabinet_box', kind: 'box', halfSize: [0.25, 0.2, 0.13], localPos: [0, -0.2, 0.13], localQuat: Q_ID, group: 'cabinet' },
   { body: 'drawer', geomName: 'drawer_front', kind: 'box', halfSize: [0.22, 0.01, 0.06], localPos: [0, -0.01, 0], localQuat: Q_ID, group: 'drawer' },
   { body: 'drawer', geomName: 'drawer_handle', kind: 'capsule', halfSize: [0.012, 0.06], localPos: [0, 0.02, 0], localQuat: Q_Z_TO_X, group: 'drawer' },
   { body: 'vase', geomName: 'vase_body', kind: 'capsule', halfSize: [0.04, 0.03], localPos: [0, 0, 0], localQuat: Q_ID, group: 'vase' },

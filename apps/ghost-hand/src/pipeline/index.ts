@@ -6,3 +6,4 @@ export { findUnknownContacts, forbiddenContactUnion } from './unknown-contacts';
 export { buildRows } from './rows';
 export type { BaseRowSource } from './rows';
 export { buildNotices } from './notices';
+export { runGhostHand, GhostHandRunError } from './run';

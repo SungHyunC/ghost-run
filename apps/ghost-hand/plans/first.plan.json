@@ -1,0 +1,14 @@
+{
+  "format": "ghost-hand-plan",
+  "version": 1,
+  "name": "fast pull",
+  "origin": "scripted",
+  "actions": [
+    { "type": "reach", "target": [0, 0.2, 0.18], "speed": 0.4 },
+    { "type": "reach", "target": [0, 0.02, 0.18], "speed": 0.2 },
+    { "type": "grasp", "force": 20 },
+    { "type": "pull", "distance": 0.2, "speed": 0.6 },
+    { "type": "release" }
+  ],
+  "note": "Scripted demo plan: pulls the drawer at the top speed of the closed range."
+}
