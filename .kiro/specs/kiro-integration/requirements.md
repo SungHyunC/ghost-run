@@ -80,6 +80,7 @@ Hidden characters are never written literally in this document. A hidden charact
 - **Reference_Machine**: An Apple M1 machine, as in the `ghost-runner` spec.
 - **Median_Of_5**: As defined in the `ghost-runner` spec.
 - **Plan_B**: The static-analysis fallback of `ghost-runner` (`isolation.mode` equal to `static-analysis`).
+- **Box_Dir**: The folder with the Docker box files (`box/`) that `ghost-runner` needs for a Docker box run; the runner finds it with `findBoxDir` and receives it as `RunnerOptions.boxDir`.
 - **Canary**: A fake secret value such as `sk-CANARY-abc123`.
 
 ## Requirements
@@ -93,7 +94,7 @@ Hidden characters are never written literally in this document. A hidden charact
 1. THE Hook_Package SHALL be a pnpm workspace package in `integrations/kiro-hook/` with the package name `@ghost-run/kiro-hook`, THE Mcp_Package SHALL be a pnpm workspace package in `integrations/mcp/` with the package name `@ghost-run/mcp`, and both SHALL be listed in `pnpm-workspace.yaml`.
 2. THE Hook_Package scripts SHALL be ECMAScript modules with the extension `.mjs` for Node.js 20 or later, SHALL carry JSDoc types, and SHALL pass the TypeScript compiler with `checkJs` enabled and `strict` enabled.
 3. THE Hook_Package and the Mcp_Package SHALL import `core` only through the public entry point of `@ghost-run/core`, `ghost-runner` only through the public entry point of `@ghost-run/ghost-runner`, and `wards-config` only through `@ghost-run/wards-config` (and its subpath `@ghost-run/wards-config/node` for file reading); they MAY import `@ghost-run/ui` for the `Grave_Entry` type through `import type`.
-4. THE `core/`, `ui/`, `ghost-runner/`, and `wards-config/` packages SHALL contain no import path that resolves to `integrations/`; the ESLint `no-restricted-imports` rule of each package SHALL enforce this and `pnpm lint` SHALL fail when the rule is violated.
+4. THE `core/`, `ui/`, `ghost-runner/`, and `wards-config/` packages SHALL contain no import path that resolves to `integrations/`; the ESLint `no-restricted-imports` rule of each package SHALL enforce this and `pnpm lint` SHALL fail when the rule is violated; the rule SHALL ban both the path pattern `**/integrations/**` and the package names `@ghost-run/kiro-hook` and `@ghost-run/mcp`.
 5. THE hook scripts and the MCP_Server SHALL contain no call to any LLM API, no `eval`, no `new Function`, and no dynamic code execution, and a source-scan test SHALL fail when one appears.
 6. THE hook scripts SHALL start no process other than the Docker CLI calls that `runPlan` makes, the test runner of the Contract_Pbt_Hook, and Node.js itself; the Ghost_Gate SHALL pass the command text of a tool call to `runPlan` as a ShellAction value and SHALL NOT interpolate it into a shell command line of the host.
 7. THE hook scripts SHALL read the clock and the environment only for the Ghost_Store timestamps (Requirement 12) and for the environment variables named in this spec (`GHOST_RUN_WARDS_FILE`, `GHOST_RUN_SEANCE_BASE`); the pure judgment functions SHALL read neither.
@@ -404,6 +405,10 @@ Hidden characters are never written literally in this document. A hidden charact
 10. THE `blacklight` tool SHALL confine every path to the workspace root: THE tool SHALL resolve each path with `realpath`, SHALL reject a path that resolves outside the workspace root (a `..` segment, an absolute path elsewhere, or a symbolic link to the outside) with an error result for that path (the other paths are still scanned), and SHALL reject a path that is a directory with more than 1,000 files (it scans a directory recursively only up to 1,000 files and reports the cap).
 11. FOR ALL generated path strings (including `..` segments, absolute paths, and symbolic links to outside paths), THE `blacklight` tool SHALL read no file outside the workspace root (Property: KI-P8).
 12. THE tool results SHALL be deterministic for equal inputs, equal Ghost_Store content, and equal Wards_File, except for the Run_Id and the timestamps.
+13. WHEN the tool `ghost_run` is called, THE MCP_Server SHALL look up the Box_Dir with `findBoxDir` of `ghost-runner` (order: the environment variable `GHOST_RUN_BOX_DIR`, then upward from the module, then upward from the workspace root), and WHEN a Box_Dir is found, THE MCP_Server SHALL pass it to `runPlan` as `RunnerOptions.boxDir`; the reason is that the committed single-file bundle `integrations/power/server/ghost-run-mcp.mjs` has no `box/` folder next to it, so without the lookup `ghost_run` would always run in Plan_B.
+14. IF `findBoxDir` finds no Box_Dir, THEN THE MCP_Server SHALL omit `boxDir` and SHALL return the result of the runner unchanged, including a Plan_B result with its claims lowered (criterion 3).
+15. THE bundle `integrations/power/server/ghost-run-mcp.mjs` SHALL be built without any absolute local path and without any user name in its content, and a test SHALL scan the bundle for both.
+16. WHEN `ghost_run` is called from the started bundle in this repository, with Docker available and the box image present, THE result SHALL report `isolation.mode` equal to `docker-box`; the test SHALL report `skipped (docker unavailable)` when Docker or the image is missing.
 
 ### Requirement 20: Kiro Power
 

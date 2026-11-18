@@ -161,7 +161,8 @@ ghost-runner/
     pipeline.ts           # runPlan(): orchestration, phase timers, deadlines
     verdict.ts            # runner verdict floor, claims (p1/p5/p6), classification
     result.ts             # RunResult types, canonical serialize/parse, redaction
-    docker/               # cli.ts, availability.ts, hardening.ts, box.ts, pool.ts
+    docker/               # cli.ts, availability.ts (Docker check, Box_Dir lookup: BOX_DIR_ENV,
+                          # BoxDirSources, findBoxDir, resolveBoxDir), hardening.ts, box.ts, pool.ts
     copy/                 # planner.ts (exclusion-aware copy plan), copier.ts
     fs/                   # manifest.ts, differ.ts, fingerprint.ts, sqlite.ts
     recorder/             # collect.ts (docker cp + tar reader), parse-strace.ts,
@@ -216,6 +217,11 @@ export interface RunOutput {
 }
 export function serializeRunResult(r: RunResult): string;       // canonical JSON, payload bytes redacted
 export function parseRunResult(json: string): SerializedRunResult;
+
+// Box_Dir lookup (docker/availability.ts), re-exported from src/index.ts
+export const BOX_DIR_ENV: 'GHOST_RUN_BOX_DIR';
+export interface BoxDirSources { boxDir?: string; env?: Readonly<Record<string, string | undefined>>; workspace?: string; moduleDir?: string }
+export function findBoxDir(sources: BoxDirSources): string | undefined;
 ```
 
 ### RunnerOptions and defaults
@@ -233,6 +239,7 @@ export function parseRunResult(json: string): SerializedRunResult;
 | `secretPatterns` | `.env`, `.env.*`, `**/*.pem`, `**/id_rsa*` plus egress ward `secrets` | globs | Req 9.1 |
 | `wardSet` | empty | core `WardSet` | Req 14.2 |
 | `image` | content-addressed local tag | `name@sha256:...` allowed | D4 |
+| `boxDir` | none (lookup order in "Box_Dir lookup") | non-empty directory path (an empty or non-string value gives `ConfigError('boxDir', 'non-empty directory path', value)` in `resolveRunnerOptions`, before any container is created) | Req 3.7, 7.9 |
 | `runId` | random UUID | `^[A-Za-z0-9_-]{1,64}$`, else `ConfigError`; a Run_Id already used by a container with the label `ghost-run.run-id=<id>` (running or stopped) gives `ConfigError` | Req 16.3, 16.5, 16.6 |
 
 Caller-chosen `runId` (Req 16.5, 16.6). The caller needs the id before the run starts so that a watchdog can remove the box by label (`docker ps -a --filter label=ghost-run.run-id=<id>`, then `rm -f -v`) when the runner hangs. The format check is in `resolveRunnerOptions` and runs before anything else is created. The duplicate check runs once in `runPlan`, after the Docker availability check and before the copy and the `try`/`finally` cleanup, with its own 3 s timeout: `docker ps -a -q --filter label=ghost-run.run-id=<id>`. A non-empty answer throws `ConfigError('runId', ...)`; the cleanup does not run for this run, so the existing container is never touched. A failed or timed-out check adds the diagnostic `run-id-check-failed` and the run continues. Plan B runs create no container and skip the check. `Repo_World` and pool slots keep random ids.
@@ -277,6 +284,33 @@ Observed events cannot travel through core's `Snapshot`, so each `RepoState` car
 5. `copiedAt`: after the last `cp` returns, the copier writes a sentinel file beside the Copy (not inside it) and reads its `ctime` with nanosecond precision. This uses the file system's own clock, which is the clock that stamps file `ctime`, so there is no skew (Req 4.5). The same trick refreshes the baseline timestamp before every later step.
 6. A 20 s absolute timer aborts the copy, removes the partial Copy, and returns `copy-timeout` (Req 4.8). The Box is created in parallel with the Original fingerprint and then bind-mounts the (initially empty) Copy directory that the copier fills in place; this hides the container start-up latency (Req 5.10, Req 19). On `copy-timeout` no action has run, and the Box is removed during cleanup. Decision (Req 4.8 wording): requirements.md was aligned to this implementation instead of serializing "copy, then create Box", because serializing adds the Box start time to every run and re-orders the phases that the timing budget and pipeline tests rely on. The guarantee that matters is kept: no action is executed and no container of the run remains.
 7. A folder-level clone helper (Req 4.7) is an optional `copyStrategy` injected into the copier; the exclusion and link properties (Property 3) run against it too.
+
+### Box_Dir lookup (`docker/availability.ts`)
+
+The availability check needs the Box_Dir (the folder with `Dockerfile`, `BASE_DIGEST`, and `recorder/`) to compute the content-addressed image tag. A single-file bundle of a hook script has no `box/` folder beside its module, so the module-location search alone is not enough. The lookup is therefore explicit and ordered (Req 3.7 to 3.10):
+
+```ts
+export const BOX_DIR_ENV = 'GHOST_RUN_BOX_DIR';
+export interface BoxDirSources {
+  boxDir?: string;                         // 1. explicit option
+  env?: Readonly<Record<string, string | undefined>>;   // 2. env[GHOST_RUN_BOX_DIR]
+  workspace?: string;                      // 4. start folder of the upward search (RunnerOptions.original)
+  moduleDir?: string;                      // 3. start folder of the module search; test seam, defaults to the module location
+}
+export function findBoxDir(sources: BoxDirSources): string | undefined;   // first source that yields a folder
+export function resolveBoxDir(sources: BoxDirSources): string;            // throws 'box/ directory not found' when none
+```
+
+| Order | Source | Rule |
+|---|---|---|
+| 1 | `boxDir` option | Used as given. No fallback to a later source when set. |
+| 2 | `env[GHOST_RUN_BOX_DIR]` | Used as given. An empty value is ignored. No fallback once a non-empty value is used. |
+| 3 | Module search | From `moduleDir` (default: the module location), up to 6 levels upward, for a folder that contains `box/Dockerfile`. |
+| 4 | Workspace search | From `resolve(workspace)`, up to 32 levels upward, checking `ghost-runner/box` and then `box` at each level, stopping at the file system root. |
+
+`AvailabilityOptions extends BoxDirSources`. `checkDockerAvailability(opts)` calls `findBoxDir(opts)` first. When no folder is found, or the selected folder has no readable `Dockerfile` or `BASE_DIGEST`, it returns `{ available: false, reason: 'box-image-missing', detail }` without any Docker call, so the run takes the existing Plan B path and no new `isolation.reason` value exists. `pipeline.ts` and `world/repo-world.ts` pass `{ boxDir, env: process.env, workspace: original }`. `RunnerOptions.boxDir` is validated in `resolveRunnerOptions` and carried as `ResolvedRunnerOptions.boxDir`. `src/index.ts` exports `BOX_DIR_ENV`, `findBoxDir`, and the type `BoxDirSources`.
+
+Rationale: the hook spec may bundle `ghost-gate` into one file (see D5). In that bundle the module search of source 3 finds nothing, while source 4 still works because the hook knows the repository it guards, and source 2 lets a deployment pin the folder without code changes. Sources 1 and 2 are used as given so that a typo in an explicit setting yields `box-image-missing` instead of silently using a different folder.
 
 ### Box lifecycle and hardening (`docker/`)
 
@@ -404,7 +438,7 @@ When the evaluated `WardSet` contains an `egress` ward, `runPlan` reads, after t
 
 `effectsOutside(a)` returns one `Effect { kind: "external-path" | "url" | "db-connection", destination }` per distinct finding. Plan B adds a scan of Original for symbolic links pointing outside it (a read-only walk, done in `runPlan`, not in the pure analyzer).
 
-Plan B flow (Docker daemon unreachable within 2.0 s, or image missing): no action is executed on the host. The result has `isolation.mode: "static-analysis"`, `isolation.reason: "docker-unavailable" | "box-image-missing"`, `p1Claimed = p5Claimed = p6Claimed = false`, `rehearsed: false`, empty `changes` arrays, `observedEvents: []`, and `staticFindings`. The runner verdict is at least `warn`, even without findings. The exact text `P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only.` is placed in `result.notices` and delivered through the optional `onNotice` callback so the hook and UI show it to the user at once. For `box-image-missing` the notice adds the fix: run `pnpm --filter @ghost-run/ghost-runner box:build`.
+Plan B flow (Docker daemon unreachable within 2.0 s, image missing, or Box_Dir not found or unreadable, see "Box_Dir lookup"): no action is executed on the host. The result has `isolation.mode: "static-analysis"`, `isolation.reason: "docker-unavailable" | "box-image-missing"`, `p1Claimed = p5Claimed = p6Claimed = false`, `rehearsed: false`, empty `changes` arrays, `observedEvents: []`, and `staticFindings`. The runner verdict is at least `warn`, even without findings. The exact text `P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only.` is placed in `result.notices` and delivered through the optional `onNotice` callback so the hook and UI show it to the user at once. For `box-image-missing` the notice adds the fix: run `pnpm --filter @ghost-run/ghost-runner box:build`.
 
 ---
 
@@ -799,6 +833,8 @@ Reflection on merged criteria: criteria that share one generator and one asserti
 | Scenario | Behavior |
 |---|---|
 | Docker daemon unreachable, check takes over 2.0 s, or image missing | Plan B (`docker-unavailable` or `box-image-missing`), notice, verdict at least `warn`, no host execution |
+| Box_Dir not found by any source, or the selected folder has no readable `Dockerfile` or `BASE_DIGEST` | Plan B with `box-image-missing` and a `detail` text, no Docker call, same notice and verdict as above |
+| `boxDir` option empty or not a string | `ConfigError('boxDir', 'non-empty directory path', value)` before any container is created |
 | Plan outside 1 to 50 actions, or `execLimitSec` outside 1 to 30, or `pipelineDeadlineSec` outside 1 to 55 | `PlanBoundsError` / `ConfigError` naming the bound, before any container is created |
 | Copy exceeds 20 s | Partial Copy removed, `copy-timeout`, `warn`, no Box |
 | Inspect differs from the expected configuration | Container removed, no action runs, `isolation-violation`, `block` |
@@ -859,6 +895,7 @@ Fixture repository (at most 50 files, canary `sk-CANARY-abc123` in `.env`, SQLit
 - Port-binding test under the full hardening options (`--cap-drop ALL` and the rest): the recorder binds 53, 80, and 443 (Req 8.13).
 - Timeouts with a fake clock: Docker check 2.0 s, copy 20 s, execution 30 s, pipeline 55 s and return within 60 s.
 - `pipelineDeadlineSec` (`tests/pipeline-deadline-option.test.ts`): default 55, bounds with `ConfigError` before any Docker call, a smaller deadline gives the same `pipeline-deadline` result and cleanup, and `LABEL_RUN_ID` equals the label written by `buildRunArgs`.
+- Box_Dir lookup (`tests/box-dir-lookup.test.ts`, no Docker): the source order (option, then `GHOST_RUN_BOX_DIR`, then module search, then workspace search), explicit sources used as given without fallback, an empty env value ignored, the workspace search with `ghost-runner/box` before `box` and its stop at the file system root, a missing `Dockerfile` or `BASE_DIGEST` giving `box-image-missing` without a Docker call, and `ConfigError` for an empty `boxDir`.
 - Pool lifecycle model test (one use per slot, replacement, label sweep with owner liveness).
 - Repository scan test (hidden Unicode characters built from escapes in test code, no real credential patterns).
 

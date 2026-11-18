@@ -8,7 +8,7 @@
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOX_ENV } from './hardening.js';
 import type { DeadlineClock, DockerClient } from './cli.js';
@@ -66,24 +66,78 @@ export function computeBoxHash(boxDir: string = resolveBoxDir()): string {
   return h.digest('hex');
 }
 
-/** Finds the package's `box/` directory from this module (works from `src/` and from `dist/`). */
-export function resolveBoxDir(): string {
-  let dir = dirname(fileURLToPath(import.meta.url));
+/** Name of the environment variable that names the box folder. */
+export const BOX_DIR_ENV = 'GHOST_RUN_BOX_DIR';
+
+export interface BoxDirSources {
+  /** Explicit box folder. Used as given; no search happens when it is set. */
+  readonly boxDir?: string;
+  /** Environment map; the value of `GHOST_RUN_BOX_DIR` is used when `boxDir` is not set. */
+  readonly env?: Readonly<Record<string, string | undefined>>;
+  /** Folder to search upward from when the module location finds nothing (the original or the cwd). */
+  readonly workspace?: string;
+  /** Folder where the module search starts. Default: the folder of this module. Tests set it. */
+  readonly moduleDir?: string;
+}
+
+const SEARCH_DEPTH = 32;
+
+/** First folder on the way up from `start` whose `box/` or `ghost-runner/box/` holds a Dockerfile. */
+function searchUp(start: string, layouts: readonly (readonly string[])[]): string | undefined {
+  let dir = start;
+  for (let i = 0; i < SEARCH_DEPTH; i++) {
+    for (const parts of layouts) {
+      const candidate = join(dir, ...parts);
+      if (existsSync(join(candidate, 'Dockerfile'))) return candidate;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return undefined;
+}
+
+/** Box folder from the module location, at most 6 levels up (works from `src/` and `dist/`; not from a bundle). */
+function boxDirFromModule(start?: string): string | undefined {
+  let dir = start ?? dirname(fileURLToPath(import.meta.url));
   for (let i = 0; i < 6; i++) {
     const candidate = join(dir, 'box');
     if (existsSync(join(candidate, 'Dockerfile'))) return candidate;
     dir = dirname(dir);
   }
-  throw new Error('box/ directory not found');
+  return undefined;
+}
+
+/**
+ * Finds the box folder, in this order: `sources.boxDir`, `GHOST_RUN_BOX_DIR`, upward from this module,
+ * upward from `sources.workspace` (each level tries `ghost-runner/box`, then `box`). An explicit folder or
+ * environment value is returned as given, even if it holds no Dockerfile: the caller then reports
+ * `box-image-missing` when it reads the sources. Returns undefined when nothing is found.
+ */
+export function findBoxDir(sources: BoxDirSources = {}): string | undefined {
+  if (sources.boxDir !== undefined && sources.boxDir !== '') return sources.boxDir;
+  const fromEnv = sources.env?.[BOX_DIR_ENV];
+  if (fromEnv !== undefined && fromEnv !== '') return fromEnv;
+  const fromModule = boxDirFromModule(sources.moduleDir);
+  if (fromModule !== undefined) return fromModule;
+  if (sources.workspace !== undefined && sources.workspace !== '') {
+    return searchUp(resolve(sources.workspace), [['ghost-runner', 'box'], ['box']]);
+  }
+  return undefined;
+}
+
+/** Same as `findBoxDir`, but throws when no folder is found. */
+export function resolveBoxDir(sources: BoxDirSources = {}): string {
+  const found = findBoxDir(sources);
+  if (found === undefined) throw new Error('box/ directory not found');
+  return found;
 }
 
 export function boxImageTag(hash: string): string {
   return `${BOX_IMAGE_REPO}:${hash}`;
 }
 
-export interface AvailabilityOptions {
-  /** Directory with Dockerfile, BASE_DIGEST, recorder/. Default: the package's `box/`. */
-  readonly boxDir?: string;
+export interface AvailabilityOptions extends BoxDirSources {
   /** Pinned `<name>@sha256:<digest>` reference (option `image`). Skips the hash and label check. */
   readonly image?: string;
   /** Default 2000 ms. */
@@ -110,7 +164,9 @@ export async function checkDockerAvailability(
     tag = opts.image;
   } else {
     try {
-      expectedHash = computeBoxHash(opts.boxDir);
+      const found = findBoxDir(opts);
+      if (found === undefined) throw new Error('box/ directory not found');
+      expectedHash = computeBoxHash(found);
     } catch (e) {
       return { available: false, reason: 'box-image-missing', detail: `box sources unreadable: ${(e as Error).message}` };
     }

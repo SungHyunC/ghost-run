@@ -468,8 +468,9 @@ Decisions reflected in this plan:
 - [x] 12. Checkpoint - Components, hosting, and hygiene complete
   - Run `pnpm --filter @ghost-run/ui test`, `typecheck`, `lint`, `build`, and `test:dist`. Confirm the contrast gate passes, the gallery builds, the dist scan and serving test pass, and every scan test passes. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 13. Core import ban (isolated task)
-  - [~] 13.1 Add the `@ghost-run/ui` import ban to `core/eslint.config.mjs` with a lint fixture test
+- [x] 13. Core import ban (isolated task)
+  - [x] 13.1 Add the `@ghost-run/ui` import ban to `core/eslint.config.mjs` with a lint fixture test
+    - Done 2026-11-18: `@ghost-run/ui` and `@ghost-run/ui/**` were added to the workspace import patterns of `core/eslint.config.mjs` next to `**/ui/**` (the same pattern group also bans `@ghost-run/kiro-hook(/**)` and `@ghost-run/mcp(/**)` from kiro-integration task 2.2); the lint fixture test is `core/tests/ui-import-ban.test.ts` (4 cases: `@ghost-run/ui`, `@ghost-run/ui/gallery`, a relative `../../ui/src/index.js`, and one ordinary relative import that must not be reported); core `eslint .`, `tsc --noEmit`, and `vitest --run` pass (75 files, 555 passed, 1 skipped); no other session was editing `core/`. Requirement 1.6 is verified.
     - **Precondition: run this task only after the possession spec and the wards spec have finished all of their changes to `core/`.** Confirm that every task of the possession and wards `tasks.md` files that edits `core/` is complete (including the wards tasks 1.2 and 1.4, which edit `core/eslint.config.mjs` and `core/src/types.ts`), that the `core` test suite passes, and that no other task is editing `core/` at this time. Do not run this task in the same wave as any other task.
     - Add `@ghost-run/ui` and `@ghost-run/ui/**` to the workspace import patterns of `core/eslint.config.mjs` next to the existing `**/ui/**` pattern and the entries other specs added. Change nothing else in `core/`.
     - Add a lint fixture test in `core/tests/` (following the pattern of the wards `wards-config` import-ban test): write a temporary file under `core/src/` that imports `@ghost-run/ui`, run ESLint programmatically on it, assert a `no-restricted-imports` error, and remove the file in `finally`.

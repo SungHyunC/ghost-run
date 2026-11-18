@@ -2,7 +2,7 @@
 // return the verdict. Advisory: only the Ghost_Gate enforces. The same builders and the same
 // decisionFromRunResult message path as the gate are used.
 import path from 'node:path';
-import { runPlan as realRunPlan } from '@ghost-run/ghost-runner';
+import { findBoxDir as realFindBoxDir, runPlan as realRunPlan } from '@ghost-run/ghost-runner';
 import {
   buildGraveEntry,
   decisionFromRunResult,
@@ -114,7 +114,14 @@ async function handle(args, ctx) {
   /** @type {any} */
   let result;
   try {
-    output = await runPlan(confined.plan, { original: root, wardSet, pipelineDeadlineSec: MCP_PIPELINE_DEADLINE_SEC });
+    // The bundle has no box folder next to its module, so the folder is looked up from the workspace.
+    const boxDir = (ctx.deps.findBoxDir ?? realFindBoxDir)({ env: ctx.env, workspace: root });
+    output = await runPlan(confined.plan, {
+      original: root,
+      wardSet,
+      pipelineDeadlineSec: MCP_PIPELINE_DEADLINE_SEC,
+      ...(typeof boxDir === 'string' && boxDir !== '' ? { boxDir } : {}),
+    });
     result = output.result;
   } catch {
     return errorResult('ghost_run failed: the runner reported an error; nothing was approved');

@@ -32,6 +32,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 - **Copier**: The Box_Runner component that creates the Copy.
 - **copiedAt**: The timestamp, recorded with nanosecond resolution immediately after the Copier finishes, used as the lower bound for `ctime` candidates in the Differ.
 - **Box**: A Docker container started with `--network none` and hardened as specified in Requirement 5, in which actions run.
+- **Box_Dir**: The folder that holds the box image sources: `Dockerfile`, `BASE_DIGEST`, and `recorder/`. It is located by `findBoxDir` (Requirement 3 criteria 7 to 10).
 - **Pool_Slot**: A pre-started one-shot Box with an empty slot folder mounted, waiting to receive one Copy.
 - **Recorder**: The in-Box component set that records network attempts (fake DNS, HTTP and TLS-SNI listeners, `strace` on `connect`) and secret-file reads (`strace` on `openat`).
 - **Differ**: The Box_Runner component that computes `Change[]` between two states of the Copy.
@@ -99,6 +100,10 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 4. WHILE `isolation.mode` is `"static-analysis"`, THE Box_Runner SHALL include in the Run_Result the exact message `"P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only."`.
 5. WHILE `isolation.mode` is `"docker-box"`, THE Box_Runner SHALL set `isolation.p1Claimed` to `true` only when the post-run Original fingerprint equals the pre-run Original fingerprint and the mount audit of Requirement 5 passed.
 6. THE README of the Box_Runner SHALL state the Plan_B limitation (no P1, P5, or P6 claim) and the macOS and Linux support scope, and SHALL mark Windows as unverified.
+7. WHEN the Box_Runner needs the Box_Dir, THE Box_Runner SHALL select it from the first of these sources that yields a folder: (1) the option `boxDir`; (2) the environment variable `GHOST_RUN_BOX_DIR`; (3) an upward search from the module location of the Box_Runner, at most 6 levels, for a folder containing `box/Dockerfile`; (4) an upward search from `RunnerOptions.original`, at most 32 levels, checking `ghost-runner/box` and then `box` at each level.
+8. WHEN the Box_Dir comes from source (1) or (2), THE Box_Runner SHALL use the folder as given, without falling back to a later source.
+9. IF the selected Box_Dir has no readable `Dockerfile` or no readable `BASE_DIGEST`, or no source yields a folder, THEN THE availability check SHALL return the `box-image-missing` result, so that the run takes the Plan_B path of criterion 2 with the existing hint, and THE Box_Runner SHALL add no new `isolation.reason` value.
+10. THE Box_Runner SHALL export `findBoxDir`, the constant `BOX_DIR_ENV` (the name `GHOST_RUN_BOX_DIR`), and the type `BoxDirSources` from the public entry point of `@ghost-run/ghost-runner`, so that a single-file bundle, in which the module-location search of criterion 7 source (3) finds nothing, can still locate the Box_Dir through sources (1), (2), or (4).
 
 ### Requirement 4: Copy of the Repository
 
@@ -165,6 +170,7 @@ The requirements reflect experiment A (11/18, reference repository of 3,945 file
 6. IF the overall pipeline deadline is reached, THEN THE Box_Runner SHALL stop the remaining phases, kill and remove the container, return the partial Run_Result with `status: "pipeline-deadline"` and Runner_Verdict at least `warn`, and SHALL return within 5 s after the configured deadline (within 60 s of the start of the run at the default).
 7. WHEN a ShellAction contains a command such as `npm install` that needs network access, THE Box SHALL execute it without network access, and THE Box_Runner SHALL record the resulting network attempts as events (Requirement 8) rather than permitting the access.
 8. THE Box_Runner SHALL record the exit code of every executed action in the Run_Result.
+9. WHERE the option `boxDir` is set, THE Box_Runner SHALL accept only a non-empty directory path, and IF the value is empty or not a string, THEN THE Box_Runner SHALL throw `ConfigError` naming `boxDir` before any Box is created.
 
 ### Requirement 8: Network Attempt Recording
 

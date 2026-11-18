@@ -10,7 +10,7 @@ const BUILTIN_RE = `^(?:node:.*|(?:${BUILTIN_BASES.map(escape).join('|')})(?:\\/
 
 const BUILTIN_MESSAGE = 'core must not import Node built-ins here.';
 const WORKSPACE_PATTERNS = [
-  { group: ['**/ui/**', '**/apps/**', '**/integrations/**'], message: 'core must not depend on other workspace folders.' },
+  { group: ['**/ui/**', '@ghost-run/ui', '@ghost-run/ui/**', '**/apps/**', '**/integrations/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: 'core must not depend on other workspace folders.' },
   { group: ['**/ghost-runner/**', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**'], message: 'core must not import ghost-runner.' },
   { group: ['**/wards-config/**', '@ghost-run/wards-config', '@ghost-run/wards-config/**'], message: 'core must not import wards-config.' },
   { group: ['@ghost-run/playground-shell', '@ghost-run/playground-shell/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-shell/**', '**/worlds/playground-shell/**', '**/apps/ghost-shell/**'], message: 'core must not import the playground packages.' },

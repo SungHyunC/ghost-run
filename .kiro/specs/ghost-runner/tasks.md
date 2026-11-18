@@ -467,6 +467,15 @@ Decisions reflected in this plan:
     - Tests [no-docker] with the fake Docker client and fake clock: default is 55 s; valid and invalid values (0, 56, NaN, non-number, negative) with `ConfigError` before any Docker call; a run with a smaller deadline hits `pipeline-deadline` at that deadline, returns the same result shape, and removes container, volume and Copy; `LABEL_RUN_ID` equals the string used in `buildRunArgs`. Add to Property 7 (configuration bounds) if it fits.
     - _Requirements: 7.5, 16.3_
 
+  - [x] 18.7 Box folder option `boxDir` and lookup order for the single-file bundle [no-docker]
+    - Spec text first (2026-11-18): `requirements.md` (Req 3 criteria 7 to 10, Req 7 criterion 9, glossary term Box_Dir) and `design.md` (section "Box_Dir lookup" and the `boxDir` row of the options table) were updated before the code.
+    - Implemented `RunnerOptions.boxDir`, the environment variable `GHOST_RUN_BOX_DIR`, and the lookup order: `boxDir`, the environment variable, the module location (up to 6 levels), then the workspace (up to 32 levels, trying `ghost-runner/box` and then `box`).
+    - Added `findBoxDir`, `resolveBoxDir`, `BOX_DIR_ENV`, and `BoxDirSources` in `ghost-runner/src/docker/availability.ts`. A folder without a `Dockerfile` gives `box-image-missing`.
+    - Passed the option from `src/pipeline.ts` and `src/world/repo-world.ts`, and exported the new names from `src/index.ts`.
+    - Tests in `ghost-runner/tests/box-dir-lookup.test.ts`. Result: unit project 58 files, 294 tests passed, typecheck and lint clean.
+    - The real check with the rebuilt MCP bundle is recorded in `docs/measurements.md` (section "Box folder lookup and bundled ghost_run").
+    - _Requirements: 3.7, 3.8, 3.9, 3.10, 7.9_
+
 - [x] 17. Final checkpoint - Ensure all tests pass
   - Run `pnpm lint`, `pnpm -r build`, the `[no-docker]` tests in `save` and explicit profiles, and, where Docker is available, the `[docker]` tests. Confirm the summary shows `skipped (docker unavailable)` for any skipped Docker suite and that no private-key file is present in the repository. Ask the user if questions arise.
 

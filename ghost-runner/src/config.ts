@@ -56,6 +56,12 @@ export interface RunnerOptions {
   /** Box image, `<name>@sha256:<64 hex>` only. Default: content-addressed local tag. */
   readonly image?: string;
   /**
+   * Folder with the box sources (Dockerfile, BASE_DIGEST, recorder/). Search order: this option,
+   * `GHOST_RUN_BOX_DIR`, upward from the module, upward from `original`. Needed when the runner
+   * runs from a single-file bundle, where the module location holds no box folder.
+   */
+  readonly boxDir?: string;
+  /**
    * Caller-chosen run id, `^[A-Za-z0-9_-]{1,64}$`. Becomes the `ghost-run.run-id` label value
    * and the container name suffix, so a watchdog can remove the box by label. Default: random UUID.
    */
@@ -74,6 +80,8 @@ export interface ResolvedRunnerOptions {
   readonly secretPatterns: readonly string[];
   readonly wardSet: WardSet;
   readonly image: string | undefined;
+  /** Caller-chosen box folder; undefined means the search order of `findBoxDir`. */
+  readonly boxDir?: string;
   /** Validated caller-chosen run id; undefined means the runner makes a random UUID. */
   readonly runId?: string;
 }
@@ -193,6 +201,9 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
 
   const image = opts.image === undefined ? undefined : validateImageRef(opts.image);
 
+  if (opts.boxDir !== undefined && (typeof opts.boxDir !== 'string' || opts.boxDir === '')) {
+    throw new ConfigError('boxDir', 'non-empty directory path', opts.boxDir);
+  }
   if (opts.runId !== undefined && (typeof opts.runId !== 'string' || !RUN_ID_RE.test(opts.runId))) {
     throw new ConfigError('runId', 'string matching ^[A-Za-z0-9_-]{1,64}$', opts.runId);
   }
@@ -208,6 +219,7 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
     secretPatterns: [...(opts.secretPatterns ?? DEFAULT_SECRET_PATTERNS)],
     wardSet: opts.wardSet ?? { wards: [] },
     image,
+    ...(opts.boxDir !== undefined ? { boxDir: opts.boxDir } : {}),
     ...(opts.runId !== undefined ? { runId: opts.runId } : {}),
   };
 }

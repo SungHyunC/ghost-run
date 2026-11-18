@@ -10,7 +10,7 @@ export default tseslint.config(
         'error',
         {
           patterns: [
-            { group: ['**/ui/**', '**/apps/**', '**/integrations/**', '**/worlds/**'], message: 'ghost-runner may depend on @ghost-run/core only.' },
+            { group: ['**/ui/**', '**/apps/**', '**/integrations/**', '**/worlds/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: 'ghost-runner may depend on @ghost-run/core only.' },
             { group: ['**/core/**', '@ghost-run/core/*'], message: 'Import @ghost-run/core through its public entry only.' },
           ],
         },
@@ -25,7 +25,7 @@ export default tseslint.config(
         'error',
         {
           patterns: [
-            { group: ['**/ui/**', '**/apps/**', '**/integrations/**', '**/worlds/**'], message: 'ghost-runner may depend on @ghost-run/core only.' },
+            { group: ['**/ui/**', '**/apps/**', '**/integrations/**', '**/worlds/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: 'ghost-runner may depend on @ghost-run/core only.' },
             { group: ['**/core/**', '@ghost-run/core/*', '!@ghost-run/core/verify'], message: 'Only @ghost-run/core and @ghost-run/core/verify are allowed.' },
           ],
         },

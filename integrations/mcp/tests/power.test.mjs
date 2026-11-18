@@ -1,6 +1,6 @@
 // Power folder tests (Requirement 20 criteria 2, 3, 4, 5, 7, 9). No network: schema URLs are compared, never fetched.
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir, userInfo } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -106,6 +106,20 @@ describe('power bundle (task 15.3)', () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe('power bundle hygiene (kiro-integration criterion 19.15)', () => {
+  it('holds no absolute local path, home folder, or user name', async () => {
+    const text = await readFile(BUNDLE, 'utf8');
+    expect(text).not.toMatch(/\/Users\/[A-Za-z0-9._-]+\//);
+    expect(text).not.toMatch(/\/home\/[A-Za-z0-9._-]+\//);
+    const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
+    expect(text).not.toContain(repoRoot.replace(/\/$/, ''));
+    const home = homedir();
+    if (home.length > 3) expect(text).not.toContain(home);
+    const user = userInfo().username;
+    if (user.length >= 4) expect(text).not.toContain(user);
   });
 });
 

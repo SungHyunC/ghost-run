@@ -124,9 +124,10 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
 
   - [~] 2.2 Add the `integrations/` import bans to the other packages and verify that lint fails on a violation [no-docker]
     - **Isolated task: must not run at the same time as any other task that edits `core/`, in this spec or in another spec.** Before starting, confirm that no other core-editing task is in progress.
-    - For `core`, `ghost-runner`, `wards-config`, and `ui`, check the existing `no-restricted-imports` rule and add only what is missing: the pattern `**/integrations/**` and the package names `@ghost-run/kiro-hook` and `@ghost-run/mcp`. If `ui/eslint.config.mjs` does not exist yet (the `ui-kit` scaffold has not run), skip `ui`, record the gap in the test file header, and report it in the final checkpoint.
-    - Create `integrations/kiro-hook/tests/import-ban.test.mjs`: for each package that has an ESLint configuration, write a temporary file under that package's `src/` that imports `@ghost-run/kiro-hook`, run ESLint programmatically, assert a `no-restricted-imports` error, and remove the file in `finally`. The `ui` case reports `skipped (ui package missing)` when absent.
+    - Scope of this round: `core`, `ghost-runner`, `ui`, `wards-config`, `worlds/playground-shell`, and `apps/ghost-shell`. For each, check the existing `no-restricted-imports` rule and add only what is missing: the pattern `**/integrations/**` and the package names `@ghost-run/kiro-hook` and `@ghost-run/mcp`. If `ui/eslint.config.mjs` does not exist yet (the `ui-kit` scaffold has not run), skip `ui`, record the gap in the test file header, and report it in the final checkpoint.
+    - Create `integrations/kiro-hook/tests/import-ban.test.mjs`: it covers these six packages. For each package that has an ESLint configuration, write a temporary file under that package's `src/` that imports `@ghost-run/kiro-hook`, run ESLint in a child process (one per probe), assert a `no-restricted-imports` error, and remove the file in `finally`. The `ui` case reports `skipped (ui package missing)` when absent.
     - Run the existing lint and test suites of the edited packages and confirm they pass unchanged.
+    - Status: Done 2026-11-18 for core, ghost-runner, ui, wards-config, worlds/playground-shell, apps/ghost-shell: each `no-restricted-imports` rule bans `**/integrations/**`, `@ghost-run/kiro-hook(/**)`, and `@ghost-run/mcp(/**)`; `integrations/kiro-hook/tests/import-ban.test.mjs` (18 cases, ESLint in a child process per probe) passes. Not done: `worlds/drawer-arm` and `apps/ghost-hand`; finish them together with ghost-hand task 19.
     - _Requirements: 1.4_
 
   - [x] 2.3 Update `.kiro/steering/structure.md` for the new dependency direction
@@ -533,6 +534,14 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
   - [x] 15.4 Implement the link helper fallback `pnpm power:link`
     - Add the script `power:link` (design D6 fallback, used only if task 17.4 shows that the host does not start the server with the power folder as the working directory): it writes the git-ignored `integrations/power/mcp.local.json` with the absolute path of `server/ghost-run-mcp.mjs` for the developer to copy into the power install. The file is listed in `.gitignore` (task 2.4). Write a test that the helper writes only that file, only inside `integrations/power/`, and that its output holds no secret.
     - _Requirements: 20.4, 12.1_
+
+  - [x] 15.5 `ghost_run` passes the box folder to the runner; rebuild the bundle [docker for the real check]
+    - Requirements (Req 19 criteria 13 to 16, glossary Box_Dir) and design (D6, the `ghost_run` bullet, the testing table) were updated first.
+    - `integrations/mcp/src/tools/ghost_run.mjs` calls the runner's `findBoxDir({ env, workspace: root })` and passes `boxDir` to `runPlan` (omitted when not found; `deps.findBoxDir` seam). Depends on ghost-runner task 18.7.
+    - Rebuilt `integrations/power/server/ghost-run-mcp.mjs` with `pnpm --filter @ghost-run/mcp bundle` after `pnpm --filter @ghost-run/ghost-runner build`.
+    - Tests added: two cases in `tests/ghost-tools.test.mjs`, bundle hygiene in `tests/power.test.mjs`, and `tests/power-bundle-box.test.mjs` [docker].
+    - Real check: the bundle started with the repository root as working directory gave `ghost_run` isolation mode `docker-box`, verdict `pass`, and no leftover container or volume (recorded in `docs/measurements.md`, section "Box folder lookup and bundled ghost_run"). MCP suite: 58 passed, 2 skipped before the two new test files; typecheck and lint clean.
+    - _Requirements: 19.13, 19.14, 19.15, 19.16_
 
 - [ ] 16. Repository hygiene and timing measurement
   - [~] 16.1 Write the repository hygiene tests [no-docker]

@@ -280,6 +280,9 @@ export function createRepoWorld(opts: RepoWorldOptions): RepoWorld {
   const checkAvailable = (): Promise<DockerAvailability> => {
     availability ??= checkDockerAvailability(client, {
       ...(resolved.image !== undefined ? { image: resolved.image } : {}),
+      ...(resolved.boxDir !== undefined ? { boxDir: resolved.boxDir } : {}),
+      env: process.env,
+      workspace: resolved.original,
     }).then((a) => {
       if (!a.available) availability = undefined; // retry next time: Docker may start later
       return a;

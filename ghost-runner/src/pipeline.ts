@@ -823,7 +823,13 @@ export async function runPlan(plan: Plan, opts: RunPlanOptions): Promise<RunOutp
   const phases = NO_PHASES();
 
   const checkStart = perf();
-  const avail = await checkDockerAvailability(client, { ...(image !== undefined ? { image } : {}), clock });
+  const avail = await checkDockerAvailability(client, {
+    ...(image !== undefined ? { image } : {}),
+    ...(resolved.boxDir !== undefined ? { boxDir: resolved.boxDir } : {}),
+    env: process.env,
+    workspace: original,
+    clock,
+  });
   phases.dockerCheckMs = perf() - checkStart;
   if (!avail.available) return planB(plan, resolved, original, avail, runId, phases, opts.onNotice);
 

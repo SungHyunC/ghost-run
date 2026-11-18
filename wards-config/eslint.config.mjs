@@ -1,7 +1,7 @@
 import tseslint from 'typescript-eslint';
 
 const corePatterns = {
-  group: ['@ghost-run/core/*', '**/core/**', '**/ghost-runner/**', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**', '**/ui/**', '**/apps/**', '**/integrations/**', '@ghost-run/playground-shell', '@ghost-run/playground-shell/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-shell/**', '**/worlds/playground-shell/**', '**/apps/ghost-shell/**'],
+  group: ['@ghost-run/core/*', '**/core/**', '**/ghost-runner/**', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**', '**/ui/**', '**/apps/**', '**/integrations/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**', '@ghost-run/playground-shell', '@ghost-run/playground-shell/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-shell/**', '**/worlds/playground-shell/**', '**/apps/ghost-shell/**'],
   message: 'wards-config may import @ghost-run/core only through its public entry point.',
 };
 

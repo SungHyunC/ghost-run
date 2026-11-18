@@ -2992,7 +2992,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve4.call(this, root, ref);
+      let _sch = resolve5.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a3 = root.localRefs) === null || _a3 === void 0 ? void 0 : _a3[ref];
         const { schemaId } = this.opts;
@@ -3019,7 +3019,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve4(root, ref) {
+    function resolve5(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -3883,7 +3883,7 @@ var require_fast_uri = __commonJS({
       }
       return uri;
     }
-    function resolve4(baseURI, relativeURI, options) {
+    function resolve5(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -4274,7 +4274,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize: normalize2,
-      resolve: resolve4,
+      resolve: resolve5,
       resolveComponent,
       equal,
       serialize: serialize2,
@@ -23762,7 +23762,7 @@ var recursive = /* @__PURE__ */ new WeakMap();
 var NONE = 0;
 var ASSUMED = 1;
 var PROVEN = 2;
-function isRecursive(inst, stack, resolve4) {
+function isRecursive(inst, stack, resolve5) {
   const cached3 = recursive.get(inst);
   if (cached3 !== void 0)
     return cached3 ? PROVEN : NONE;
@@ -23772,7 +23772,7 @@ function isRecursive(inst, stack, resolve4) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve4);
+      const answer = isRecursive(child, stack, resolve5);
       if (answer > result)
         result = answer;
     }
@@ -23783,7 +23783,7 @@ function isRecursive(inst, stack, resolve4) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve4) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve5) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -23847,7 +23847,7 @@ function isRecursive(inst, stack, resolve4) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve4 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve5 ? inst._zod.innerType : void 0);
       merge2(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -42285,7 +42285,7 @@ var Protocol = class {
           return;
         }
         const pollInterval = task2.pollInterval ?? this._options?.defaultTaskPollInterval ?? 1e3;
-        await new Promise((resolve4) => setTimeout(resolve4, pollInterval));
+        await new Promise((resolve5) => setTimeout(resolve5, pollInterval));
         options?.signal?.throwIfAborted();
       }
     } catch (error62) {
@@ -42302,7 +42302,7 @@ var Protocol = class {
    */
   request(request, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
-    return new Promise((resolve4, reject) => {
+    return new Promise((resolve5, reject) => {
       const earlyReject = (error62) => {
         reject(error62);
       };
@@ -42380,7 +42380,7 @@ var Protocol = class {
           if (!parseResult.success) {
             reject(parseResult.error);
           } else {
-            resolve4(parseResult.data);
+            resolve5(parseResult.data);
           }
         } catch (error62) {
           reject(error62);
@@ -42642,12 +42642,12 @@ var Protocol = class {
       }
     } catch {
     }
-    return new Promise((resolve4, reject) => {
+    return new Promise((resolve5, reject) => {
       if (signal.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
-      const timeoutId = setTimeout(resolve4, interval);
+      const timeoutId = setTimeout(resolve5, interval);
       signal.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
@@ -43787,7 +43787,7 @@ var McpServer = class {
     let task = createTaskResult.task;
     const pollInterval = task.pollInterval ?? 5e3;
     while (task.status !== "completed" && task.status !== "failed" && task.status !== "cancelled") {
-      await new Promise((resolve4) => setTimeout(resolve4, pollInterval));
+      await new Promise((resolve5) => setTimeout(resolve5, pollInterval));
       const updatedTask = await extra.taskStore.getTask(taskId);
       if (!updatedTask) {
         throw new McpError(ErrorCode.InternalError, `Task ${taskId} not found during polling`);
@@ -44451,12 +44451,12 @@ var StdioServerTransport = class {
     this.onclose?.();
   }
   send(message2) {
-    return new Promise((resolve4) => {
+    return new Promise((resolve5) => {
       const json2 = serializeMessage(message2);
       if (this._stdout.write(json2)) {
-        resolve4();
+        resolve5();
       } else {
-        this._stdout.once("drain", resolve4);
+        this._stdout.once("drain", resolve5);
       }
     });
   }
@@ -44642,6 +44642,9 @@ function resolveRunnerOptions(opts) {
     throw new ConfigError("limits.memory", 'positive size such as "1g"', limits.memory);
   }
   const image = opts.image === void 0 ? void 0 : validateImageRef(opts.image);
+  if (opts.boxDir !== void 0 && (typeof opts.boxDir !== "string" || opts.boxDir === "")) {
+    throw new ConfigError("boxDir", "non-empty directory path", opts.boxDir);
+  }
   if (opts.runId !== void 0 && (typeof opts.runId !== "string" || !RUN_ID_RE.test(opts.runId))) {
     throw new ConfigError("runId", "string matching ^[A-Za-z0-9_-]{1,64}$", opts.runId);
   }
@@ -44657,6 +44660,7 @@ function resolveRunnerOptions(opts) {
     secretPatterns: [...opts.secretPatterns ?? DEFAULT_SECRET_PATTERNS],
     wardSet: opts.wardSet ?? { wards: [] },
     image,
+    ...opts.boxDir !== void 0 ? { boxDir: opts.boxDir } : {},
     ...opts.runId !== void 0 ? { runId: opts.runId } : {}
   };
 }
@@ -44744,7 +44748,7 @@ function parseRunResult(json2) {
 
 // ghost-runner/dist/world/repo-world.js
 import { lstat as lstat5, realpath, rm as rm2 } from "node:fs/promises";
-import { join as join7, resolve as resolve2 } from "node:path";
+import { join as join7, resolve as resolve3 } from "node:path";
 
 // ghost-runner/dist/copy/copier.js
 import { spawn } from "node:child_process";
@@ -44974,7 +44978,7 @@ async function emptyDir(dir) {
 // ghost-runner/dist/docker/availability.js
 import { createHash as createHash2 } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname as dirname2, join as join3, relative } from "node:path";
+import { dirname as dirname2, join as join3, relative, resolve as resolve2 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // ghost-runner/dist/docker/hardening.js
@@ -45201,15 +45205,52 @@ function computeBoxHash(boxDir = resolveBoxDir()) {
   }
   return h.digest("hex");
 }
-function resolveBoxDir() {
-  let dir = dirname2(fileURLToPath(import.meta.url));
+var BOX_DIR_ENV = "GHOST_RUN_BOX_DIR";
+var SEARCH_DEPTH = 32;
+function searchUp(start, layouts) {
+  let dir = start;
+  for (let i = 0; i < SEARCH_DEPTH; i++) {
+    for (const parts of layouts) {
+      const candidate = join3(dir, ...parts);
+      if (existsSync(join3(candidate, "Dockerfile")))
+        return candidate;
+    }
+    const parent = dirname2(dir);
+    if (parent === dir)
+      break;
+    dir = parent;
+  }
+  return void 0;
+}
+function boxDirFromModule(start) {
+  let dir = start ?? dirname2(fileURLToPath(import.meta.url));
   for (let i = 0; i < 6; i++) {
     const candidate = join3(dir, "box");
     if (existsSync(join3(candidate, "Dockerfile")))
       return candidate;
     dir = dirname2(dir);
   }
-  throw new Error("box/ directory not found");
+  return void 0;
+}
+function findBoxDir(sources = {}) {
+  if (sources.boxDir !== void 0 && sources.boxDir !== "")
+    return sources.boxDir;
+  const fromEnv = sources.env?.[BOX_DIR_ENV];
+  if (fromEnv !== void 0 && fromEnv !== "")
+    return fromEnv;
+  const fromModule = boxDirFromModule(sources.moduleDir);
+  if (fromModule !== void 0)
+    return fromModule;
+  if (sources.workspace !== void 0 && sources.workspace !== "") {
+    return searchUp(resolve2(sources.workspace), [["ghost-runner", "box"], ["box"]]);
+  }
+  return void 0;
+}
+function resolveBoxDir(sources = {}) {
+  const found3 = findBoxDir(sources);
+  if (found3 === void 0)
+    throw new Error("box/ directory not found");
+  return found3;
 }
 function boxImageTag(hash2) {
   return `${BOX_IMAGE_REPO}:${hash2}`;
@@ -45226,7 +45267,10 @@ async function checkDockerAvailability(client, opts = {}) {
     tag = opts.image;
   } else {
     try {
-      expectedHash = computeBoxHash(opts.boxDir);
+      const found3 = findBoxDir(opts);
+      if (found3 === void 0)
+        throw new Error("box/ directory not found");
+      expectedHash = computeBoxHash(found3);
     } catch (e) {
       return { available: false, reason: "box-image-missing", detail: `box sources unreadable: ${e.message}` };
     }
@@ -46284,9 +46328,9 @@ function createDockerClient(file2 = "docker", clock = systemClock) {
     run(args, opts = {}) {
       const timeoutMs = effectiveTimeoutMs(opts, clock);
       const cap = opts.maxOutputBytes ?? DEFAULT_MAX_OUTPUT;
-      return new Promise((resolve4) => {
+      return new Promise((resolve5) => {
         if (timeoutMs <= 0) {
-          resolve4({ code: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0), timedOut: true });
+          resolve5({ code: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0), timedOut: true });
           return;
         }
         const out = [];
@@ -46304,7 +46348,7 @@ function createDockerClient(file2 = "docker", clock = systemClock) {
             return;
           settled = true;
           clearTimeout(timer);
-          resolve4(r);
+          resolve5(r);
         };
         const timer = setTimeout(() => {
           timedOut = true;
@@ -47140,7 +47184,7 @@ import { randomUUID as randomUUID2 } from "node:crypto";
 import { constants } from "node:fs";
 import { open as open4, realpath as realpath2, rm as rm3, stat as stat2 } from "node:fs/promises";
 import { tmpdir as tmpdir2 } from "node:os";
-import { dirname as dirname3, isAbsolute, join as join8, normalize, resolve as resolve3, sep } from "node:path";
+import { dirname as dirname3, isAbsolute, join as join8, normalize, resolve as resolve4, sep } from "node:path";
 
 // core/src/types.ts
 var VERDICT_ORDER = {
@@ -48719,14 +48763,14 @@ function capText(text2, max = 300) {
   return text2.length > max ? `${text2.slice(0, max)}...` : text2;
 }
 async function scanSymlinksOutside(original, excludeDirs) {
-  const roots = /* @__PURE__ */ new Set([resolve3(original)]);
-  roots.add(await realpath2(original).catch(() => resolve3(original)));
+  const roots = /* @__PURE__ */ new Set([resolve4(original)]);
+  roots.add(await realpath2(original).catch(() => resolve4(original)));
   const entries = await walkManifest(original, { excludeDirs });
   const out = [];
   for (const e of entries) {
     if (e.type !== "symlink" || e.target === void 0)
       continue;
-    const abs = isAbsolute(e.target) ? normalize(e.target) : resolve3(dirname3(join8(original, e.path)), e.target);
+    const abs = isAbsolute(e.target) ? normalize(e.target) : resolve4(dirname3(join8(original, e.path)), e.target);
     const inside = [...roots].some((r) => abs === r || abs.startsWith(r.endsWith(sep) ? r : r + sep));
     if (!inside)
       out.push({ kind: "symlink-outside-original", destination: e.target, path: e.path });
@@ -49220,7 +49264,7 @@ async function runPlan(plan, opts) {
   validatePlanSize(plan.length);
   const resolved = resolveRunnerOptions(opts);
   validateActions(plan);
-  const original = resolve3(resolved.original);
+  const original = resolve4(resolved.original);
   await assertDirectory(original);
   const image = resolved.image ?? imageFromEnv(process.env);
   const clock = opts.clock ?? systemClock3;
@@ -49229,7 +49273,13 @@ async function runPlan(plan, opts) {
   const runId = resolved.runId ?? randomUUID2();
   const phases = NO_PHASES();
   const checkStart = perf();
-  const avail = await checkDockerAvailability(client, { ...image !== void 0 ? { image } : {}, clock });
+  const avail = await checkDockerAvailability(client, {
+    ...image !== void 0 ? { image } : {},
+    ...resolved.boxDir !== void 0 ? { boxDir: resolved.boxDir } : {},
+    env: process.env,
+    workspace: original,
+    clock
+  });
   phases.dockerCheckMs = perf() - checkStart;
   if (!avail.available)
     return planB(plan, resolved, original, avail, runId, phases, opts.onNotice);
@@ -52757,7 +52807,13 @@ async function handle(args, ctx) {
   let output2;
   let result;
   try {
-    output2 = await runPlan2(confined.plan, { original: root, wardSet, pipelineDeadlineSec: MCP_PIPELINE_DEADLINE_SEC });
+    const boxDir = (ctx.deps.findBoxDir ?? findBoxDir)({ env: ctx.env, workspace: root });
+    output2 = await runPlan2(confined.plan, {
+      original: root,
+      wardSet,
+      pipelineDeadlineSec: MCP_PIPELINE_DEADLINE_SEC,
+      ...typeof boxDir === "string" && boxDir !== "" ? { boxDir } : {}
+    });
     result = output2.result;
   } catch {
     return errorResult("ghost_run failed: the runner reported an error; nothing was approved");

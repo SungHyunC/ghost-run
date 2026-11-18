@@ -137,6 +137,28 @@ describe('ghost_run with a runPlan double', () => {
     await client.close();
   });
 
+  it('passes the box folder found from the workspace to the runner as boxDir', async () => {
+    const calls = /** @type {any[]} */ ([]);
+    const lookups = /** @type {any[]} */ ([]);
+    const findBoxDir = (/** @type {any} */ src) => {
+      lookups.push(src);
+      return '/fake/box';
+    };
+    const client = await connect(root, { runPlan: double(fakeResult(), calls), findBoxDir });
+    await call(client, 'ghost_run', { plan: [{ command: 'ls' }] });
+    expect(calls[0].opts.boxDir).toBe('/fake/box');
+    expect(lookups[0].workspace).toBe(root);
+    await client.close();
+  });
+
+  it('omits boxDir when no box folder is found', async () => {
+    const calls = /** @type {any[]} */ ([]);
+    const client = await connect(root, { runPlan: double(fakeResult(), calls), findBoxDir: () => undefined });
+    await call(client, 'ghost_run', { plan: [{ command: 'ls' }] });
+    expect('boxDir' in calls[0].opts).toBe(false);
+    await client.close();
+  });
+
   it('writes a Grave_Entry for a block and returns the ward message with the seance link', async () => {
     const client = await connect(root, { runPlan: double(blockResult()) });
     const r = await call(client, 'ghost_run', { plan: [{ command: 'rm -rf data' }] });

@@ -16,7 +16,7 @@ const BANNED_IMPORTS = [
   { group: ['@ghost-run/ghost-hand', '@ghost-run/ghost-hand/*'], message: banMessage('ghost-hand') },
   { group: ['three', 'three/*'], message: banMessage('three') },
   { group: ['@mujoco/mujoco', '@mujoco/mujoco/*'], message: banMessage('@mujoco/mujoco') },
-  { group: ['**/integrations/**'], message: banMessage('integrations') },
+  { group: ['**/integrations/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: banMessage('integrations') },
   { group: ['@ghost-run/wards-config/node'], message: 'The browser app must not import the Node entry of wards-config.' },
   { group: ['@ghost-run/core/*'], message: 'Import core only through its public entry point.' },
 ];

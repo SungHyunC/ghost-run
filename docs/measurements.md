@@ -741,3 +741,11 @@ Recorded on macOS (Apple Silicon, Node 20.20.2) with `corepack pnpm`.
 ## Ghost Hand checkpoint 13 (2026-11-18, Node v20.20.2, Apple M1)
 
 The "Demo scenario numbers" section above still reads `unmeasured`; the demo numbers are in "Ghost Hand demo plans, tuned scene, and re-measured budget (task 11.5)" (fast pull: block, 7 of 8 variants succeed; slow pull, strong grip: pass, 8 of 8). The current budget is `shortRuns` 35 (`worlds/drawer-arm/tests/pbt-budget.json`); the 36 in the "Short-run budget" section is the value before the scene tuning. The golden hash is in "Determinism golden hash". Contract test, two consecutive runs: base world 5.4 s and 6.8 s, variant world 5.7 s and 6.1 s (numRuns 35).
+
+## Box folder lookup and bundled `ghost_run` (2026-11-18, Node v20.20.2, Apple M1)
+
+- Problem: `resolveBoxDir` walked up from `import.meta.url` only. In the single-file bundle `integrations/power/server/ghost-run-mcp.mjs` no `box/` folder is an ancestor, so `ghost_run` always fell back to static analysis.
+- Change: `RunnerOptions.boxDir` and the environment variable `GHOST_RUN_BOX_DIR` were added. Lookup order: `boxDir`, `GHOST_RUN_BOX_DIR`, upward from the module (6 levels), upward from the workspace (`original`, at most 32 levels, `ghost-runner/box` before `box`). A given folder is used as is; without a `Dockerfile` the availability check returns `box-image-missing`. The MCP `ghost_run` tool passes the folder it finds from the workspace root as `boxDir`.
+- Real check: the rebuilt bundle was started as a child process with the repository root as working directory (no `GHOST_RUN_BOX_DIR`), and one `ghost_run` call with the plan `ls` returned `isolation.mode` `docker-box`, `p1Claimed`, `p5Claimed`, and `p6Claimed` all true, `rehearsed` true, exit codes `[0]`, verdict `pass` (3 wards). Afterwards `docker ps -a` and `docker volume ls` listed no Ghost Run container or volume.
+- Bundle hygiene: a search of the bundle for `/Users/`, `/home/`, and the local user name found no match.
+- Test runs: ghost-runner unit project 58 files, 294 tests (includes `box-dir-lookup.test.ts`); core 555 passed, 1 skipped; MCP 58 passed, 2 skipped (the byte comparison of the bundle passes).

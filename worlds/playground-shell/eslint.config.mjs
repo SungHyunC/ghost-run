@@ -10,7 +10,7 @@ const bannedPatterns = [
   { group: ['@ghost-run/ui', '@ghost-run/ui/**', '**/ui/**'], message: banMessage('@ghost-run/ui') },
   { group: ['@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**', '**/ghost-runner/**'], message: banMessage('ghost-runner') },
   { group: ['**/apps/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-hand'], message: banMessage('apps') },
-  { group: ['**/integrations/**'], message: banMessage('integrations') },
+  { group: ['**/integrations/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: banMessage('integrations') },
   { group: ['react', 'react/**', 'react-dom', 'react-dom/**'], message: banMessage('react') },
   { group: ['three', 'three/**'], message: banMessage('three') },
   { group: ['@mujoco/mujoco', '@mujoco/mujoco/**'], message: banMessage('@mujoco/mujoco') },

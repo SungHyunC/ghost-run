@@ -8,7 +8,7 @@ import hooks from 'eslint-plugin-react-hooks';
 
 const FORBIDDEN_IMPORTS = [
   { group: ['@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**', '**/ghost-runner/**'], message: 'ui may depend on @ghost-run/core only.' },
-  { group: ['**/apps/**', '**/integrations/**', '**/worlds/**'], message: 'ui must not import apps, integrations, or worlds.' },
+  { group: ['**/apps/**', '**/integrations/**', '**/worlds/**', '@ghost-run/kiro-hook', '@ghost-run/kiro-hook/**', '@ghost-run/mcp', '@ghost-run/mcp/**'], message: 'ui must not import apps, integrations, or worlds.' },
   { group: ['three', 'three/*', '@mujoco/mujoco', '@mujoco/mujoco/*'], message: '3D libraries are out of scope for ui.' },
   { group: ['**/core/**', '@ghost-run/core/*'], message: 'Import @ghost-run/core through its public entry only.' },
   { group: ['@ghost-run/playground-shell', '@ghost-run/playground-shell/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-shell/**', '**/worlds/playground-shell/**', '**/apps/ghost-shell/**'], message: 'ui must not import the playground packages.' },
