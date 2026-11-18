@@ -5,7 +5,7 @@
 The `wards` spec turns the minimal judgment rules of `core/src/wards.ts` into the full ward system. The design has two halves.
 
 1. **Judgment in `core/`** (new folder `core/src/judge/`, zero runtime dependencies, pure functions): path normalization, a regex-free glob matcher, a host matcher, a content inspector for canary values, a sanitizer, and a message builder. The refined `WardEngine.evaluate` in `core/src/wards.ts` becomes a thin orchestrator over these modules.
-2. **Configuration in a new workspace package** `@ghost-run/wards-config` (directory `wards-config/`): the `wards.yaml` parser, validator, and printer, built on the `yaml` library.
+2. **Configuration in a new workspace package** `@ghost-run/wards-config` (directory `wards-config/`): the `wards.yaml` parser, validator, and printer, built on the `yaml` library. The default entry is browser-safe (no Node built-in); file loading lives in the Node-only subpath `@ghost-run/wards-config/node`.
 
 `core/` stays free of runtime dependencies, I/O, clock, randomness, and `eval`. `wards-config` depends on `@ghost-run/core` only and `core` never imports it.
 
@@ -61,8 +61,10 @@ flowchart LR
     subgraph wc["wards-config/ (@ghost-run/wards-config)"]
         parse[parse.ts + schema.ts]
         print[print.ts]
-        load[load.ts]
-        yamllib[(yaml, ISC)]
+        fmt[format.ts + types.ts]
+        nodeEntry[node.ts: Node entry]
+        load[load.ts: node:fs/promises]
+        yamllib[(yaml, ISC, browser build by default)]
     end
     glob --> normalize
     pathset --> glob
@@ -78,10 +80,13 @@ flowchart LR
     parse --> yamllib
     parse -.->|"@ghost-run/core public entry"| idx
     print -.-> idx
+    nodeEntry --> load
     load --> parse
 ```
 
-Dependency direction: `wards-config -> core`, never the reverse. `apps/*`, `integrations/*`, and the ghost-runner tests may use `wards-config`. `core/eslint.config.mjs` gets one more `no-restricted-imports` pattern group: `**/wards-config/**`, `@ghost-run/wards-config`, `@ghost-run/wards-config/**`.
+The default entry `src/index.ts` re-exports `types.ts`, `parse.ts`, `schema.ts`, `print.ts`, and `format.ts`, and nothing else. `src/node.ts` re-exports `loadWardsFile` from `src/load.ts`. `load.ts` is the only module that imports a Node built-in (`node:fs/promises`), and only `node.ts` imports `load.ts`.
+
+Dependency direction: `wards-config -> core`, never the reverse. Browser-safe default entry (decision D21): the Ghost Shell playground parses `wards.yaml` in the browser, so no module reachable from `src/index.ts` may import a Node built-in. The `yaml` 2.9.1 `exports["."]` map has the conditions `types`, `node` (`./dist/index.js`), and `default` (`./browser/index.js`), so a bundler targeting the browser picks the browser build; the check on 2026-11-18 found no Node built-in import in it (recorded in `docs/measurements.md`). `apps/*`, `integrations/*`, and the ghost-runner tests may use `wards-config`. `core/eslint.config.mjs` gets one more `no-restricted-imports` pattern group: `**/wards-config/**`, `@ghost-run/wards-config`, `@ghost-run/wards-config/**`.
 
 ### Runtime flow (hook path)
 
@@ -387,7 +392,20 @@ The comparison keeps the existing structure (`Cmp { tighter, looser }` per ward,
 
 ### wards-config (`wards-config/`)
 
-Package name `@ghost-run/wards-config`, directory `wards-config/` at the repository root (a sibling of `core/` and `ghost-runner/`, not under `integrations/`, for the same reason as `ghost-runner/`: it is a library that several integrations use). Add the line `  - wards-config` to `pnpm-workspace.yaml` under `packages:` (it is not covered by the existing globs `apps/*`, `integrations/*`, `worlds/*`). Runtime dependencies: `yaml` and `@ghost-run/core` (`workspace:*`). Node 20 or later.
+Package name `@ghost-run/wards-config`, directory `wards-config/` at the repository root (a sibling of `core/` and `ghost-runner/`, not under `integrations/`, for the same reason as `ghost-runner/`: it is a library that several integrations use). Add the line `  - wards-config` to `pnpm-workspace.yaml` under `packages:` (it is not covered by the existing globs `apps/*`, `integrations/*`, `worlds/*`). Runtime dependencies: `yaml` (pinned exactly `2.9.1`) and `@ghost-run/core` (`workspace:*`). Node 20 or later for `@ghost-run/wards-config/node`; the default entry also runs in a browser.
+
+**Entry points and `package.json` `exports`.** Exactly two subpaths, each with `types` and `import` conditions that point to the built output (the `vitest` config and `tsconfig.json` alias both subpaths to the source files so tests never need a build):
+
+```json
+"exports": {
+  ".":      { "types": "./dist/src/index.d.ts", "import": "./dist/src/index.js" },
+  "./node": { "types": "./dist/src/node.d.ts",  "import": "./dist/src/node.js" }
+}
+```
+
+- Default entry `@ghost-run/wards-config` (`src/index.ts`): `parseWards`, `printWards`, `formatConfigError`, and the types `ConfigError`, `ConfigErrorCode`, `ConfigWarning`, `ParseResult`.
+- Node entry `@ghost-run/wards-config/node` (`src/node.ts`): `loadWardsFile` only. `src/load.ts` stays the only file with `node:fs/promises`.
+- Enforcement (two checks, both required): (1) `wards-config/eslint.config.mjs` adds a second config block for every file in `src/` except `load.ts` and `node.ts`, with `no-restricted-imports` banning the patterns `node:*` and the bare built-in names (`fs`, `fs/promises`, `path`, `url`, `util`, `os`, `crypto`, `process`, `buffer`, `stream`, `child_process`, `module`, `worker_threads`, `assert`, `events`, `zlib`, `http`, `https`, `net`, `tls`, `readline`, `vm`, `v8`, `timers`, `string_decoder`, `perf_hooks`, `tty`, `dns`, `dgram`, `cluster`); (2) a test in `tests/smoke.test.ts` walks the import graph of `src/index.ts` (relative imports and re-exports followed, text-level scan of `import ... from`, `export ... from`, and `import(` specifiers) and fails when any specifier names a Node built-in; it also fails when `src/index.ts` reaches `load.ts` or `node.ts`.
 
 ```ts
 export type ConfigErrorCode =
@@ -395,7 +413,7 @@ export type ConfigErrorCode =
   | 'file-unreadable' | 'root-not-mapping' | 'unknown-root-field' | 'wards-not-sequence'
   | 'unknown-kind' | 'missing-field' | 'unknown-field' | 'wrong-type' | 'out-of-range'
   | 'duplicate-id' | 'invalid-glob' | 'invalid-host' | 'invalid-character' | 'duplicate-entry'
-  | 'too-many-errors';
+  | 'unsafe-command-entry' | 'too-many-errors';
 export interface ConfigError {
   readonly code: ConfigErrorCode; readonly message: string;
   readonly line?: number; readonly column?: number;          // 1-based
@@ -404,13 +422,31 @@ export interface ConfigError {
 }
 export interface ConfigWarning { readonly code: 'empty-ward-set' | 'catch-all-pattern'; readonly message: string; readonly line?: number; readonly column?: number }
 export type ParseResult =
-  | { readonly ok: true; readonly wardSet: WardSet; readonly warnings: readonly ConfigWarning[] }
-  | { readonly ok: false; readonly errors: readonly ConfigError[] };
+  | { readonly ok: true; readonly wardSet: WardSet; readonly safeCommands: string[]; readonly warnings: readonly ConfigWarning[] }
+  | { readonly ok: false; readonly errors: readonly ConfigError[] };   // no wardSet, no safeCommands on error
+
+// default entry: '@ghost-run/wards-config' (src/index.ts), browser-safe
 export function parseWards(text: string): ParseResult;
-export function loadWardsFile(path: string): Promise<ParseResult>;
-export function printWards(wardSet: WardSet): string;
+export function printWards(wardSet: WardSet, options?: { readonly safeCommands?: readonly string[] }): string;
 export function formatConfigError(e: ConfigError): string;
+
+// Node entry: '@ghost-run/wards-config/node' (src/node.ts, implemented in src/load.ts)
+export function loadWardsFile(path: string): Promise<ParseResult>;
 ```
+
+**`safe_commands` (top-level, optional).** The key feeds the `ghost-gate` read-only safe list (kiro-integration spec). This spec parses, validates, and prints it, and does nothing else with it: `core` and `WardEngine` ignore it, and the `WardSet` type of `core` is unchanged (decision D22). The parsed list is the `ParseResult.safeCommands` field of `wards-config`, always an array on `ok: true` (`[]` when the key is absent) and absent on `ok: false`, the same rule as `wardSet`. A `Safe_Command_Entry` is a command prefix pattern: one or more tokens separated by exactly one space, every token over the charset `[A-Za-z0-9_./:=@%+,-]` (examples: `ls`, `git status`, `npm run test`). The entry regex is `^[A-Za-z0-9_./:=@%+,-]+( [A-Za-z0-9_./:=@%+,-]+)*$`, with 1 to 256 UTF-16 code units per entry and 0 to 256 entries. The charset is deliberately conservative: it excludes every shell operator and metacharacter, quotes, and non-ASCII text, so an entry can never be read as a command list or substitution by a prefix matcher. Per-entry validation order and codes:
+
+| Check (in order) | Code | Line |
+|---|---|---|
+| value is not a sequence (including null) | `wrong-type` | list value |
+| item is not a string | `wrong-type` | item |
+| control or hidden character (Requirement 12 criterion 9; tab, CR, and LF included) | `invalid-character` | item |
+| length 0 or over 256 | `out-of-range` | item |
+| more than 256 entries (reported once) | `out-of-range` | list value |
+| outside the entry regex (shell operator, metacharacter, quote, non-ASCII, double or edge space) | `unsafe-command-entry`, `detail` `charset` or `spacing` | item |
+| equals an earlier entry (exact string) | `duplicate-entry`, message names the first line | later item |
+
+`unsafe-command-entry` is the only new code. Messages are fixed strings plus the field name `safe_commands[<i>]`; they never contain the entry text. The list counts toward the 262,144-byte input cap, and the AST depth is unchanged (root mapping, sequence, scalar).
 
 **`parseWards` pipeline** (never throws; the whole body is inside a `try` that converts any exception, including `RangeError`, to one `yaml-syntax-error`):
 
@@ -421,13 +457,15 @@ export function formatConfigError(e: ConfigError): string;
 5. **Schema table** `kind -> fields` drives validation: for each field `{ name, required, check }`. Messages are fixed strings plus the field name and, for glob and host errors, the offending entry passed through `sanitizeText(entry, 80)`.
 6. Sort errors by (`line`, `column`, `code`), keep the first 50, append `too-many-errors` when more existed.
 
+The root mapping accepts the required key `wards` and the optional key `safe_commands`; any other root key gives `unknown-root-field`, a missing `wards` gives `wards-not-sequence`, and `safe_commands` is validated by the table above in step 5 of the pipeline.
+
 The code for ids, table names, contact names, and `deny` values that do not match the allowed form is `out-of-range` (Requirement 12.3 to 12.5 give no separate code). `ConfigWarning` has two values: `empty-ward-set` (zero wards) and `catch-all-pattern` (a pattern that normalizes to `''` or `**`, which protects the whole Copy; legal but worth a line).
 
 **Positions.** Each AST node has `range[0]`; `lineCounter.linePos` gives `{ line, col }`. Value errors use the value node; `unknown-field` uses the key node; `missing-field`, `unknown-kind`, and `duplicate-id` use the Ward mapping node; list-entry errors use the entry node and `field` is `paths[<i>]`.
 
-**`printWards`.** Canonical text: `wards:` then per ward `  - id: ...`, `    kind: ...`, then the kind's fields in the order of Requirement 12 criteria 4 to 7. Lists are flow sequences (`[a, b]`). A string prints plain only when it matches `[A-Za-z_][A-Za-z0-9_.-]*` and is not `true`, `false`, or `null` in any of the case forms the core schema reads; otherwise it prints double-quoted with `\uXXXX` escapes for control characters, DEL, C1, U+2028, U+2029, BOM, and the hidden ranges, and `\UXXXXXXXX` for astral hidden characters, so printing is total. Numbers print with `String(n)` (shortest round-trip form; `-0` prints as `0`). An empty list prints `[]`. The text ends with one newline.
+**`printWards(wardSet, options?)`.** `options.safeCommands` is a new optional second parameter (a small options object, so later options need no new positional parameter). Canonical text: `wards:` then per ward `  - id: ...`, `    kind: ...`, then the kind's fields in the order of Requirement 12 criteria 4 to 7. Lists are flow sequences (`[a, b]`). A string prints plain only when it matches `[A-Za-z_][A-Za-z0-9_.-]*` and is not `true`, `false`, or `null` in any of the case forms the core schema reads; otherwise it prints double-quoted with `\uXXXX` escapes for control characters, DEL, C1, U+2028, U+2029, BOM, and the hidden ranges, and `\UXXXXXXXX` for astral hidden characters, so printing is total. Numbers print with `String(n)` (shortest round-trip form; `-0` prints as `0`). An empty list prints `[]`. When `options.safeCommands` is present and non-empty, one top-level line follows the last ward: `safe_commands: [<e1>, <e2>, ...]`, a flow sequence printed with the same string rule (`ls` plain, `git status` as `"git status"`); the key is omitted when the list is absent or empty, so an absent key and `[]` parse to the same `safeCommands` and the round trip stays exact. A caller that rewrites a file with `printWards` and omits `options.safeCommands` drops the key. The text ends with one newline.
 
-**`loadWardsFile(path)`** uses `node:fs/promises`: `stat` first (over 262,144 bytes gives `input-too-large` without reading), then `readFile`, then `TextDecoder('utf-8', { fatal: true })`. A read or decode failure gives `file-unreadable` with no line and the path in `message`.
+**`loadWardsFile(path)`** (Node entry only; `src/load.ts`) uses `node:fs/promises`: `stat` first (over 262,144 bytes gives `input-too-large` without reading), then `readFile`, then `TextDecoder('utf-8', { fatal: true })`. A read or decode failure gives `file-unreadable` with no line and the path in `message`.
 
 **`formatConfigError`**: `wards.yaml:<line>:<column>: [<code>]` + ` ward "<wardId>"` (when known) + ` field "<field>"` (when set) + `: <message>`; an error without a position prints `wards.yaml: [<code>]...`. Pure string assembly.
 
@@ -491,7 +529,7 @@ A `block` verdict with no violation (an inconsistent input) renders `GHOST RUN B
 
 ### Default `wards.yaml` and where it lives
 
-Location: `apps/ghost-shell/wards.yaml`. Reason: it is the policy of the Ghost Shell app, which runs the ghost-runner world; ghost-runner's `Repo_World` is not under `worlds/`, and a copy under `ghost-runner/` would couple the library to one policy. The world-contract checklist item "wards documented in `worlds/<name>/wards.yaml`" applies to drop-in worlds; the README states that for the repo world the file is `apps/ghost-shell/wards.yaml`. The file content is exactly the block in Requirement 18 criterion 2. Tests that load it live in `wards-config/tests/` and resolve the path relative to the test file, so no package imports another package's source.
+Location: `apps/ghost-shell/wards.yaml`. Reason: it is the policy of the Ghost Shell app, which runs the ghost-runner world; ghost-runner's `Repo_World` is not under `worlds/`, and a copy under `ghost-runner/` would couple the library to one policy. The world-contract checklist item "wards documented in `worlds/<name>/wards.yaml`" applies to drop-in worlds; the README states that for the repo world the file is `apps/ghost-shell/wards.yaml`. The file content is exactly the block in Requirement 18 criterion 2. It has no `safe_commands` key yet: the default list is an open item (Open Item 16 of the requirements, owned by the kiro-integration spec), and task 8.1 adds none. `wards-config/tests/default-wards.test.ts` expects `safeCommands` equal to `[]` until that decision is made. Tests that load it live in `wards-config/tests/` and resolve the path relative to the test file, so no package imports another package's source.
 
 `structure.md` update (a later task, not edited now): add a `wards-config/` entry to the tree ("`@ghost-run/wards-config`: wards.yaml parser, validator, printer; depends on core only"), a line in Dependency Direction (`wards-config/` may depend on `core/` only, through its public entry; `core/` must not import it), a line in "What Goes Where" (`wards.yaml` parsing and printing -> `wards-config/`; default Ghost Shell wards -> `apps/ghost-shell/wards.yaml`), and one more row in the `ghost-gate` description saying the hook loads wards through `wards-config`.
 
@@ -499,7 +537,7 @@ Location: `apps/ghost-shell/wards.yaml`. Reason: it is the policy of the Ghost S
 
 | Library | Version | License | Used by | Purpose |
 |---|---|---|---|---|
-| `yaml` (eemeli) | pin exact 2.x at install | ISC (confirm) | `wards-config` | YAML 1.2 parser with source ranges |
+| `yaml` (eemeli) | 2.9.1 (pinned exactly) | ISC (confirmed 2026-11-18, see `docs/measurements.md`) | `wards-config` | YAML 1.2 parser with source ranges; browser build is the default export condition |
 | `fast-check` | already listed | MIT (confirm) | tests | property tests (also used in `wards-config`) |
 | `vitest` | already listed | MIT (confirm) | tests | test runner (also used in `wards-config`) |
 
@@ -656,21 +694,21 @@ For all verdicts (including hostile ward ids, reasons, paths, and notices that c
 
 ### Property 15: Every configuration defect is reported at its line with the expected code
 
-For all valid `WardSet` values printed to text and all single mutations (unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host, invalid character, duplicate entry) applied to one known node, `parseWards` returns `ok: false` with an error of the expected `code` whose `line` is the line of the mutated node (the key line for `unknown-field`, the ward mapping line for `missing-field`, `unknown-kind`, and `duplicate-id`), `errors` is non-empty and sorted by (`line`, `column`, `code`), and the error message contains no input text other than the field name, the id, the code, and an entry truncated to 80 characters. For all valid inputs `ok: true` has no `errors` field and `wardSet` preserves document order and leaves absent optional fields absent.
+For all valid `WardSet` values printed to text and all single mutations (unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host, invalid character, duplicate entry, and for `safe_commands`: non-list value, non-string item, hidden character, over-long entry, more than 256 entries, an entry with a shell operator or other character outside the charset, duplicate entry) applied to one known node, `parseWards` returns `ok: false` with an error of the expected `code` whose `line` is the line of the mutated node (the key line for `unknown-field`, the ward mapping line for `missing-field`, `unknown-kind`, and `duplicate-id`), `errors` is non-empty and sorted by (`line`, `column`, `code`), and the error message contains no input text other than the field name, the id, the code, and an entry truncated to 80 characters. For all valid inputs `ok: true` has no `errors` field, `wardSet` preserves document order and leaves absent optional fields absent, and `safeCommands` preserves document order and is `[]` when the key is absent. The `safe_commands` mutations expect `wrong-type`, `wrong-type`, `invalid-character`, `out-of-range`, `out-of-range`, `unsafe-command-entry`, and `duplicate-entry` at the line of the mutated item (the line of the list value for the non-list and too-many-entries cases).
 
-**Validates: Requirements 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 13.1, 13.2, 13.9, 13.11**
+**Validates: Requirements 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 12.13, 13.1, 13.2, 13.9, 13.11**
 
 ### Property 16: parseWards is total and safe on hostile input
 
-For all strings (random text, truncated valid documents, documents with anchors, aliases, merge keys, tags, repeated keys, deep nesting, and sizes up to 262,144 bytes plus one), `parseWards` returns a `ParseResult` and never throws; an input over 262,144 bytes gives only `input-too-large`; anchors, aliases, `<<`, explicit tags, and depth over 8 give `yaml-feature-unsupported`; a repeated key gives `duplicate-key` naming the first line; at most 50 errors plus one `too-many-errors` are returned.
+For all strings (random text, truncated valid documents, documents with anchors, aliases, merge keys, tags, repeated keys, deep nesting, and sizes up to 262,144 bytes plus one), `parseWards` returns a `ParseResult` and never throws; an input over 262,144 bytes gives only `input-too-large`; anchors, aliases, `<<`, explicit tags, and depth over 8 give `yaml-feature-unsupported`; a repeated key (including a repeated `safe_commands`) gives `duplicate-key` naming the first line; at most 50 errors plus one `too-many-errors` are returned.
 
 **Validates: Requirements 12.1, 13.4, 13.5, 13.6, 13.7**
 
 ### Property 17: Printing and parsing round trip
 
-For all valid `WardSet` values `ws`, `parseWards(printWards(ws))` is `ok: true` with a `wardSet` deep-equal to `ws`, and `printWards` of that parsed value is a string identical to `printWards(ws)`. The text ends with one newline and strings that plain style could misread (`".env"`, `"data/**"`, `"0"`, `"true"`) are quoted.
+For all valid `WardSet` values `ws` and all valid `safeCommands` lists `sc`, `parseWards(printWards(ws, { safeCommands: sc }))` is `ok: true` with a `wardSet` deep-equal to `ws` and a `safeCommands` array equal to `sc`, and `printWards` of those parsed values is a string identical to the first printed text. An empty `sc` prints no `safe_commands` key and parses back to `[]`; a non-empty `sc` prints one top-level `safe_commands: [...]` line after the last ward. The text ends with one newline and strings that plain style could misread (`".env"`, `"data/**"`, `"0"`, `"true"`) are quoted.
 
-**Validates: Requirements 14.1, 14.2, 14.3, 14.5**
+**Validates: Requirements 14.1, 14.2, 14.3, 14.5, 12.13**
 
 ---
 
@@ -695,7 +733,8 @@ For all valid `WardSet` values `ws`, `parseWards(printWards(ws))` is `ok: true` 
 | YAML syntax error | `yaml-syntax-error` with the library's position converted through `LineCounter` | Property 15 |
 | Anchor, alias, `<<`, explicit tag, depth over 8, indentation over 64 spaces, 64 nested brackets | `yaml-feature-unsupported` | Property 16 |
 | Input over 262,144 bytes | `input-too-large`, nothing parsed; `loadWardsFile` checks `stat` first | Property 16 |
-| File unreadable or not valid UTF-8 | `file-unreadable` with the path and no line | Unit test |
+| File unreadable or not valid UTF-8 (Node entry `loadWardsFile` only) | `file-unreadable` with the path and no line | Unit test |
+| `safe_commands` is not a list, has a non-string item, has an entry with a hidden character, an over-long or empty entry, a shell operator or other character outside the charset, a duplicate, or more than 256 entries | `wrong-type`, `invalid-character`, `out-of-range`, `unsafe-command-entry`, or `duplicate-entry` as in the `safe_commands` table; no entry text in the message | Property 15 |
 | Library throws (including `RangeError`) | Caught by `parseWards`; one `yaml-syntax-error` at line 1; never rethrown | Property 16 |
 | More than 50 errors | First 50 sorted errors plus a final `too-many-errors` | Property 16 |
 | Worst-case slow content inspection (adversarial payload) | Not cut off by a budget, because a budget shared across canaries would break monotonicity (a canary added by a stricter ward could starve an earlier one). The cost per needle is fixed, and the work is bounded by the candidate caps and the runner's file and size limits on `secretValues`. Open dependency: the ghost-runner design must cap the number and size of `secretValues` entries; this design assumes a cap and a test with the largest allowed input. The hook's 60 s limit is the last bound | Perf test |
@@ -742,7 +781,7 @@ wards-config/tests/
   default-wards.test.ts             # loads ../../apps/ghost-shell/wards.yaml, ok:true, exact three wards
   scenarios.test.ts                 # verification table rows 1 to 5 with exact messages
   core-import-ban.test.ts           # ESLint rejects a core import of wards-config
-  smoke.test.ts                     # README rows, package.json dependencies, license field
+  smoke.test.ts                     # README rows, package.json dependencies and exports map, license field, no Node built-in in the import graph of src/index.ts, one example per ConfigErrorCode
 ```
 
 ### Generators (extension of the P4 generators)
@@ -772,7 +811,7 @@ An in-memory `World<FsState, FsAction>` with actions `rm`, `rm-recursive`, `rm-g
 1. W-types: add `case_sensitive` and the two notice kinds to `core/src/types.ts` (after ghost-runner W0).
 2. Implement `core/src/judge/*`, refactor `core/src/wards.ts` to the orchestrator, delete its header NOTE (Open Item 9), extend `index.ts` exports.
 3. Add the ESLint pattern group for `wards-config` to `core/eslint.config.mjs`.
-4. Create `wards-config/`; add `  - wards-config` to `pnpm-workspace.yaml`; install `yaml`; record its version and license in the README table on the same day.
+4. Create `wards-config/` with the two entries (`src/index.ts` browser-safe, `src/node.ts` Node-only) and the `no-restricted-imports` block for the default entry; add `  - wards-config` to `pnpm-workspace.yaml`; install `yaml` 2.9.1; record its version and license in the README table on the same day.
 5. Create `apps/ghost-shell/wards.yaml`.
 6. Update `.kiro/steering/structure.md` as described in Data Models (steering files are not edited by this design).
 7. Add the test files listed above; keep the short run under 60 s together with the P1 to P4 tests.
@@ -803,3 +842,5 @@ An in-memory `World<FsState, FsAction>` with actions `rm`, `rm-recursive`, `rm-g
 | D18 | SQL multi-table reason is `would delete <n1> rows from <t1>, <n2> rows from <t2>`; tables are sorted by their lower-case name and print in the ward's own spelling (requirement 6.3 agrees: the lower-case name is only the sort key) | Keeps the old shape and a stable display independent of data |
 | D19 | `parseWards` pre-scans indentation and bracket runs before calling the library | The library composes recursively; a hostile 256 KiB input could exhaust the stack. Legitimate files are never near the limits |
 | D20 | `isMoreRestrictive` and the engine share `normalizePattern` and `hostEntryKey` | One definition of "same entry" for duplicate detection (`duplicate-entry`), set comparison, and matching |
+| D21 | `wards-config` has two entries: the default entry is browser-safe (no Node built-in), and `loadWardsFile` lives in the subpath `@ghost-run/wards-config/node`; the rule is enforced by an ESLint `no-restricted-imports` block and an import-graph test | The Ghost Shell playground parses `wards.yaml` in the browser. `yaml` 2.9.1 (ISC, published 2026-09-11) has a browser build as the `default` condition of its `exports` map, so the parser itself needs no Node. One check could rot silently, so two independent checks (lint on source files, graph walk on the real import graph) guard the same rule |
+| D22 | `safe_commands` is parsed by `wards-config` into `ParseResult.safeCommands`; `core` `WardSet` and `WardEngine` stay unchanged; `printWards` takes it as an optional second parameter and omits the key when the list is empty; the default file has no `safe_commands` yet | `ghost-gate` needs the list from the same file, but a safe list is a hook concern, not a ward. Keeping it out of `WardSet` avoids touching `core` types, `isMoreRestrictive`, and P4. Omitting an empty list keeps the round trip exact because absent and `[]` parse to the same value. The conservative charset keeps every shell operator out of the list so no later matcher can be fooled by an entry. The default content depends on the kiro-integration built-in list and is left open |

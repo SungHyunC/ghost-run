@@ -6,7 +6,7 @@ The `wards` spec turns the minimal judgment rules in `core/src/wards.ts` into th
 
 1. Refined judgment rules in `core/`: path normalization, glob matching, a case policy, `file-*` and SQLite change handling, and allow-host matching.
 2. P6 content inspection: detection of a secret value (Canary) in captured network payloads, in raw form and in five single-layer encodings.
-3. A `wards.yaml` parser, validator, and printer in a new workspace package outside `core/` (the YAML parser must not enter `core/`).
+3. A `wards.yaml` parser, validator, and printer in a new workspace package outside `core/` (the YAML parser must not enter `core/`). The default entry of that package is browser-safe (it imports no Node built-in), so the Ghost Shell playground can parse `wards.yaml` in the browser; file loading lives in a separate Node-only subpath. The file also carries an optional top-level list `safe_commands` that `ghost-gate` (kiro-integration spec) uses to extend its read-only safe list; this spec only parses, validates, and prints it.
 4. The block, warn, and pass messages that the hook returns to the agent, built from fixed text with no LLM call.
 5. The default `wards.yaml` for the five Ghost Shell scenarios of `docs/plan.md`.
 6. The property-based tests that back P4, P5, and P6 within their declared scopes.
@@ -30,7 +30,10 @@ Inconsistencies found between the existing specs and code are not silently resol
 - **Ward_Engine**: The pure function `WardEngine.evaluate` exported by `core`, which judges a `GhostReport` against a `WardSet` and returns a `WardVerdict`.
 - **Ward**: One guard rule with an `id` and a `kind` (`path`, `sql`, `egress`, `physics`), as defined by the `Ward` type in `core`.
 - **WardSet**: The ordered list of Wards, parsed from `wards.yaml`.
-- **Wards_Config**: The new workspace package `@ghost-run/wards-config` that parses, validates, and prints `wards.yaml`. It depends on `core` and is never imported by `core`.
+- **Wards_Config**: The new workspace package `@ghost-run/wards-config` that parses, validates, and prints `wards.yaml`. It depends on `core` and is never imported by `core`. Its default entry (`@ghost-run/wards-config`) is browser-safe; its Node-only entry is the subpath `@ghost-run/wards-config/node`.
+- **Default_Entry**: The module graph reachable from `wards-config/src/index.ts` (public path `@ghost-run/wards-config`). It exports `parseWards`, `printWards`, `formatConfigError`, and the types `ConfigError`, `ConfigErrorCode`, `ConfigWarning`, `ParseResult`, and imports no Node built-in module.
+- **Node_Entry**: The module `wards-config/src/node.ts` (public path `@ghost-run/wards-config/node`). It exports `loadWardsFile` and is the only entry whose module graph may import `node:fs/promises`.
+- **Safe_Command_Entry**: One string of the optional top-level `safe_commands` list of `wards.yaml`: a command prefix pattern of one or more single-space-separated tokens (Requirement 12 criterion 13). `ghost-gate` reads the validated list through `ParseResult.safeCommands` and decides what "prefix match" means; the Ward_Engine ignores it.
 - **Config_Error**: One validation finding of Wards_Config with `code`, `message`, `line`, and, when known, `wardId` and `field`.
 - **Path_Normalizer**: The `core` function that converts a path or a glob pattern to its canonical form (Requirement 2).
 - **Glob_Matcher**: The `core` function that decides whether a normalized path matches a normalized glob pattern (Requirement 3).
@@ -66,10 +69,12 @@ Inconsistencies found between the existing specs and code are not silently resol
 3. THE `core/` package SHALL contain no import path that resolves to Wards_Config; the ESLint `no-restricted-imports` rule of `core` SHALL enforce this and `pnpm lint` SHALL fail when the rule is violated.
 4. THE Wards_Config package SHALL import `core` types and functions only through the public entry point of `@ghost-run/core`.
 5. THE Ward_Engine, Path_Normalizer, Glob_Matcher, Host_Matcher, Content_Inspector, and Message_Builder SHALL perform no file I/O, no network call, no process execution, no `eval` or dynamic code execution, and no LLM call, and SHALL read no clock, random source, or environment variable.
-6. THE Wards_Config package SHALL perform file I/O only in a function that receives a path argument; the parse, validate, and print functions SHALL take and return strings and values.
+6. THE Wards_Config package SHALL perform file I/O only in a function that receives a path argument (`loadWardsFile`, in the Node_Entry); the parse, validate, and print functions SHALL take and return strings and values.
 7. BEFORE the Wards_Config package is merged, THE repository README dependency table SHALL list the chosen YAML library and every other new dependency with its name, version, and license, and the recorded license of each SHALL be a permissive license (MIT, BSD-2-Clause, BSD-3-Clause, ISC, or Apache-2.0).
 8. THE Wards_Config package SHALL target Node.js 20 or later and SHALL contain no call to any LLM API.
 9. THE `.kiro/steering/structure.md` file SHALL be updated, in the same change that adds Wards_Config, to list the package and its dependency direction (Wards_Config may depend on `core`, never the reverse).
+10. THE Default_Entry of Wards_Config SHALL import no Node built-in module, neither as `node:<name>` nor as a bare built-in name (`fs`, `path`, `url`, `util`, `os`, `crypto`, `process`, `buffer`, `stream`, `child_process`, and the rest of the Node core module list), directly or through any module it imports inside the package; the same SHALL hold for the entry of the `yaml` library that a bundler selects for a browser target (the `default` export condition of `yaml` 2.9.1 is its browser build). The reason is that the Ghost Shell playground parses `wards.yaml` in the browser. The package SHALL enforce this with two checks: an ESLint `no-restricted-imports` rule that bans `node:*` and the bare Node built-in names in every source file of the Default_Entry (all files of `src/` except `load.ts` and `node.ts`), and a test that walks the import graph of `src/index.ts` and fails when any module in it imports a Node built-in.
+11. THE package.json `exports` map of Wards_Config SHALL define exactly two subpaths, `"."` (the Default_Entry) and `"./node"` (the Node_Entry), each with a `types` and an `import` condition that point to the built output, and no other entry; `loadWardsFile` SHALL NOT be exported from the Default_Entry.
 
 ### Requirement 2: Path Normalization
 
@@ -230,8 +235,8 @@ Inconsistencies found between the existing specs and code are not silently resol
 
 #### Acceptance Criteria
 
-1. THE Wards_Config package SHALL export `parseWards(text: string)` returning either `{ ok: true, wardSet, warnings }` or `{ ok: false, errors }`, where `errors` is a non-empty array of Config_Error sorted by (`line`, `column`, `code`).
-2. THE `parseWards` function SHALL accept a document whose root is a mapping with exactly one key `wards` holding a sequence of 0 to 256 mappings, and SHALL report `root-not-mapping`, `unknown-root-field`, or `wards-not-sequence` otherwise.
+1. THE Default_Entry of Wards_Config SHALL export `parseWards(text: string)` returning either `{ ok: true, wardSet, safeCommands, warnings }` or `{ ok: false, errors }`, where `errors` is a non-empty array of Config_Error sorted by (`line`, `column`, `code`); `safeCommands` is a `string[]` that is always present on an `ok: true` result and is `[]` when the document has no `safe_commands` key; an `ok: false` result has no `wardSet` and no `safeCommands` field.
+2. THE `parseWards` function SHALL accept a document whose root is a mapping with the required key `wards` holding a sequence of 0 to 256 mappings and the optional key `safe_commands` (criterion 13), and SHALL report `root-not-mapping`, `unknown-root-field` (any other root key), or `wards-not-sequence` otherwise.
 3. THE `parseWards` function SHALL validate the common fields of every Ward: `id` (required string matching `^[a-z0-9][a-z0-9-]{0,63}$`) and `kind` (required, one of `path`, `sql`, `egress`, `physics`); an unknown `kind` SHALL produce `unknown-kind` naming the allowed values.
 4. THE `parseWards` function SHALL validate a `path` Ward: `deny` (required, non-empty, each of `delete` or `overwrite`, no duplicate), `paths` (required, 1 to 1,000 entries, each valid by `validateGlob`), and `case_sensitive` (optional boolean).
 5. THE `parseWards` function SHALL validate a `sql` Ward: `tables` (required, 1 to 1,000 entries, each matching `^[A-Za-z_][A-Za-z0-9_]{0,127}$`) and `max_rows_lost` (required safe integer greater than or equal to `0`).
@@ -241,7 +246,15 @@ Inconsistencies found between the existing specs and code are not silently resol
 9. THE `parseWards` function SHALL report `invalid-character` for an `id`, pattern, host entry, table name, or contact name that contains a control character (U+0000 to U+001F, U+007F) or one of the hidden characters U+200B to U+200D, U+2060, U+FEFF, U+202A to U+202E, U+2066 to U+2069, or U+E0000 to U+E007F; this is a configuration check and not the P7 detector.
 10. THE `parseWards` function SHALL parse the document into a `WardSet` whose Ward order equals the document order, and SHALL leave an absent optional field absent (no default injected into the value).
 11. THE `parseWards` function SHALL return the `WardSet` only when no Config_Error exists; with one or more errors it SHALL return no `wardSet`.
-12. THE Wards_Config package SHALL export `loadWardsFile(path: string)`, which reads the file as UTF-8 and calls `parseWards`, and SHALL return the error `file-unreadable` with the path (and no line) when the file cannot be read.
+12. THE Node_Entry of Wards_Config (`@ghost-run/wards-config/node`) SHALL export `loadWardsFile(path: string)`, which reads the file as UTF-8 and calls `parseWards`, and SHALL return the error `file-unreadable` with the path (and no line) when the file cannot be read; the Default_Entry SHALL NOT export it (Requirement 1 criterion 10).
+13. THE `parseWards` function SHALL validate the optional top-level key `safe_commands` as a sequence of 0 to 256 strings, each a Safe_Command_Entry, with these rules, checked per entry in this order:
+    1. A value that is not a sequence (including an empty value, which YAML reads as null) SHALL give `wrong-type` at the line of the value; an item that is not a string SHALL give `wrong-type` at the line of the item.
+    2. An entry that contains a control character or a hidden character of criterion 9 (this includes tab, carriage return, and line feed) SHALL give `invalid-character`.
+    3. An entry whose length is 0 or more than 256 UTF-16 code units SHALL give `out-of-range`; a list of more than 256 entries SHALL give `out-of-range` once, at the line of the list value.
+    4. An entry that does not match `^[A-Za-z0-9_./:=@%+,-]+( [A-Za-z0-9_./:=@%+,-]+)*$` SHALL give the new code `unsafe-command-entry`. The pattern means: one or more tokens separated by exactly one space, no leading or trailing space, and every token made only of ASCII letters, digits, and the characters `_ . / : = @ % + , -`. Every shell operator and metacharacter (`;`, `&`, `&&`, `|`, `||`, `>`, `<`, a backtick, `$`, `$(`, quotes, `\`, `(`, `)`, `{`, `}`, `*`, `?`, `[`, `]`, `!`, `#`, `~`) and every non-ASCII character is outside the charset and gives this code; so does a double space, a leading space, and a trailing space. The `detail` of the error is `charset` or `spacing`.
+    5. An entry that equals an earlier entry of the same list (exact string equality; no normalization is needed because the grammar fixes the spacing) SHALL give `duplicate-entry` at the later entry, with a message that names the line of the first occurrence.
+    The error `field` is `safe_commands` for the list and `safe_commands[<i>]` for entry `i`; the error message names the field and never contains the entry text. The result keeps document order and removes nothing. The total size of the list counts toward the input cap of Requirement 13 criterion 7. `safe_commands` is a known root field, so `unknown-root-field` does not apply to it, and a repeated `safe_commands` key gives `duplicate-key`.
+14. THE `parseWards` function SHALL NOT interpret the meaning of a Safe_Command_Entry beyond criterion 13: matching a command against the list belongs to `ghost-gate`, and the Ward_Engine and `core` SHALL ignore `safeCommands` (the `WardSet` type of `core` is unchanged).
 
 ### Requirement 13: Error Reporting and Parser Safety
 
@@ -250,16 +263,16 @@ Inconsistencies found between the existing specs and code are not silently resol
 #### Acceptance Criteria
 
 1. THE Config_Error of every finding that has a source position SHALL carry `line` (1-based) and `column` (1-based), and SHALL carry `wardId` when the Ward's `id` is known and `field` when a field is involved (for example `paths[1]`).
-2. THE `line` of an error SHALL be the line of the offending value for `wrong-type`, `out-of-range`, `invalid-glob`, `invalid-host`, `invalid-character`, and `duplicate-entry`; the line of the key for `unknown-field`; the line of the Ward's mapping start for `missing-field`, `unknown-kind`, and `duplicate-id`; and the line of the YAML syntax error for `yaml-syntax-error`.
+2. THE `line` of an error SHALL be the line of the offending value for `wrong-type`, `out-of-range`, `invalid-glob`, `invalid-host`, `invalid-character`, and `duplicate-entry`; the line of the key for `unknown-field`; the line of the Ward's mapping start for `missing-field`, `unknown-kind`, and `duplicate-id`; and the line of the YAML syntax error for `yaml-syntax-error`; for `safe_commands`, the line of the offending item for `wrong-type` (item), `invalid-character`, `out-of-range` (entry length), `unsafe-command-entry`, and `duplicate-entry`, and the line of the list value for `wrong-type` (not a list) and `out-of-range` (too many entries).
 3. THE Wards_Config package SHALL export `formatConfigError(error)` returning exactly `wards.yaml:<line>:<column>: [<code>] ward "<wardId>" field "<field>": <message>`, omitting the `ward` part when `wardId` is unknown and the `field` part when no field is involved, so that the same error always renders to the same string.
 4. THE `parseWards` function SHALL report all errors found in one pass up to a limit of 50 errors, and SHALL add the final error `too-many-errors` when more exist.
 5. THE `parseWards` function SHALL report a YAML syntax error as `yaml-syntax-error` with the line of the error and SHALL NOT throw an exception for any input string.
 6. THE `parseWards` function SHALL reject anchors, aliases, merge keys, and custom tags with the error `yaml-feature-unsupported`, and SHALL report a repeated mapping key as `duplicate-key` naming the line of the first occurrence.
 7. THE `parseWards` function SHALL reject an input larger than 262,144 bytes with the error `input-too-large` before parsing, and SHALL reject a nesting depth greater than 8 with `yaml-feature-unsupported`.
 8. THE `parseWards` function SHALL complete for an input of 262,144 bytes within 1.0 s on the Reference_Machine.
-9. THE `parseWards` function SHALL put no value of the input text into an error message other than the offending field name, the `id`, the error code, and (for `invalid-glob` and `invalid-host`) the offending entry truncated to 80 characters with control and hidden characters replaced as in Requirement 17 criterion 7.
+9. THE `parseWards` function SHALL put no value of the input text into an error message other than the offending field name, the `id`, the error code, the line of a first occurrence, and (for `invalid-glob` and `invalid-host`) the offending entry truncated to 80 characters with control and hidden characters replaced as in Requirement 17 criterion 7.
 10. THE license of the chosen YAML library and of every other new dependency of Wards_Config SHALL be checked on the day the dependency is added and recorded in the README table (Requirement 1 criterion 7); the library choice itself is a design-time decision.
-11. FOR ALL generated invalid documents (one mutation each: unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host), THE `parseWards` function SHALL return `ok: false` with an error of the expected `code` whose `line` is the line of the mutated node.
+11. FOR ALL generated invalid documents (one mutation each: unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host, and, for `safe_commands`, non-list value, non-string item, hidden character, over-long entry, too many entries, an entry with a shell operator, and a duplicate entry), THE `parseWards` function SHALL return `ok: false` with an error of the expected `code` whose `line` is the line of the mutated node.
 
 ### Requirement 14: WardSet Printer and Round Trip
 
@@ -267,11 +280,11 @@ Inconsistencies found between the existing specs and code are not silently resol
 
 #### Acceptance Criteria
 
-1. THE Wards_Config package SHALL export `printWards(wardSet: WardSet): string` that returns a canonical YAML document: key order `id`, `kind`, then the kind-specific fields in the order of Requirement 12 criteria 4 to 7, two-space indentation, one list entry per flow item, strings quoted whenever plain style could change the parsed value (for example `".env"`, `"data/**"`, `"0"`), and a trailing newline.
-2. FOR ALL valid `WardSet` values `ws`, THE parse of the printed text SHALL return `ok: true` with a `wardSet` deep-equal to `ws` (round trip).
-3. FOR ALL valid `WardSet` values `ws`, printing the parsed printed text SHALL produce a string identical to the first printed text (idempotence).
+1. THE Default_Entry of Wards_Config SHALL export `printWards(wardSet: WardSet, options?: { safeCommands?: readonly string[] }): string` that returns a canonical YAML document: key order `id`, `kind`, then the kind-specific fields in the order of Requirement 12 criteria 4 to 7, two-space indentation, one list entry per flow item, strings quoted whenever plain style could change the parsed value (for example `".env"`, `"data/**"`, `"0"`), and a trailing newline. WHEN `options.safeCommands` is present and non-empty, the document SHALL end with one more top-level line after the last ward, `safe_commands: [<entry>, <entry>, ...]`, a flow sequence with entries separated by `, ` and quoted by the same string rule as other lists (so `ls` prints plain and `git status` prints as `"git status"`); WHEN it is absent or empty, the key SHALL be omitted.
+2. FOR ALL valid `WardSet` values `ws` and all valid `safeCommands` lists `sc` (entries valid by Requirement 12 criterion 13), THE parse of `printWards(ws, { safeCommands: sc })` SHALL return `ok: true` with a `wardSet` deep-equal to `ws` and a `safeCommands` array equal to `sc` (round trip); an empty `sc` prints no key and parses back to `[]`.
+3. FOR ALL such `ws` and `sc`, printing the parsed printed text (with the parsed `safeCommands`) SHALL produce a string identical to the first printed text (idempotence).
 4. THE `printWards` function SHALL NOT preserve comments, and THE README SHALL state that comments are lost when a file is rewritten by `printWards`.
-5. THE `printWards` function SHALL NOT write a file; writing is the caller's task.
+5. THE `printWards` function SHALL NOT write a file; writing is the caller's task. A caller that rewrites a file with `printWards` and omits `options.safeCommands` drops the `safe_commands` key; the README SHALL state this next to the comment-loss note.
 
 ### Requirement 15: Monotonicity (P4) for the Refined Rules
 
@@ -335,7 +348,7 @@ Inconsistencies found between the existing specs and code are not silently resol
 
 #### Acceptance Criteria
 
-1. THE repository SHALL contain exactly one canonical default wards file for Ghost Shell, and a test SHALL load it with `loadWardsFile` and require `ok: true`; its location is a design-time decision (Open Item 12; candidates are `apps/ghost-shell/wards.yaml` and `worlds/<name>/wards.yaml`).
+1. THE repository SHALL contain exactly one canonical default wards file for Ghost Shell, and a test SHALL load it with `loadWardsFile` (imported from `@ghost-run/wards-config/node`, or through a relative source alias of that module) and require `ok: true`; its location is a design-time decision (Open Item 12; candidates are `apps/ghost-shell/wards.yaml` and `worlds/<name>/wards.yaml`).
 2. THE default file SHALL contain exactly these three Wards, in this order, with these values:
 
 ```yaml
@@ -364,6 +377,7 @@ wards:
 10. THE tests of criteria 5 to 9 SHALL run on synthetic `GhostReport` values without Docker; the Docker-box run of the same scenarios is the task of ghost-runner Requirement 18, which SHALL load the default file.
 11. THE Block_Message of each blocking scenario SHALL equal the string produced by Requirement 16 for that report, and a test SHALL check the exact string of scenario 1 against the example of Requirement 16 criterion 5.
 12. THE fixture `.env` of every test and demo SHALL contain only Canary values such as `sk-CANARY-abc123`, and no real credential SHALL be committed.
+13. THE default file SHALL NOT contain a `safe_commands` key yet: the default content of that list is an open item (Open Item 16), and the "exactly these three Wards" rule of criterion 2 is unchanged by it. The test of criterion 1 SHALL therefore expect `safeCommands` equal to `[]` until Open Item 16 is decided.
 
 ### Requirement 19: Safety Property Tests (P4, P5, P6)
 
@@ -402,6 +416,8 @@ These inconsistencies were found between the existing specs and code. This spec 
 13. **Package directory.** `.kiro/steering/structure.md` does not list Wards_Config (or ghost-runner). The directory is a design-time decision, and the steering file is updated with it (Requirement 1 criterion 9).
 14. **Out-of-order secrets.** Wards judge `secret-read` and `network-attempt` by `stepIndex` only. Two events inside one step cannot be ordered, so a network attempt that precedes the secret read inside one action is still blocked (conservative, Requirement 8 criterion 3).
 15. **Core type extensions (assumption).** `symlink-changed`, `dropped`, `eventId`, and the `secretValues` hand-off type are implemented in `core` first by the ghost-runner implementation (ghost-runner Requirement 1 criteria 6 and 7). The wards implementation starts after that work, treats the types as present, and only references them. The exact field layout of a `secretValues` entry is owned by that core change; this spec requires only that each entry carries `secretPath` and the content bytes.
+16. **Default `safe_commands` list. Open.** The optional top-level key `safe_commands` exists in the grammar (Requirement 12 criterion 13), but the default list for `apps/ghost-shell/wards.yaml` is not decided. Task 8.1 adds no `safe_commands` key. The decision belongs to the owner of the kiro-integration spec, which also defines the built-in safe list that the key extends and the prefix-matching rule.
+17. **Browser-safe entry. Resolved.** The Ghost Shell playground (ghost-shell spec) parses `wards.yaml` in the browser, so the Default_Entry of Wards_Config imports no Node built-in and `loadWardsFile` moves to the subpath `@ghost-run/wards-config/node` (Requirement 1 criteria 10 and 11, Requirement 12 criterion 12). The `yaml` library 2.9.1 (ISC) has a browser build as the `default` condition of its `exports` map; this was confirmed on npm and in the installed package on 2026-11-18.
 
 ## Out of Scope
 
@@ -415,3 +431,4 @@ These inconsistencies were found between the existing specs and code. This spec 
 - CIDR ranges and port ranges in `allow_hosts`.
 - Hook scripts, MCP tools, and the Kiro power.
 - Choice of the YAML library (design time; only its license rule is required here).
+- Matching a command against `safe_commands` and the built-in safe list (kiro-integration spec, `ghost-gate`); this spec only parses, validates, and prints the list.

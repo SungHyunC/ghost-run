@@ -4,6 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": false,
+    "types": ["node"],
     "declaration": true,
     "outDir": "dist",
     "rootDir": ".",

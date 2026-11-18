@@ -3,7 +3,9 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -11,8 +13,20 @@
     "verbatimModuleSyntax": true,
     "types": [],
     "paths": {
-      "@ghost-run/core": ["../core/src/index.ts"]
+      "@ghost-run/core": [
+        "../core/src/index.ts"
+      ],
+      "@ghost-run/wards-config": [
+        "./src/index.ts"
+      ],
+      "@ghost-run/wards-config/node": [
+        "./src/node.ts"
+      ]
     }
   },
-  "include": ["src", "tests", "vitest.config.ts"]
+  "include": [
+    "src",
+    "tests",
+    "vitest.config.ts"
+  ]
 }

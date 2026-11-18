@@ -1,6 +1,6 @@
-export * from './types.js';
-export * from './parse.js';
-export * from './schema.js';
-export * from './print.js';
-export * from './load.js';
-export * from './format.js';
+// Default entry: browser-safe. Must not reach load.ts or node.ts (decision D21).
+export { parseWards } from './parse.js';
+export { printWards } from './print.js';
+export type { PrintOptions } from './print.js';
+export { formatConfigError } from './format.js';
+export type { ConfigError, ConfigErrorCode, ConfigWarning, ParseResult } from './types.js';

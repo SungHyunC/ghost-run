@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./node": {
+      "types": "./dist/src/node.d.ts",
+      "import": "./dist/src/node.js"
     }
   },
   "files": [
@@ -28,7 +32,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@ghost-run/core": "workspace:*"
+    "@ghost-run/core": "workspace:*",
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

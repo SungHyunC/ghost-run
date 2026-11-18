@@ -1,5 +1,10 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "6.7 Write property test for the print and parse round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794984732083
+    }
+  },
   "executionHistory": {
     "1.1 Create the `wards-config/` package and register it in the workspace": [
       {
@@ -488,6 +493,214 @@
         "executionId": "ca754ca2-d068-454a-8641-d3a16598c4d8",
         "chatSessionId": "sess_185b9f40-9fc1-47ca-9dbb-cbaed93bfb7d",
         "timestamp": 1794983554424
+      }
+    ],
+    "6.1 Add the `yaml` dependency and the README dependency table row": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935046
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983945168
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984235299
+      }
+    ],
+    "6.2 Implement `wards-config/src/types.ts` and `src/format.ts`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935050
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984235782
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984278857
+      }
+    ],
+    "6.3 Implement `wards-config/src/parse.ts` and `src/schema.ts`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935052
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984282003
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984474384
+      }
+    ],
+    "6.4 Implement `wards-config/src/print.ts`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935058
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984282486
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984474394
+      }
+    ],
+    "6.5 Implement `wards-config/src/load.ts`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935060
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984479026
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984520338
+      }
+    ],
+    "6.6 Export the public API from `wards-config/src/index.ts`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935061
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984526172
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984617595
+      }
+    ],
+    "7. Checkpoint - wards-config complete": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935063
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984751632
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984855865
+      }
+    ],
+    "8.1 Create `apps/ghost-shell/wards.yaml`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935065
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983942790
+      }
+    ],
+    "9. Checkpoint - Default wards and scenarios verified": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935066
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983943325
+      }
+    ],
+    "10.5 Write the README sections for claims, policies, and limits": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935068
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983944164
+      }
+    ],
+    "11. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983935070
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794983944673
+      }
+    ],
+    "6. The `wards-config` package": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984617599
+      }
+    ],
+    "6.7 Write property test for the print and parse round trip": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984618215
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984623289
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984744458
+      }
+    ],
+    "6.8 Write smoke tests `wards-config/tests/smoke.test.ts`": [
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984618746
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984623295
+      },
+      {
+        "executionId": "8855948c-fb4a-4ffb-9035-99fbaa36a47e",
+        "chatSessionId": "sess_654dd883-d4a7-4126-933b-bbc535639ddd",
+        "timestamp": 1794984744466
       }
     ]
   }

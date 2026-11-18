@@ -12,11 +12,11 @@ const word = (min = 1, max = 8): fc.Arbitrary<string> =>
     .array(fc.constantFrom(...ALNUM), { minLength: min, maxLength: max })
     .map((cs) => cs.join(''));
 
-/** Ward id: starts with a letter, then lower-case alphanumerics, `-`, `_`. */
+/** Ward id matching ^[a-z0-9][a-z0-9-]{0,63}$ (starts with a letter). */
 export const wardIdArb: fc.Arbitrary<string> = fc
   .tuple(
     fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz'.split('')),
-    fc.array(fc.constantFrom(...ALNUM, '-', '_'), { maxLength: 10 }),
+    fc.array(fc.constantFrom(...ALNUM, '-'), { maxLength: 10 }),
   )
   .map(([h, t]) => h + t.join(''));
 
@@ -29,10 +29,10 @@ const globSegmentArb: fc.Arbitrary<string> = fc.oneof(
   word(1, 5).map((w) => `${w}?`),
 );
 
-/** Valid glob: 1-4 segments, optionally rooted with `/`. */
+/** Valid glob: 1-4 segments; leading `/` is rejected by the schema (absolute-pattern). */
 export const globArb: fc.Arbitrary<string> = fc
-  .tuple(fc.boolean(), fc.array(globSegmentArb, { minLength: 1, maxLength: 4 }))
-  .map(([rooted, segs]) => (rooted ? '/' : '') + segs.join('/'));
+  .array(globSegmentArb, { minLength: 1, maxLength: 4 })
+  .map((segs) => segs.join('/'));
 
 const RESERVED_HOSTS = [
   'a.example',
@@ -43,14 +43,16 @@ const RESERVED_HOSTS = [
   'x.invalid',
   '192.0.2.1',
   '192.0.2.77',
-  '::1',
+  '[::1]',
   'registry.npmjs.org',
 ] as const;
 
 /** Valid host entry from the reserved set (plus the npm registry example). */
 export const hostArb: fc.Arbitrary<string> = fc.constantFrom(...RESERVED_HOSTS);
 
-const tableArb: fc.Arbitrary<string> = word(1, 8);
+const tableArb: fc.Arbitrary<string> = fc
+  .tuple(fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz_'.split('')), word(0, 7))
+  .map(([h, t]) => h + t);
 
 /** Secret file glob/path, e.g. `.env` or `secrets/<word>.env`. */
 const secretArb: fc.Arbitrary<string> = fc.oneof(
@@ -103,6 +105,28 @@ const wardBodyArb = fc.oneof(pathWardBody, sqlWardBody, egressWardBody, physicsW
 export const wardArb: fc.Arbitrary<Ward> = fc
   .tuple(wardIdArb, wardBodyArb)
   .map(([id, build]) => build(id));
+
+const SAFE_TOKEN_CHARS = [
+  ...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+  '_', '.', '/', ':', '=', '@', '%', '+', ',', '-',
+];
+
+const safeTokenArb: fc.Arbitrary<string> = fc.oneof(
+  { weight: 8, arbitrary: fc.array(fc.constantFrom(...SAFE_TOKEN_CHARS), { minLength: 1, maxLength: 12 }).map((cs) => cs.join('')) },
+  { weight: 2, arbitrary: fc.constantFrom('0', '1e3', 'true', 'false', 'null', '.env', '-', '--flag=x', '@scope/pkg') },
+);
+
+/** One safe_commands entry: 1-256 chars, tokens over the charset joined by single spaces. */
+export const safeCommandEntryArb: fc.Arbitrary<string> = fc
+  .array(safeTokenArb, { minLength: 1, maxLength: 6 })
+  .map((ts) => ts.join(' '))
+  .filter((s) => s.length <= 256);
+
+/** Valid safe_commands list: 0-256 distinct entries. */
+export const safeCommandsArb: fc.Arbitrary<string[]> = fc.uniqueArray(safeCommandEntryArb, {
+  minLength: 0,
+  maxLength: 256,
+});
 
 /** Valid WardSet: 1-8 wards with unique ids, all four kinds reachable. */
 export const wardSetArb: fc.Arbitrary<WardSet> = fc

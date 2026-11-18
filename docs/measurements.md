@@ -124,6 +124,10 @@ Fresh module, a live `data.qpos` view (length 9) and a `DoubleBuffer` `GetView()
 - Confirmed as documented: `mujoco.mjNEQDATA` (12), `mujoco.mjFRAMESTRING` (array), `mjtDisableBit.mjDSBL_CLAMPCTRL.value` (256), `mjv_updateScene(... mjtCatBit.mjCAT_ALL.value, scene)`, `data.qpos` as a live `Float64Array` view.
 - README is silent on the non-owning accessors (`data.warning`, `data.solver`, `data.timer`) and on the unwritten `Float64Array` out parameters.
 
+## Engine layer (task 7.1)
+
+Shipped scene compiled by `worlds/drawer-arm/src/engine/mjcf.ts` with `<size memory="1M"/>`: `model.narena` and `data.narena` 1,048,576 bytes, one `MjData` (`narena + nbuffer`) 1,065,055 bytes (under 2 MiB). State vector (INTEGRATION) length 120: nq 14, nv 13, nu 6. Module heap right after loading: 17,629,184 bytes. Date 2026-11-18, Node v20.20.2, Apple M1. Only a throwaway check was run; the engine tests are task 7.2.
+
 ## Short-run budget and verifyWorld timing
 
 unmeasured
@@ -201,3 +205,34 @@ Run on macOS (Apple Silicon) with `corepack pnpm`, in sequence, after the spec t
 - Unchanged files: `core/tests/p4-monotonicity.test.ts` has an empty `git diff`. `core/tests/wards.test.ts` has one removed line (the import statement, widened to import `renderMessage` and the claim-line constants); all existing cases are untouched and new cases are appended only.
 - `core/package.json` has no `dependencies` field (only `devDependencies`, `peerDependencies`, `peerDependenciesMeta`).
 - Hidden Unicode (U+200B to U+200D, U+2060, U+FEFF, U+202A to U+202E, U+2066 to U+2069, U+E0000 to U+E007F) scan over `core/`, `wards-config/`, `.kiro/specs/wards/` and this file (148 text files, `node_modules` and `dist` excluded): 0 literal occurrences. The three spec files pass `validate_spec_format` with no issues, and contain no HTML-comment openers.
+
+## Core: verifyWorld stateEquals and WardNotice kind 'unsupported-step'
+
+Run on macOS (Apple Silicon) with `corepack pnpm`, after two small additive core changes.
+
+- `verifyWorld` accepts an optional `stateEquals?: (a, b) => boolean` (default: the existing structural comparison). It is used only by P3 10.1 and 10.2. P2 change lists, P1 fingerprints and ward verdicts stay structural. Chosen over "diff(a, b) is empty" because `diff` is a minimal change list and a gap or bug in it would hide real state differences for every world. A caller can still build `stateEquals` on the world's own `diff`.
+- `WardNotice.kind` gained `'unsupported-step'` (ghost-shell task 1.1). No verdict logic changed.
+- `core`: `typecheck`, `lint`, `build` exit 0; `vitest run`: 71 test files passed, 542 tests passed, 1 skipped (543 total), no type errors, about 7 s. All existing PBT pass with the default comparison.
+- `typecheck` exit 0 for `ghost-runner`, `wards-config`, `ui`, `worlds/drawer-arm` and `apps/ghost-hand`. None of them was modified.
+- `core/dist` was rebuilt. `core/package.json` and `core/tsconfig.json` are unchanged.
+- The ghost-runner `it.fails` test for `verifyWorld` is left as is. The ghost-runner turn replaces it with a plain test that passes `stateEquals` built from a content fingerprint (relative path, type, content bytes; excluding rootPath, mtimeNs, ctimeNs, lastStep).
+
+## Wards task 6.1: yaml dependency
+
+Recorded on 2026-11-18 on macOS (Apple Silicon) with `corepack pnpm`.
+
+- Added `yaml` pinned to exactly `2.9.1` to `wards-config/package.json` `dependencies`. `corepack pnpm install` finished with exit 0 (+6 -5 packages, lockfile passed the supply-chain policy check; the warning about the deprecated sub-dependency `whatwg-encoding@3.1.1` is pre-existing).
+- License confirmation: the `license` field of the installed `yaml@2.9.1` `package.json` is `ISC`, and `npm view yaml@2.9.1 license` also returns `ISC`. Confirmation date: 2026-11-18. The package has no runtime dependencies. The npm registry lists `time.modified` 2026-09-11 for 2.9.1.
+- Exports check: the `exports["."]` map of `yaml@2.9.1` has the conditions `types` (`./dist/index.d.ts`), `node` (`./dist/index.js`), and `default` (`./browser/index.js`). The default condition is therefore the browser build, which is the one a bundler such as Vite uses for a browser target. A search of `node_modules/yaml/browser` finds no import of a Node built-in module (`node:*`, `fs`, `path`, `util`, `os`, `crypto`, `process`) and no `require(` call.
+- The `wards-config` package.json already had an `exports` entry for `"."`; it was left unchanged (the `./node` subpath is added by task 6.6).
+- README: added the `yaml` row, the `shell-quote` and `@types/shell-quote` rows, the missing `ui` dev dependencies, and a `core` row ("no runtime dependencies") to the existing dependency table. Every license was read from the installed `package.json`. All are permissive except `axe-core` (MPL-2.0, dev-only, not shipped); the README license note says so.
+
+## Wards task 6.7: print and parse round trip (Property 17)
+
+Recorded on macOS (Apple Silicon) with `corepack pnpm`, in `wards-config`.
+
+- File: `wards-config/tests/roundtrip.test.ts`. The property uses `NUM_RUNS` from `tests/pbt-config.ts`: 100 runs in the default mode, 10 000 runs with `GHOST_PBT_MODE=nightly`. Both modes passed (nightly took about 3.7 s).
+- Checked per run: `parseWards(printWards(ws, { safeCommands: sc }))` returns an equal `wardSet` and `safeCommands`; printing the parsed values returns the identical text; the text ends with exactly one newline; an empty list prints no `safe_commands` key; a non-empty list prints one top-level line directly after the last ward. Example tests cover the quoting of `".env"`, `"data/**"`, `"0"`, `"true"`, and an empty ward set with safe commands.
+- The first runs failed because of three defects in the shared fixture arbitraries (no defect in `print.ts`, `parse.ts` or `schema.ts`). Shrunk counterexamples: `{"wards":[{"id":"a","kind":"path","deny":["delete"],"paths":["/**"]}]}` with `[]` (rooted globs are rejected as `absolute-pattern`); `{"wards":[{"id":"a","kind":"sql","tables":["7a"],"max_rows_lost":0}]}` with `[]` (table names must start with a letter or `_`); `{"wards":[{"id":"a","kind":"egress","secrets":[".env"],"allow_hosts":["::1"]}]}` with `[]` (an IPv6 host entry must be written `[::1]`). The ward id arbitrary also allowed `_`, which the id pattern rejects. All four were fixed in `tests/fixtures/ward-arbitraries.ts`.
+- Added `safeCommandEntryArb` and `safeCommandsArb` (0 to 256 distinct entries of 1 to 256 characters over the entry charset) to the fixtures.
+- `tsc --noEmit` and `eslint .` exit 0; `vitest run`: 9 files, 92 tests passed.

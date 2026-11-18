@@ -9,7 +9,7 @@ The plan follows the implementation waves of the design:
 1. Scaffolding: the `wards-config` package, its entry in `pnpm-workspace.yaml`, the ESLint import ban, the `structure.md` steering update, and the two additive type changes in `core/src/types.ts`.
 2. Pure judge modules, each with its property test: bytes and sanitizer, path normalizer, glob matcher, host matcher, canary extraction, content inspector, message builder.
 3. Engine integration: `evaluate` becomes an orchestrator over the judge modules, then `isMoreRestrictive` is extended. The existing P4 test is run before and after.
-4. The `wards-config` package with the `yaml` library (version 2.9.1, ISC license, confirmed on npm) and the README dependency table row.
+4. The `wards-config` package with the `yaml` library (version 2.9.1, ISC license, confirmed on npm and in the installed package on 2026-11-18), the README dependency table row, a browser-safe default entry plus the Node-only subpath `@ghost-run/wards-config/node`, and the optional `safe_commands` list.
 5. The default `apps/ghost-shell/wards.yaml` and the verification of scenarios 1 to 5.
 6. The leak, determinism, and error-line property tests, README documentation, and the final checkpoint.
 
@@ -26,7 +26,9 @@ Decisions reflected in this plan:
 2. **D18 (message joining).** A `sql` violation for several tables reads `would delete <n1> rows from <t1>, <n2> rows from <t2>`, with tables in ascending lower-case order printed in the ward's own spelling, and ` (max allowed <m>)` only when `max_rows_lost > 0` (task 4.2).
 3. **Claims.** P4 is claimed for all worlds. P5 is claimed only where P1 holds. P6 is claimed only where network attempts are recorded. In Plan B (`static-analysis`) neither P5 nor P6 is claimed, and the Message_Builder lowers the claim through the optional `RenderContext.claims` field (`reason` `static-analysis` or `unsupported-step`; no `claims` means no line, for worlds where P5 and P6 do not apply) (tasks 1.7, 2.13, 4.9, 4.10, 4.11).
 4. `core` keeps zero runtime dependencies. The `yaml` library lives only in `wards-config`.
-5. The default wards file lives at `apps/ghost-shell/wards.yaml` (design D13). Its Docker-box run belongs to ghost-runner Requirement 18 and is not part of this plan.
+5. **D21 (browser-safe entry).** The default entry of `wards-config` imports no Node built-in so the Ghost Shell playground can parse `wards.yaml` in the browser; `loadWardsFile` is exported only from `@ghost-run/wards-config/node` (tasks 1.1, 6.5, 6.6, 6.8).
+6. **D22 (`safe_commands`).** The optional top-level key `safe_commands` is parsed, validated, and printed by `wards-config` for `ghost-gate`; `core` is unchanged; the default list in `apps/ghost-shell/wards.yaml` is an open item (tasks 6.2, 6.3, 6.4, 6.7, 6.8, 8.1, 10.3, 10.4).
+7. The default wards file lives at `apps/ghost-shell/wards.yaml` (design D13). Its Docker-box run belongs to ghost-runner Requirement 18 and is not part of this plan.
 
 ## Conventions
 
@@ -35,7 +37,7 @@ Decisions reflected in this plan:
 - **Claim scope in tests.** Tests of P5 (Property 5) and P6 (Properties 8, 9) use the helper from task 1.7 and are labeled with their scope. They are claimed only where P1 holds (P5) and only where network attempts are recorded (P6), and they are never reported as claimed for `static-analysis` mode.
 - **Test data.** Canary values only (for example `sk-CANARY-abc123` and `sk-CANARY-` plus generated alphanumerics). Hostnames only from `.example`, `.test`, `.localhost`, `.invalid`, `192.0.2.x`, `::1`, `::ffff:c000:20a`, and `registry.npmjs.org` as the `allow_hosts` example. Hidden Unicode characters are written only as escape sequences (for example `"\u200B"` and `"\u{E0041}"`), never literally.
 - **Purity.** No judge module reads a clock, random source, or environment variable, performs I/O, or calls an LLM. Test oracles never import the code under test.
-- **Verification commands.** `pnpm --filter @ghost-run/core exec vitest --run`, `pnpm --filter @ghost-run/core exec tsc --noEmit`, `pnpm --filter @ghost-run/core exec eslint .`, and the same three for `@ghost-run/wards-config`.
+- **Verification commands.** `pnpm --filter @ghost-run/core exec vitest --run`, `pnpm --filter @ghost-run/core exec tsc --noEmit`, `pnpm --filter @ghost-run/core exec eslint .`, and the same three for `@ghost-run/wards-config` (`tsc --noEmit` there checks the `src`, `tests`, and config files through the source aliases; `build` is needed only before another package imports the built output).
 - **Scope of this plan.** Coding tasks only. Hook scripts, the MCP server, UI rendering of the lowered claim, and the Docker-box run of the scenarios belong to other specs.
 
 ## Tasks
@@ -45,7 +47,7 @@ Decisions reflected in this plan:
     - Add `  - wards-config` to the `packages:` list of `pnpm-workspace.yaml` (it is not covered by the existing globs).
     - Create `wards-config/package.json` (`name: "@ghost-run/wards-config"`, `private: true`, `type: "module"`, `engines.node >= 20`, dependency `@ghost-run/core: workspace:*` as the only workspace dependency, dev dependencies `vitest`, `fast-check`, `typescript`, scripts `test`, `test:pbt`, `lint`, `build`, `clean`). The `yaml` dependency is added later in task 6.1.
     - Create `tsconfig.json`, `tsconfig.build.json`, `eslint.config.mjs` (import `@ghost-run/core` only through its public entry point), and `vitest.config.ts` with the alias `@ghost-run/core` to `<root>/core/src/index.ts` so tests never need a prior build.
-    - Create placeholder modules `src/index.ts`, `src/types.ts`, `src/parse.ts`, `src/schema.ts`, `src/print.ts`, `src/load.ts`, `src/format.ts` so later tasks only fill them in.
+    - Create placeholder modules `src/index.ts` (default entry), `src/types.ts`, `src/parse.ts`, `src/schema.ts`, `src/print.ts`, `src/format.ts`, `src/load.ts`, and `src/node.ts` (Node entry, re-exports `load.ts`) so later tasks only fill them in. `src/index.ts` must not re-export `load.ts` or `node.ts` (decision D21; the placeholder state of the repository may still do so until task 6.6).
     - Do not call any LLM API anywhere in the package.
     - _Requirements: 1.2, 1.4, 1.6, 1.8_
 
@@ -252,61 +254,65 @@ Decisions reflected in this plan:
 - [x] 5. Checkpoint - Engine integration complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Confirm the existing P4 test and the existing `wards.test.ts` cases pass unchanged and that `core/package.json` still has no `dependencies`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. The `wards-config` package
-  - [ ] 6.1 Add the `yaml` dependency and the README dependency table row
+- [x] 6. The `wards-config` package
+  - [x] 6.1 Add the `yaml` dependency and the README dependency table row
     - Add `yaml` pinned to exactly `2.9.1` to `wards-config/package.json` `dependencies` and install it. Confirm on the day of installation that the license in the package metadata is ISC (permissive), and record the confirmation date.
-    - Create `README.md` at the repository root if it does not exist, or extend it without removing existing rows, with a dependency table with the columns library, version, license, used by, and purpose. Add the row `yaml` (eemeli), `2.9.1`, ISC, `wards-config`, YAML 1.2 parser with source ranges. Also list `vitest`, `fast-check`, `typescript`, and every other dependency that any package in the workspace already uses, each with its recorded license, and a license note that every dependency is permissive (MIT, BSD, ISC, or Apache-2.0). Add `core` with the entry "no runtime dependencies".
+    - Record the install facts, the license confirmation date, and the check that the `yaml` `exports` default condition is a browser build in a new English section of `docs/measurements.md` (not in the devlog). Create `README.md` at the repository root if it does not exist, or extend it without removing existing rows, with a dependency table with the columns library, version, license, used by, and purpose. Add the row `yaml` (eemeli), `2.9.1`, ISC, `wards-config`, YAML 1.2 parser with source ranges. Also list `vitest`, `fast-check`, `typescript`, and every other dependency that any package in the workspace already uses, each with its recorded license, and a license note that every dependency is permissive (MIT, BSD, ISC, or Apache-2.0). Add `core` with the entry "no runtime dependencies".
     - _Requirements: 1.7, 13.10_
 
-  - [ ] 6.2 Implement `wards-config/src/types.ts` and `src/format.ts`
-    - `ConfigErrorCode`, `ConfigError` (`code`, `message`, `line?`, `column?`, `wardId?`, `field?`, `detail?`), `ConfigWarning` (`empty-ward-set`, `catch-all-pattern`), and `ParseResult`.
+  - [x] 6.2 Implement `wards-config/src/types.ts` and `src/format.ts`
+    - `ConfigErrorCode` (including the new code `unsafe-command-entry`), `ConfigError` (`code`, `message`, `line?`, `column?`, `wardId?`, `field?`, `detail?`), `ConfigWarning` (`empty-ward-set`, `catch-all-pattern`), and `ParseResult` (`{ ok: true, wardSet, safeCommands: string[], warnings }` or `{ ok: false, errors }`; the error result has no `wardSet` and no `safeCommands`). `core` `WardSet` stays unchanged.
     - `formatConfigError(e)` returns exactly `wards.yaml:<line>:<column>: [<code>] ward "<wardId>" field "<field>": <message>`, omits the `ward` part when `wardId` is unknown and the `field` part when no field is involved, and prints `wards.yaml: [<code>]...` when there is no position. Pure string assembly.
-    - _Requirements: 13.1, 13.3, 12.1_
+    - _Requirements: 13.1, 13.3, 12.1, 12.13_
 
-  - [ ] 6.3 Implement `wards-config/src/parse.ts` and `src/schema.ts`
+  - [x] 6.3 Implement `wards-config/src/parse.ts` and `src/schema.ts`
     - `parseWards(text)` never throws; the whole body runs in a `try` that converts any exception (including `RangeError`) to one `yaml-syntax-error` at line 1. Pipeline: reject input over 262,144 bytes with `input-too-large` before parsing; pre-scan for indentation over 64 spaces or more than 64 consecutive `[` or `{` (`yaml-feature-unsupported`, decision D19); `parseDocument` with core schema, YAML 1.2, `merge: false`, `uniqueKeys: false`, `maxAliasCount: 0`, and a `LineCounter`; walk the AST without calling `toJS`.
     - Reject anchors, aliases, explicit tags, the `<<` key, and depth over 8 with `yaml-feature-unsupported`; report a repeated key as `duplicate-key` naming the line of the first occurrence.
     - Table-driven schema per kind (`path`: `deny`, `paths`, `case_sensitive`; `sql`: `tables`, `max_rows_lost`; `egress`: `secrets`, `allow_hosts`; `physics`: `min_success_rate`, `max_contact_force_n`, `forbidden_contacts`) with the limits of Requirement 12, using `validateGlob` and `validateHostEntry` from `@ghost-run/core` and `normalizePattern` and `hostEntryKey` for `duplicate-entry`. Report `missing-field`, `unknown-field`, `wrong-type`, `out-of-range`, `duplicate-id`, `invalid-glob`, `invalid-host`, `invalid-character`, `duplicate-entry`, `unknown-kind`, `root-not-mapping`, `unknown-root-field`, and `wards-not-sequence`, each at the line of the node named in Requirement 13 criterion 2.
     - Sort errors by (`line`, `column`, `code`), keep the first 50, and append `too-many-errors` when more exist. Return `wardSet` only when no error exists, keep document order, and leave absent optional fields absent. Error messages contain only the field name, id, code, and an entry truncated to 80 characters through `sanitizeText`. Emit the `empty-ward-set` and `catch-all-pattern` warnings.
-    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 13.1, 13.2, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9_
+    - Root mapping: required `wards`, optional `safe_commands`, any other root key is `unknown-root-field`. Validate `safe_commands` as in Requirement 12 criterion 13 in this per-entry order: `wrong-type` (not a list, or a non-string item), `invalid-character`, `out-of-range` (entry length 0 or over 256, more than 256 entries), `unsafe-command-entry` (outside `^[A-Za-z0-9_./:=@%+,-]+( [A-Za-z0-9_./:=@%+,-]+)*$`, with `detail` `charset` or `spacing`), `duplicate-entry` (exact string equality, message names the first line). Return `safeCommands` in document order, `[]` when the key is absent. Messages carry the field name `safe_commands[<i>]` and never the entry text.
+    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 12.13, 12.14, 13.1, 13.2, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9_
 
-  - [ ] 6.4 Implement `wards-config/src/print.ts`
-    - `printWards(wardSet)` writes `wards:` then, per ward, `id`, `kind`, and the kind's fields in the order of Requirement 12 criteria 4 to 7, two-space indentation, flow sequences, an empty list as `[]`, numbers by `String(n)` (`-0` as `0`), and one trailing newline.
+  - [x] 6.4 Implement `wards-config/src/print.ts`
+    - `printWards(wardSet, options?: { safeCommands?: readonly string[] })` writes `wards:` then, per ward, `id`, `kind`, and the kind's fields in the order of Requirement 12 criteria 4 to 7, two-space indentation, flow sequences, an empty list as `[]`, numbers by `String(n)` (`-0` as `0`), and one trailing newline. When `options.safeCommands` is present and non-empty it appends one top-level line after the last ward, `safe_commands: [<e1>, <e2>, ...]` (flow sequence, same string rule); an absent or empty list prints no key.
     - A string prints plain only when it matches `[A-Za-z_][A-Za-z0-9_.-]*` and is not `true`, `false`, or `null` in any case form the core schema reads; otherwise it prints double-quoted with `\uXXXX` escapes for control, DEL, C1, U+2028, U+2029, BOM, and the hidden ranges, and `\UXXXXXXXX` for astral hidden characters. The function writes no file and does not preserve comments.
-    - _Requirements: 14.1, 14.4, 14.5_
+    - _Requirements: 14.1, 14.4, 14.5, 12.13_
 
-  - [ ] 6.5 Implement `wards-config/src/load.ts`
-    - `loadWardsFile(path)` uses `node:fs/promises`: `stat` first (over 262,144 bytes gives `input-too-large` without reading), then `readFile`, then `TextDecoder('utf-8', { fatal: true })`, then `parseWards`. A read or decode failure gives `file-unreadable` with the path in `message` and no line.
-    - File I/O happens only in this function, which receives the path as an argument.
-    - _Requirements: 12.12, 1.6_
+  - [x] 6.5 Implement `wards-config/src/load.ts`
+    - `loadWardsFile(path)` (in `src/load.ts`, re-exported only by `src/node.ts`) uses `node:fs/promises`: `stat` first (over 262,144 bytes gives `input-too-large` without reading), then `readFile`, then `TextDecoder('utf-8', { fatal: true })`, then `parseWards`. A read or decode failure gives `file-unreadable` with the path in `message` and no line.
+    - File I/O happens only in this function, which receives the path as an argument, and `load.ts` is the only source file that imports a Node built-in.
+    - _Requirements: 12.12, 1.6, 1.10_
 
-  - [ ] 6.6 Export the public API from `wards-config/src/index.ts`
-    - Export `parseWards`, `loadWardsFile`, `printWards`, `formatConfigError`, and the types `ConfigError`, `ConfigErrorCode`, `ConfigWarning`, `ParseResult`. Add the `build` output so `integrations/*` can import the package.
+  - [x] 6.6 Export the public API from `wards-config/src/index.ts`
+    - Default entry `src/index.ts` exports `parseWards`, `printWards`, `formatConfigError`, and the types `ConfigError`, `ConfigErrorCode`, `ConfigWarning`, `ParseResult`, and nothing that reaches `load.ts`. `src/node.ts` exports `loadWardsFile`. Set the `package.json` `exports` map to exactly `"."` and `"./node"` (each with `types` and `import` conditions that point to the built output under `dist/src/`), and alias both subpaths to the source files in `vitest.config.ts` and `tsconfig.json` `paths`. Add the `build` output so `integrations/*` can import the package.
+    - Add the second ESLint block to `wards-config/eslint.config.mjs`: for `src/**/*.ts` except `src/load.ts` and `src/node.ts`, `no-restricted-imports` bans `node:*` and the bare Node built-in names (list in the design). Keep the existing core-entry-point restriction in the same block set.
     - Confirm that the package imports `core` only through `@ghost-run/core`.
-    - _Requirements: 1.4, 12.1, 12.12, 13.3, 14.1_
+    - _Requirements: 1.4, 1.10, 1.11, 12.1, 12.12, 13.3, 14.1_
 
-  - [ ]* 6.7 Write property test for the print and parse round trip
+  - [x]* 6.7 Write property test for the print and parse round trip
     - **Property 17: Printing and parsing round trip**
-    - **Validates: Requirements 14.1, 14.2, 14.3, 14.5**
-    - File: `wards-config/tests/roundtrip.test.ts`. Strings such as `".env"`, `"data/**"`, `"0"`, and `"true"` must be quoted in the printed text.
+    - **Validates: Requirements 14.1, 14.2, 14.3, 14.5, 12.13**
+    - File: `wards-config/tests/roundtrip.test.ts`. Strings such as `".env"`, `"data/**"`, `"0"`, and `"true"` must be quoted in the printed text. Generate valid `safeCommands` lists too (0 to 256 entries over the charset, no duplicates): `parseWards(printWards(ws, { safeCommands: sc }))` returns equal `wardSet` and `safeCommands`, printing again is identical, an empty list prints no `safe_commands` key, and a non-empty list prints one top-level `safe_commands: [...]` line after the last ward.
 
-  - [ ]* 6.8 Write smoke tests `wards-config/tests/smoke.test.ts`
+  - [x]* 6.8 Write smoke tests `wards-config/tests/smoke.test.ts`
     - The README contains the `yaml` row with name `yaml`, version `2.9.1`, and license `ISC`; `wards-config/package.json` lists only `yaml` and `@ghost-run/core` under `dependencies`; `core/package.json` has no `dependencies`; the `core` ESLint config contains the `wards-config` patterns; `pnpm-workspace.yaml` lists `wards-config`.
-    - One example document per `ConfigErrorCode` and the sample strings of `formatConfigError`.
-    - _Requirements: 1.1, 1.2, 1.3, 1.7, 13.3, 13.10_
+    - Entry-point checks: the `exports` map of `wards-config/package.json` has exactly the subpaths `"."` and `"./node"`, each with `types` and `import` pointing under `dist/`; the ESLint config contains the `node:*` and bare built-in ban for the default-entry source files; a walk of the import graph of `src/index.ts` (relative imports, re-exports, and dynamic `import(` specifiers) finds no Node built-in specifier and never reaches `load.ts` or `node.ts`; the Default_Entry exports no `loadWardsFile` and the Node entry does.
+    - One example document per `ConfigErrorCode` (including `unsafe-command-entry`) and the sample strings of `formatConfigError`.
+    - _Requirements: 1.1, 1.2, 1.3, 1.7, 1.10, 1.11, 12.13, 13.3, 13.10_
 
-- [ ] 7. Checkpoint - wards-config complete
+- [x] 7. Checkpoint - wards-config complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Default `wards.yaml` and scenario verification
   - [ ] 8.1 Create `apps/ghost-shell/wards.yaml`
     - Write exactly the three wards of Requirement 18 criterion 2 in this order: `protect-data` (`path`, `deny: [delete, overwrite]`, `paths: ["data/**", "db/*.sqlite", ".env"]`), `no-data-loss` (`sql`, `tables: [users, orders]`, `max_rows_lost: 0`), and `no-secret-egress` (`egress`, `secrets: [".env", "**/*.pem"]`, `allow_hosts: [registry.npmjs.org]`).
     - No `physics` ward, no `github.com`, and only reserved domains plus `registry.npmjs.org`. Commit no `.env` file; fixture `.env` content is built in test code from Canary strings.
-    - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.12_
+    - Do not add a `safe_commands` key yet: its default content is an open item (Open Item 16 of the requirements; owned by the kiro-integration spec). The file keeps exactly the three wards.
+    - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.12, 18.13_
 
   - [ ]* 8.2 Write the default-file test `wards-config/tests/default-wards.test.ts`
-    - Load `apps/ghost-shell/wards.yaml` (resolve the path relative to the test file, so no package imports another package's source) with `loadWardsFile`, require `ok: true`, and require exactly the three wards in order with the exact values.
-    - _Requirements: 18.1, 18.2, 18.3, 18.4_
+    - Load `apps/ghost-shell/wards.yaml` (resolve the path relative to the test file, so no package imports another package's source) with `loadWardsFile` (import it from `@ghost-run/wards-config/node`, or from `../src/node.ts` through the relative source alias), require `ok: true`, require exactly the three wards in order with the exact values, and require `safeCommands` equal to `[]`.
+    - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.13_
 
   - [ ]* 8.3 Write the scenario verification test `wards-config/tests/scenarios.test.ts`
     - Run the rows of the verification table of `design.md` on synthetic `GhostReport` values with the default file, without Docker: row 1 (`DROP TABLE users`, 1,206 rows, `block`, first violation `would delete 1,206 rows from users`) and row 1b (backup copy plus soft delete, `pass`); row 2 (`rm -rf ./data ./build`, `block`, one violation per deleted path under `data/`; compute the expected count from the Changes of the fixture instead of hard-coding it, because the playground also emits folder-entry deletions), row 2b (`rm -rf ./build`, `pass`), and row 2c (`rm -rf ./DATA`, `block`); row 3 (`curl -d @.env`, `secret-read` and `network-attempt` to `setup-check.example:443` at the same step, `block`), row 3b (plus a `secretValues` entry and a payload with `sk-CANARY-abc123`, also the content violation with encoding `raw`), row 3c (allowed host after the read, `warn` with two notices and no violation), and row 3d (a Canary payload sent to `registry.npmjs.org:443`, `block`); row 4 (`npm test`, `pass`); row 5 (`npm run clean`, `block` by `protect-data` from the `file-deleted` Changes under `data/`).
@@ -329,13 +335,13 @@ Decisions reflected in this plan:
 
   - [ ]* 10.3 Write property test for configuration defects reported at their line
     - **Property 15: Every configuration defect is reported at its line with the expected code**
-    - **Validates: Requirements 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 13.1, 13.2, 13.9, 13.11**
-    - File: `wards-config/tests/parse-errors.test.ts`. Print a valid `WardSet`, apply one mutation (unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host, invalid character, duplicate entry) to a known node, and require the expected code at the expected line (key line for `unknown-field`, ward mapping line for `missing-field`, `unknown-kind`, `duplicate-id`). Hidden characters in the mutated text are written as escapes.
+    - **Validates: Requirements 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 12.13, 13.1, 13.2, 13.9, 13.11**
+    - File: `wards-config/tests/parse-errors.test.ts`. Print a valid `WardSet`, apply one mutation (unknown kind, missing field, extra field, wrong type, duplicate id, out-of-range value, invalid glob, invalid host, invalid character, duplicate entry, and the `safe_commands` mutations: non-list value, non-string item, hidden character, over-long entry, 257 entries, an entry with a shell operator such as `;`, `&&`, `|`, `>`, a backtick, `$`, or a quote, and a duplicate entry) to a known node, and require the expected code at the expected line (key line for `unknown-field`, ward mapping line for `missing-field`, `unknown-kind`, `duplicate-id`; the item line for `safe_commands` entry errors, the list value line for a non-list value and for too many entries; codes `wrong-type`, `invalid-character`, `out-of-range`, `unsafe-command-entry`, `duplicate-entry`). Also require that no error message contains the entry text. Hidden characters in the mutated text are written as escapes.
 
   - [ ]* 10.4 Write property test for parser totality and safety
     - **Property 16: parseWards is total and safe on hostile input**
     - **Validates: Requirements 12.1, 13.4, 13.5, 13.6, 13.7**
-    - File: `wards-config/tests/parse-safety.test.ts`. Cover random text, truncated valid documents, anchors, aliases, merge keys, tags, repeated keys, deep nesting, and sizes up to 262,144 bytes plus one. Add a loose timing check that a 262,144-byte input completes (Requirement 13.8 on the Reference_Machine is checked as a smoke, not as a property).
+    - File: `wards-config/tests/parse-safety.test.ts`. Cover random text, truncated valid documents, anchors, aliases, merge keys, tags, repeated keys (including a repeated `safe_commands`), a 256 KiB `safe_commands` list, deep nesting, and sizes up to 262,144 bytes plus one. Add a loose timing check that a 262,144-byte input completes (Requirement 13.8 on the Reference_Machine is checked as a smoke, not as a property).
 
   - [ ] 10.5 Write the README sections for claims, policies, and limits
     - Add: the case policy and its rationale (APFS case-insensitive by default, over-matching fails safe, possible Linux false positive, `case_sensitive: true` opt-out); the precondition under which P5 holds for symbolic links and moves (the world reports actual resolved paths; the Differ walks with `lstat`); the list of what content inspection does not catch (compression, encryption, multi-layer encodings, splitting over requests, DNS one character at a time, values shorter than 8 bytes, payload bytes beyond 64 KiB), which only the behavior criterion catches; the soundness-without-completeness limit of `isMoreRestrictive`; that `printWards` does not preserve comments; the location of the default file (`apps/ghost-shell/wards.yaml`, with the world-contract note that the repo world uses it instead of `worlds/<name>/wards.yaml`); and the claim table (P4 all worlds, P5 where P1 holds, P6 where network attempts are recorded, neither P5 nor P6 in Plan B, with the lowered-claim wording `CLAIM_LOWERED_LINE`).
