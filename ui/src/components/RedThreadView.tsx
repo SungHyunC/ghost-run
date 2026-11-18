@@ -12,7 +12,8 @@ import { Reveal } from './Reveal';
 function ThreadItem({ thread }: { readonly thread: ThreadModel }) {
   const { action, cause } = thread;
   return (
-    <li role="group" aria-label={thread.accessibleName} className="gk-thread" data-thread-index={thread.index}>
+    <li className="gk-thread" data-thread-index={thread.index}>
+      <div role="group" aria-label={thread.accessibleName} className="gk-thread-body">
       {action === null ? (
         <div className="gk-thread-end">{thread.accessibleName}</div>
       ) : (
@@ -42,6 +43,7 @@ function ThreadItem({ thread }: { readonly thread: ThreadModel }) {
           {thread.notFoundText}
         </div>
       )}
+      </div>
     </li>
   );
 }

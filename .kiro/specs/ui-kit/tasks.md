@@ -296,105 +296,105 @@ Decisions reflected in this plan:
     - Run `pnpm --filter @ghost-run/ui exec tsc --noEmit` and `eslint .`.
     - _Requirements: 1.2, 1.4, 1.8, 11.3_
 
-- [ ] 8. Component tests
-  - [ ] 8.1 Write the static-leg property test for change coverage
+- [x] 8. Component tests
+  - [x] 8.1 Write the static-leg property test for change coverage
     - **Property 1: Change coverage**
     - **Validates: Requirements 5.3, 5.4, 5.6, 5.7, 5.8, 14.5**
     - File: `tests/static/p1-mirror.test.tsx`. Tag `UI-P1`. Environment: node, S leg, 100 Short_Run and 10,000 Nightly_Run. Render `MirrorWorldView` with `renderToStaticMarkup` (all rows revealed and the initial limited state) and check one `data-change-row` per element in step and index order, the summary, step lines and labels, grouped numbers, `rows lost`, `invalid number`, and the 200-row limit with `Showing 200 of <N>`.
 
-  - [ ] 8.2 Write the static-leg property test for the candle mapping
+  - [x] 8.2 Write the static-leg property test for the candle mapping
     - **Property 2: Candle mapping**
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10**
     - File: `tests/static/p2-candle.test.tsx`. Tag `UI-P2`. Environment: node, S leg, 100 and 10,000. Check exactly one candle state with its icon, text label, and accessible label; the ward lines; violation lines and notice lines (generators include notice kinds beyond the known ones, and every notice line is `step <n>: <reason>` regardless of kind); the unknown-state rules; and that adding `needles`, `links`, `findings`, and `entries` next to the verdict leaves the markup unchanged.
 
-  - [ ] 8.3 Write the static-leg property test for claim honesty
+  - [x] 8.3 Write the static-leg property test for claim honesty
     - **Property 7: Claim honesty**
     - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12**
     - File: `tests/static/p7-claims.test.tsx`. Tag `UI-P7`. Environment: node, S leg, 100 and 10,000. Generator: `claimsAny` combined with an absent verdict and each of the three verdicts. Check conditions A and B separately (B with the not-applicable rule of Requirement 7 criteria 10 and 11 and the reason wording of criterion 12) on the Candle container markup using `data-claim` attributes, that a not-applicable line shows `P<n>: not applicable to this world` and never `NOT claimed`, that the Assurance_Text is exactly that of the mode, that `Isolation status unknown.` appears if and only if `claims` is absent or malformed, and that the words `sealed` and `isolated` appear only inside an Assurance_Text.
 
-  - [ ] 8.4 Write the static-leg property test for graveyard coverage and order
+  - [x] 8.4 Write the static-leg property test for graveyard coverage and order
     - **Property 9: Graveyard coverage and order**
     - **Validates: Requirements 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.11, 10.12, 14.5**
     - File: `tests/static/p9-graveyard.test.tsx`. Tag `UI-P9`. Environment: node, S leg, 100 and 10,000. Check one tombstone button per entry in the defined order, the command, `recordedAt`, every ward id, the summary, disabled tombstones, the accessible names, the empty text, and the 200-tombstone limit with the reveal state.
 
-  - [ ] 8.5 Write the static-leg property test for blacklight coverage
+  - [x] 8.5 Write the static-leg property test for blacklight coverage
     - **Property 10: Blacklight coverage and involution**
     - **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.8, 8.9, 8.10, 8.13, 14.5**
     - File: `tests/static/p10-blacklight.test.tsx`. Tag `UI-P10`. Environment: node, S leg, 100 and 10,000. Render `BlacklightPanelView` in both modes with and without reveal sets and check the Findings list entries, the markers, `Showing` texts and reveal buttons, hex notation of overflow-covered code points (visible with the switch `off`, Requirement 8 criterion 5 exception), the summary and category counts, the `off` text rules, and that the `on` and `off` markup differ only in the in-text markers.
 
-  - [ ] 8.6 Write the static-leg property test for red thread pairing
+  - [x] 8.6 Write the static-leg property test for red thread pairing
     - **Property 11: Red thread pairing**
     - **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.12**
     - File: `tests/static/p11-thread.test.tsx`. Tag `UI-P11`. Environment: node, S leg, 100 and 10,000. Check one thread per pair, exact coordinates, the connector only for `found`, the hidden and host texts, the accessible names, and the mismatch text.
 
-  - [ ] 8.7 Write the static-leg property test for no hidden characters
+  - [x] 8.7 Write the static-leg property test for no hidden characters
     - **Property 3: No hidden characters**
     - **Validates: Requirements 3.3, 3.4, 3.8**
     - File: `tests/static/p3-hidden.test.tsx`. Tag `UI-P3`. Environment: node, S leg, 100 and 10,000. Generator: `dirtyString` placed in every displayed field of every component (paths, tables, targets, unknown-change field names and values, step labels, scene keys and values, ward ids, kinds, reasons, notice reasons, unknown verdict values, sources, text lines, `rendering`, needle values, link `source` and `lineText`, action labels, commands, `recordedAt`, entry ward ids, entry ids). The whole markup string (text nodes and every attribute value including `aria-label`, `data-*`, and `id`) contains no Hidden_Display_Code_Point literally. Counter buckets: field name and hidden category.
 
-  - [ ] 8.8 Write the static-leg property test for secret non-forwarding
+  - [x] 8.8 Write the static-leg property test for secret non-forwarding
     - **Property 4: No secret forwarding**
     - **Validates: Requirements 2.7, 4.5, 4.8, 4.9, 5.5, 5.11**
     - File: `tests/static/p4-secrets.test.tsx`. Tag `UI-P4`. Environment: node, S leg, 100 and 10,000. Part one: extra fields named `secretValues`, `payloads`, `env`, and `token` holding `canary` values are added at the top level of the props and to every contract object; no canary appears in the markup. Part two: unknown-kind `Change` values and `realScene` and `mirrorScene` built from the secret-like key generator with the `Full scene` region revealed; no canary appears, `[hidden: secret-like field]` appears once for each shown secret-like key with the key still shown, every visible marker of a non-secret key outside a secret-like subtree is present, and a secret-like key at any depth hides its whole value. Counter buckets: extra-field name, secret-like word, letter case, key position, nesting, view.
 
-  - [ ] 8.9 Write the totality test for static markup and the view-model builders
+  - [x] 8.9 Write the totality test for static markup and the view-model builders
     - **Property 8: Totality**
     - **Validates: Requirements 2.5, 2.6, 14.2, 14.3, 14.7**
     - File: `tests/static/p8-total.test.tsx`. Tag `UI-P8`. Environment: node, S leg, 100 and 10,000. Generator: `fc.jsonValue()` mixed with valid props where one random field is replaced (including `null`, numbers, deeply nested arrays, empty objects, and objects with unknown fields). Every `build*Model` function and every component renders without throwing and produces either its normal output or exactly the Placeholder in an element with `role="alert"`; an unreadable list element becomes `Unreadable item <index>` while siblings render; rendering the same deep-frozen props twice gives equal markup and never a mutation error. Counter buckets: Placeholder or normal output per component.
 
-  - [ ] 8.10 Write the markup inertness test
+  - [x] 8.10 Write the markup inertness test
     - **Property 5: Markup inertness**
     - **Validates: Requirements 4.2, 4.3**
     - File: `tests/dom/p5-inert.test.tsx`. Tag `UI-P5`. Environment: jsdom, SP leg, 100 Short_Run and 10,000 Nightly_Run. Generator: `markupString` samples (script tags, `onerror` payloads, quotes, ampersands, backticks, `javascript:` in mixed case, attribute-breaking sequences, entity text, allowed element names) placed in every displayed string. Render each component with `renderToStaticMarkup`, parse into a `template`, and require only allow-listed elements, no attribute whose name starts with `on`, no attribute outside the declared list, no `style`, `href`, or `src`, no `javascript:` value after removing whitespace and control characters, and the same element count as the plain-letter input. If `react-dom/server` cannot be called in jsdom (Open Question Q3), render with Testing Library and parse `container.innerHTML` instead and record the choice.
 
-  - [ ] 8.11 Write the mount-leg totality test
+  - [x] 8.11 Write the mount-leg totality test
     - **Property 8: Totality**
     - **Validates: Requirements 14.2, 14.3, 14.4, 14.7**
     - File: `tests/dom/p8-total.test.tsx`. Tag `UI-P8`. Environment: jsdom, DOM leg, 25 Short_Run and 500 Nightly_Run. Mount every component with the arbitrary JSON props of the static leg, require no throw and either normal output or the Placeholder, and require that a child that throws inside `KitBoundary` yields the Placeholder with no text from the error or the data. Unmount after each example.
 
-  - [ ] 8.12 Write the toggle leg for blacklight involution
+  - [x] 8.12 Write the toggle leg for blacklight involution
     - **Property 10: Blacklight coverage and involution**
     - **Validates: Requirements 8.2, 8.13**
     - File: `tests/dom/p10-toggle.test.tsx`. Tag `UI-P10`. Environment: jsdom, DOM leg, 25 and 500. Mount `BlacklightView`, toggle the switch with the pointer, Enter, and Space from `off` to `on` and back, and require the markup of the first `off` state to be restored exactly, with and without a previously activated reveal control.
 
-  - [ ] 8.13 Write the fixed-text and empty-state tests `tests/static/texts.test.tsx`
+  - [x] 8.13 Write the fixed-text and empty-state tests `tests/static/texts.test.tsx`
     - Pin the literals of the requirements: candle labels and accessible labels, the claim texts, blacklight and red thread texts, graveyard texts, the empty states of Requirement 14 criterion 1, the seance `<part> not recorded` lines, and the Placeholder text.
     - Scan the fixed texts of the Candle for `approved` and `safe` (must be absent), and scan all fixed texts of the kit so that `sealed` and `isolated` appear only in the two Assurance_Text constants.
     - Check that no Candle text and no Mirror text states that reality is unchanged (Requirement 5 criterion 13).
     - Component test: a `warn` verdict whose notices have the kinds `unsupported-step`, `path-escape`, and `content-inspection` renders each as `step <n>: <reason>` and `<k> notices need review` with `k` equal to the number of notices.
     - _Requirements: 5.12, 5.13, 6.1, 6.12, 7.3, 7.8, 8.11, 9.9, 10.8, 10.11, 14.1_
 
-  - [ ] 8.14 Write the example tests `tests/dom/examples.test.tsx`
+  - [x] 8.14 Write the example tests `tests/dom/examples.test.tsx`
     - The six examples of Requirement 15 criterion 6: a `block` verdict with `no-data-loss` and the reason `would delete 1,206 rows from users` (candle out, ward name and `1,206` visible); a Plan B run (banner shown, no Assurance_Text); a `playground` run with `p1Claimed` true (in-memory text shown, `Isolation status unknown.` absent); a README text whose destination `setup-check.example` is hidden in tag characters built with `String.fromCodePoint` (thread `found`, `hidden` true, the blacklight shows the decoded word); a tombstone opened by keyboard; the lights-on switch.
     - Role-based queries only (`getByRole` with names), never class or test id.
     - _Requirements: 15.6, 6.1, 7.6, 8.6, 9.5, 10.5, 11.3_
 
-  - [ ] 8.15 Write the keyboard, focus, and reveal tests `tests/dom/keyboard.test.tsx`
+  - [x] 8.15 Write the keyboard, focus, and reveal tests `tests/dom/keyboard.test.tsx`
     - Tab order equals DOM order; Enter and Space operate each switch, tombstone, reveal button, disclosure, and `Back to graveyard`; `onOpenSeance` is called once with the id; focus returns to the opening tombstone after Back, both when the graveyard stays mounted and when it is mounted again; no keyboard trap; no `tabIndex` above 0.
     - Reveal controls: Mirror rows (more than 200), scene entries, Blacklight lines and Findings (more than 200 lines and more than 100 Findings), Threads (more than 200), and Tombstones (more than 200) show `Showing <shown> of <total>`, are operable by keyboard, and render all elements after activation while summary counts stay at the total.
     - _Requirements: 10.5, 10.9, 12.1, 14.5_
 
-  - [ ] 8.16 Write the theme test `tests/dom/theme.test.tsx`
+  - [x] 8.16 Write the theme test `tests/dom/theme.test.tsx`
     - The root `data-theme` flips in the same commit as the toggle; the Blacklight state and the open seance survive the toggle; the DOM node identity of a child stays the same (no remount); the starting theme follows `initialTheme`; an invalid `initialTheme` starts in `dark` and shows the Placeholder for `KitRoot`; no storage write happens (spies); all five candle states keep their icon and text in both themes.
     - _Requirements: 11.2, 11.3, 11.4, 11.7, 11.8, 14.2_
 
-  - [ ] 8.17 Write the network, console, and storage test `tests/dom/network.test.tsx`
+  - [x] 8.17 Write the network, console, and storage test `tests/dom/network.test.tsx`
     - Replace `fetch`, `XMLHttpRequest`, `WebSocket`, and `navigator.sendBeacon` with throwing functions, mount and operate every component with fixture data, and require that none is called. Spy on `console`, `localStorage`, `sessionStorage`, `indexedDB`, and `document.cookie` and require no call.
     - _Requirements: 4.6, 13.2, 13.4_
 
-  - [ ] 8.18 Write the error boundary test `tests/dom/boundary.test.tsx`
+  - [x] 8.18 Write the error boundary test `tests/dom/boundary.test.tsx`
     - A throwing child yields only the Placeholder with no text from the error or the data, and sibling components keep rendering. `onOpenSeance` and `onBack` that are not functions make activation a no-op without throwing.
     - _Requirements: 14.4, 14.7_
 
-  - [ ] 8.19 Write the reduced-motion test `tests/dom/motion.test.tsx`
+  - [x] 8.19 Write the reduced-motion test `tests/dom/motion.test.tsx`
     - With `matchMedia` stubbed to `reduce`, `FlameArt` and `SmokeLayer` set `data-motion="reduce"`; without it they do not. With `matchMedia` missing the hook returns `false` and nothing throws. The vanish end-state label `would be removed` and the icon are present in both cases. jsdom does not evaluate media queries, so the CSS side is covered by task 6.4.
     - _Requirements: 5.10, 12.5, 12.6, 12.7_
 
-  - [ ] 8.20 Create the regression harness `tests/regressions.test.tsx`
+  - [x] 8.20 Create the regression harness `tests/regressions.test.tsx`
     - A file for shrunk counterexamples, each kept as a fixed example test with the failing seed and the input. It starts with one passing guard test that checks the registry of regression cases is an array, so the file is a valid test suite before the first counterexample exists. Document in a comment that every counterexample found by a property is added here.
     - _Requirements: 15.7_
 
-  - [ ] 8.21 Write the accessibility audit `tests/dom/a11y.test.tsx` (axe-core)
+  - [x] 8.21 Write the accessibility audit `tests/dom/a11y.test.tsx` (axe-core)
     - Run `axe-core` (dev only) on each component mounted with fixture data in both themes and in each state: blacklight on and off, seance open, reveal controls shown, `Full scene` open, and every Candle state. Also run it on the whole gallery inside `<main>`, with the `region` rule enabled for the gallery and disabled for fragments.
     - Enabled rules include `button-name`, `aria-valid-attr`, `aria-valid-attr-value`, `aria-allowed-attr`, `aria-allowed-role`, `aria-required-children`, `aria-required-parent`, `aria-roles`, `label`, `list`, `listitem`, `td-headers-attr`, `th-has-data-cells`, `scope-attr-valid`, `duplicate-id`, `duplicate-id-aria`, `image-alt`, `svg-img-alt`, `tabindex`, and `nested-interactive`. `color-contrast` is disabled because jsdom has no layout or CSS, and contrast is proven by UI-P6.
     - Structure test: each candle state, the vanish label, highlighted Findings, claim lines, and each thread has an icon element and a text node, and every decorative SVG has `aria-hidden`. Every interactive element and status indicator has a non-empty accessible name found through role-based queries.

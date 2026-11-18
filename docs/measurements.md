@@ -151,3 +151,41 @@ Measured before changing `core/src/wards.ts` (task 4.1 of the wards spec).
 - `tests/p4-monotonicity.test.ts` and `tests/wards.test.ts`: 2 files, 26 tests, all pass.
 - Whole core suite: 60 files, 403 tests, all pass, no type errors.
 - Note: the decimal-IP test in `core/tests/validators.test.ts` (and the numeric-name sample in `core/tests/host.test.ts`) now uses the documentation address 192.0.2.10 (decimal 3221225994).
+
+## Wards task 4.6 post-change run
+
+Measured after the `isMoreRestrictive` and `evaluate` changes in `core/src/wards.ts` (task 4.6 of the wards spec). No fix to `wards.ts` was needed.
+
+- `tests/p4-monotonicity.test.ts` and `tests/wards.test.ts`: 2 files, 26 tests, all pass. Same as the task 4.1 baseline (2 files, 26 tests).
+- Whole core suite: 68 files, 484 tests, all pass, no type errors. The 4.1 baseline was 60 files, 403 tests. The suite has grown by 8 files and 81 tests from new test files added in earlier wards tasks.
+- `git diff --stat -- core/tests/p4-monotonicity.test.ts core/tests/wards.test.ts` prints nothing, and `git status --short` for both files is empty. Both files are unedited.
+
+## Wards task 4.14 performance
+
+Measured with `core/tests/perf.test.ts` (macOS, Apple Silicon, vitest, single file run; values vary by about 10 to 40 percent between runs).
+
+- Glob step bound: `a*a*a*a*a*a*a*a*b` against 4,000 `a` stays within 2 x 17 x 4,000 steps (the design estimate is 68,000). The loose wall-clock check runs in nightly mode only.
+- Content inspection, 16 payloads of 64 KiB against 256 canaries of 4 KiB: about 1.0 to 1.2 s (budget 2.0 s). Passes.
+- Evaluation of 10,000 changes and 100 observed events with no secret values: about 15 to 22 ms.
+- Evaluation of 10,000 changes, 100 events, 16 payloads of 64 KiB and 256 canaries: about 17 to 26 s (budget 3.0 s). Over budget.
+- Evaluation with the largest input the ghost-runner caps allow (16 files of 65,536 bytes, 16 payloads of 64 KiB, 10,000 changes, 100 events): about 16 to 19 s (budget 3.0 s). Over budget.
+- Cause: `leakGuard` in `core/src/wards.ts` runs `detectKinds` on every notice and violation string against all canaries. Each call rebuilds base64 and hex needles for every canary; one short string costs about 64 ms with 256 canaries. The two over-budget tests are marked `it.fails` until the engine is fixed.
+
+Follow-up (task 4.14 fix): `core/src/judge/inspect.ts` now builds the base64, hex and whitespace-stripped needles once per canary (`prepareCanaries`), and `leakGuard` in `core/src/wards.ts` and `createInspector().hits` reuse them. Outputs are unchanged. The two `it.fails` tests are now plain `it` and pass.
+- Content inspection, 16 payloads of 64 KiB against 256 canaries: about 145 ms (was 1.0 to 1.2 s).
+- Evaluation with 256 canaries: about 227 ms (was 17 to 26 s; budget 3.0 s).
+- Evaluation with the largest input the ghost-runner caps allow: about 211 ms (was 16 to 19 s; budget 3.0 s).
+- Evaluation with no secret values: about 16 ms (unchanged).
+
+## UI kit task 8 component tests
+
+Measured on macOS (Apple Silicon), `corepack pnpm test` in `ui/` (Short_Run, all four projects), after tasks 8.1 to 8.21.
+
+- Result: 62 files, 523 tests, all pass, no type errors. Before task 8 the suite had 42 files and 357 tests.
+- Short_Run wall time: about 31 to 33 s for the whole suite (the longest single test, UI-P9 over-200 list, takes about 19 s under load). This is under the 60 s limit, so the DOM run count stays at 25 and is not reduced to 15.
+- Runs per property in Short_Run: UI-P1, P2, P3, P4 (two properties), P7, P9 (the over-200 property is capped at 100), P10 static, P11 and P8 static: 100 each. UI-P5 (SP leg, jsdom): 100. UI-P8 mount leg and UI-P10 toggle leg (DOM): 25 each.
+- Nightly_Run spot checks (10,000 static or SP runs): UI-P2 about 13 s, UI-P7 about 3.4 s, UI-P11 about 7.7 s, UI-P4 about 44 s, UI-P3 about 51 s, UI-P10 static about 82 s, UI-P9 about 28 s, UI-P8 static about 158 s, UI-P5 about 606 s. The long runs print a vitest `Timeout calling "onTaskUpdate"` message because the synchronous test starves the worker RPC. The tests still pass. The DOM legs (500 runs) were not run in Nightly mode.
+- Nightly timeout: `PBT_TIMEOUT` is `undefined` in Nightly mode, so vitest would use its 5 s default. Every new property test passes `PBT_TIMEOUT ?? 0`.
+- UI-P5 (`tests/dom/p5-inert.test.tsx`) calls `renderToStaticMarkup` from `react-dom/server` directly in jsdom (Open Question Q3). The Testing Library fallback was not needed.
+- UI-P5 skips the `javascript:` check for `aria-*` and `data-*` attributes, because those carry plain display text that begins with the hostile string. Every other attribute is checked, and `href`, `src`, `style` and `on*` are banned everywhere.
+- Axe audit (`tests/dom/a11y.test.tsx`): 49 tests, about 0.25 s per axe run alone, so the file sets a 60 s test timeout (a loaded full run exceeded the 5 s default). One real defect was found and fixed: `<li role="group">` in `RedThreadView` became a `li` with an inner `div` carrying the role.

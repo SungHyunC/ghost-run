@@ -409,7 +409,7 @@
 }
 
 /* Red thread. */
-.gk-thread {
+.gk-thread-body {
   display: grid;
   grid-template-columns: 1fr minmax(48px, 120px) 1fr;
   gap: 8px;

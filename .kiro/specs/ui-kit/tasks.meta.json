@@ -563,6 +563,265 @@
         "chatSessionId": "sess_68e6bb76-387e-4ef3-8a5c-15f032588304",
         "timestamp": 1794979120167
       }
+    ],
+    "8.1 Write the static-leg property test for change coverage": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980505705
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980667927
+      }
+    ],
+    "8.2 Write the static-leg property test for the candle mapping": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980506207
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980667963
+      }
+    ],
+    "8.3 Write the static-leg property test for claim honesty": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980506465
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980667985
+      }
+    ],
+    "8.4 Write the static-leg property test for graveyard coverage and order": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980672545
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981015927
+      }
+    ],
+    "8.5 Write the static-leg property test for blacklight coverage": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980672553
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981015937
+      }
+    ],
+    "8.6 Write the static-leg property test for red thread pairing": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794980672561
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981015946
+      }
+    ],
+    "8.7 Write the static-leg property test for no hidden characters": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981019181
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981541186
+      }
+    ],
+    "8.8 Write the static-leg property test for secret non-forwarding": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981020026
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981541195
+      }
+    ],
+    "8.9 Write the totality test for static markup and the view-model builders": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981020227
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981541399
+      }
+    ],
+    "8.10 Write the markup inertness test": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981545040
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982349039
+      }
+    ],
+    "8.11 Write the mount-leg totality test": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981545185
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982349050
+      }
+    ],
+    "8.12 Write the toggle leg for blacklight involution": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794981545540
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982349059
+      }
+    ],
+    "8.13 Write the fixed-text and empty-state tests `tests/static/texts.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982354615
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982498052
+      }
+    ],
+    "8.14 Write the example tests `tests/dom/examples.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982355315
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982498758
+      }
+    ],
+    "8.15 Write the keyboard, focus, and reveal tests `tests/dom/keyboard.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982356009
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982499274
+      }
+    ],
+    "8.16 Write the theme test `tests/dom/theme.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982503717
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982627226
+      }
+    ],
+    "8.17 Write the network, console, and storage test `tests/dom/network.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982504720
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982628223
+      }
+    ],
+    "8.18 Write the error boundary test `tests/dom/boundary.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982505302
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982628756
+      }
+    ],
+    "8.19 Write the reduced-motion test `tests/dom/motion.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982634660
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982968614
+      }
+    ],
+    "8.20 Create the regression harness `tests/regressions.test.tsx`": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982634665
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982968773
+      }
+    ],
+    "8.21 Write the accessibility audit `tests/dom/a11y.test.tsx` (axe-core)": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982634900
+      },
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982969611
+      }
+    ],
+    "8. Component tests": [
+      {
+        "executionId": "a849244d-9182-4340-a648-de789464c335",
+        "chatSessionId": "sess_e4663290-cf60-49e4-b928-c4abcb658037",
+        "timestamp": 1794982969615
+      }
     ]
   }
 }
