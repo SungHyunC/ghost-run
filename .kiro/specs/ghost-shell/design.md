@@ -379,7 +379,7 @@ A mark is taken on the `MutableFs` before the line. A size-limit error (`LimitEr
 ```ts
 export interface SqlRequest { readonly dbBytes: Uint8Array | null; readonly sql: string; readonly outputLimit: number }
 export type SqlResponse =
-  | { readonly ok: true;  readonly stdout: string; readonly dbBytes: Uint8Array; readonly tables: Readonly<Record<string, number>> }
+  | { readonly ok: true;  readonly stdout: string; readonly dbBytes: Uint8Array; readonly wrote: boolean; readonly tables: Readonly<Record<string, number>> }
   | { readonly ok: false; readonly stderr: string; readonly watchdog?: true };
 export interface SqlExecutor { run(request: SqlRequest): Promise<SqlResponse> }
 export interface SqlRunner { run(request: SqlRequest): Promise<SqlResponse>; terminate(): void }
@@ -387,7 +387,7 @@ export interface SqlRunner { run(request: SqlRequest): Promise<SqlResponse>; ter
 
 `handleSqlRequest(SQL, request)` is a pure function over an initialized `sql.js` module. It opens a fresh `new SQL.Database(dbBytes ?? undefined)`, runs `PRAGMA page_size` and sets `PRAGMA max_page_count` to `floor(1 MiB / page_size)` so a runaway insert stops at the file-size limit, executes the statements, formats output like the `sqlite3` shell (rows as `a|b`, `NULL` as empty text, a blob as `[blob <n> bytes]`, cut at `outputLimit`), reads table names and `count(*)` for each table of `sqlite_master` (views and `sqlite_%` tables excluded), exports the bytes, and closes the database. A SQL error becomes `{ ok: false, stderr: 'Error: <message>' }` and nothing is written. No state survives a call, so the result is a function of `(dbBytes, sql)`.
 
-The `sqlite3` handler: open or create the file, call `screenSql(sql)` (D7), call the executor, and write the exported bytes (and the new `tables`) back to the entry only when the bytes differ from the previous bytes (Requirement 5.8). A missing file starts as an empty database; the file is created only when the export is non-empty. A file that is not a database fails with `file is not a database` and is left untouched. A directory exits 1.
+The `sqlite3` handler: open or create the file, call `screenSql(sql)` (D7), call the executor, and write the exported bytes (and the new `tables`) back to the entry only when the bytes differ from the previous bytes (Requirement 5.8). A missing file starts as an empty database; the file is created only when the response has `wrote: true` (the exported bytes differ from the input, or from the 4,096-byte empty export when there was no file; task 3.1 measured that an empty `sql.js` database exports 4,096 bytes, not 0). A file that is not a database fails with `file is not a database` and is left untouched. A directory exits 1.
 
 **Screening (`screen.ts`).** A scanner over the SQL text that skips string literals and comments, lower-cases identifiers, and returns the first of these reasons: `ATTACH`, `DETACH`, `load_extension`, a leading `.` (dot-command), `vacuum` followed by `into`, `max_page_count`, any of `random`, `randomblob`, `current_time`, `current_date`, `current_timestamp`, `date`, `time`, `datetime`, `julianday`, `unixepoch`, `strftime` (they default to the current clock), and any string literal equal to `now` ignoring case. The step is unsupported with that reason. The README lists the restriction. The fixture builder bypasses the screen because it calls the executor directly with fixed text.
 
@@ -906,7 +906,7 @@ Why 100 is expected to fit in 60 s (an estimate to be measured in the first test
 ## Unverified items
 
 1. How `sql.js` 1.16.0 and Vite 7 resolve the wasm file: the design assumes `import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url'` and `initSqlJs({ locateFile: () => wasmUrl })`. A first implementation task runs a build and the dist check before anything else depends on it. If this fails, the fallback is a build step that copies the file into `public/` and a fixed same-origin `locateFile`, which does not change any interface here.
-2. Whether `sql.js` 1.16.0 exports an empty database as 0 bytes. The "create the file only when the export is non-empty" rule relies on it; a smoke test pins the behavior, and if the export is non-empty the rule becomes "create the file only when a statement wrote".
+2. Whether `sql.js` 1.16.0 exports an empty database as 0 bytes. The "create the file only when the export is non-empty" rule relies on it; a smoke test pins the behavior, and if the export is non-empty the rule becomes "create the file only when a statement wrote". Task 3.1 measured it: an empty database exports 4,096 bytes, so the fallback rule applies.
 3. Whether the `sql.js` glue contains URL strings that the dist check flags. They are reviewed once and listed with a reason.
 4. Whether jsdom 26.1.0 under Vitest 3.2.7 exposes `crypto.subtle` (the setup file covers it) and keeps `Uint8Array` identity across realms (the code avoids `instanceof Uint8Array`).
 5. Which CSP directives the `ui` kit's styles need beyond `style-src 'unsafe-inline'`; verified by the manual smoke check in a browser.

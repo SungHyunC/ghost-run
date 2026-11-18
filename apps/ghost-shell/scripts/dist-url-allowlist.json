@@ -1,0 +1,66 @@
+{
+  "hosts": [
+    {
+      "suffix": "example",
+      "reason": "Reserved domain (RFC 2606); cannot resolve. Scenario text uses it."
+    },
+    {
+      "suffix": "test",
+      "reason": "Reserved domain (RFC 2606); cannot resolve."
+    },
+    {
+      "suffix": "localhost",
+      "reason": "Reserved domain; loopback only."
+    },
+    {
+      "suffix": "invalid",
+      "reason": "Reserved domain; cannot resolve."
+    },
+    {
+      "host": "registry.npmjs.org",
+      "reason": "Scenario text mentions the npm registry; the page never fetches it."
+    }
+  ],
+  "strings": [
+    {
+      "value": "http://www.w3.org/1999/xhtml",
+      "files": "*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "http://www.w3.org/2000/svg",
+      "files": "*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "http://www.w3.org/1998/Math/MathML",
+      "files": "*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "http://www.w3.org/1999/xlink",
+      "files": "*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "http://www.w3.org/XML/1998/namespace",
+      "files": "*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "https://react.dev/errors/",
+      "files": "*.js",
+      "reason": "React error-message prefix; the string is shown as text in an error and never fetched."
+    },
+    {
+      "value": "https://github.com/sql-js/sql.js/pull/647",
+      "files": "worker-entry-*.js",
+      "reason": "Link inside a sql.js warning message text; never fetched."
+    },
+    {
+      "value": "http://[",
+      "files": "index-*.js",
+      "reason": "Prefix string for the host-parsing check of the egress judge (new URL on a bracketed IPv6 literal); the URL is parsed, never fetched."
+    }
+  ]
+}

@@ -8,7 +8,7 @@ The plan follows the implementation order of the design:
 
 1. The additive `core` change (`'unsupported-step'` in `WardNotice.kind`). It is the first task and runs alone.
 2. The structure steering update and the scaffold of the world package.
-3. Early verification tasks that actually run the design's unverified claims: `sql.js` under Node and jsdom, a `worker_threads` watchdog timeout, the Vite build with the wasm file and the browser build of `yaml` through `wards-config`, and the dist check script. Measured results are recorded in `docs/devlog.md`.
+3. Early verification tasks that actually run the design's unverified claims: `sql.js` under Node and jsdom, a `worker_threads` watchdog timeout, the Vite build with the wasm file and the browser build of `yaml` through `wards-config`, and the dist check script. Measured results are recorded in `docs/measurements.md`.
 4. The world: state, virtual paths, file systems, diff, scene, fingerprint, the journal oracle, the SQL executor and watchdog, tokenizer, parser, interpreter, command handlers, and the world adapter, each with its property tests.
 5. The `verifyWorld` contract run with its time measurement against the 45 s guard and the 60 s save-time budget, and a world checkpoint.
 6. The app: pipeline (claims, verdict floor, `runPlayground`), scenario fixtures built from code points, scenario tests, the Plan_File codec, plan files, the wards editor, the Graveyard, the page state, the screens, the static build with the CSP `_headers` file, and the documentation.
@@ -36,7 +36,7 @@ The plan follows the implementation order of the design:
 - **Test data.** Canary values only (`sk-CANARY-` followed by generated characters from `[A-Za-z0-9_-]`). Hostnames only from `.example`, `.test`, `.localhost`, `.invalid`, `registry.npmjs.org`, and the documentation range `192.0.2.x`. Hidden Unicode characters and the HTML comment opener are never written literally in any file under `apps/ghost-shell/`, `worlds/playground-shell/`, or `.kiro/specs/ghost-shell/`; tests and builders use `\u` escapes or `String.fromCodePoint`.
 - **Purity.** No file under `worlds/playground-shell/src` or `apps/ghost-shell/src/pipeline` reads a clock, a random source, an environment variable, storage, or the network. The world package has no DOM, no `Worker`, and no Vite-only feature.
 - **No LLM calls** anywhere in the code, tests, or scripts.
-- **Measurement records.** Measured results go to `docs/devlog.md` as one appended entry per measurement task (each such task is in its own wave, so no two tasks edit the file at once), and to the README note named in the task.
+- **Measurement records.** Measured results go to `docs/measurements.md` as one appended section per measurement task (each such task is in its own wave, so no two tasks edit the file at once), and to the README note named in the task.
 - **Verification commands.** `pnpm --filter @ghost-run/playground-shell test`, `pnpm --filter @ghost-run/ghost-shell test`, `pnpm --filter <package> typecheck`, `pnpm --filter <package> lint`, and `pnpm --filter @ghost-run/ghost-shell build`, with `GHOST_PBT_MODE=nightly` for the Nightly_Run.
 - **Scope of this plan.** Coding tasks only. The Docker box, the Kiro hooks, the MCP server, the recording hook (`ghost-log`), the UI kit components, and the ward engine are other specs. This plan edits no other spec's file and, apart from task 1.1, the steering update of task 2.1, and the lint bans of task 17.2, edits no code outside `worlds/playground-shell/` and `apps/ghost-shell/`.
 
@@ -50,13 +50,13 @@ The plan follows the implementation order of the design:
     - Run the whole `core` suite, `tsc --noEmit`, and eslint for `core`. Confirm the existing tests pass unchanged and `core/package.json` is unchanged.
     - _Requirements: 1.10, 6.8_
 
-- [ ] 2. Steering update and world package scaffold
-  - [ ] 2.1 Update `.kiro/steering/structure.md` for the new dependency direction
+- [x] 2. Steering update and world package scaffold
+  - [x] 2.1 Update `.kiro/steering/structure.md` for the new dependency direction
     - Edit the Dependency Direction section so that `apps/*` may depend on `worlds/*`, `ui/`, `wards-config/`, and `core/`, and add a line that `worlds/*` may depend on `core/` only (plus its own runtime libraries such as `sql.js`). Keep every other rule. Keep the file free of hidden Unicode and of HTML comment openers (the `blacklight-steering` hook runs on save).
     - This task completes before any file of `apps/ghost-shell/` imports `worlds/playground-shell/` (task 3.3 onward).
     - _Requirements: 1.9_
 
-  - [ ] 2.2 Create the `worlds/playground-shell/` package scaffold
+  - [x] 2.2 Create the `worlds/playground-shell/` package scaffold
     - Confirm `pnpm-workspace.yaml` lists `worlds/*` (the design verified that it does); edit it only if the entry is missing.
     - Create `package.json` (name `@ghost-run/playground-shell`, `private`, `type: module`, `main` and `types` at `src/index.ts`, `engines.node >=20`, scripts `test`, `test:nightly`, `typecheck`, `lint`). `dependencies` are exactly `@ghost-run/core` (`workspace:*`) and `sql.js` pinned to `1.16.0`. Dev dependencies: `typescript ^5.9.0`, `vitest ^3.2.7`, `fast-check ^4.10.2`, `jsdom ^26.1.0`, `eslint ^10.15.0`, `typescript-eslint ^8.73.0`, `@types/node ^20.19.0`. Do not add `shell-quote` or `@types/sql.js`.
     - Create `tsconfig.json` (strict), `vitest.config.ts` (node environment by default; the jsdom smoke test uses a `// @vitest-environment jsdom` docblock), and `eslint.config.mjs` with `no-restricted-imports` that allows only `@ghost-run/core`, `@ghost-run/core/verify` (tests only), and `sql.js` as package imports and bans `wards-config`, `@ghost-run/ui`, `apps/**`, `react`, `three`, `@mujoco/mujoco`, `integrations/**`, and `@ghost-run/ghost-runner`; plus `no-restricted-syntax` and `no-restricted-properties` for `eval`, `new Function`, `Date.now`, `new Date`, and `Math.random` in `src/**`.
@@ -65,41 +65,41 @@ The plan follows the implementation order of the design:
     - Run `pnpm --filter @ghost-run/playground-shell exec tsc --noEmit` and eslint. Confirm no change in `core/`.
     - _Requirements: 1.2, 1.4, 1.8, 19.4_
 
-- [ ] 3. Early verification of the design's unverified claims
-  - [ ] 3.1 Verify `sql.js` under Node and jsdom and record the facts
+- [x] 3. Early verification of the design's unverified claims
+  - [x] 3.1 Verify `sql.js` under Node and jsdom and record the facts
     - Create `worlds/playground-shell/tests/sql-smoke.test.ts` (node) and `tests/sql-smoke-jsdom.test.ts` (with the `// @vitest-environment jsdom` docblock). Initialize the real `sql.js` 1.16.0 build (no mock). Assert and record: (1) `initSqlJs` loads the wasm file under Node and under jsdom in Vitest 3.2.7; (2) an empty `new SQL.Database()` exports 0 bytes or non-zero bytes (record which; if non-zero, note that the rule "create the file only when the export is non-empty" becomes "create the file only when a statement wrote", Unverified item 2); (3) a database built twice from the same fixed SQL (a `WITH RECURSIVE` insert of 1,206 rows plus a second table) exports equal bytes; (4) `crypto.subtle.digest('SHA-256', ...)` works in the jsdom test after `tests/support/setup.ts`; (5) `ArrayBuffer.isView(new Uint8Array(4))` is true in jsdom for a value created in the test and for a value returned by `structuredClone`, and whether `instanceof Uint8Array` differs across realms (record the result); (6) `PRAGMA page_size` and `PRAGMA max_page_count` work as the design uses them.
-    - Append one entry to `docs/devlog.md` with the results and the exact versions of `sql.js`, `vitest`, and `jsdom` read from the installed packages.
-    - If any claim fails, state the fallback in the devlog entry (as the design allows) and adjust only the affected later task text in this plan; do not edit `design.md`.
+    - Append one entry to `docs/measurements.md` (a new section, in English) with the results and the exact versions of `sql.js`, `vitest`, and `jsdom` read from the installed packages.
+    - If any claim fails, state the fallback in the measurements section (as the design allows) and adjust only the affected later task text in this plan; do not edit `design.md`.
     - _Requirements: 2.1, 3.8, 5.8, 20.6_
 
-  - [ ] 3.2 Verify a `worker_threads` watchdog timeout with real `sql.js`
+  - [x] 3.2 Verify a `worker_threads` watchdog timeout with real `sql.js`
     - Create the plain JavaScript test-support file `worlds/playground-shell/tests/support/sql-worker.mjs` (Node 20 cannot load TypeScript in a worker). It initializes `sql.js`, receives `{ id, request }` messages, runs the statements with `db.exec`, and answers `{ id, response }` messages; it holds no other logic yet.
     - Create `tests/worker-threads-spike.test.ts`: spawn a `worker_threads` `Worker` on that file, send the recursive count query `WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM c) SELECT count(*) FROM c;`, race it against a real `setTimeout` of 300 ms, call `worker.terminate()` when the timer wins, and assert the timer won and the `terminate` promise resolved. Then spawn a fresh worker and assert `SELECT 1` answers. Record the elapsed real time.
     - This task proves that the terminate-and-respawn path works with real `sql.js` before the watchdog is written (task 5.2 reuses `sql-worker.mjs`).
-    - Append one entry to `docs/devlog.md` with the measured wait and the Node version. This task and task 3.1 are in different waves so the file is not edited at the same time.
+    - Append one entry to `docs/measurements.md` (a new section) with the measured wait and the Node version. This task and task 3.1 are in different waves so the file is not edited at the same time.
     - _Requirements: 5.12, 20.6_
 
-  - [ ] 3.3 Scaffold the app build and verify the Vite build with the wasm file and the browser build of `yaml`
+  - [x] 3.3 Scaffold the app build and verify the Vite build with the wasm file and the browser build of `yaml`
     - **Depends on the `wards-config` implementation** (the default entry point has no Node built-in and the subpath `@ghost-run/wards-config/node` holds `loadWardsFile`; `wards` spec task 6). **This task does not need the `ui-kit` implementation.** If `import { parseWards, printWards, formatConfigError } from '@ghost-run/wards-config'` cannot be bundled for the browser, stop and report the dependency; do not add a second YAML parser (Requirement 1.11).
     - Requires task 2.1 (steering) and task 5.1 (it imports `handleSqlRequest` from the world package entry).
     - Create `apps/ghost-shell/` with `package.json` (name `@ghost-run/ghost-shell`, `private`, `type: module`; runtime dependencies `@ghost-run/core`, `@ghost-run/wards-config`, `@ghost-run/playground-shell` (all `workspace:*`), `sql.js` `1.16.0`, `react ^19.3.1`, `react-dom ^19.3.1`; the `@ghost-run/ui` dependency is added by task 9.1; dev dependencies per the design table), `tsconfig.json` (strict, `jsx: react-jsx`), `vite.config.ts` (`base: './'`, `build.outDir: 'dist'`, `emptyOutDir`, `target: 'es2022'`, `assetsInlineLimit: 0`), `vitest.config.ts`, `eslint.config.mjs` (same ban list as the world package plus `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, storage globals, and imports of `@ghost-run/ghost-runner`, `@ghost-run/ghost-hand`, `three`, `@mujoco/mujoco`, `integrations/*`, and the subpath `@ghost-run/wards-config/node`), `index.html`, a minimal `src/main.tsx`, `src/sql-js.d.ts`, `public/_headers` (CSP text of the design; task 15.1 verifies it), and the default wards file `apps/ghost-shell/wards.yaml` with the three-ward content of `wards` Requirement 18, criterion 2 (`protect-data`, `no-data-loss`, `no-secret-egress`).
     - Create `src/sql-worker/worker-entry.ts` (initializes `sql.js` with `locateFile` returning the URL from `import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url'`, answers `{ id, request }` messages with `handleSqlRequest`) and `src/sql-worker/worker-runner.ts` (creates the worker with `new Worker(new URL('./worker-entry.ts', import.meta.url), { type: 'module' })`, correlates replies by `id`, `terminate()` calls `worker.terminate()`). A temporary spike line in `main.tsx` imports `parseWards` and parses the bundled wards text.
     - Run `pnpm --filter @ghost-run/ghost-shell build`. Assert by script: `dist/assets` holds a worker chunk and a `.wasm` file whose name is referenced from a JS file; no JS file contains a `node:` specifier; the bundle contains the `yaml` parser. If the `?url` pattern fails, apply the design fallback (copy the wasm file into `public/` and use a fixed same-origin `locateFile`) and record it.
     - Write `tests/build/build-smoke.test.ts` that runs the build and re-asserts the same facts (node environment, build run once per file in `beforeAll`).
-    - Append one entry to `docs/devlog.md` with the resolved `vite`, `@vitejs/plugin-react`, `vitest`, and `jsdom` versions, the wasm file name and size, the result of the `?url` pattern, and the `yaml` browser build result.
+    - Append one entry to `docs/measurements.md` (a new section) with the resolved `vite`, `@vitejs/plugin-react`, `vitest`, and `jsdom` versions, the wasm file name and size, the result of the `?url` pattern, and the `yaml` browser build result.
     - _Requirements: 1.1, 1.3, 1.6, 1.7, 1.11, 2.1, 2.2, 2.8, 15.3_
 
-  - [ ] 3.4 Create `apps/ghost-shell/scripts/check-dist.mjs` and run it on the real build
+  - [x] 3.4 Create `apps/ghost-shell/scripts/check-dist.mjs` and run it on the real build
     - **Depends on task 3.3** (a real `dist/`). Node 20, no dependencies. The script exits 1 with one line per finding when: an `.html` file references a script, link, image, iframe, form action, or base whose value has a scheme or begins with `//` (other than `data:`); a `.css` file has an `@import` or `url(...)` target with a scheme or leading `//` (other than `data:`); any text file (`.html`, `.js`, `.mjs`, `.css`, `.json`, `.webmanifest`) contains an `http://` or `https://` URL whose host is not in the allowlist; a `.js` file contains a `node:` specifier or a worker `new URL(...)` target that is not relative; `dist` has no `.wasm` file, the `.wasm` name is not referenced from a JS file, or `_headers` is missing. It prints the sorted list of allowed hosts and strings it saw.
     - Create `scripts/dist-url-allowlist.json` with two kinds of entries, each with a reason: hosts (every host with a reserved suffix `.example`, `.test`, `.localhost`, `.invalid`, plus `registry.npmjs.org`) and exact strings (the XML namespace identifiers of the design, and each vendor URL string reviewed on the first run). Findings of the resource kinds (HTML and CSS references) have no allowlist.
     - Run `pnpm --filter @ghost-run/ghost-shell build && node scripts/check-dist.mjs` on the real build of task 3.3. List every vendor string it flags, review each once, and add it with a reason (Unverified item 3).
     - Write `tests/scripts/check-dist.test.ts` (node) over generated dist trees in a temporary directory: a tree with only relative references and allowlisted strings passes; adding a CDN `<script>`, a CSS `@import`, a Google Fonts `url()`, a `fetch('https://...')` string with a non-allowlisted host, a protocol-relative URL, a `node:` import, a missing `.wasm`, or a missing `_headers` fails with a message that names the file.
     - Add the script `test:dist` (`vite build` then `node scripts/check-dist.mjs`) to `package.json`.
-    - Append one entry to `docs/devlog.md` with the reviewed vendor strings. This task is in a different wave from tasks 3.1, 3.2, and 3.3.
+    - Append one entry to `docs/measurements.md` (a new section) with the reviewed vendor strings. This task is in a different wave from tasks 3.1, 3.2, and 3.3.
     - _Requirements: 2.1, 2.2, 2.4, 2.8, 1.7_
 
-- [ ] 4. World state, virtual paths, file systems, diff, scene, and fingerprint
-  - [ ] 4.1 Create the types, limits, state helpers, Trace builder, and virtual path function
+- [x] 4. World state, virtual paths, file systems, diff, scene, and fingerprint
+  - [x] 4.1 Create the types, limits, state helpers, Trace builder, and virtual path function
     - `src/state.ts`: `VirtualPath`, `Entry`, `PlaygroundState`, `PlaygroundAction`, `VirtualProject`, `PlaygroundOptions`, and the helpers `cloneState` (uses `structuredClone`), `freezeState` (records frozen deeply), `copyBytes`. Never test `instanceof Uint8Array`; use `ArrayBuffer.isView` (or the result recorded by task 3.1).
     - `src/shell/limits.ts` with one constant each: `COMMAND_MAX` 4096, `LINE_COMMANDS_MAX` 64, `ACTION_COMMAND_BUDGET` 256, `NPM_DEPTH_MAX` 4, `OUTPUT_MAX` 4096, `ENTRIES_MAX` 2000, `FILE_MAX` 1 MiB, `TOTAL_MAX` 16 MiB, `PAYLOAD_MAX` 65536, `SECRET_FILES_MAX` 16, `SECRET_FILE_MAX` 65536, `WATCHDOG_MS` 5000, `PLAN_MAX` 50, `PLAN_FILE_MAX` 1 MiB, `WARDS_TEXT_MAX` 262144, `GRAVEYARD_MAX` 200.
     - `src/trace.ts`: `StepRecord`, `Trace`, `TraceBuilder` (starts from a previous Trace, appends steps and events, dedupes events per `(stepIndex, destination)` and `(stepIndex, path)`, assigns `evt-<n>` ids from the count of payload-carrying events already in the Trace, merges a second request to the same destination into the first payload cut at 65,536 bytes, tracks `watchdogFired` and `readCoverage`), and the output truncation helper (4,096 code points then `[truncated]`).
@@ -108,12 +108,12 @@ The plan follows the implementation order of the design:
     - Write example tests for `toVirtualPath` and the Trace builder (dedupe, id counter, payload merge, truncation marker).
     - _Requirements: 3.2, 3.4, 3.11, 3.12, 3.13, 4.1, 4.3, 7.3, 7.6_
 
-  - [ ] 4.2 Write property test for virtual paths
+  - [x] 4.2 Write property test for virtual paths
     - **Property 13: Paths cannot leave the project**
     - **Validates: Requirements 4.3**
     - File `tests/prop-13-paths.test.ts`. Generators: path arguments from segments including `.`, `..`, empty segments, `~`, and a leading `/`, and generated `cwd` values.
 
-  - [ ] 4.3 Implement `MutableFs`, `StateFs`, `diffStates`, `renderScene`, and the fingerprint
+  - [x] 4.3 Implement `MutableFs`, `StateFs`, `diffStates`, `renderScene`, and the fingerprint
     - `src/vfs/mutable-fs.ts`: the `MutableFs` interface (`get`, `list`, `walk`, `putFile`, `putDir`, `remove`, `mark`, `rollback`), `LimitError`, and `StateFs` over a cloned record, enforcing 2,000 entries, 1 MiB per file, and 16 MiB in total, with code-point ordered listing.
     - `src/vfs/diff.ts`: `diffStates(before, after)` with the table of the design (`file-created`, `file-deleted` with `entryType`, `file-overwritten` with `sizeBefore` and `sizeAfter`, a directory-to-file swap as delete then create, `sql-row-count` per table only for a database file present at the same path before and after, `dropped: true` with `rowsAfter: 0` for a vanished table, nothing for a new table, nothing for equal bytes), sorted by `path` in `compareCodePoints` order with the kind tie-breaker. Never emit `symlink-changed`.
     - `src/vfs/scene.ts`: `renderScene(state, projectName)` returning `{ project, files: [{ path, type, size }], databases: [{ path, tables: [{ name, rows }] }] }`, sorted, with no bytes and no content.
@@ -121,25 +121,25 @@ The plan follows the implementation order of the design:
     - Write example tests per diff row, per limit, and for rollback.
     - _Requirements: 3.6, 3.7, 3.8, 4.1, 4.2, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10_
 
-  - [ ] 4.4 Write property test for scene, state, and fingerprint
+  - [x] 4.4 Write property test for scene, state, and fingerprint
     - **Property 19: Scene, state, and fingerprint**
     - **Validates: Requirements 3.7, 3.8, 3.10, 3.11**
     - File `tests/prop-19-scene-fingerprint.test.ts`. Uses `tests/support/arb-project.ts`. Checks the JSON round trip of `renderScene`, absence of bytes, `structuredClone` equality, equal hashes for equal states, and a changed hash for a one-byte change.
 
-  - [ ] 4.5 Implement `JournalFs`, the independent change oracle
+  - [x] 4.5 Implement `JournalFs`, the independent change oracle
     - `src/vfs/journal-fs.ts`: `JournalFs` implements `MutableFs` over a clone of the starting state and an operation list `{ op: 'put' | 'remove', path, kind, bytes? }`; `changes()` takes, for each touched path, the first recorded "before" and the last "after", classifies them with its own small decision table, sorts them, and derives `sql-row-count` Changes from the `tables` values it saw. A rollback truncates the operation list. It does not import `diffStates`.
     - Write `tests/journal-independence.test.ts`: assert by reading the two source files that `journal-fs.ts` and `diff.ts` do not import each other, and example tests that `JournalFs.changes()` equals `diffStates` on hand-written operation sequences (create, overwrite, delete, move, directory delete, row-count change).
     - _Requirements: 10.2_
 
-- [ ] 5. SQL executor and watchdog
-  - [ ] 5.1 Implement the SQL executor core, screening, and output format
+- [x] 5. SQL executor and watchdog
+  - [x] 5.1 Implement the SQL executor core, screening, and output format
     - **Depends on task 3.1** (the recorded `sql.js` facts).
     - `src/sql/executor.ts`: `SqlRequest`, `SqlResponse`, `SqlExecutor`, `SqlRunner`. `src/sql/handle.ts`: `handleSqlRequest(SQL, request)` as in the design (fresh database per call, `PRAGMA max_page_count` set to `floor(1 MiB / page_size)`, statements executed, `sqlite3`-like output formatting, table names and `count(*)` from `sqlite_master` excluding views and `sqlite_%` tables, bytes exported, database closed, a SQL error returned as `{ ok: false, stderr: 'Error: <message>' }` with nothing written). `src/sql/format.ts`, `src/sql/inline.ts` (`InlineSqlExecutor`, `initInlineSql()`), and `src/sql/screen.ts` (`screenSql(sql)`: skips string literals and comments, lower-cases identifiers, and returns the first reason among `ATTACH`, `DETACH`, `load_extension`, a leading `.`, `vacuum` followed by `into`, `max_page_count`, the clock and random functions of the design, and a string literal equal to `now` in any case).
     - Update `src/index.ts` to export the SQL API (`handleSqlRequest`, `createWatchdogExecutor` placeholder is added by task 5.2, `InlineSqlExecutor`, `initInlineSql`, the types), because the app worker entry imports it from the package entry.
     - Write example tests: output formatting, `NULL` and blob rendering, error text, table counts, determinism of two calls, and every screening reason in lower, upper, and mixed case.
     - _Requirements: 5.8, 5.9, 5.12, 20.6_
 
-  - [ ] 5.2 Implement the watchdog executor and its tests
+  - [x] 5.2 Implement the watchdog executor and its tests
     - **Depends on tasks 5.1 and 3.2.**
     - `src/sql/watchdog.ts`: `TimerPort` and `createWatchdogExecutor({ spawn, timeoutMs = 5000, timers })` returning `SqlExecutor & { dispose() }`. A call lazily spawns a runner, starts the timer, races the runner against it, and on timeout calls `runner.terminate()`, drops the runner, and resolves `{ ok: false, stderr: 'sql statement exceeded the watchdog', watchdog: true }`. A late reply from a terminated runner is ignored; a `settled` flag makes exactly one outcome win; success clears the timer.
     - Write `tests/watchdog.test.ts` (deterministic): a fake `SqlRunner` whose promise never settles and a manual `TimerPort` with `advance(ms)`. `advance(4999)` leaves the call pending, `advance(1)` settles it with the watchdog error, `terminate` is called once, the next call spawns a new runner, a late reply is ignored, and a runner that answers before the deadline settles with its answer and clears the timer.
@@ -242,7 +242,7 @@ The plan follows the implementation order of the design:
     - Create `tests/support/budget.ts` (records the elapsed time of the contract tests and fails the Short_Run above 45,000 ms) and `tests/verify-world.test.ts` calling `verifyWorld(world, { id: 'playground-shell', deterministic: true, wardSet: <default wards loaded with loadWardsFile in Node-only test code>, testAdapter: journalAdapter, actionArb: supportedActionArb, numRuns: NUM_RUNS })` from `@ghost-run/core/verify`. The world is built from the Scenario 4 neutral project (an `app.db` of 1,206 rows built by `tests/support/neutral-project.ts`, a test-only copy of the fixture recipe: it does not import from the app). `supportedActionArb` draws from the Supported_Command_Set with `sqlite3` at about 10 percent of the draws and SQL from a bounded grammar (`SELECT`, `INSERT`, `UPDATE`, `DELETE` with bounded `WHERE`, no recursion).
     - Run the Short_Run with `time` on the Reference_Machine class of hardware (Apple M1 or comparable) and record: the elapsed time of `verifyWorld` alone, of the whole world suite, and the number of SQL steps executed. Compare with the design estimate (10 to 20 s, near 30 s for the file-save run), the 45 s guard, and the 60 s save-time budget.
     - **Fallback if the measurement exceeds 45 s:** use a smaller fixture (fewer rows in the neutral project's `app.db` for the contract test only) or a lower SQL weight in `supportedActionArb`. Never use fewer than 100 runs. Record which fallback was applied and the new time.
-    - Record the results in `docs/devlog.md` and in a "Measured run time" note of `worlds/playground-shell/README.md` (the design says the 60 s estimate was never run). This task is the only task of its wave.
+    - Record the results in `docs/measurements.md` and in a "Measured run time" note of `worlds/playground-shell/README.md` (the design says the 60 s estimate was never run). This task is the only task of its wave.
     - Confirm `verifyWorld` resolves without a `VerificationError`. Optionally run the Nightly_Run once and record the elapsed time.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 20.1_
 

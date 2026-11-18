@@ -1,0 +1,189 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "2.1 Update `.kiro/steering/structure.md` for the new dependency direction": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985480843
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985555499
+      }
+    ],
+    "2.2 Create the `worlds/playground-shell/` package scaffold": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985480849
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985555518
+      }
+    ],
+    "2. Steering update and world package scaffold": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985555524
+      }
+    ],
+    "3.1 Verify `sql.js` under Node and jsdom and record the facts": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985558420
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985683432
+      }
+    ],
+    "4.1 Create the types, limits, state helpers, Trace builder, and virtual path function": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985558913
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985683805
+      }
+    ],
+    "3.2 Verify a `worker_threads` watchdog timeout with real `sql.js`": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985687873
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985815316
+      }
+    ],
+    "4.3 Implement `MutableFs`, `StateFs`, `diffStates`, `renderScene`, and the fingerprint": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985687877
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985816137
+      }
+    ],
+    "5.1 Implement the SQL executor core, screening, and output format": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985688239
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985816586
+      }
+    ],
+    "3.3 Scaffold the app build and verify the Vite build with the wasm file and the browser build of `yaml`": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985823027
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985972601
+      }
+    ],
+    "5.2 Implement the watchdog executor and its tests": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985823040
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985972610
+      }
+    ],
+    "4.4 Write property test for scene, state, and fingerprint": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985823396
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985972748
+      }
+    ],
+    "5. SQL executor and watchdog": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985972612
+      }
+    ],
+    "3.4 Create `apps/ghost-shell/scripts/check-dist.mjs` and run it on the real build": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985975962
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794986097797
+      }
+    ],
+    "4.2 Write property test for virtual paths": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985976515
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794986098546
+      }
+    ],
+    "4.5 Implement `JournalFs`, the independent change oracle": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794985977098
+      },
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794986099374
+      }
+    ],
+    "3. Early verification of the design's unverified claims": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794986097799
+      }
+    ],
+    "4. World state, virtual paths, file systems, diff, scene, and fingerprint": [
+      {
+        "executionId": "35711b5e-d587-4339-a34e-1bac1d0db208",
+        "chatSessionId": "sess_71e751ae-036b-42c3-b066-bbb9f62cc0ae",
+        "timestamp": 1794986099376
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@ghost-run/ghost-shell",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Shell: static playground page for Ghost Run+",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "build": "vite build",
+    "test:dist": "vite build && node scripts/check-dist.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@ghost-run/core": "workspace:*",
+    "@ghost-run/playground-shell": "workspace:*",
+    "@ghost-run/wards-config": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sql.js": "1.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^10.15.0",
+    "fast-check": "^4.10.2",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.73.0",
+    "vite": "^7.3.8",
+    "vitest": "^3.2.7"
+  }
+}
