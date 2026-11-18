@@ -419,6 +419,183 @@
         "chatSessionId": "sess_381865ec-5fa5-47ba-9c6b-eeb8d72d15df",
         "timestamp": 1794988636732
       }
+    ],
+    "9.1 Add the `@ghost-run/ui` dependency and probe the cross-spec prerequisites": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794988788766
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794988948563
+      }
+    ],
+    "9. App prerequisites and `ui` wiring": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794988948566
+      }
+    ],
+    "10.1 Create the fixed texts and the pure claim, verdict, secret, and step modules": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794988952699
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989077674
+      }
+    ],
+    "11.1 Build the project fixture and the hidden-instruction README from code points": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794988952710
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989077685
+      }
+    ],
+    "10.4 Implement `runPlayground`": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989087196
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989216453
+      }
+    ],
+    "10.3 Write property test for the verdict floor and engine parity": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989087207
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989216464
+      }
+    ],
+    "10.2 Write property test for claim honesty": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989216596
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989316936
+      }
+    ],
+    "10.5 Write property test for pipeline wiring and message": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989216609
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989316949
+      }
+    ],
+    "10.6 Write property test for the secret and payload leak rule": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989216862
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989317085
+      }
+    ],
+    "10.7 Write property test for determinism of interpreter, world, and pipeline": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989317097
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989401726
+      }
+    ],
+    "10.8 Write property test for protected paths and secret egress (contract P5 and P6)": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989317109
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989402501
+      }
+    ],
+    "11.2 Create `scenarios.ts` and the seven plan files": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989317589
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989403265
+      }
+    ],
+    "10. Pipeline: texts, claims, verdict floor, and `runPlayground`": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989402503
+      }
+    ],
+    "11.3 Write the scenario tests": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989406607
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989504438
+      }
+    ],
+    "11.4 Write property test for the red thread through hidden text": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989407182
+      },
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989505234
+      }
+    ],
+    "11. Scenario fixtures and the five scenarios": [
+      {
+        "executionId": "897d9396-bcae-49eb-89f0-44e568654241",
+        "chatSessionId": "sess_17bc1993-e2d2-4a0c-8b3d-0454d7688914",
+        "timestamp": 1794989505236
+      }
     ]
   }
 }

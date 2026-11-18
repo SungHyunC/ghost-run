@@ -18,17 +18,23 @@
   "dependencies": {
     "@ghost-run/core": "workspace:*",
     "@ghost-run/playground-shell": "workspace:*",
+    "@ghost-run/ui": "workspace:*",
     "@ghost-run/wards-config": "workspace:*",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "sql.js": "1.16.0"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "5.30.3",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.12",
     "@types/node": "^20.19.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
     "eslint": "^10.15.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "fast-check": "^4.10.2",
     "jsdom": "^26.1.0",
     "typescript": "^5.9.0",

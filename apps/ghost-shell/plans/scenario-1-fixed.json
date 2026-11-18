@@ -1,0 +1,10 @@
+{
+  "format": "ghost-run-plan",
+  "version": 1,
+  "name": "Scenario 1: fixed plan",
+  "origin": "scripted",
+  "actions": [
+    { "command": "cp app.db app.db.bak" },
+    { "command": "sqlite3 app.db \"UPDATE users SET deleted_at = 1\"" }
+  ]
+}

@@ -1,4 +1,13 @@
 import tseslint from 'typescript-eslint';
+import eslintReact from '@eslint-react/eslint-plugin';
+import hooks from 'eslint-plugin-react-hooks';
+
+// Resolve the dangerouslySetInnerHTML rule ids from the installed plugin at load time; fail loudly when none match.
+const dangerousHtmlRuleIds = Object.keys(eslintReact.rules ?? {}).filter((id) => /no-dangerously-set-innerhtml/i.test(id));
+if (dangerousHtmlRuleIds.length === 0) {
+  throw new Error('@eslint-react/eslint-plugin exposes no rule matching /no-dangerously-set-innerhtml/; update apps/ghost-shell/eslint.config.mjs.');
+}
+const dangerousHtmlRules = Object.fromEntries(dangerousHtmlRuleIds.map((id) => [`@eslint-react/${id}`, 'error']));
 
 const banMessage = (name) => `${name} is not allowed in the ghost-shell app.`;
 
@@ -32,8 +41,12 @@ export default tseslint.config(
   {
     files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}', 'vite.config.ts', 'vitest.config.ts'],
     extends: [tseslint.configs.base],
+    plugins: { '@eslint-react': eslintReact, 'react-hooks': hooks },
     languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     rules: {
+      ...dangerousHtmlRules,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
       'no-restricted-imports': ['error', { patterns: BANNED_IMPORTS }],
       'no-restricted-syntax': ['error', ...SYNTAX_BAN],
       'no-restricted-globals': ['error', ...STORAGE_GLOBALS],

@@ -3,8 +3,10 @@ import tseslint from 'typescript-eslint';
 const banMessage = (name) => `${name} is not allowed in the playground-shell world.`;
 
 // Package imports allowed: @ghost-run/core, @ghost-run/core/verify (tests only), sql.js.
+const wardsConfigGroup = ['@ghost-run/wards-config', '@ghost-run/wards-config/**', '**/wards-config/**'];
+
 const bannedPatterns = [
-  { group: ['@ghost-run/wards-config', '@ghost-run/wards-config/**', '**/wards-config/**'], message: banMessage('wards-config') },
+  { group: wardsConfigGroup, message: banMessage('wards-config') },
   { group: ['@ghost-run/ui', '@ghost-run/ui/**', '**/ui/**'], message: banMessage('@ghost-run/ui') },
   { group: ['@ghost-run/ghost-runner', '@ghost-run/ghost-runner/**', '**/ghost-runner/**'], message: banMessage('ghost-runner') },
   { group: ['**/apps/**', '@ghost-run/ghost-shell', '@ghost-run/ghost-hand'], message: banMessage('apps') },
@@ -34,6 +36,16 @@ export default tseslint.config(
     extends: [tseslint.configs.base],
     rules: {
       'no-restricted-imports': ['error', { patterns: bannedPatterns }],
+    },
+  },
+  {
+    // Tests may import the wards-config package by name (devDependency); relative paths stay banned.
+    files: ['tests/**/*.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [
+        { group: ['../**/wards-config/**'], message: banMessage('relative wards-config paths') },
+        ...bannedPatterns.filter((p) => p.group !== wardsConfigGroup),
+      ] }],
     },
   },
   {

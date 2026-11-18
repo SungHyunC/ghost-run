@@ -247,6 +247,9 @@ importers:
       '@ghost-run/playground-shell':
         specifier: workspace:*
         version: link:../../worlds/playground-shell
+      '@ghost-run/ui':
+        specifier: workspace:*
+        version: link:../../ui
       '@ghost-run/wards-config':
         specifier: workspace:*
         version: link:../../wards-config
@@ -260,6 +263,18 @@ importers:
         specifier: 1.16.0
         version: 1.16.0
     devDependencies:
+      '@eslint-react/eslint-plugin':
+        specifier: 5.30.3
+        version: 5.30.3(eslint@10.15.0)(typescript@5.9.3)
+      '@testing-library/dom':
+        specifier: ^10.4.2
+        version: 10.4.2
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@testing-library/user-event':
+        specifier: ^14.6.12
+        version: 14.6.12(@testing-library/dom@10.4.2)
       '@types/node':
         specifier: ^20.19.0
         version: 20.19.43
@@ -275,6 +290,9 @@ importers:
       eslint:
         specifier: ^10.15.0
         version: 10.15.0
+      eslint-plugin-react-hooks:
+        specifier: ^7.1.1
+        version: 7.1.1(eslint@10.15.0)
       fast-check:
         specifier: ^4.10.2
         version: 4.10.2
@@ -503,6 +521,9 @@ importers:
         specifier: 1.16.0
         version: 1.16.0
     devDependencies:
+      '@ghost-run/wards-config':
+        specifier: workspace:*
+        version: link:../../wards-config
       '@types/node':
         specifier: ^20.19.0
         version: 20.19.43

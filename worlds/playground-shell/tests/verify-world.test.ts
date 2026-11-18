@@ -3,10 +3,9 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { verifyWorld } from '@ghost-run/core/verify';
 import type { WardSet } from '@ghost-run/core';
-// The world package may not depend on wards-config (eslint ban); this Node-only test code
-// reads the default wards file through the loader by relative path, as the design requires.
-// eslint-disable-next-line no-restricted-imports
-import { loadWardsFile } from '../../../wards-config/src/node.js';
+// Node-only test code reads the default wards file through the wards-config loader.
+// wards-config is a devDependency of the world package and is allowed in tests only.
+import { loadWardsFile } from '@ghost-run/wards-config/node';
 import { createPlaygroundWorld } from '../src/world.js';
 import type { SqlExecutor, SqlRequest, SqlResponse } from '../src/sql/executor.js';
 import { initInlineSql } from '../src/sql/inline.js';

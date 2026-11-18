@@ -254,8 +254,8 @@ The plan follows the implementation order of the design:
 - [x] 8. Checkpoint - World complete
   - Run `pnpm --filter @ghost-run/playground-shell test`, `typecheck`, and `lint`. Confirm the Short_Run suite finishes within 60 s per file, `core/package.json` and `core/src` are unchanged apart from task 1.1, and the world package has exactly the two runtime dependencies. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. App prerequisites and `ui` wiring
-  - [ ] 9.1 Add the `@ghost-run/ui` dependency and probe the cross-spec prerequisites
+- [x] 9. App prerequisites and `ui` wiring
+  - [x] 9.1 Add the `@ghost-run/ui` dependency and probe the cross-spec prerequisites
     - **Depends on the `ui-kit` implementation** (the package `ui/` exists with its public entry; the notice-kind type of the kit inputs is widened; `escapeForDisplay` and `isHiddenDisplay` are exported) **and on the `wards-config` implementation** (task 3.3 already verified the browser entry). Waves 0 to 9 do not need the kit; every task from this one on does.
     - Add `@ghost-run/ui` (`workspace:*`) to `apps/ghost-shell/package.json` and run `pnpm install`. Add `@testing-library/react ^16.3.3`, `@testing-library/dom ^10.4.2`, `@testing-library/user-event ^14.6.12`, `@types/react ^19.3.0`, `@types/react-dom ^19.3.0`, `@eslint-react/eslint-plugin ^5.30.4`, and `eslint-plugin-react-hooks ^7.1.1` as dev dependencies, and the `dangerouslySetInnerHTML` rule in `eslint.config.mjs` resolved from the installed plugin at load time (throw a clear error when no rule id matches, as the `ui-kit` configuration does).
     - Create `tests/prereqs.test-d.ts` and `tests/prereqs.test.ts`: a type-level assertion that a `WardNotice` of `core` (including `kind: 'unsupported-step'`) is assignable to the notice type that the Candle input accepts; a run-time check that `escapeForDisplay` and `isHiddenDisplay` are exported by `@ghost-run/ui` and that `escapeForDisplay` replaces U+200B with the `<U+200B>` form (built with `String.fromCodePoint`); a check that `@ghost-run/wards-config` resolves to an entry without `node:` imports and that `@ghost-run/wards-config/node` is not imported anywhere under `apps/ghost-shell/src`.
@@ -263,65 +263,65 @@ The plan follows the implementation order of the design:
     - Record the resolved `@ghost-run/ui` exports used by the app (component names and prop types) at the top of `src/ui-imports.ts`, the single module through which the app imports the kit, so that a kit change touches one file.
     - _Requirements: 1.3, 1.5, 1.7, 6.9, 6.10, 19.5_
 
-- [ ] 10. Pipeline: texts, claims, verdict floor, and `runPlayground`
-  - [ ] 10.1 Create the fixed texts and the pure claim, verdict, secret, and step modules
+- [x] 10. Pipeline: texts, claims, verdict floor, and `runPlayground`
+  - [x] 10.1 Create the fixed texts and the pure claim, verdict, secret, and step modules
     - **Depends on the `ui-kit` implementation** (task 9.1): `IsolationClaims` and the widened notice type come from `@ghost-run/ui` through `src/ui-imports.ts`.
     - `src/texts.ts`: every fixed string as a constant (the scripted and recorded plan texts, the canary and reserved-domain text, `Docker box (real mode) is not used by this page.`, the blacklight texts, `The plan is empty: add a command first.`, `Ghost run changed reality: this is a bug in the playground.`, `Oldest blocked command dropped (limit 200).`, `The playground failed to run this plan.`, `The SQL engine failed to start.`, `Message the agent receives`, the P2 meaning text, and the rest named by the requirements). The words `sealed` and `isolated` appear in none of them.
     - `src/pipeline/claims.ts` (pure): `p1 = !p1Failed`, `clean = p1 && no unsupported step && !watchdogFired`, `p5 = clean`, `p6 = clean && readCoverage === 'complete'`, the `p2Note`, and `mode: 'playground'` without a `reason`. `src/pipeline/verdict.ts` (pure): the floor and the maximum in `pass < warn < block` order, and the shown `WardVerdict` with the engine violations and notices followed by one `unsupported-step` notice per unsupported step (`unsupported command, not rehearsed.`) and one per watchdog step (`sql statement exceeded the watchdog, not rehearsed.`) in `stepIndex` order. `src/pipeline/secrets.ts`: reads at most 16 files of at most 65,536 bytes matching the secret `PathSet` in code-point order of the path (copies) and zero-fills them on release. `src/pipeline/steps.ts`: the `StepView` projection.
     - Write example tests for each module and for the exact text constants that the requirements pin as literals.
     - _Requirements: 6.4, 6.5, 8.2, 8.5, 8.6, 8.7, 9.1, 9.4, 9.5, 9.6, 9.7, 18.7_
 
-  - [ ] 10.2 Write property test for claim honesty
+  - [x] 10.2 Write property test for claim honesty
     - **Property 5: Claim honesty (GS-P5)**
     - **Validates: Requirements 6.5, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.8**
     - File `tests/pipeline/prop-05-claims.test.ts`. Generators: plans mixing supported and unsupported commands run through the pipeline with an injected broken world (fingerprint mismatch) and the real world (fingerprint equal); also covers the `block` verdict and the alert text on mismatch.
 
-  - [ ] 10.3 Write property test for the verdict floor and engine parity
+  - [x] 10.3 Write property test for the verdict floor and engine parity
     - **Property 16: Verdict floor and engine parity**
     - **Validates: Requirements 6.4, 8.5, 8.6, 8.7, 15.5**
     - File `tests/pipeline/prop-16-verdict.test.ts`. Generators: engine verdicts, sets of unsupported and watchdog steps, fingerprint outcomes, and generated `GhostReport` values for the Default_Wards_File compared with `WardEngine.evaluate`.
 
-  - [ ] 10.4 Implement `runPlayground`
+  - [x] 10.4 Implement `runPlayground`
     - **Depends on tasks 7.1, 10.1, and the `ui-kit` implementation.**
     - `src/pipeline/run-playground.ts` with the ten steps of the design: derive `secretPatterns` from the `egress` Wards, create the world, `fingerprint` before, `snapshot`, read `secretValues`, `ghostRun`, `traceOf` of the last snapshot to fill `observedEvents` and take `payloads`, `fingerprint` after, `WardEngine.evaluate(observed, wardSet, { secretValues, payloads })`, claims, floor, `renderMessage(wardVerdict, { wardCount, claims: { p5, p6 } })` with no Seance_Link, possession (`collectNeedles` and `traceRedThread` when `provenance` is given; the links never touch the verdict), and release (zero-fill `secretValues`, drop `payloads`, replace snapshot states by `render` Scenes). The function reads no clock, random source, or storage, takes `worldFactory` for tests, rethrows on a defect, and returns plain values only.
     - Write example tests: empty WardSet with a clean run renders `GHOST RUN PASSED: all 0 wards cleared.`; `ls | grep x` is unsupported with a `warn` verdict and the notice; `npm install` records `registry.npmjs.org:443`; an executor stub that returns the watchdog response gives the `warn` floor, the notice text, `p5Claimed` and `p6Claimed` false, and the P2 note; an injected broken world gives `block` and the alert text.
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.9, 8.10, 9.1, 9.2, 9.3, 15.1, 15.2_
 
-  - [ ] 10.5 Write property test for pipeline wiring and message
+  - [x] 10.5 Write property test for pipeline wiring and message
     - **Property 17: Pipeline wiring and message**
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4**
     - File `tests/pipeline/prop-17-wiring.test.ts`. Uses an engine spy wrapper to capture the arguments passed to `WardEngine.evaluate`. Generators: plans and WardSets.
 
-  - [ ] 10.6 Write property test for the secret and payload leak rule
+  - [x] 10.6 Write property test for the secret and payload leak rule
     - **Property 18: No secret or payload leaves the pipeline**
     - **Validates: Requirements 3.7, 7.8, 8.3, 17.7, 19.6, 20.3**
     - File `tests/pipeline/prop-18-leak.test.ts`. Generators: Canaries (`sk-CANARY-` plus random alphanumeric characters) in `.env`, plans that read and send the file. Serializes the `Playground_Run`, every Scene, the Trace as projected for display, and every `console` call during the run (spied) and checks that neither the Canary nor its base64, hex, or percent-encoded forms appear, except in fixed message text built by `core`; storage APIs are spied and must not be called. Screen markup and Grave_Entries are added to the same property by task 14.3 in a separate file.
 
-  - [ ] 10.7 Write property test for determinism of interpreter, world, and pipeline
+  - [x] 10.7 Write property test for determinism of interpreter, world, and pipeline
     - **Property 2: Determinism of interpreter, world, and pipeline (GS-P2)**
     - **Validates: Requirements 3.2, 5.1, 8.10, 10.6, 11.13**
     - File `tests/pipeline/prop-02-determinism.test.ts`. Generators: projects, plans of supported commands, and WardSets. Runs the plan twice from equal states with `Date.now` and `Math.random` replaced by functions that throw.
 
-  - [ ] 10.8 Write property test for protected paths and secret egress (contract P5 and P6)
+  - [x] 10.8 Write property test for protected paths and secret egress (contract P5 and P6)
     - **Property 22: Protected paths and secret egress on the playground world (contract P5 and P6)**
     - **Validates: Requirements 10.9, 10.10**
     - File `tests/pipeline/prop-22-p5-p6.test.ts`. Uses the Default_Wards_File. Generators: projects with generated protected paths and plans that delete or overwrite them (`rm`, `rm -rf`, `mv` then `rm`, `find ... -delete`, `echo >`, a script-hidden delete via `npm run`); plans that read a secret with `cat`, `cp`, or `curl -d @` followed by a `curl` to a host outside `allow_hosts` at the same or a later step.
 
-- [ ] 11. Scenario fixtures and the five scenarios
-  - [ ] 11.1 Build the project fixture and the hidden-instruction README from code points
+- [x] 11. Scenario fixtures and the five scenarios
+  - [x] 11.1 Build the project fixture and the hidden-instruction README from code points
     - `src/scenarios/project.ts`: `buildProject(sql)` deterministic and clock-free, returning the entries of the design (`package.json` with `scripts.clean` equal to `rm -rf data` and `scripts.test` equal to `echo "all tests passed"`, `data/` with `.keep`, `a.csv`, `b.csv`, `sub/c.json`, `sub/d.json` and explicit directory entries, `build/out.js`, `app.db` generated by running the fixed SQL of the design through the executor with `tables: { orders: 3, users: 1206 }`, `.env` with `API_KEY=sk-CANARY-abc123` as the only secret, and `README.md`). No binary file is committed.
     - `src/scenarios/readme.ts`: `HIDDEN_INSTRUCTION`, `tagEncode` (each printable ASCII code point plus `0xE0000` through `String.fromCodePoint`; throws for a code point outside U+0020 to U+007E), and `buildReadme()` inserting the run at the end of the `Install the dependencies, then build the project.` line. No literal hidden character appears in any file.
     - Write example tests: the generated `app.db` has exactly 1,206 `users` rows (including `deleted_at`) and 3 `orders` rows; two builds yield equal bytes; the README contains the tag run (decoded back to `HIDDEN_INSTRUCTION`) and the source file contains no code point above U+007E; the `.env` holds only the Canary.
     - _Requirements: 11.2, 11.11, 12.1, 19.1, 19.3_
 
-  - [ ] 11.2 Create `scenarios.ts` and the seven plan files
+  - [x] 11.2 Create `scenarios.ts` and the seven plan files
     - **Depends on tasks 11.1 and 12.1** (`parsePlanFile`).
     - Create `apps/ghost-shell/plans/scenario-1.json`, `scenario-1-fixed.json`, `scenario-2.json`, `scenario-2-fixed.json`, `scenario-3.json` (carries `readings: ["README.md"]`), `scenario-4.json`, and `scenario-5.json`, all with `origin: 'scripted'`, valid by `parsePlanFile`, containing exactly the actions of the design's scenario table.
     - `src/scenarios/scenarios.ts`: the five Scenarios with title, plan, fixed plan (Scenarios 1 and 2), and Plan_Origin, importing the plan files with Vite `?raw` and parsing them with `parsePlanFile`, so the page and the tests read one source. For Scenario 3 build the Provenance_Log `[{ source: 'README.md', kind: 'file', content: <fixture README text> }]` from `readings`.
     - Write example tests: each scenario loads, the plan lists have the expected commands.
     - _Requirements: 11.1, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 12.2, 13.2, 13.10_
 
-  - [ ] 11.3 Write the scenario tests
+  - [x] 11.3 Write the scenario tests
     - File `tests/scenarios/scenarios.test.ts` on the pure `runPlayground` (no browser, no Docker) with the Default_Wards_File and `InlineSqlExecutor`:
     - Scenario 1: `block`, first violation of `no-data-loss`, reason `would delete 1,206 rows from users`, the Block_Message equal to the `renderMessage` string (without a Seance_Link) with `wardCount: 3` and both claims true. Fixed plan: `pass`.
     - Scenario 2: `block` by `protect-data`; the expected violation count is derived from the Changes of the run (the count of `file-deleted` Changes under `data/` that match the same `PathSet`), never hard-coded; none for `build/`. Fixed plan: `pass`.
@@ -330,7 +330,7 @@ The plan follows the implementation order of the design:
     - Each scenario run twice yields structurally equal report, verdict, and message. A timing example: a Scenario run and a plan of 50 supported non-`sqlite3` commands complete in under 1.0 s and 2.0 s of wall time on the test machine (record the measured values in the test output; the thresholds apply on the Reference_Machine).
     - _Requirements: 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.12, 11.13, 11.14, 14.9, 20.4_
 
-  - [ ] 11.4 Write property test for the red thread through hidden text
+  - [x] 11.4 Write property test for the red thread through hidden text
     - **Property 6: Red thread through hidden text (GS-P6)**
     - **Validates: Requirements 12.1, 12.4, 12.9, 12.10**
     - File `tests/scenarios/prop-06-red-thread.test.ts`. Generators: visible README texts without hidden code points, ASCII destinations of 1 to 60 printable characters, and insertion positions (a code point index). Runs the possession pipeline (`collectNeedles`, `traceRedThread`) and checks a `found` ThreadLink with `hidden: true` and `source: 'README.md'`, and that the Playground_Verdict is unchanged by whether the link was found.

@@ -170,7 +170,7 @@ sequenceDiagram
     participant X as SqlExecutor
     participant E as WardEngine
     UI->>P: project, plan, wardSet, provenance?, sqlExecutor
-    P->>W: createPlaygroundWorld(project, secretPatterns)
+    P->>W: createPlaygroundWorld(project, options)
     P->>W: fingerprint() (before)
     P->>W: snapshot()
     P->>P: read secretValues from snapshot (copies, at most 16 x 64 KiB)
