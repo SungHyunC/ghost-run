@@ -60,7 +60,7 @@ Install:
 corepack pnpm install --frozen-lockfile
 ```
 
-Open Ghost Shell (static page, no server logic; serves `http://localhost:4173/`):
+Open Ghost Shell (static page, no server logic; serves `http://localhost:4173/`, and the Korean page at `http://localhost:4173/ko.html`):
 
 ```
 corepack pnpm --filter @ghost-run/ghost-shell build
@@ -106,6 +106,8 @@ The first plan prints `GHOST RUN BLOCKED by ward gentle-hands` and exits with co
 ## Ghost Shell
 
 Ghost Shell (`apps/ghost-shell/`, with the world in `worlds/playground-shell/`) is a static web page: no server, no API key, and no runtime LLM call. A ghost runs a plan against an in-memory virtual project (an in-memory file system and an SQLite database in `sql.js`). The page shows the mirror world, the candle, the claims for the run, the message the agent would receive, and the graveyard. It runs no real command and touches no real file. You can also load your own plan file and edit `wards.yaml` in the page.
+
+The page has a Korean version, `ko.html`, linked from the English page. It translates the page's own words; the ui kit parts (the candle, the claims, the mirror table, the blacklight, the red thread, and the graveyard), the ward reasons, and the message the agent receives stay in English.
 
 Five scenarios are bundled:
 
@@ -384,7 +386,7 @@ The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json`
 
 **Plan revision recorded with the Kiro CLI**: the revised Ghost Hand plan `apps/ghost-hand/plans/revised.plan.json` was decided by a Kiro CLI 3.4.0 session (model Auto, 2026-11-18). It ran the first plan, read the block message, and chose the grasp force and pull values over several attempts. The attempts and messages are in `docs/measurements.md`, section "Plan revision recording".
 
-**Not written by Kiro**: the Ghost Shell page design was written with Claude Code on 2026-11-20 at the owner's request: the hero, the animated ghost flow (`apps/ghost-shell/src/flow/`), the mirror stage picture of reality and the ghost copy (`apps/ghost-shell/src/stage/`), the scenario cards, the page texts in `apps/ghost-shell/src/page-texts.ts`, the stylesheet `apps/ghost-shell/src/page.css`, and their tests. The judging pipeline, the playground world, the ui kit components, and every spec, hook, and steering file stay as Kiro wrote them.
+**Not written by Kiro**: the Ghost Shell page design was written with Claude Code on 2026-11-20 at the owner's request: the hero, the animated ghost flow (`apps/ghost-shell/src/flow/`), the mirror stage picture of reality and the ghost copy (`apps/ghost-shell/src/stage/`), the Korean page (`apps/ghost-shell/ko.html`, `apps/ghost-shell/src/i18n/`), the scenario cards, the page texts in `apps/ghost-shell/src/page-texts.ts`, the stylesheet `apps/ghost-shell/src/page.css`, and their tests. The judging pipeline, the playground world, the ui kit components, and every spec, hook, and steering file stay as Kiro wrote them.
 
 ## Dependencies and data
 

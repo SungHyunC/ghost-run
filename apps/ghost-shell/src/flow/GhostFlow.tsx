@@ -3,16 +3,7 @@
 // Motion: Web Animations on the ghost only, never on text. Reduced motion shows the last step, still.
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import {
-  FLOW_EDGE_APPROVED,
-  FLOW_EDGE_FIX,
-  FLOW_HEADING,
-  FLOW_JUDGE_SUB,
-  FLOW_NODES,
-  FLOW_PILL,
-  FLOW_REPLAY_LABEL,
-  FLOW_SUMMARY_TEXT,
-} from '../page-texts';
+import { useStrings } from '../i18n/context';
 import {
   DWELL_MS,
   EDGES,
@@ -162,15 +153,16 @@ function GhostSprite() {
 
 export function GhostFlow({ run }: GhostFlowProps) {
   const reduced = useReducedMotion();
+  const t = useStrings();
   const [play, setPlay] = useState<Play>(() => {
-    const tour = run === undefined ? introTour() : runTour(run);
+    const tour = run === undefined ? introTour(t.captions) : runTour(run, t.captions);
     return { source: run, tour, index: reduced ? tour.length - 1 : 0, round: 0 };
   });
 
   // A new run replaces the tour (the "state from props" pattern: no effect, no stale frame).
   let current = play;
   if (play.source !== run) {
-    const tour = run === undefined ? introTour() : runTour(run);
+    const tour = run === undefined ? introTour(t.captions) : runTour(run, t.captions);
     current = { source: run, tour, index: reduced ? tour.length - 1 : 0, round: play.round + 1 };
     setPlay(current);
   }
@@ -273,9 +265,9 @@ export function GhostFlow({ run }: GhostFlowProps) {
     <figure ref={figureRef} className="gf" aria-labelledby="gf-heading">
       <div className="gf-head">
         <h2 id="gf-heading" className="gf-heading">
-          {FLOW_HEADING}
+          {t.flowHeading}
         </h2>
-        <p className="gk-sr-only">{FLOW_SUMMARY_TEXT}</p>
+        <p className="gk-sr-only">{t.flowSummary}</p>
       </div>
       <div className="gf-canvas">
         <svg
@@ -314,10 +306,10 @@ export function GhostFlow({ run }: GhostFlowProps) {
             <path key={id} d={pathOf(EDGES[id])} className="gf-edge" data-edge={id} markerEnd="url(#gf-arrow-line)" />
           ))}
           <text x={FIX_LABEL.x} y={FIX_LABEL.y} className="gf-edge-label">
-            {FLOW_EDGE_FIX}
+            {t.flowEdgeFix}
           </text>
           <text x={(NODES.flicker.x + NODES.flicker.w + NODES.lit.x) / 2} y={NODES.lit.y + NODES.lit.h / 2 - 12} className="gf-edge-label gf-edge-label-tight" textAnchor="middle">
-            {FLOW_EDGE_APPROVED}
+            {t.flowEdgeApproved}
           </text>
 
           {/* Trail of the current pass. */}
@@ -339,7 +331,7 @@ export function GhostFlow({ run }: GhostFlowProps) {
           {(Object.keys(NODES) as (keyof typeof NODES)[]).map((id) => {
             const b = NODES[id];
             const Icon = NODE_ICONS[id];
-            const text = FLOW_NODES[id];
+            const text = t.flowNodes[id];
             const isOutcome = id === 'out' || id === 'flicker' || id === 'lit';
             const on =
               isOutcome &&
@@ -374,10 +366,10 @@ export function GhostFlow({ run }: GhostFlowProps) {
               <CandleIcon />
             </g>
             <text x={JUDGE.cx - 50} y={JUDGE.cy - 4} className="gf-node-title">
-              {FLOW_NODES.judge.title}
+              {t.flowNodes.judge.title}
             </text>
             <text x={JUDGE.cx - 50} y={JUDGE.cy + 23} className="gf-node-sub gf-judge-sub">
-              {FLOW_JUDGE_SUB[step.candle]}
+              {t.flowJudgeSub[step.candle]}
             </text>
           </g>
 
@@ -408,14 +400,14 @@ export function GhostFlow({ run }: GhostFlowProps) {
         </ol>
         {step.outcome === undefined ? null : (
           <span className="gf-pill" data-outcome={step.outcome}>
-            {FLOW_PILL[step.outcome]}
+            {t.flowPill[step.outcome]}
           </span>
         )}
         <p className="gf-caption-text" data-outcome={step.outcome ?? 'none'}>
           {step.caption}
         </p>
         <button type="button" className="gk-button gf-replay" onClick={replay}>
-          {FLOW_REPLAY_LABEL}
+          {t.flowReplay}
         </button>
       </figcaption>
     </figure>

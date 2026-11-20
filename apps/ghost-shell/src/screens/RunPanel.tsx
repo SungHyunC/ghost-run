@@ -1,6 +1,6 @@
-import { DOCKER_BOX_NOT_USED_TEXT, MESSAGE_PANEL_LABEL, NO_RUN_TEXT, P1_FAILED_TEXT, P2_MEANING_TEXT, P2_NOT_CLAIMED_UNSUPPORTED_TEXT, P2_NOT_CLAIMED_WATCHDOG_TEXT, P5_P6_SCOPE_TEXT } from '../texts';
 import type { PlaygroundRun } from '../pipeline/run-playground';
-import { NO_RUN_HINT_TEXT, RUN_DETAILS_HEADING, STEP_RUN_LABEL } from '../page-texts';
+import { useStrings } from '../i18n/context';
+import type { Strings } from '../i18n/strings';
 import { MirrorStage } from '../stage/MirrorStage';
 import { Candle, MirrorWorld, escapeForDisplay } from '../ui-imports';
 import { GhostMark } from './GhostMark';
@@ -9,9 +9,9 @@ export interface RunPanelProps {
   readonly run: PlaygroundRun | undefined;
 }
 
-function p2Text(run: PlaygroundRun): string {
-  if (run.p2Note.claimed) return P2_MEANING_TEXT;
-  return run.p2Note.reason === 'watchdog' ? P2_NOT_CLAIMED_WATCHDOG_TEXT : P2_NOT_CLAIMED_UNSUPPORTED_TEXT;
+function p2Text(run: PlaygroundRun, t: Strings): string {
+  if (run.p2Note.claimed) return t.p2Meaning;
+  return run.p2Note.reason === 'watchdog' ? t.p2NotClaimedWatchdog : t.p2NotClaimedUnsupported;
 }
 
 // Each run object gets its own number, so the mirror stage replays its picture for every new run.
@@ -28,6 +28,7 @@ function runNumber(run: PlaygroundRun): number {
 }
 
 export function RunPanel({ run }: RunPanelProps) {
+  const t = useStrings();
   const snapshots = run?.report.snapshots ?? [];
   const realScene = snapshots[0]?.state;
   const mirrorScene = snapshots[snapshots.length - 1]?.state;
@@ -35,30 +36,30 @@ export function RunPanel({ run }: RunPanelProps) {
     <section className="gk-section gs-run" aria-labelledby="gs-run-h" data-verdict={run?.verdict ?? 'none'}>
       <div className="gs-panel-head">
         <div>
-          <p className="gs-step">{STEP_RUN_LABEL}</p>
-          <h2 id="gs-run-h" className="gk-heading">Ghost run</h2>
+          <p className="gs-step">{t.stepRun}</p>
+          <h2 id="gs-run-h" className="gk-heading">{t.runHeading}</h2>
         </div>
-        <p className="gs-badge">{DOCKER_BOX_NOT_USED_TEXT}</p>
+        <p className="gs-badge">{t.dockerBoxNotUsed}</p>
       </div>
       {run === undefined ? (
         <div className="gs-empty">
           <GhostMark className="gs-empty-mark" />
-          <p className="gs-empty-title">{NO_RUN_TEXT}</p>
-          <p className="gs-empty-hint">{NO_RUN_HINT_TEXT}</p>
+          <p className="gs-empty-title">{t.noRun}</p>
+          <p className="gs-empty-hint">{t.noRunHint}</p>
         </div>
       ) : (
         <>
-          {run.p1Failed ? <p role="alert">{P1_FAILED_TEXT}</p> : null}
+          {run.p1Failed ? <p role="alert">{t.p1Failed}</p> : null}
           <div className="gs-verdict-row">
             <Candle verdict={run.wardVerdict} claims={run.claims} />
-            <section aria-label={MESSAGE_PANEL_LABEL} className="gs-message" data-verdict={run.verdict}>
-              <h3 className="gk-subheading">{MESSAGE_PANEL_LABEL}</h3>
+            <section aria-label={t.messagePanel} className="gs-message" data-verdict={run.verdict}>
+              <h3 className="gk-subheading">{t.messagePanel}</h3>
               <pre className="gs-mono">{escapeForDisplay(run.message)}</pre>
             </section>
           </div>
           <MirrorStage key={runNumber(run)} run={run} />
           <div className="gs-details">
-            <h3 className="gk-subheading">{RUN_DETAILS_HEADING}</h3>
+            <h3 className="gk-subheading">{t.runDetails}</h3>
             <MirrorWorld
               changes={run.report.changes}
               {...(realScene === undefined ? {} : { realScene })}
@@ -66,8 +67,8 @@ export function RunPanel({ run }: RunPanelProps) {
               stepLabels={run.steps.map((s) => escapeForDisplay(s.command))}
             />
           </div>
-          <p className="gs-fine">{p2Text(run)}</p>
-          {run.unsupportedSteps.length > 0 ? <p className="gs-fine">{P5_P6_SCOPE_TEXT}</p> : null}
+          <p className="gs-fine">{p2Text(run, t)}</p>
+          {run.unsupportedSteps.length > 0 ? <p className="gs-fine">{t.p5p6Scope}</p> : null}
         </>
       )}
     </section>

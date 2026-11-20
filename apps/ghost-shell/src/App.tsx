@@ -8,20 +8,10 @@ import { PlanPanel } from './screens/PlanPanel';
 import { GraveyardPanel } from './screens/GraveyardPanel';
 import { PossessionPanel } from './screens/PossessionPanel';
 import { WardsEditor } from './screens/WardsEditor';
-import { APP_TAGLINE, APP_TITLE, WARDS_DOWNLOAD_FILE_NAME } from './texts';
-import {
-  APP_BRAND,
-  APP_EYEBROW,
-  FOOTER_TEXT,
-  HERO_LEAD,
-  HERO_POINTS,
-  INSPECT_HEADING,
-  INSPECT_INTRO,
-  STEP_INSPECT_LABEL,
-  STEP_TOOLS_LABEL,
-  TOOLS_HEADING,
-  TOOLS_INTRO,
-} from './page-texts';
+import { APP_TITLE, WARDS_DOWNLOAD_FILE_NAME } from './texts';
+import { StringsContext } from './i18n/context';
+import { STRINGS } from './i18n/strings';
+import type { Locale } from './i18n/strings';
 import { GhostMark } from './screens/GhostMark';
 import { Notices } from './screens/Notices';
 import { RunPanel } from './screens/RunPanel';
@@ -33,6 +23,8 @@ export interface AppProps {
   /** Resolves to false when the SQL engine failed to start. */
   readonly sqlReady?: Promise<boolean>;
   readonly wardsText?: string;
+  /** Language of the page: English (index.html) unless ko.html asks for Korean. */
+  readonly locale?: Locale;
 }
 
 /** What the hero diagram needs from a run: its verdict, first command, and first reason (all display-escaped). */
@@ -49,7 +41,8 @@ function flowRunOf(run: PlaygroundRun | undefined): FlowRun | undefined {
   };
 }
 
-export function App({ services, sqlReady, wardsText }: AppProps) {
+export function App({ services, sqlReady, wardsText, locale }: AppProps) {
+  const t = STRINGS[locale ?? 'en'];
   const controller = useMemo(() => createPageController(services, wardsText), [services, wardsText]);
   useEffect(() => () => {
     controller.dispose();
@@ -74,12 +67,13 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
   const flowRun = useMemo(() => flowRunOf(state.run), [state.run]);
 
   return (
+    <StringsContext.Provider value={t}>
     <KitRoot initialTheme="dark">
-      <main className="gs-page">
+      <main className="gs-page" lang={t.lang}>
         <header className="gs-hero">
           <p className="gs-brand">
             <GhostMark className="gs-brand-mark" />
-            <span className="gs-brand-name">{APP_BRAND}</span>
+            <span className="gs-brand-name">{t.brand}</span>
             <span className="gs-brand-sep" aria-hidden="true">
               /
             </span>
@@ -87,14 +81,19 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
           </p>
           <div className="gs-hero-grid">
             <div className="gs-hero-copy">
-              <p className="gs-eyebrow">{APP_EYEBROW}</p>
+              <p className="gs-hero-tags">
+                <span className="gs-eyebrow">{t.eyebrow}</span>
+                <a className="gs-lang" href={t.switchHref} hrefLang={t.switchLang} lang={t.switchLang}>
+                  {t.switchLabel}
+                </a>
+              </p>
               <h1>{APP_TITLE}</h1>
-              <p className="gs-tagline">{APP_TAGLINE}</p>
+              <p className="gs-tagline">{t.tagline}</p>
             </div>
             <div className="gs-hero-side">
-              <p className="gs-lead">{HERO_LEAD}</p>
+              <p className="gs-lead">{t.lead}</p>
               <ul className="gs-points">
-                {HERO_POINTS.map((p) => (
+                {t.points.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
               </ul>
@@ -113,9 +112,9 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
 
         <div className="gs-block">
           <div className="gs-block-head">
-            <p className="gs-step">{STEP_INSPECT_LABEL}</p>
-            <h2 className="gs-block-title">{INSPECT_HEADING}</h2>
-            <p className="gs-section-intro">{INSPECT_INTRO}</p>
+            <p className="gs-step">{t.stepInspect}</p>
+            <h2 className="gs-block-title">{t.inspectHeading}</h2>
+            <p className="gs-section-intro">{t.inspectIntro}</p>
           </div>
           <PossessionPanel state={state} dispatch={controller.dispatch} />
           <GraveyardPanel state={state} dispatch={controller.dispatch} />
@@ -123,9 +122,9 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
 
         <div className="gs-block">
           <div className="gs-block-head">
-            <p className="gs-step">{STEP_TOOLS_LABEL}</p>
-            <h2 className="gs-block-title">{TOOLS_HEADING}</h2>
-            <p className="gs-section-intro">{TOOLS_INTRO}</p>
+            <p className="gs-step">{t.stepTools}</p>
+            <h2 className="gs-block-title">{t.toolsHeading}</h2>
+            <p className="gs-section-intro">{t.toolsIntro}</p>
           </div>
           <div className="gs-tools">
             <PlanPanel state={state} dispatch={controller.dispatch} />
@@ -141,9 +140,10 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
 
         <footer className="gs-footer">
           <GhostMark className="gs-footer-mark" />
-          <span>{FOOTER_TEXT}</span>
+          <span>{t.footer}</span>
         </footer>
       </main>
     </KitRoot>
+    </StringsContext.Provider>
   );
 }

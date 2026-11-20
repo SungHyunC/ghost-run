@@ -4,19 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { PlaygroundRun } from '../pipeline/run-playground';
-import {
-  STAGE_AFTER_READ,
-  STAGE_COPY_SUB,
-  STAGE_COPY_TITLE,
-  STAGE_OUTSIDE_TITLE,
-  STAGE_REAL_SUB,
-  STAGE_REAL_TITLE,
-  STAGE_ROWS_WORD,
-  STAGE_SECRET_TAG,
-  STAGE_STAMP,
-  STAGE_STATUS_TAG,
-  STAGE_TABLE_DROPPED,
-} from '../page-texts';
+import { useStrings } from '../i18n/context';
 import { escapeForDisplay } from '../ui-imports';
 import { GhostMark } from '../screens/GhostMark';
 import { barsFor, barsLeft, buildStage } from './stage-model';
@@ -80,6 +68,7 @@ function Smoke() {
 }
 
 function Tree({ model, side }: { readonly model: StageModel; readonly side: 'real' | 'copy' }) {
+  const t = useStrings().stage;
   const entries = side === 'real' ? model.entries.filter((e) => e.inReality) : model.entries;
   return (
     <ul className="ms-tree">
@@ -103,8 +92,8 @@ function Tree({ model, side }: { readonly model: StageModel; readonly side: 'rea
               {escapeForDisplay(e.name)}
               {e.kind === 'directory' ? '/' : ''}
             </span>
-            {status !== 'same' ? <span className="ms-tag">{STAGE_STATUS_TAG[status]}</span> : null}
-            {secret ? <span className="ms-tag ms-tag-secret">{STAGE_SECRET_TAG}</span> : null}
+            {status !== 'same' ? <span className="ms-tag">{t.statusTag[status]}</span> : null}
+            {secret ? <span className="ms-tag ms-tag-secret">{t.secretTag}</span> : null}
             {status === 'deleted' ? <Smoke /> : null}
           </li>
         );
@@ -114,6 +103,7 @@ function Tree({ model, side }: { readonly model: StageModel; readonly side: 'rea
 }
 
 function TableCard({ table, side }: { readonly table: StageTable; readonly side: 'real' | 'copy' }) {
+  const t = useStrings().stage;
   const total = Math.max(barsFor(table.before), barsFor(table.after));
   const kept = side === 'real' ? barsFor(table.before) : barsLeft(table.before, table.after);
   const rows = side === 'real' ? table.before : table.after;
@@ -139,11 +129,11 @@ function TableCard({ table, side }: { readonly table: StageTable; readonly side:
         {side === 'copy' && lost > 0 ? <Smoke /> : null}
       </div>
       <p className="ms-count">
-        <span className="ms-num gs-mono">{fmt(rows)}</span> {STAGE_ROWS_WORD}
+        <span className="ms-num gs-mono">{fmt(rows)}</span> {t.rowsWord}
         {side === 'copy' && lost > 0 ? (
           <span className="ms-lost gs-mono">
             {`-${fmt(lost)}`}
-            {table.dropped ? `, ${STAGE_TABLE_DROPPED}` : ''}
+            {table.dropped ? `, ${t.tableDropped}` : ''}
           </span>
         ) : null}
         {side === 'copy' && lost < 0 ? <span className="ms-gain gs-mono">{`+${fmt(-lost)}`}</span> : null}
@@ -153,11 +143,12 @@ function TableCard({ table, side }: { readonly table: StageTable; readonly side:
 }
 
 function Pane({ model, side }: { readonly model: StageModel; readonly side: 'real' | 'copy' }) {
+  const t = useStrings().stage;
   return (
     <div className={`ms-pane ms-${side}`}>
       <div className="ms-pane-head">
-        <p className="ms-pane-title">{side === 'real' ? STAGE_REAL_TITLE : STAGE_COPY_TITLE}</p>
-        <p className="ms-pane-sub">{side === 'real' ? STAGE_REAL_SUB : STAGE_COPY_SUB}</p>
+        <p className="ms-pane-title">{side === 'real' ? t.realTitle : t.copyTitle}</p>
+        <p className="ms-pane-sub">{side === 'real' ? t.realSub : t.copySub}</p>
       </div>
       <Tree model={model} side={side} />
       {model.tables.length > 0 ? (
@@ -172,6 +163,7 @@ function Pane({ model, side }: { readonly model: StageModel; readonly side: 'rea
 }
 
 export function MirrorStage({ run }: MirrorStageProps) {
+  const t = useStrings().stage;
   const model = useMemo(() => {
     const snaps = run.report.snapshots;
     return buildStage({
@@ -234,7 +226,7 @@ export function MirrorStage({ run }: MirrorStageProps) {
             <span className="ms-wall">{run.verdict === 'block' ? 'X' : '!'}</span>
           </div>
           <div className="ms-outside" data-verdict={run.verdict}>
-            <p className="ms-pane-title">{STAGE_OUTSIDE_TITLE}</p>
+            <p className="ms-pane-title">{t.outsideTitle}</p>
             {model.egress.map((e) => (
               <div key={e.destination} className="ms-host">
                 <span className="ms-ico ms-cloud">
@@ -245,13 +237,15 @@ export function MirrorStage({ run }: MirrorStageProps) {
                 <span className="gs-mono ms-dest">{escapeForDisplay(e.destination)}</span>
                 {e.secrets.length > 0 ? (
                   <span className="ms-carry">
-                    {STAGE_AFTER_READ} <span className="gs-mono">{escapeForDisplay(e.secrets.join(', '))}</span>
+                    {t.afterReadPrefix}
+                    <span className="gs-mono">{escapeForDisplay(e.secrets.join(', '))}</span>
+                    {t.afterReadSuffix}
                   </span>
                 ) : null}
               </div>
             ))}
             <p className="ms-stamp" data-verdict={run.verdict}>
-              {STAGE_STAMP[run.verdict]}
+              {t.stamp[run.verdict]}
             </p>
           </div>
         </>

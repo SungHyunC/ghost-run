@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { scanText } from '@ghost-run/core';
 import type { PageAction, PageState } from '../state/reducer';
-import { CANARY_TEXT, POSSESSION_ACTION_TEXT, PURIFY_LABEL, PURIFY_NOTE_TEXT } from '../texts';
+import { useStrings } from '../i18n/context';
 import { BlacklightView, RedThreadView, escapeForDisplay } from '../ui-imports';
 import type { BlacklightSource } from '../ui-imports';
 
@@ -19,13 +19,14 @@ function sourcesOf(provenance: PageState['provenance'], readme: string): readonl
 }
 
 export function PossessionPanel({ state, dispatch }: PossessionPanelProps) {
+  const t = useStrings();
   const { provenance, readme, plan, run } = state;
   // The sources depend on the provenance and the README only.
   const sources = useMemo(() => sourcesOf(provenance, readme), [provenance, readme]);
   const actionLabels = useMemo(() => plan.map((a) => escapeForDisplay(a.command)), [plan]);
   return (
     <section className="gk-section gs-possession" aria-labelledby="gs-possession-h">
-      <h2 id="gs-possession-h" className="gk-heading">Possession</h2>
+      <h2 id="gs-possession-h" className="gk-heading">{t.possessionHeading}</h2>
       <RedThreadView needles={run?.needles ?? []} links={run?.links ?? []} actionLabels={actionLabels} />
       <BlacklightView sources={sources} />
       <div className="gs-actions gs-purify">
@@ -36,13 +37,13 @@ export function PossessionPanel({ state, dispatch }: PossessionPanelProps) {
             dispatch({ type: 'purify' });
           }}
         >
-          {PURIFY_LABEL}
+          {t.purify}
         </button>
       </div>
       <div className="gs-possession-notes">
-        <p>{PURIFY_NOTE_TEXT}</p>
-        <p>{POSSESSION_ACTION_TEXT}</p>
-        <p>{CANARY_TEXT}</p>
+        <p>{t.purifyNote}</p>
+        <p>{t.possessionAction}</p>
+        <p>{t.canary}</p>
       </div>
     </section>
   );

@@ -4,6 +4,7 @@ import { createWatchdogExecutor } from '@ghost-run/playground-shell';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import type { PageServices } from './controller';
+import type { Locale } from './i18n/strings';
 import { createWorkerRunner } from './sql-worker/worker-runner';
 
 const sql = createWatchdogExecutor({ spawn: () => createWorkerRunner() });
@@ -43,7 +44,10 @@ const sqlReady = sql.run({ dbBytes: null, sql: 'SELECT 1', outputLimit: 4096 }).
   () => false,
 );
 
+// ko.html declares lang="ko"; every other page is English.
+const locale: Locale = document.documentElement.lang.toLowerCase().startsWith('ko') ? 'ko' : 'en';
+
 const root = document.getElementById('root');
 if (root !== null) {
-  createRoot(root).render(<App services={services} sqlReady={sqlReady} />);
+  createRoot(root).render(<App services={services} sqlReady={sqlReady} locale={locale} />);
 }

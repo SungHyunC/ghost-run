@@ -423,3 +423,12 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - The blacklight panel turns ultraviolet when switched on, the red thread ends are cards, and the graveyard entries are tombstones.
 - Checks: ghost-shell typecheck and lint pass, 225 tests in 40 files pass (14 more: the stage model with two fast-check properties, and the stage picture for scenarios 1 to 4 with real runs), and `check-dist: ok`. Screenshots in Chrome at 1440 px (dark and lights on), 1024 px, and 390 px.
 
+### Korean page for Ghost Shell (Claude Code, not Kiro)
+
+- At the owner's request the playground now has a separate Korean page, `apps/ghost-shell/ko.html`, built from the same bundle. The English page links to it ("한국어") and it links back ("English").
+- How: `src/i18n/strings.ts` holds one dictionary per language. The English one is built from the existing fixed texts, so the English page reads exactly as before and every pinned text test still applies. `main.tsx` picks Korean when the page declares `lang="ko"`. The flow captions became a swappable set, with English as the default.
+- Not translated on purpose: the ui kit parts (the candle label, the claims, the Mirror World table, the blacklight, the red thread, the graveyard, the lights switch), the ward reasons and parser errors, and the message the agent receives. The kit is Kiro's code with English literals pinned by its own tests.
+- Build: Vite now builds two pages. The shared bundle keeps the name `index-*.js`, because `scripts/dist-url-allowlist.json` allows one library string only in a file of that name.
+- A slip caught by the repository's own hygiene test: a regular expression written with `\u200B`-style escapes reached the new test file as literal invisible characters (the escapes were decoded on the way into the file). The file was rewritten with real escapes, and every changed file was scanned for code points outside ASCII and Hangul before the commit.
+- Checks: ghost-shell typecheck and lint pass, 235 tests in 42 files pass (dictionary shape and cleanliness, and the Korean page run from its own buttons), and `check-dist: ok` for both pages.
+

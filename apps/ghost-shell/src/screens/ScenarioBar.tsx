@@ -1,14 +1,6 @@
 import { SCENARIOS } from '../scenarios/scenarios';
 import type { PageAction, PageState } from '../state/reducer';
-import { APPLY_FIXED_PLAN_LABEL, RUN_GHOST_LABEL } from '../texts';
-import {
-  FIXED_PLAN_HINT,
-  SCENARIOS_HEADING_HINT,
-  SCENARIOS_INTRO,
-  SCENARIO_CARDS,
-  SELECTED_TEXT,
-  STEP_PICK_LABEL,
-} from '../page-texts';
+import { useStrings } from '../i18n/context';
 import { escapeForDisplay } from '../ui-imports';
 import { GhostMark } from './GhostMark';
 import { ScenarioIcon } from './ScenarioIcon';
@@ -21,22 +13,24 @@ export interface ScenarioBarProps {
 export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
   const selected = SCENARIOS.find((s) => s.id === state.selected);
   const canApplyFixed = selected?.fixedPlan !== undefined;
+  const t = useStrings();
+  const titleOf = (id: 1 | 2 | 3 | 4 | 5, fallback: string): string => t.scenarioTitles?.[id] ?? escapeForDisplay(fallback);
   return (
     <section className="gk-section gs-pick" aria-labelledby="gs-scenarios-h">
       <div className="gs-pick-head">
         <div>
-          <p className="gs-step">{STEP_PICK_LABEL}</p>
+          <p className="gs-step">{t.stepPick}</p>
           <h2 id="gs-scenarios-h" className="gk-heading">
-            Scenarios
+            {t.scenariosHeading}
           </h2>
-          <p className="gs-section-intro">{SCENARIOS_HEADING_HINT}</p>
+          <p className="gs-section-intro">{t.scenariosHint}</p>
         </div>
       </div>
-      <div role="group" aria-label="Scenario selector" className="gs-cards">
+      <div role="group" aria-label={t.scenarioSelector} className="gs-cards">
         {SCENARIOS.map((s) => {
-          const card = SCENARIO_CARDS[s.id];
+          const card = t.scenarioCards[s.id];
           const pressed = state.selected === s.id;
-          const title = escapeForDisplay(s.title);
+          const title = titleOf(s.id, s.title);
           return (
             <button
               key={s.id}
@@ -70,7 +64,7 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
               </span>
               {pressed ? (
                 <span className="gs-card-picked" aria-hidden="true">
-                  {SELECTED_TEXT}
+                  {t.selected}
                 </span>
               ) : null}
             </button>
@@ -86,7 +80,7 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
           }}
         >
           <GhostMark className="gs-btn-mark" />
-          {RUN_GHOST_LABEL}
+          {t.runGhost}
         </button>
         <button
           type="button"
@@ -96,21 +90,21 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
             dispatch({ type: 'applyFixedPlan' });
           }}
         >
-          {APPLY_FIXED_PLAN_LABEL}
+          {t.applyFixedPlan}
         </button>
       </div>
       <div className="gs-pick-foot">
         <p className="gs-picked-line" aria-hidden="true">
           {selected === undefined ? (
-            SCENARIOS_INTRO
+            t.scenariosIntro
           ) : (
             <>
-              <strong>{escapeForDisplay(selected.title)}</strong>
-              {`: ${SCENARIO_CARDS[selected.id].blurb}`}
+              <strong>{titleOf(selected.id, selected.title)}</strong>
+              {`: ${t.scenarioCards[selected.id].blurb}`}
             </>
           )}
         </p>
-        <p className="gs-hint">{FIXED_PLAN_HINT}</p>
+        <p className="gs-hint">{t.fixedPlanHint}</p>
       </div>
     </section>
   );

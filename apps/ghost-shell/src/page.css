@@ -229,9 +229,42 @@ body {
   }
 }
 
+.gs-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.gs-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid var(--gs-accent);
+  border-radius: 999px;
+  color: var(--gs-accent-strong);
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.gs-lang:hover {
+  background: var(--gs-accent-tint);
+}
+
+.gs-lang:focus-visible {
+  outline: 3px solid var(--gk-focus);
+  outline-offset: 2px;
+}
+
+.gs-page:lang(ko) {
+  word-break: keep-all;
+}
+
 .gs-eyebrow {
   display: inline-block;
-  margin: 0 0 12px;
+  margin: 0;
   padding: 4px 12px;
   border: 1px solid var(--gs-border-strong);
   border-radius: 999px;

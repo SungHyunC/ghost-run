@@ -186,7 +186,29 @@ export interface FlowRun {
   readonly stepCount: number;
 }
 
-export const CAPTIONS = {
+/** Every sentence the tours show, so a page can swap them for its language. */
+export interface TourCaptions {
+  readonly copy: string;
+  readonly ghost: string;
+  readonly judgeIdle: string;
+  readonly outBlock: string;
+  readonly loop: string;
+  readonly loopRun: string;
+  readonly flicker: string;
+  readonly lit: string;
+  readonly litPlayground: string;
+  readonly introPlan: string;
+  readonly introJudge: string;
+  readonly introFixPlan: string;
+  readonly introFixJudge: string;
+  readonly runJudgePass: string;
+  /** "The agent plans: <command>", with the number of further steps when there are more. */
+  readonly runPlan: (command: string, moreSteps: number) => string;
+  /** "The wards judge the diff: <reason>". */
+  readonly runJudge: (reason: string) => string;
+}
+
+export const CAPTIONS: TourCaptions = {
   copy: 'The world is copied: files and the database, inside this page.',
   ghost: 'Its ghost runs the plan on the copy first and records what changed.',
   judgeIdle: 'The wards judge what changed.',
@@ -196,9 +218,17 @@ export const CAPTIONS = {
   flicker: 'Candle flickers: a side effect outside the copy. A human decides.',
   lit: 'Candle lit: no ward broken. Only now may the real agent run it.',
   litPlayground: 'Candle lit: no ward broken. Only now may the real agent run it (this page stops here).',
-} as const;
+  introPlan: 'An agent plans a command: DROP TABLE users.',
+  introJudge: 'The wards judge the diff: every user row would be lost.',
+  introFixPlan: 'The new plan: back up the table, then mark rows as deleted.',
+  introFixJudge: 'The wards judge the diff: no rows lost.',
+  runJudgePass: 'The wards judge the diff: no ward broken.',
+  runPlan: (command, moreSteps) => `The agent plans: ${command}${moreSteps > 0 ? ` (+${moreSteps} more)` : ''}`,
+  runJudge: (reason) => `The wards judge the diff: ${reason}`,
+};
 
 interface PassInput {
+  readonly captions: TourCaptions;
   readonly planCaption: string;
   readonly verdict: FlowOutcome;
   readonly judgeCaption: string;
@@ -210,7 +240,7 @@ function pass(input: PassInput): TourStep[] {
   const damage = input.verdict === 'block';
   const steps: TourStep[] = [
     { ...base, pos: 'plan', active: 'plan', trail: [], caption: input.planCaption },
-    { ...base, pos: 'copy', active: 'copy', trail: ['plan-copy'], copied: true, caption: CAPTIONS.copy },
+    { ...base, pos: 'copy', active: 'copy', trail: ['plan-copy'], copied: true, caption: input.captions.copy },
     {
       ...base,
       pos: 'ghost',
@@ -218,7 +248,7 @@ function pass(input: PassInput): TourStep[] {
       trail: ['plan-copy', 'copy-ghost'],
       copied: true,
       damage,
-      caption: CAPTIONS.ghost,
+      caption: input.captions.ghost,
     },
   ];
   const judged: CandleLook = input.verdict === 'block' ? 'out' : input.verdict === 'warn' ? 'flickering' : 'lit';
@@ -258,37 +288,44 @@ function loopBack(caption: string): TourStep {
 }
 
 /** The tour played once when the page opens: a blocked plan, the fix, and a lit candle. */
-export function introTour(): readonly TourStep[] {
+export function introTour(captions: TourCaptions = CAPTIONS): readonly TourStep[] {
   return [
     ...pass({
-      planCaption: 'An agent plans a command: DROP TABLE users.',
+      captions,
+      planCaption: captions.introPlan,
       verdict: 'block',
-      judgeCaption: 'The wards judge the diff: every user row would be lost.',
-      endCaption: CAPTIONS.outBlock,
+      judgeCaption: captions.introJudge,
+      endCaption: captions.outBlock,
     }),
-    loopBack(CAPTIONS.loop),
+    loopBack(captions.loop),
     ...pass({
-      planCaption: 'The new plan: back up the table, then mark rows as deleted.',
+      captions,
+      planCaption: captions.introFixPlan,
       verdict: 'pass',
-      judgeCaption: 'The wards judge the diff: no rows lost.',
-      endCaption: CAPTIONS.lit,
+      judgeCaption: captions.introFixJudge,
+      endCaption: captions.lit,
     }),
   ];
 }
 
 /** The tour of one real run of the page: its first command, its verdict, and its reason. */
-export function runTour(run: FlowRun): readonly TourStep[] {
-  const more = run.stepCount > 1 ? ` (+${run.stepCount - 1} more)` : '';
+export function runTour(run: FlowRun, captions: TourCaptions = CAPTIONS): readonly TourStep[] {
   const judgeCaption =
     run.reason !== undefined && run.reason !== ''
-      ? `The wards judge the diff: ${run.reason}`
+      ? captions.runJudge(run.reason)
       : run.verdict === 'pass'
-        ? 'The wards judge the diff: no ward broken.'
-        : CAPTIONS.judgeIdle;
+        ? captions.runJudgePass
+        : captions.judgeIdle;
   const endCaption =
-    run.verdict === 'block' ? CAPTIONS.outBlock : run.verdict === 'warn' ? CAPTIONS.flicker : CAPTIONS.litPlayground;
-  const steps = pass({ planCaption: `The agent plans: ${run.command}${more}`, verdict: run.verdict, judgeCaption, endCaption });
-  if (run.verdict === 'block') steps.push(loopBack(CAPTIONS.loopRun));
+    run.verdict === 'block' ? captions.outBlock : run.verdict === 'warn' ? captions.flicker : captions.litPlayground;
+  const steps = pass({
+    captions,
+    planCaption: captions.runPlan(run.command, Math.max(0, run.stepCount - 1)),
+    verdict: run.verdict,
+    judgeCaption,
+    endCaption,
+  });
+  if (run.verdict === 'block') steps.push(loopBack(captions.loopRun));
   return steps;
 }
 

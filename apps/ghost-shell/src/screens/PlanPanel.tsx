@@ -3,19 +3,7 @@ import type { ChangeEvent } from 'react';
 import type { PlaygroundRun } from '../pipeline/run-playground';
 import type { StepView } from '../pipeline/steps';
 import type { PageAction, PageState } from '../state/reducer';
-import {
-  ADD_TO_PLAN_LABEL,
-  CLEAR_PLAN_LABEL,
-  COMMAND_INPUT_LABEL,
-  DOWNLOAD_PLAN_LABEL,
-  FAILED_MARKER_TEXT,
-  LOAD_PLAN_LABEL,
-  RECORDED_PLAN_TEXT,
-  REMOVE_STEP_LABEL,
-  SCRIPTED_PLAN_TEXT,
-  UNSUPPORTED_MARKER_TEXT,
-  WATCHDOG_MARKER_TEXT,
-} from '../texts';
+import { useStrings } from '../i18n/context';
 import { escapeForDisplay } from '../ui-imports';
 
 export interface PlanPanelProps {
@@ -30,17 +18,18 @@ function stepsFor(state: PageState, run: PlaygroundRun | undefined): readonly St
 }
 
 function StepStatus({ step }: { readonly step: StepView }) {
+  const t = useStrings();
   let icon = '\u2713';
   let text = `exit ${step.exitCode}`;
   if (step.unsupported) {
     icon = '\u26A0';
-    text = `${UNSUPPORTED_MARKER_TEXT} (exit ${step.exitCode})`;
+    text = `${t.markerUnsupported} (exit ${step.exitCode})`;
   } else if (step.watchdog) {
     icon = '\u23F1';
-    text = `${WATCHDOG_MARKER_TEXT} (exit ${step.exitCode})`;
+    text = `${t.markerWatchdog} (exit ${step.exitCode})`;
   } else if (step.exitCode !== 0) {
     icon = '\u2716';
-    text = `${FAILED_MARKER_TEXT} (exit ${step.exitCode})`;
+    text = `${t.markerFailed} (exit ${step.exitCode})`;
   }
   return (
     <span data-step-status>
@@ -51,6 +40,7 @@ function StepStatus({ step }: { readonly step: StepView }) {
 
 export function PlanPanel({ state, dispatch }: PlanPanelProps) {
   const [command, setCommand] = useState('');
+  const t = useStrings();
   const steps = stepsFor(state, state.run);
   const { meta } = state;
 
@@ -67,22 +57,22 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
 
   return (
     <section className="gk-section gs-plan" aria-labelledby="gs-plan-h">
-      <h2 id="gs-plan-h" className="gk-heading">Plan</h2>
+      <h2 id="gs-plan-h" className="gk-heading">{t.planHeading}</h2>
       <div className="gs-meta">
         <p>
-          Plan name: <span data-plan-name>{escapeForDisplay(meta.name)}</span>
+          {t.planName} <span data-plan-name>{escapeForDisplay(meta.name)}</span>
         </p>
-        <p>{meta.origin === 'recorded' ? RECORDED_PLAN_TEXT : SCRIPTED_PLAN_TEXT}</p>
+        <p>{meta.origin === 'recorded' ? t.recordedPlan : t.scriptedPlan}</p>
         {meta.note === undefined ? null : (
           <p>
-            Note: <span data-plan-note>{escapeForDisplay(meta.note)}</span>
+            {t.planNote} <span data-plan-note>{escapeForDisplay(meta.note)}</span>
           </p>
         )}
         <p>
-          Project fixture: <span className="gs-mono">{escapeForDisplay(meta.projectName)}</span>
+          {t.planFixture} <span className="gs-mono">{escapeForDisplay(meta.projectName)}</span>
         </p>
       </div>
-      <ol className="gs-mono gs-steps" aria-label="Plan steps">
+      <ol className="gs-mono gs-steps" aria-label={t.planSteps}>
         {state.plan.map((action, i) => {
           const step = steps?.[i];
           return (
@@ -97,12 +87,12 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
               <button
                 type="button"
                 className="gk-button"
-                aria-label={`${REMOVE_STEP_LABEL} ${i + 1}`}
+                aria-label={`${t.removeStep} ${i + 1}`}
                 onClick={() => {
                   dispatch({ type: 'removeStep', index: i });
                 }}
               >
-                {REMOVE_STEP_LABEL}
+                {t.removeStep}
               </button>
             </li>
           );
@@ -117,7 +107,7 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
         }}
       >
         <label className="gs-field">
-          {COMMAND_INPUT_LABEL}
+          {t.commandInput}
           <input
             type="text"
             className="gk-input gs-mono"
@@ -127,7 +117,7 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
             }}
           />
         </label>
-        <button type="submit" className="gk-button">{ADD_TO_PLAN_LABEL}</button>
+        <button type="submit" className="gk-button">{t.addToPlan}</button>
       </form>
       <div className="gs-actions gs-file-actions">
         <button
@@ -137,10 +127,10 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
             dispatch({ type: 'clearPlan' });
           }}
         >
-          {CLEAR_PLAN_LABEL}
+          {t.clearPlan}
         </button>
         <label className="gs-field">
-          {LOAD_PLAN_LABEL}
+          {t.loadPlan}
           <input type="file" className="gk-input" accept="application/json,.json" onChange={onFile} />
         </label>
         <button
@@ -150,7 +140,7 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
             dispatch({ type: 'downloadPlanFile' });
           }}
         >
-          {DOWNLOAD_PLAN_LABEL}
+          {t.downloadPlan}
         </button>
       </div>
     </section>

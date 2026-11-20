@@ -1,5 +1,6 @@
 import type { PageAction, PageState } from '../state/reducer';
-import { RUN_FAILED_TEXT, SQL_START_FAILED_TEXT } from '../texts';
+import { RUN_FAILED_TEXT } from '../texts';
+import { useStrings } from '../i18n/context';
 import { escapeForDisplay } from '../ui-imports';
 
 export interface NoticesProps {
@@ -11,11 +12,12 @@ export interface NoticesProps {
 /** Error alerts and fixed notices. Plan errors arrive from the reducer already escaped; they are escaped again (idempotent). */
 export function Notices({ state, sqlFailed, dispatch }: NoticesProps) {
   const { notice, planErrors } = state;
+  const t = useStrings();
   return (
-    <div aria-label="Notices" className="gs-notices">
-      {sqlFailed ? <p role="alert">{SQL_START_FAILED_TEXT}</p> : null}
+    <div aria-label={t.noticesLabel} className="gs-notices">
+      {sqlFailed ? <p role="alert">{t.sqlStartFailed}</p> : null}
       {notice === undefined ? null : (
-        <p role={notice === RUN_FAILED_TEXT ? 'alert' : 'status'}>{escapeForDisplay(notice)}</p>
+        <p role={notice === RUN_FAILED_TEXT ? 'alert' : 'status'}>{escapeForDisplay(t.notices[notice] ?? notice)}</p>
       )}
       {planErrors.length === 0 ? null : (
         <ul role="alert">
@@ -32,7 +34,7 @@ export function Notices({ state, sqlFailed, dispatch }: NoticesProps) {
             dispatch({ type: 'dismissNotice' });
           }}
         >
-          Dismiss
+          {t.dismiss}
         </button>
       )}
     </div>

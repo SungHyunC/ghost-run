@@ -1,11 +1,5 @@
 import type { PageAction, PageState } from '../state/reducer';
-import {
-  DOWNLOAD_WARDS_LABEL,
-  RESET_WARDS_LABEL,
-  WARDS_EDITOR_LABEL,
-  WARDS_ERRORS_LABEL,
-  WARDS_IN_MEMORY_TEXT,
-} from '../texts';
+import { useStrings } from '../i18n/context';
 import { wardsEditorErrors } from '../wards/wards-editor';
 
 export interface WardsEditorProps {
@@ -16,6 +10,7 @@ export interface WardsEditorProps {
 }
 
 export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
+  const t = useStrings();
   const { text } = state.wards;
   const errors = wardsEditorErrors(state.wards);
   const lineCount = text.split('\n').length;
@@ -23,15 +18,15 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
   for (let n = 1; n <= lineCount; n += 1) gutter.push(errors.lines.includes(n) ? `${n} \u2716` : `${n}`);
   return (
     <section className="gk-section" aria-labelledby="gs-wards-h">
-      <h2 id="gs-wards-h" className="gk-heading">Wards</h2>
-      <p>{WARDS_IN_MEMORY_TEXT}</p>
-      {errors.label === undefined ? null : <p data-wards-stale>{errors.label}</p>}
+      <h2 id="gs-wards-h" className="gk-heading">{t.wardsHeading}</h2>
+      <p>{t.wardsInMemory}</p>
+      {errors.label === undefined ? null : <p data-wards-stale>{t.staleWards}</p>}
       <div className="gs-editor">
         <pre aria-hidden="true" data-wards-gutter className="gs-gutter">
           {gutter.join('\n')}
         </pre>
         <textarea
-          aria-label={WARDS_EDITOR_LABEL}
+          aria-label={t.wardsEditor}
           className="gk-textarea gs-mono"
           rows={Math.min(Math.max(lineCount, 4), 30)}
           spellCheck={false}
@@ -42,8 +37,8 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
         />
       </div>
       {errors.messages.length === 0 ? null : (
-        <ul role="alert" aria-label={WARDS_ERRORS_LABEL} className="gs-mono gs-errors">
-          {errors.lines.length > 0 ? <li>{`Lines with errors: ${errors.lines.join(', ')}`}</li> : null}
+        <ul role="alert" aria-label={t.wardsErrors} className="gs-mono gs-errors">
+          {errors.lines.length > 0 ? <li>{`${t.wardsErrorLines} ${errors.lines.join(', ')}`}</li> : null}
           {errors.messages.map((m, i) => (
             <li key={i}>{m}</li>
           ))}
@@ -57,7 +52,7 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
             dispatch({ type: 'wards', event: { type: 'reset' } });
           }}
         >
-          {RESET_WARDS_LABEL}
+          {t.resetWards}
         </button>
         <button
           type="button"
@@ -66,7 +61,7 @@ export function WardsEditor({ state, dispatch, onDownload }: WardsEditorProps) {
             onDownload(text);
           }}
         >
-          {DOWNLOAD_WARDS_LABEL}
+          {t.downloadWards}
         </button>
       </div>
     </section>
