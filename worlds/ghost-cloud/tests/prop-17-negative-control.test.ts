@@ -9,7 +9,11 @@ import { createFixture } from '../src/fixture.js';
 import { createGhostCloudWorld } from '../src/world.js';
 import type { GhostCloudWorld } from '../src/world.js';
 import type { Action, BucketState, CloudState, StoredObject } from '../src/types.js';
-import { NUM_RUNS, PBT_TIMEOUT } from './pbt-config.js';
+import { PBT_TIMEOUT } from './pbt-config.js';
+
+// Design, Property 17: 100 examples per case in both modes. A failing gate shrinks, and at 10,000
+// examples the shrink did not finish in over an hour.
+const NEGATIVE_CONTROL_RUNS = 100;
 import { actionArb } from './support/arbitraries.js';
 import { createReferenceAdapter } from './support/reference-model.js';
 
@@ -66,7 +70,7 @@ async function gate(world: GhostCloudWorld): Promise<unknown> {
       wardSet: loadWards(),
       testAdapter: createReferenceAdapter(),
       actionArb,
-      numRuns: NUM_RUNS,
+      numRuns: NEGATIVE_CONTROL_RUNS,
     });
   } catch (e) {
     return e;

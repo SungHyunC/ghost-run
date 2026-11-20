@@ -981,3 +981,14 @@ Command: `/usr/bin/time -p corepack pnpm test` in the repository root (Node.js 2
 | `apps/ghost-shell` | 35 | 196 passed | 11.96 s |
 
 drawer-arm "passes on the Base_World" (45 s guard): passed in this run, `verifyWorld` elapsed 15.2 s (numRuns 35); the second call ("a world whose start state is a sampled variant") took 6.9 s. The machine was not idle during the run, so the numbers are indicative. After the run `docker ps -a` listed no container.
+
+## Ghost Cloud suite, Short_Run and Nightly_Run (2026-11-20)
+
+Command: `corepack pnpm exec vitest run` and `GHOST_PBT_MODE=nightly corepack pnpm exec vitest run` in `worlds/ghost-cloud`. Node v20.20.2, vitest 3.2.7, macOS (Apple Silicon). 16 test files, 108 tests, all passed in both runs.
+
+| Run | Examples per property | Test duration | Wall time | `verifyWorld` call |
+|---|---|---|---|---|
+| Short_Run | 100 | 9.19 s | 10.47 s | 1.5 s |
+| Nightly_Run | 10,000 | 33.45 s | 33.96 s | 34.9 s |
+
+The Short_Run is inside the 55 s save-time budget and uses 100 examples, so no written reason for a lower count is needed. Property 17 (negative control) uses 100 examples per case in both modes: an earlier Nightly_Run with 10,000 examples in that file did not finish in over an hour because of the shrink of a failing gate.

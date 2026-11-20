@@ -161,27 +161,27 @@ Each run starts by running `corepack pnpm --filter @ghost-run/ghost-cloud test` 
     - **Property 14: Pipeline totality and shape**
     - **Validates: Requirements 12.5, 12.7, 12.8, 12.9**
 
-- [ ] 11. Scan tests
-  - [ ] 11.1 Write `tests/scan-imports.test.ts` [no-docker]
+- [x] 11. Scan tests
+  - [x] 11.1 Write `tests/scan-imports.test.ts` [no-docker]
     - Walk the imports of `src/index.ts` and `src/pipeline/run-plan.ts`; check `tests/support/reference-model.ts` for value imports from `src/`.
     - **Property 15: Import scans**
     - **Validates: Requirements 3.3, 4.3, 12.3**
 
-  - [ ] 11.2 Write `tests/scan-hygiene.test.ts` [no-docker]
+  - [x] 11.2 Write `tests/scan-hygiene.test.ts` [no-docker]
     - Forbidden-API patterns built from fragments (as `worlds/playground-shell/tests/scan/world-scan.test.ts`), hidden-character and comment-opener scans over `worlds/ghost-cloud/` and `.kiro/specs/ghost-cloud/`, reserved hosts, no user name or home path. The scan test file does not scan itself.
     - **Property 16: Hygiene scans**
     - **Validates: Requirements 10.1, 10.2, 10.3, 10.4, 10.6**
 
-- [ ] 12. README, claims, and measurement
-  - [ ] 12.1 Write `worlds/ghost-cloud/README.md`
+- [x] 12. README, claims, and measurement
+  - [x] 12.1 Write `worlds/ghost-cloud/README.md`
     - The six functions, the path model, the two wards and the limits of Requirement 5, criterion 3, the claims table of design Component 12, the non-claims, the statement that real mode and the moto server are not implemented, and the Tested_Environments (Node version from `node -v`; browser engine: not run).
     - _Requirements: 5.3, 5.7, 8.1, 8.2, 8.3, 8.4_
 
-  - [ ] 12.2 Measure the suite and record it
+  - [x] 12.2 Measure the suite and record it
     - Time the `verifyWorld` call and the full package test. It must finish within 55 s. Write the time and `numRuns` in the README ("Measurements"). Append to `docs/measurements.md` only if the owner answered Q3. A `numRuns` below 100 needs a written reason there.
     - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ] 13. Final checkpoint
+- [x] 13. Final checkpoint
   - Run, from the repository root:
     - `corepack pnpm --filter @ghost-run/ghost-cloud test`
     - `corepack pnpm --filter @ghost-run/ghost-cloud typecheck`
