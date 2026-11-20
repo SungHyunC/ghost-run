@@ -41,6 +41,29 @@ function makeFixture(): void {
   put('apps/ghost-hand/dist/index.html', '<html base="./">hand</html>');
   put('apps/ghost-hand/dist/assets/mujoco.wasm', Buffer.from([0, 97, 115, 109, 1, 0, 0, 0, 255]));
   put('apps/ghost-hand/dist/assets/worker.js', 'worker');
+  put('apps/ghost-hand/dist/THIRD_PARTY_NOTICES.txt', 'notice text\r\n\u00e9 kept as is\n');
+  // The landing build lists the packages it bundled; the notices come from the installed copies.
+  put(
+    'site/build/bundled-packages.json',
+    JSON.stringify({
+      format: 'ghost-site-bundled-packages',
+      version: 1,
+      packages: [{ name: 'pkg-a', version: '1.2.3', license: 'MIT', dir: 'node_modules/pkg-a' }],
+    }),
+  );
+  put('node_modules/pkg-a/package.json', '{"name":"pkg-a","version":"1.2.3","license":"MIT"}');
+  put('node_modules/pkg-a/LICENSE', 'MIT License text of pkg-a\n');
+  put(
+    'apps/ghost-hand/notices/sources.json',
+    JSON.stringify({
+      components: [
+        { id: 'mujoco', name: 'MuJoCo', version: '4.0.1', spdx: 'Apache-2.0', bundledIn: 'mujoco.wasm', file: 'mujoco.LICENSE.txt', upstream: 'https://upstream.example/mujoco' },
+        { id: 'react', name: 'react', version: '19.0.0', spdx: 'MIT', bundledIn: 'JavaScript bundle', file: 'react.LICENSE.txt', upstream: 'https://upstream.example/react' },
+      ],
+    }),
+  );
+  put('apps/ghost-hand/notices/mujoco.LICENSE.txt', 'Apache text of MuJoCo\n');
+  put('apps/ghost-hand/notices/react.LICENSE.txt', 'React text, not used by the site notice\n');
   put('ui/dist/index.html', '<html>kit</html>');
   put('ui/dist/assets/kit.css', 'css');
 }
@@ -86,7 +109,7 @@ describe('buildSite', () => {
     expect(headers).toContain('/shell/*');
     expect(headers).not.toMatch(/^\/(\*|hand\/\*|kit\/\*)$/m);
     expect(r.lines.join('\n')).toMatch(/\/shell\/ 2 files/);
-    expect(r.lines).toHaveLength(5);
+    expect(r.lines).toHaveLength(6);
   });
 
   it('copies app files byte-equal, with no base rewrite', async () => {
@@ -96,6 +119,37 @@ describe('buildSite', () => {
     expect(readFileSync(join(dist, 'hand/index.html'), 'utf8')).toBe('<html base="./">hand</html>');
     expect(readFileSync(join(dist, 'shell/ko.html'), 'utf8')).toBe('<html>ko</html>');
     expect(readFileSync(join(dist, 'kit/assets/kit.css'), 'utf8')).toBe('css');
+  });
+
+  it('writes the site notice from the bundled packages, keeps the MuJoCo components, and keeps the app copy', async () => {
+    const r = await buildSite({ root, deps });
+    expect(r.exitCode).toBe(0);
+    const notice = readFileSync(join(root, 'site/dist/THIRD_PARTY_NOTICES.txt'), 'utf8');
+    expect(notice).toMatch(/^pkg-a 1\.2\.3$/m);
+    expect(notice).toContain('License: MIT');
+    expect(notice).toContain('MIT License text of pkg-a');
+    expect(notice).toMatch(/^MuJoCo 4\.0\.1$/m);
+    expect(notice).toContain('Apache text of MuJoCo');
+    // The JavaScript packages of the Ghost Hand notice come from the installed packages, not from that file.
+    expect(notice).not.toContain('React text, not used by the site notice');
+    const appCopy = readFileSync(join(root, 'apps/ghost-hand/dist/THIRD_PARTY_NOTICES.txt'));
+    expect(readFileSync(join(root, 'site/dist/hand/THIRD_PARTY_NOTICES.txt')).equals(appCopy)).toBe(true);
+  });
+
+  it('fails when the list of bundled packages is missing', async () => {
+    rmSync(join(root, 'site/build/bundled-packages.json'));
+    const r = await buildSite({ root, deps });
+    expect(r.exitCode).toBe(1);
+    expect(r.errors[0]).toContain('missing build output: site/build/bundled-packages.json');
+    expect(existsSync(join(root, 'site/dist'))).toBe(false);
+  });
+
+  it('fails when a bundled package has no license text', async () => {
+    rmSync(join(root, 'node_modules/pkg-a/LICENSE'));
+    const r = await buildSite({ root, deps });
+    expect(r.exitCode).toBe(1);
+    expect(r.errors[0]).toContain('no license text for pkg-a 1.2.3');
+    expect(existsSync(join(root, 'site/dist'))).toBe(false);
   });
 
   it('does not follow symlinks', async () => {

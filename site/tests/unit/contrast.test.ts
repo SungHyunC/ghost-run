@@ -118,12 +118,13 @@ type Pair = {
 
 const page: Bg = { layers: [] };
 const glass = (...layers: string[]): Bg => ({ layers });
-const theater = (...layers: string[]): Bg => ({ layers, root: '#160b2e' });
-const realPane = (...layers: string[]): Bg => ({ layers, root: '#efe2c4' });
+const theater = (...layers: string[]): Bg => ({ layers, root: '#170c31' });
+const realPane = (...layers: string[]): Bg => ({ layers, root: '#f6ecd6' });
 const orange = 'rgba(255,138,61,.20)';
 const bone13 = 'rgba(247,240,225,.13)';
 const card = 'rgba(255,255,255,.065)';
 const witch = 'rgba(180,140,255,.12)';
+const ctl = 'rgba(255,255,255,.05)';
 const mint08 = 'rgba(174,245,223,.08)';
 
 const TEXT: Pair[] = [
@@ -163,22 +164,9 @@ const TEXT: Pair[] = [
   { sel: '.cc .kiro code', fg: 'var(--slime)', bg: glass(card, 'rgba(155,229,100,.1)') },
   { sel: '.same', fg: '#07372a', bg: glass('#aef5df') },
   { sel: '.cards-note', fg: 'var(--dim)', bg: page },
-  { sel: '.wchip', fg: 'var(--text)', bg: glass('rgba(255,255,255,.05)') },
-  { sel: '.wchip[aria-pressed="true"]', colorSel: '.wchip', fg: 'var(--text)', bg: glass('rgba(255,138,61,.16)') },
-  { sel: '.rail button', fg: 'var(--dim)', bg: glass('rgba(255,255,255,.04)') },
-  { sel: '.rail .n', colorSel: '.rail button', fg: 'var(--dim)', bg: glass('rgba(255,255,255,.04)', 'rgba(255,255,255,.1)') },
-  { sel: '.rail b', fg: 'var(--text)', bg: glass('rgba(255,255,255,.04)') },
-  { sel: '.rail code', fg: 'var(--pump2)', bg: glass('rgba(255,255,255,.04)') },
-  { sel: '.rail button.done .n', fg: '#173b07', bg: glass('#9be564') },
-  { sel: '.rail button.now .n', fg: '#fff', bg: glass('#9046ff') },
-  { sel: '.rail button.now', colorSel: '.rail button', fg: 'var(--dim)', bg: glass('rgba(144,70,255,.22)') },
-  { sel: '.plan', fg: 'var(--dim)', bg: theater() },
-  { sel: '.plan-h', fg: 'var(--bone)', bg: theater() },
-  { sel: '.plan pre', fg: '#e9e2ff', bg: glass('#0c0618') },
   { sel: '.rev-tag', fg: '#173b07', bg: glass('#9be564') },
-  { sel: '.real', fg: '#3b2b10', bg: glass('#efe2c4') },
+  { sel: '.real', fg: '#3b2b10', bg: glass('#f6ecd6') },
   { sel: '.copy', fg: '#e9fff8', bg: theater(mint08) },
-  { sel: '.seal', fg: 'var(--mint)', bg: theater(mint08, 'rgba(174,245,223,.18)') },
   { sel: '.fpb', fg: '#fff', bg: glass('#2d873b') },
   { sel: '.gob', fg: '#fff', bg: glass('var(--kiro)') },
   { sel: '.dropped .tag', fg: '#fff', bg: glass('#c2525d') },
@@ -189,19 +177,38 @@ const TEXT: Pair[] = [
   { sel: '.tile.ok .res', colorSel: '.tile.ok .res', fg: '#173b07', bg: glass('var(--slime)') },
   { sel: '.tile.fail .res', fg: '#fff', bg: glass('#c2525d') },
   { sel: '.real .bucket .objs span', fg: '#4a2c8a', bg: realPane('rgba(0,0,0,.08)', 'rgba(144,70,255,.14)') },
-  { sel: '.wkind', fg: 'var(--dim)', bg: theater(witch) },
-  { sel: '.chk', colorSel: '.copy', fg: '#e9fff8', bg: theater(witch, 'rgba(0,0,0,.2)') },
-  { sel: '.chk.ok em', fg: 'var(--slime)', bg: theater(witch, 'rgba(0,0,0,.2)') },
-  { sel: '.chk.bad em', fg: 'var(--red)', bg: theater('rgba(255,107,122,.12)', 'rgba(0,0,0,.2)') },
+  { sel: '.chk', colorSel: '.copy', fg: '#e9fff8', bg: theater(witch, 'rgba(0,0,0,.25)') },
+  { sel: '.chk.ok em', fg: 'var(--slime)', bg: theater(witch, 'rgba(0,0,0,.25)') },
+  { sel: '.chk.bad em', fg: '#ff8b97', bg: theater('rgba(255,107,122,.1)', 'rgba(0,0,0,.25)') },
   { sel: '.eo', fg: 'var(--mint)', bg: theater(witch) },
-  { sel: '.vnote', fg: 'var(--dim)', bg: theater('rgba(255,255,255,.05)') },
-  { sel: '.stamp.block', fg: 'var(--red)', bg: theater('rgba(255,255,255,.05)') },
+  { sel: '.stamp.block', fg: '#ff8b97', bg: theater('rgba(255,255,255,.05)') },
   { sel: '.stamp.pass', fg: 'var(--slime)', bg: theater('rgba(255,255,255,.05)') },
   { sel: '.term', fg: '#e9e2ff', bg: glass('#0c0618') },
-  { sel: '.term .pr', fg: 'var(--slime)', bg: glass('#0c0618') },
   { sel: '.say', fg: 'var(--ink)', bg: glass('#f7f0e1') },
   { sel: '.say p code', fg: '#3b2b10', bg: glass('#efe4c9') },
-  { sel: '.say p b', fg: '#6a2fd6', bg: glass('#f7f0e1') },
+  { sel: '.live', fg: '#ffd0d6', bg: glass('rgba(255,107,122,.14)') },
+  { sel: '.live.rec', fg: 'var(--dim)', bg: glass('rgba(255,255,255,.08)') },
+  { sel: '.tab', fg: 'var(--dim)', bg: glass(ctl, 'rgba(0,0,0,.25)') },
+  { sel: '.tab[aria-selected="true"]', colorSel: '.tab[aria-selected="true"]', fg: 'var(--ink)', bg: glass('#f7f0e1') },
+  { sel: '.ghostbtn', fg: 'var(--dim)', bg: glass(ctl) },
+  { sel: '.plan-l', fg: 'var(--dim)', bg: glass(ctl) },
+  { sel: '.pr', fg: 'var(--slime)', bg: glass('#0c0618') },
+  { sel: '.cmd', fg: '#efe9ff', bg: glass('#0c0618') },
+  { sel: '.sl label', fg: 'var(--dim)', bg: glass(ctl) },
+  { sel: '.sl b', fg: 'var(--text)', bg: glass(ctl) },
+  { sel: '.runbtn', fg: '#08372a', bg: glass('#aef5df') },
+  { sel: '.presets span', fg: 'var(--dim)', bg: glass(ctl) },
+  { sel: '.presets button', fg: 'var(--pump2)', bg: glass(ctl) },
+  { sel: '.presets button.on', fg: 'var(--text)', bg: glass(ctl) },
+  { sel: '.stepper button', fg: 'var(--dim)', bg: page },
+  { sel: '.stepper button.now', fg: 'var(--text)', bg: page },
+  { sel: '.stepper button.done i', fg: '#173b07', bg: glass('#9be564') },
+  { sel: '.stepper button.now i', fg: '#fff', bg: glass('#9046ff') },
+  { sel: '.tag.pub', fg: '#3b2b10', bg: glass('#ffd36b') },
+  { sel: '.node.new', fg: 'var(--slime)', bg: theater(mint08) },
+  { sel: '.stamp.warn', fg: '#ffd36b', bg: theater('rgba(255,255,255,.05)') },
+  // For task 13.1: Mockup_V5 has #7a5cc4 here (4.45:1); raised to #795bc3 to reach 4.5:1.
+  { sel: '.say p small', fg: '#795bc3', bg: glass('#f7f0e1') },
   { sel: '.book', fg: '#ffe9cc', bg: glass('#2b1a12') },
   { sel: '.book-t', fg: 'var(--pump2)', bg: glass('#2b1a12') },
   { sel: '.book .c', fg: '#c9a27a', bg: glass('#2b1a12') },
@@ -221,11 +228,7 @@ type Border = {
 };
 const BORDERS: Border[] = [
   { sel: '.btn', prop: 'border', value: 'rgba(255,255,255,.34)' },
-  { sel: '.wchip', prop: 'border', value: 'rgba(255,255,255,.34)' },
-  { sel: '.rail button', prop: 'border', value: 'rgba(255,255,255,.34)' },
   { sel: '.xsw input', prop: 'border', value: 'rgba(255,255,255,.34)' },
-  { sel: '.rail button.now', prop: 'border-color', value: 'var(--kiro)' },
-  { sel: '.wchip[aria-pressed="true"]', prop: 'border-color', value: 'var(--pump)' },
 ];
 
 const effective = (fg: Rgba, bg: Rgba, opacity = 1): Rgba => over({ ...fg, a: fg.a * opacity }, bg);

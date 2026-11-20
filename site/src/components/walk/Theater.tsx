@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import type { ActorAt, WalkView } from '../../engine/types';
 import { useReducedMotion } from '../../engine/useReducedMotion';
 import { Actor, type ActorPos } from './Actor';
-import { PlanBar, SpeechBar, VerdictCard, WardCard } from './Cards';
+import { SpeechBar, VerdictCard, WardCard, wardName } from './Cards';
 
 export interface TheaterProps {
   view: WalkView;
@@ -12,36 +12,44 @@ export interface TheaterProps {
   reality: ReactNode;
   /** The Copy pane body (`#copyb` content). */
   copy: ReactNode;
+  /** The ward ids that the shown plan violated; the ward card is named after them. Empty: the headline ward. */
+  violatedWardIds?: readonly string[];
 }
 
-interface Box {
+/** A rectangle relative to the Theater's top left corner. */
+export interface Box {
   x: number;
   y: number;
   w: number;
+  h: number;
 }
 
 function rel(theater: HTMLElement, el: HTMLElement | null): Box {
   const a = theater.getBoundingClientRect();
   const r = (el ?? theater).getBoundingClientRect();
-  return { x: r.left - a.left, y: r.top - a.top, w: r.width };
+  return { x: r.left - a.left, y: r.top - a.top, w: r.width, h: r.height };
 }
 
-/** The offsets of design Component 7. */
-function place(theater: HTMLElement, at: ActorAt, els: Record<ActorAt, HTMLElement | null>): { x: number; y: number } {
-  const b = rel(theater, els[at]);
+/**
+ * The Actor's position for each stop (`moveActor` of the Mockup). The Panes now start at the top edge of the
+ * Theater, so the speech bubble of the Actor at the Copy pane (`.term`, 6 px below the Actor's top) would leave
+ * the Theater: its y is clamped to 0, which puts the bubble top at least 6 px inside.
+ */
+export function placeActor(at: ActorAt, boxes: Record<ActorAt, Box>): { x: number; y: number } {
+  const b = boxes[at];
   switch (at) {
     case 'gutter':
-      return { x: b.x + b.w / 2 - 35, y: b.y - 30 };
+      return { x: b.x + b.w / 2 - 33, y: b.y - 24 };
     case 'copy':
-      return { x: b.x + b.w - 74, y: b.y - 40 };
+      return { x: b.x + b.w - 70, y: Math.max(b.y - 34, 0) };
     case 'ward':
-      return { x: b.x + b.w - 80, y: b.y - 60 };
+      return { x: Math.min(b.x + b.w - 80, b.x + 260), y: b.y - 56 };
     case 'verdict':
-      return { x: b.x - 50, y: b.y - 26 };
+      return { x: b.x - 56, y: b.y - 16 };
   }
 }
 
-export function Theater({ view, goText, reality, copy }: TheaterProps) {
+export function Theater({ view, goText, reality, copy, violatedWardIds = [] }: TheaterProps) {
   const theater = useRef<HTMLDivElement>(null);
   const gutter = useRef<HTMLDivElement>(null);
   const copyPane = useRef<HTMLDivElement>(null);
@@ -66,11 +74,11 @@ export function Theater({ view, goText, reality, copy }: TheaterProps) {
   useLayoutEffect(() => {
     const t = theater.current;
     if (t === null) return;
-    const p = place(t, view.actorAt, {
-      gutter: gutter.current,
-      copy: copyPane.current,
-      ward: ward.current,
-      verdict: verdict.current,
+    const p = placeActor(view.actorAt, {
+      gutter: rel(t, gutter.current),
+      copy: rel(t, copyPane.current),
+      ward: rel(t, ward.current),
+      verdict: rel(t, verdict.current),
     });
     const instant = resized.current || reduced;
     resized.current = false;
@@ -79,7 +87,6 @@ export function Theater({ view, goText, reality, copy }: TheaterProps) {
 
   return (
     <div className={view.beam ? 'theater beam-on' : 'theater'} id="theater" ref={theater}>
-      <PlanBar text={view.plan.text} rev={view.plan.rev} />
       <div className="panes">
         <div className="pane real" id="real">
           <div className="pane-h">
@@ -116,18 +123,17 @@ export function Theater({ view, goText, reality, copy }: TheaterProps) {
       <div className="judge">
         <WardCard
           wardRef={ward}
-          wardId={view.ward.id}
-          kindLine={view.ward.kindLine}
+          wardId={wardName(view.ward.id, violatedWardIds)}
           rows={view.checks.rows}
           scan={view.checks.scan}
           tone={view.checks.tone}
           eoShown={view.checks.eoShown}
           effectsOutside={view.ward.effectsOutside}
         />
-        <VerdictCard verdictRef={verdict} candleOut={view.candleOut} stamp={view.stamp} note={view.note} />
+        <VerdictCard verdictRef={verdict} candle={view.candle} stamp={view.stamp} />
       </div>
       <Actor act={view.act} term={view.term} pos={pos} />
-      <SpeechBar narration={view.narration} />
+      <SpeechBar narration={view.narration} step={view.step} />
     </div>
   );
 }

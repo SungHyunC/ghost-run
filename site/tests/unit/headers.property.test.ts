@@ -75,9 +75,10 @@ describe('Property 11: Headers rewrite', () => {
         const slash = root.find((b) => b.path === '/');
         const policy = slash?.headers.find((h) => h.startsWith('Content-Security-Policy:')) ?? '';
         expect(policy).not.toBe('');
-        for (const bad of ['http:', 'https:', '*', 'data:', 'unsafe-inline', 'unsafe-eval']) {
+        for (const bad of ['http:', 'https:', '*', 'data:', 'unsafe-inline']) {
           expect(policy).not.toContain(bad);
         }
+        expect(policy).not.toMatch(/'unsafe-eval'/);
         expect(policy).toContain("frame-ancestors 'none'");
       }),
       { numRuns: 100 },

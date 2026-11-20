@@ -6,12 +6,13 @@ import type { Ward } from '@ghost-run/core';
 import { describe, expect, it } from 'vitest';
 import { createFixture } from '../../../worlds/ghost-cloud/src/fixture';
 import { SKELETON_PARTS, SPEC_NAMES } from '../../src/data/skeleton';
+import { toWalkRuns } from '../../src/data/walk-records';
 import type { RunsFile } from '../../src/data/types';
 
 const SITE = fileURLToPath(new URL('../../', import.meta.url));
 const ROOT = join(SITE, '..');
 const read = (rel: string): string => readFileSync(join(ROOT, rel), 'utf8');
-const runs = JSON.parse(read('site/src/data/runs.json')) as RunsFile;
+const runs = toWalkRuns(JSON.parse(read('site/src/data/runs.json')) as RunsFile);
 
 function loadWard(rel: string, id: string): Ward {
   const parsed = parseWards(read(rel));
@@ -72,10 +73,11 @@ describe('facts: plans equal the repository files (Requirement 8, criterion 2)',
   });
 
   it('matches the Hand plans', () => {
-    expect(runs.worlds.hand.plan.commands).toEqual([handName('first.plan.json')]);
-    expect(runs.worlds.hand.fixed.commands).toEqual([handName('revised.plan.json')]);
-    expect(runs.worlds.hand.plan.commands).toEqual(['fast pull']);
-    expect(runs.worlds.hand.fixed.commands).toEqual(['slow pull, gentle grip']);
+    // The recorded text is the adapter's: the slider values of the plan files (first: grip 20, pull 0.2 at 0.6).
+    expect(handName('first.plan.json')).toBe('fast pull');
+    expect(handName('revised.plan.json')).toBe('slow pull, gentle grip');
+    expect(runs.worlds.hand.plan.commands).toEqual(['grip 20 N, pull 0.2 m at 0.6 m/s']);
+    expect(runs.worlds.hand.fixed.commands).toEqual(['grip 15 N, pull 0.15 m at 0.15 m/s']);
   });
 
   it('matches the Cloud demo plans', () => {
@@ -135,9 +137,9 @@ describe('facts: reality scenes (Requirement 8, criteria 3 to 5)', () => {
     if (scene.kind !== 'shell') throw new Error('unreachable');
     const project = read('apps/ghost-shell/src/scenarios/project.ts');
     expect(scene.root).toBe('project/');
-    for (const f of scene.files) {
-      const key = f.endsWith('/') ? f.slice(0, -1) : f;
-      expect(project, f).toMatch(new RegExp(`(^|[\\s'"])${key.replace('.', '\\.')}['"]?\\s*:`, 'm'));
+    for (const e of scene.entries) {
+      const key = e.name;
+      expect(project, key).toMatch(new RegExp(`(^|[\\s'"])${key.replace('.', '\\.')}['"]?\\s*:`, 'm'));
     }
     expect(scene.tables).toEqual([
       { name: 'users', rows: 1206 },

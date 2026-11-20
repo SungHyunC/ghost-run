@@ -22,8 +22,21 @@ export interface HandVariantParams {
   commandDelaySteps: number;
 }
 
+/** One top-level entry of the Shell project. `state` is `intact` in the Reality pane. */
+export interface ShellEntry {
+  name: string;
+  kind: 'file' | 'dir';
+  state: 'intact' | 'gone' | 'new';
+}
+
 export type RealityScene =
-  | { kind: 'shell'; root: 'project/'; tables: { name: string; rows: number }[]; files: string[] }
+  | {
+      kind: 'shell';
+      root: 'project/';
+      tables: { name: string; rows: number }[];
+      /** Non-hidden top-level entries of the project, without secret-pattern matches. */
+      entries: ShellEntry[];
+    }
   | { kind: 'hand'; label: 'the real arm' }
   | { kind: 'cloud'; buckets: { name: string; objects: string[]; protected: boolean }[] };
 
@@ -31,7 +44,8 @@ export type CopyScene =
   | {
       kind: 'shell';
       tables: { name: string; rows: number; state: 'intact' | 'dropped' | 'soft'; note?: string }[];
-      files: string[];
+      /** The entries after the run. */
+      entries: ShellEntry[];
     }
   | {
       kind: 'hand';
@@ -43,7 +57,11 @@ export type CopyScene =
         params: HandVariantParams;
       }[];
     }
-  | { kind: 'cloud'; buckets: { name: string; objects: string[]; protected: boolean }[] };
+  | {
+      kind: 'cloud';
+      /** `tag` names a changed ACL or public-access block (`acl: public-read`, `public access open`). */
+      buckets: { name: string; objects: string[]; protected: boolean; tag?: string }[];
+    };
 
 export interface PlanRecord {
   /** Plan lines as in the plan file. */
@@ -66,24 +84,55 @@ export interface PlanRecord {
   message: string;
 }
 
+/** How a run ends, as the walkthrough shows it. Same union as `Outcome` in `live/types.ts`. */
+export type RunOutcome = 'block-fixed' | 'block-open' | 'pass' | 'warn' | 'unsupported';
+
 export interface WorldRecord {
   id: WorldId;
   /** `line` is the text of the ward card kind line. */
   ward: { id: string; kind: 'sql' | 'physics' | 'path'; line: string };
   /** Drawn once in the Reality pane. */
   reality: RealityScene;
-  /** The demo plan. */
+  /** The plan that ran first. */
   plan: PlanRecord;
-  /** The fixed plan. */
-  fixed: PlanRecord;
+  /** The fixed plan; null for Visitor_Input and when no fix exists. */
+  fixed: PlanRecord | null;
+  outcome: RunOutcome;
+  source: 'live' | 'recorded';
+  /** Set only for the outcome `unsupported`. */
+  unsupported?: { reason: string; known: string[] };
+}
+
+/** One Preset of a world in runs.json version 2, in the order of Requirement 8, criterion 1. */
+export interface PresetRecord {
+  id: string;
+  plan: PlanRecord;
+  fixed: PlanRecord | null;
+}
+
+export interface WorldRecordV2 {
+  id: WorldId;
+  ward: WorldRecord['ward'];
+  reality: RealityScene;
+  presets: PresetRecord[];
 }
 
 export interface RunsFile {
   format: 'ghost-site-runs';
-  version: 1;
+  version: 2;
   seed: 42;
   variantCount: 8;
-  worlds: { shell: WorldRecord; hand: WorldRecord; cloud: WorldRecord };
+  worlds: { shell: WorldRecordV2; hand: WorldRecordV2; cloud: WorldRecordV2 };
+}
+
+/** A world record as the walkthrough reads it: the Preset's plan and its Fixed_Plan (see `walk-records.ts`). */
+export type WalkRecord = WorldRecord & { fixed: PlanRecord };
+
+/** The walkthrough's view of the Runs_File: the first Preset of each world, which has a Fixed_Plan. */
+export interface WalkRuns {
+  seed: 42;
+  variantCount: 8;
+  worlds: { shell: WalkRecord; hand: WalkRecord; cloud: WalkRecord };
 }
 
 export interface WorldSizeFile {

@@ -78,6 +78,26 @@ describe('page source (src/)', () => {
     expect(hits(src, re)).toEqual([]);
   });
 
+  describe('live source (src/live/)', () => {
+    const live = textFiles(join(SITE, 'src', 'live'));
+    const LIVE_FORBIDDEN: [string, RegExp][] = [
+      ['fetch', /\bfetch\s*\(|\b(globalThis|window|self)\.fetch\b/],
+      ['XMLHttpRequest', /\bXMLHttpRequest\b/],
+      ['WebSocket', /\bWebSocket\b/],
+      ['EventSource', /\bEventSource\b/],
+      ['sendBeacon', /\bsendBeacon\b/],
+      ['storage API', /\b(localStorage|sessionStorage|indexedDB|caches)\b|document\.cookie/],
+    ];
+
+    it('scans the live files', () => {
+      expect(live.length).toBeGreaterThan(10);
+    });
+
+    it.each(LIVE_FORBIDDEN)('uses no %s', (_name, re) => {
+      expect(hits(live, re)).toEqual([]);
+    });
+  });
+
   it('makes no LLM API call', () => {
     const re = /openai|anthropic|bedrock-runtime|generativelanguage|chat\/completions|\/v1\/messages/i;
     expect(hits(all, re)).toEqual([]);

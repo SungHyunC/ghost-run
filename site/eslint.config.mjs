@@ -66,14 +66,50 @@ export default tseslint.config(
     },
   },
   {
+    // src/live/ replaces the import ban by an allowlist of the design's dependency table.
+    // It has no React import and no DOM-framework dependency; the syntax and network bans stay.
+    files: ['src/live/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@ghost-run/ui',
+              allowImportNames: ['isHiddenDisplay', 'escapeForDisplay'],
+              message: 'src/live/ may import only isHiddenDisplay and escapeForDisplay from @ghost-run/ui.',
+            },
+          ],
+          patterns: [
+            {
+              // Everything under apps/ is banned except the modules the design table names.
+              regex: String.raw`(^|/)apps/(?!(ghost-shell/(src/(pipeline/run-playground|scenarios/project|plan/plan-file|sql-worker/worker-runner)|plans/|wards\.yaml)|ghost-hand/(src/(pipeline/run|exec/|capabilities|plan/plan-file|worker/sim-worker)|plans/)))`,
+              message: 'src/live/ may reach only the app modules named in the design dependency table.',
+            },
+            { group: ['**/core/**', '**/ui/**', '**/ghost-runner/**', '**/integrations/**'], message: 'Import packages through their public entry points.' },
+            {
+              group: ['react', 'react-dom', 'react-dom/*', 'react/*', '@fontsource/*', 'three', 'three/*'],
+              message: 'src/live/ has no React, DOM-framework, or rendering import.',
+            },
+            {
+              group: ['@ghost-run/core/*', '@ghost-run/wards-config/*', '@ghost-run/ui/*', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/*', '@ghost-run/kiro-hook', '@ghost-run/mcp'],
+              message: 'Not in the allowlist of the design dependency table.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/engine/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-syntax': ['error', ...SYNTAX_BAN, ...NETWORK_BAN, ...ENGINE_BAN],
     },
   },
   {
-    // The record measure file may import exactly the packages of the design's dependency table
-    // and, by relative path, the two app pipeline modules.
+    // The record measure file may import the adapters (site/src/live), core, wards-config, the two
+    // world packages, drawer-arm, and vitest (design dependency table). It may not import the apps
+    // directly: the adapters hold those imports.
     files: ['scripts/record-runs.measure.ts'],
     rules: {
       'no-restricted-imports': [
@@ -84,7 +120,8 @@ export default tseslint.config(
               group: ['@ghost-run/ui', '@ghost-run/ui/*', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/*', '@ghost-run/kiro-hook', '@ghost-run/mcp', '**/ui/**', '**/ghost-runner/**', '**/integrations/**'],
               message: 'The record script may not import ui/, ghost-runner/, or integrations/.',
             },
-            { group: ['@ghost-run/core/*'], message: 'Import core only through its public entry point.' },
+            { group: ['@ghost-run/core/*', '@ghost-run/wards-config/*'], message: 'Import packages only through their public entry points.' },
+            { group: ['**/apps/**'], message: 'The record script reaches the apps only through the adapters in src/live/.' },
           ],
         },
       ],

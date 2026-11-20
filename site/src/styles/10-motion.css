@@ -5,14 +5,15 @@
 @keyframes flick{0%,100%{transform:scale(1)}50%{transform:scale(.92,1.06)}}
 @keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
 .hero-boo,.cauldron-boo{animation:bob 3.2s ease-in-out infinite}
-.actor>svg.g{animation:bob 2.4s ease-in-out infinite}
 .bat{animation:flap .5s ease-in-out infinite;transform-origin:center}
 .bub{animation:rise 2.4s ease-in infinite}.bub.d2{animation-delay:.8s}.bub.d3{animation-delay:1.6s}
 .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flick 1.4s ease-in-out infinite}
+.bigcandle.flicker .flame{animation:candle-flicker 1s steps(1) infinite}
+@keyframes candle-flicker{0%,100%{opacity:1}50%{opacity:.55}}
 .p-cheer circle,.p-wand circle{animation:twinkle .9s ease-in-out infinite}
 .p-cheer circle:nth-child(2n),.p-wand circle:nth-child(2n){animation-delay:.45s}
 @media (prefers-reduced-motion:reduce){
-  .hero-boo,.cauldron-boo,.actor>svg.g,.bat,.bub,.flame,.caret,.p-cheer circle,.p-wand circle,.beam-on .beam path{animation:none}
-  .mat>*>*,.chk,.tile.fail,.poof::after,.ward.scan::after{animation:none}
-  .actor,.costume,.stamp,.badge,.bar,.bucket,.drawer,.rail button,.wchip,.term,.beam{transition:none}
+  .hero-boo,.cauldron-boo,.bat,.bub,.flame,.bigcandle.flicker .flame,.p-cheer circle,.p-wand circle{animation:none}
+  .actor>svg.g,.beam-on .beam path,.caret,.mat>*>*,.chk,.tile.fail,.poof::after,.ward.scan{animation:none}
+  .actor,.costume,.stamp,.badge,.bar,.bucket,.drawer,.stepper i,.term,.beam{transition:none}
 }

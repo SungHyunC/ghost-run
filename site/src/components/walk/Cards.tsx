@@ -1,19 +1,19 @@
-import type { CheckRowView, Segment, Stamp } from '../../engine/types';
+import type { Candle, CheckRowView, Segment, Stamp } from '../../engine/types';
+import { stepLabel } from '../../data/narration';
 import { Icon } from '../art/Icon';
 
-export function PlanBar({ text, rev }: { text: string; rev: boolean }) {
-  return (
-    <div className={rev ? 'plan rev' : 'plan'} id="plan">
-      <span className="plan-h">🤖 Agent's plan</span>
-      <pre id="plancode">{text}</pre>
-      <span className="rev-tag">fixed by the agent</span>
-    </div>
-  );
+/** The ward card's name: the violated ward ids when there are any (the headline ward first), else the headline ward. */
+export function wardName(headline: string, violated: readonly string[]): string {
+  if (violated.length === 0) return headline;
+  const rest = violated.filter((id) => id !== headline);
+  return (violated.includes(headline) ? [headline, ...rest] : [...violated]).join(', ');
 }
+
+/** True for the effectsOutside texts that say nothing leaves the box (they get the check mark). */
+const NOTHING_LEAVES = /^(nothing leaves|no --endpoint-url)/;
 
 export interface WardCardProps {
   wardId: string;
-  kindLine: string;
   rows: CheckRowView[];
   scan: boolean;
   tone: 'none' | 'bad' | 'good';
@@ -22,19 +22,14 @@ export interface WardCardProps {
   wardRef?: React.Ref<HTMLDivElement>;
 }
 
-export function WardCard({ wardId, kindLine, rows, scan, tone, eoShown, effectsOutside, wardRef }: WardCardProps) {
+export function WardCard({ wardId, rows, scan, tone, eoShown, effectsOutside, wardRef }: WardCardProps) {
   const cls = ['ward', scan ? 'scan' : '', tone === 'none' ? '' : tone].filter(Boolean).join(' ');
   return (
     <div className={cls} id="ward" ref={wardRef}>
       <Icon id="i-ward" viewBox="0 0 40 40" />
-      <div>
-        <span className="wname" id="wname">
-          {wardId}
-        </span>{' '}
-        <span className="wkind" id="wkind">
-          {kindLine}
-        </span>
-      </div>
+      <b className="wname" id="wname">
+        {wardId}
+      </b>
       <div className="checks" id="checks">
         {rows.map((r) => (
           <div className={r.ok ? 'chk ok' : 'chk bad'} key={r.label}>
@@ -44,24 +39,24 @@ export function WardCard({ wardId, kindLine, rows, scan, tone, eoShown, effectsO
         ))}
       </div>
       <div className={eoShown ? 'eo show' : 'eo'} id="eo">
-        {`effectsOutside: ${effectsOutside} \u2713`}
+        {NOTHING_LEAVES.test(effectsOutside) ? `${effectsOutside} \u2713` : `effectsOutside: ${effectsOutside}`}
       </div>
     </div>
   );
 }
 
 export interface VerdictCardProps {
-  candleOut: boolean;
+  candle: Candle;
   stamp: Stamp;
-  note: string;
   verdictRef?: React.Ref<HTMLDivElement>;
 }
 
-export function VerdictCard({ candleOut, stamp, note, verdictRef }: VerdictCardProps) {
-  const stampClass = stamp === 'none' ? 'stamp' : stamp === 'BLOCKED' ? 'stamp block show' : 'stamp pass show';
+export function VerdictCard({ candle, stamp, verdictRef }: VerdictCardProps) {
+  const stampClass =
+    stamp === 'none' ? 'stamp' : stamp === 'BLOCKED' ? 'stamp block show' : stamp === 'PASS' ? 'stamp pass show' : 'stamp warn show';
   return (
     <div className="verdict" id="verdict" ref={verdictRef}>
-      <svg className={candleOut ? 'bigcandle out' : 'bigcandle'} id="vcandle" viewBox="0 0 40 70" aria-hidden="true">
+      <svg className={candle === 'lit' ? 'bigcandle' : `bigcandle ${candle}`} id="vcandle" viewBox="0 0 40 70" aria-hidden="true">
         <rect x="11" y="26" width="18" height="40" rx="4" fill="#fff1d6" />
         <line x1="20" y1="26" x2="20" y2="21" stroke="#3a3326" strokeWidth="2" />
         <path className="flame" d="M20 4q8 8 0 17q-8-9 0-17z" fill="#ffb347" />
@@ -77,24 +72,20 @@ export function VerdictCard({ candleOut, stamp, note, verdictRef }: VerdictCardP
         <circle cx="23.5" cy="42" r="1.7" fill="#2a1b3d" />
         <path d="M17.5 46.5q2.5 2 5 0" stroke="#2a1b3d" strokeWidth="1.5" fill="none" strokeLinecap="round" />
       </svg>
-      <div className="vtxt">
-        <span className={stampClass} id="stamp">
-          {stamp === 'none' ? '' : stamp}
-        </span>
-        <span className="vnote" id="vnote">
-          {note}
-        </span>
-      </div>
+      <span className={stampClass} id="stamp">
+        {stamp === 'none' ? '' : stamp}
+      </span>
     </div>
   );
 }
 
 /** The speech bar. The live region exists from the first render and is empty until Step 1 starts. */
-export function SpeechBar({ narration }: { narration: Segment[] }) {
+export function SpeechBar({ narration, step }: { narration: Segment[]; step: number }) {
   return (
     <div className="say">
       <Icon id="boo" viewBox="0 0 120 130" />
       <p id="sayt" aria-live="polite">
+        {step >= 0 && narration.length > 0 ? <small>{stepLabel(step)}</small> : null}
         {narration.map((s, i) => {
           const key = `${String(i)}-${s.kind}`;
           if (s.kind === 'b') return <b key={key}>{s.text}</b>;

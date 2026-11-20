@@ -17,15 +17,17 @@ export function CloudPane(props: CloudPaneProps) {
   return (
     <div className="buckets">
       {scene.buckets.map((b, k) => {
-        const st = state?.buckets.find((x) => x.name === b.name)?.state ?? 'idle';
+        const live = state?.buckets.find((x) => x.name === b.name) ?? null;
+        const st = live?.state ?? 'idle';
         const cls = st === 'poof' ? 'bucket poof' : st === 'vanish' ? 'bucket poof vanish' : 'bucket';
         return (
           <div className={cls} data-b={b.name} key={b.name} style={idx(k)}>
             {b.name.startsWith('prod-') ? <Icon id="i-lock" viewBox="0 0 16 16" className="shield" /> : null}
             <Icon id="i-bucket" viewBox="0 0 40 40" />
             <b>{b.name}</b>
+            {live !== null && live.tag !== '' ? <span className="tag pub">{live.tag}</span> : null}
             <div className="objs">
-              {b.objects.map((o) => (
+              {(live?.objects ?? b.objects).map((o) => (
                 <span key={o}>{o}</span>
               ))}
             </div>

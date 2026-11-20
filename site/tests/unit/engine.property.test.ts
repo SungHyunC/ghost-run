@@ -1,19 +1,19 @@
 // @vitest-environment jsdom
-// Feature: site, Property 6: Settling equals playing through
+// Feature: site, Property 6 (jump and play agree; the fold case is Property L7 in live-walk.property.test.ts)
 // Validates: Requirements 11.4, 11.7, 11.8, 16.3, 16.4
 import { act, cleanup, renderHook } from '@testing-library/react';
 import * as fc from 'fast-check';
 import { afterEach, describe, expect, it } from 'vitest';
 import runsJson from '../../src/data/runs.json';
-import type { RunsFile } from '../../src/data/types';
-import { initialState, reduceWalk } from '../../src/engine/reducer';
+import { toWalkRuns } from '../../src/data/walk-records';
+import type { WalkRuns, RunsFile } from '../../src/data/types';
 import type { Scheduler } from '../../src/engine/scheduler';
-import { buildScript, settle, STEP_START } from '../../src/engine/script';
+import { settle } from '../../src/engine/script';
 import type { WalkState } from '../../src/engine/types';
-import { useWalkthrough } from '../../src/engine/useWalkthrough';
+import { useWalk } from '../../src/engine/useWalk';
 import { NUM_RUNS, PBT_TIMEOUT } from '../pbt-config';
 
-const runs = runsJson as unknown as RunsFile;
+const runs = toWalkRuns(runsJson as unknown as RunsFile);
 
 interface Pending {
   id: number;
@@ -57,17 +57,6 @@ afterEach(() => {
 });
 
 const worldArb = fc.constantFrom('shell' as const, 'hand' as const, 'cloud' as const);
-const stepArb = fc.integer({ min: 0, max: 4 });
-
-/** The walk state without the fields that settling and playing legitimately set differently. */
-function core(s: WalkState): Omit<WalkState, 'narration' | 'term'> & { term: Omit<WalkState['term'], 'typed'> } {
-  const { narration: _n, term, ...rest } = s;
-  const { typed: _t, ...termRest } = term;
-  void _n;
-  void _t;
-  return { ...rest, term: termRest };
-}
-
 /** The hook view as a plain WalkState (drops the derived `ward` field). */
 function asState(view: WalkState & { ward?: unknown }): WalkState {
   const { ward: _w, ...rest } = view;
@@ -75,44 +64,12 @@ function asState(view: WalkState & { ward?: unknown }): WalkState {
   return rest;
 }
 
-function foldSteps(world: 'shell' | 'hand' | 'cloud', upTo: number): WalkState {
-  const record = runs.worlds[world];
-  let s = initialState(record);
-  for (let k = 0; k <= upTo; k++) {
-    for (const { event } of buildScript(record, k)) s = reduceWalk(s, event);
-  }
-  return s;
-}
-
 function mount(rec: ReturnType<typeof recording>) {
-  return renderHook(() => useWalkthrough(runs, rec.scheduler, 'pending'));
+  return renderHook(() => useWalk({ initial: runs.worlds.shell, scheduler: rec.scheduler }));
 }
 
-describe('Property 6: settling equals playing through', () => {
-  it('folding steps 0..n equals the hook state once step n has fired (narration and typed text aside)', () => {
-    fc.assert(
-      fc.property(worldArb, stepArb, (world, n) => {
-        const record = runs.worlds[world];
-        const rec = recording();
-        const { result, unmount } = mount(rec);
-        act(() => {
-          result.current.controls.pickWorld(world);
-        });
-        const lastAt = Math.max(...buildScript(record, n).map((t) => t.at));
-        act(() => {
-          rec.runUntil((STEP_START[n] ?? 0) + lastAt);
-        });
-        const played = asState(result.current.view);
-        unmount();
-        const folded = foldSteps(world, n);
-        expect(core(played)).toEqual(core(folded));
-        // settle() differs from the fold only in the narration: that of step n alone.
-        expect(core(settle(record, n))).toEqual(core(folded));
-      }),
-      { numRuns: NUM_RUNS },
-    );
-  }, PBT_TIMEOUT);
-
+describe('Property 6: jump and play agree', () => {
+  // The case "folding steps 0..n equals playing" moved to live-walk.property.test.ts (Property L7).
   it('settle(world, 4), jump(4) drained, and play drained all give the same state', () => {
     fc.assert(
       fc.property(worldArb, (world) => {
@@ -121,7 +78,7 @@ describe('Property 6: settling equals playing through', () => {
         const recPlay = recording();
         const a = mount(recPlay);
         act(() => {
-          a.result.current.controls.pickWorld(world);
+          a.result.current.controls.show(runs.worlds[world]);
         });
         act(() => {
           recPlay.drain();
@@ -132,7 +89,7 @@ describe('Property 6: settling equals playing through', () => {
         const recJump = recording();
         const b = mount(recJump);
         act(() => {
-          b.result.current.controls.pickWorld(world);
+          b.result.current.controls.show(runs.worlds[world]);
         });
         act(() => {
           b.result.current.controls.jump(4);

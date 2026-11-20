@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error The script is plain JavaScript without a declaration file.
 import { printJson } from '../../scripts/lib/print-json.mjs';
-import type { CheckRow, CopyScene, HandVariantParams, PlanRecord, RealityScene, RunsFile, WorldRecord } from '../../src/data/types';
+import type { CheckRow, CopyScene, HandVariantParams, PlanRecord, RealityScene, RunsFile, ShellEntry, WorldRecordV2 } from '../../src/data/types';
 import { NUM_RUNS, PBT_TIMEOUT } from '../pbt-config';
 
 const print = printJson as (value: unknown) => string;
@@ -21,7 +21,14 @@ const params: fc.Arbitrary<HandVariantParams> = fc.record({
   sensorNoiseM: num,
   commandDelaySteps: fc.integer({ min: 0, max: 20 }),
 });
-const buckets = fc.array(fc.record({ name, objects: names, protected: fc.boolean() }), { maxLength: 3 });
+const buckets = fc.array(
+  fc.record({ name, objects: names, protected: fc.boolean(), tag: text }, { requiredKeys: ['name', 'objects', 'protected'] }),
+  { maxLength: 3 },
+);
+const entries: fc.Arbitrary<ShellEntry[]> = fc.array(
+  fc.record({ name, kind: fc.constantFrom('file' as const, 'dir' as const), state: fc.constantFrom('intact' as const, 'gone' as const, 'new' as const) }),
+  { maxLength: 4 },
+);
 
 const copyScene: fc.Arbitrary<CopyScene> = fc.oneof(
   fc.record({
@@ -33,7 +40,7 @@ const copyScene: fc.Arbitrary<CopyScene> = fc.oneof(
       ),
       { maxLength: 3 },
     ),
-    files: names,
+    entries,
   }),
   fc.record({
     kind: fc.constant('hand' as const),
@@ -56,7 +63,7 @@ const reality: fc.Arbitrary<RealityScene> = fc.oneof(
     kind: fc.constant('shell' as const),
     root: fc.constant('project/' as const),
     tables: fc.array(fc.record({ name, rows: fc.nat() }), { maxLength: 3 }),
-    files: names,
+    entries,
   }),
   fc.record({ kind: fc.constant('hand' as const), label: fc.constant('the real arm' as const) }),
   fc.record({ kind: fc.constant('cloud' as const), buckets }),
@@ -75,18 +82,19 @@ const plan: fc.Arbitrary<PlanRecord> = fc.record({
   message: text,
 });
 
-const world = (id: 'shell' | 'hand' | 'cloud'): fc.Arbitrary<WorldRecord> =>
+const preset = fc.record({ id: name, plan, fixed: fc.option(plan, { nil: null }) });
+
+const world = (id: 'shell' | 'hand' | 'cloud'): fc.Arbitrary<WorldRecordV2> =>
   fc.record({
     id: fc.constant(id),
     ward: fc.record({ id: name, kind: fc.constantFrom('sql' as const, 'physics' as const, 'path' as const), line: text }),
     reality,
-    plan,
-    fixed: plan,
+    presets: fc.array(preset, { maxLength: 3 }),
   });
 
 const runsFile: fc.Arbitrary<RunsFile> = fc.record({
   format: fc.constant('ghost-site-runs' as const),
-  version: fc.constant(1 as const),
+  version: fc.constant(2 as const),
   seed: fc.constant(42 as const),
   variantCount: fc.constant(8 as const),
   worlds: fc.record({ shell: world('shell'), hand: world('hand'), cloud: world('cloud') }),

@@ -7,10 +7,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
 import { loadAllowlist, matchesFiles } from './lib/allowlist.mjs';
+import { readManifest } from './lib/bundled-packages.mjs';
 import { parseHeaders } from './lib/headers.mjs';
-import { classifyRef, extractCssRefs, extractHtmlRefs, extractRefs } from './lib/refs.mjs';
+import { missingFromNotices } from './lib/notices.mjs';
+import { classifyRef, extractCssRefs, extractHtmlRefs, extractJsRefs, extractRefs, extractStaticImports } from './lib/refs.mjs';
 
 /** @typedef {import('./lib/refs.mjs').Finding} Finding */
+/** @typedef {{ file: string, value: string, target: string | null, exists: boolean }} Ref */
 
 const CHECKED_EXTENSIONS = ['.html', '.css', '.js', '.mjs'];
 
@@ -29,6 +32,29 @@ export const RULE_FONT_MISSING = 'structure: no .woff2 font file under assets/';
 export const RULE_CSS_DATA = 'structure: data: URI in a Landing_Page .css file';
 export const RULE_INLINE_SCRIPT = 'structure: inline <script> in index.html';
 export const RULE_STYLE_ATTR = 'structure: style attribute in index.html';
+export const RULE_FIRST_PAINT = 'first-paint: index.html names an Engine_Bundle or a wasm file';
+export const RULE_ENTRY_STATIC = 'first-paint: the Entry_Bundle has a static import of an Engine_Bundle';
+export const RULE_ENTRY_SIZE = 'entry-size: the Entry_Bundle is larger than the limit';
+export const RULE_POLICY_REQUIRED = 'headers-policy: a required directive is missing or has the wrong value in the policy of /';
+export const RULE_NOTICE_LINK = 'structure: index.html has no link to THIRD_PARTY_NOTICES.txt';
+export const RULE_NOTICE_PACKAGE = 'notices: a bundled package has no license section in THIRD_PARTY_NOTICES.txt';
+export const RULE_NOTICE_LIST = 'notices: the list of bundled packages is missing or unreadable (build the landing page first)';
+
+/**
+ * Size limit of the Entry_Bundle in bytes (site-live Requirement 15, criterion 4; 284 kB on 2026-11-21).
+ * Decimal kilobytes: 360 kB is 360,000 bytes.
+ */
+export const ENTRY_MAX_BYTES = 360 * 1000;
+
+/** The third-party notice at the root of the assembled site (site-live Requirement 18, criterion 3). */
+export const NOTICE_FILE = 'THIRD_PARTY_NOTICES.txt';
+
+/**
+ * Engine_Bundles (site-live Requirement 15, criterion 1): the two engine chunks, the two workers, and the
+ * Rollup chunk `common-*.js` that holds the code the two engine chunks share. They get the reference-form
+ * check only, not the string scan, and the first paint must not name or statically import them.
+ */
+export const ENGINE_BUNDLE = /^assets\/(?:engine-light|engine-hand|hand-worker|sim-worker|worker-entry|common)-[^/]+\.js$/;
 
 /** Paths of Requirement 18, criterion 1 (the folders `assets/` are checked by the font rule). */
 export const REQUIRED_PATHS = [
@@ -40,6 +66,7 @@ export const REQUIRED_PATHS = [
   'hand/index.html',
   'kit/index.html',
   '_headers',
+  NOTICE_FILE,
 ];
 
 /** Folders whose files are copied from the apps; every other file belongs to the Landing_Page. */
@@ -192,6 +219,30 @@ function policyViolations(policy, shellScope) {
 }
 
 /**
+ * The positive rule of site-live Requirement 14, criterion 3, for the policy of `/`:
+ * `worker-src 'self'`, `connect-src 'self'` and no other connect-src value, and `'wasm-unsafe-eval'` in script-src.
+ * @param {string} policy
+ * @returns {string[]} what is missing or wrong
+ */
+export function policyRequirements(policy) {
+  const directives = new Map();
+  for (const part of policy.split(';')) {
+    const tokens = part.trim().split(/\s+/).filter((token) => token !== '');
+    const name = tokens.shift();
+    if (name !== undefined) directives.set(name.toLowerCase(), tokens);
+  }
+  const problems = [];
+  const same = (name, value) => {
+    const tokens = directives.get(name);
+    return tokens !== undefined && tokens.length === 1 && tokens[0] === value;
+  };
+  if (!same('worker-src', "'self'")) problems.push("worker-src 'self'");
+  if (!same('connect-src', "'self'")) problems.push("connect-src 'self'");
+  if (!(directives.get('script-src') ?? []).includes("'wasm-unsafe-eval'")) problems.push("script-src 'wasm-unsafe-eval'");
+  return problems;
+}
+
+/**
  * @param {string} scope a path line of a Headers_File block
  * @param {string[]} files
  * @returns {boolean}
@@ -211,7 +262,9 @@ function scopeExists(scope, files) {
 /**
  * Check a built site directory.
  * @param {string} distRoot
- * @param {{ structure?: boolean }} [options] `structure: false` skips the structure and headers rules (criteria 6 and 7 and the `_headers` policy), for partial fixture trees
+ * @param {{ structure?: boolean, bundledPackages?: string | readonly { name: string, version: string }[] }} [options]
+ *   `structure: false` skips the structure and headers rules (criteria 6 and 7 and the `_headers` policy), for partial fixture trees.
+ *   `bundledPackages` (a manifest path or the list itself) turns on the notices rule: every bundled package needs a section in the notices file.
  * @returns {Finding[]}
  */
 export function checkSite(distRoot, options = {}) {
@@ -219,6 +272,7 @@ export function checkSite(distRoot, options = {}) {
   /** @type {Finding[]} */
   const findings = [];
   const files = listFiles(distRoot);
+  if (options.bundledPackages !== undefined) checkNotices(distRoot, files, options.bundledPackages, findings);
   const fileSet = new Set(files);
   const allowlist = loadAllowlist();
   const repoUrl = allowlist.find((entry) => entry.anchorOnly === true)?.value;
@@ -280,7 +334,7 @@ function checkExternal(distRoot, files, allowlist, findings) {
     const lower = file.toLowerCase();
     const isHtml = lower.endsWith('.html');
     const isCss = lower.endsWith('.css');
-    const isScanned = isLandingFile(file) && (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.json') || lower.endsWith('.svg'));
+    const isScanned = isLandingFile(file) && !ENGINE_BUNDLE.test(file) && (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.json') || lower.endsWith('.svg'));
     if (!isHtml && !isCss && !isScanned) continue;
     const text = readFileSync(path.join(distRoot, file), 'utf8');
 
@@ -292,7 +346,7 @@ function checkExternal(distRoot, files, allowlist, findings) {
         if (finding !== null) findings.push(finding);
       }
     } else {
-      // Landing_Page JS, JSON, and SVG: scan string content. The copied app bundles are not scanned.
+      // Landing_Page JS, JSON, and SVG: scan string content. The copied app bundles and the Engine_Bundles are not scanned.
       for (const match of text.matchAll(URL_STRING)) {
         const value = match[0].replace(/[.,;:]+$/, '');
         const entry = allowlist.find((candidate) => entryMatches(candidate, value) && matchesFiles(candidate.files, file));
@@ -332,8 +386,14 @@ function checkStructure(distRoot, files, repoUrl, findings) {
         const shellScope = block.path.startsWith('/shell/') || block.path === '/shell';
         for (const header of block.headers) {
           if (!/^content-security-policy\s*:/i.test(header)) continue;
-          for (const token of policyViolations(header.slice(header.indexOf(':') + 1), shellScope)) {
+          const policy = header.slice(header.indexOf(':') + 1);
+          for (const token of policyViolations(policy, shellScope)) {
             findings.push({ file: '_headers', reference: `${block.path}  ${token}`, rule: RULE_POLICY });
+          }
+          if (block.path === '/' || block.path === '/index.html') {
+            for (const problem of policyRequirements(policy)) {
+              findings.push({ file: '_headers', reference: `${block.path}  ${problem}`, rule: RULE_POLICY_REQUIRED });
+            }
           }
         }
       }
@@ -372,9 +432,129 @@ function checkStructure(distRoot, files, repoUrl, findings) {
       for (const token of policyViolations(policy, false)) {
         findings.push({ file: 'index.html', reference: `<meta CSP>  ${token}`, rule: RULE_POLICY });
       }
+      for (const problem of policyRequirements(policy)) {
+        findings.push({ file: 'index.html', reference: `<meta CSP>  ${problem}`, rule: RULE_POLICY_REQUIRED });
+      }
     }
+    const entries = checkFirstPaint(distRoot, files, document, findings);
+    // The footer is rendered by the Entry_Bundle, so the link is a string literal there; a static anchor in index.html counts too.
+    const noticeLiteral = new RegExp(`(["'\`])(?:\\./)?${NOTICE_FILE.replace('.', '\\.')}\\1`);
+    const noticeLink =
+      [...document.querySelectorAll('a[href]')].some((anchor) => {
+        const classified = classifyRef(anchor.getAttribute('href') ?? '');
+        return classified.kind === 'local' && resolveTarget('index.html', classified.path) === NOTICE_FILE;
+      }) || entries.some((entry) => noticeLiteral.test(readFileSync(path.join(distRoot, entry), 'utf8')));
+    if (!noticeLink) findings.push({ file: 'index.html', reference: `(${NOTICE_FILE})`, rule: RULE_NOTICE_LINK });
     dom.window.close();
   }
+}
+
+/**
+ * Every package of the landing bundle (and its engine chunks) needs a license section in the notices file.
+ * @param {string} distRoot
+ * @param {string[]} files
+ * @param {string | readonly { name: string, version: string }[]} source a manifest path or the list
+ * @param {Finding[]} findings
+ */
+function checkNotices(distRoot, files, source, findings) {
+  /** @type {readonly { name: string, version: string }[]} */
+  let packages;
+  try {
+    packages = typeof source === 'string' ? readManifest(source) : source;
+  } catch {
+    findings.push({ file: NOTICE_FILE, reference: typeof source === 'string' ? source : '(list)', rule: RULE_NOTICE_LIST });
+    return;
+  }
+  if (packages.length === 0) {
+    findings.push({ file: NOTICE_FILE, reference: '(no package)', rule: RULE_NOTICE_LIST });
+    return;
+  }
+  if (!files.includes(NOTICE_FILE)) return; // the structure rule reports the missing file
+  const text = readFileSync(path.join(distRoot, NOTICE_FILE), 'utf8');
+  for (const pkg of missingFromNotices(text, packages)) {
+    findings.push({ file: NOTICE_FILE, reference: `${pkg.name} ${pkg.version}`, rule: RULE_NOTICE_PACKAGE });
+  }
+}
+
+/**
+ * First-paint rules and the entry size (site-live Requirement 15, criteria 3 and 4).
+ * @param {string} distRoot
+ * @param {string[]} files
+ * @param {Document} document the parsed index.html
+ * @param {Finding[]} findings
+ * @returns {string[]} the Entry_Bundle files that index.html loads
+ */
+function checkFirstPaint(distRoot, files, document, findings) {
+  const fileSet = new Set(files);
+  const named = (value) => {
+    const classified = classifyRef(value);
+    if (classified.kind !== 'local') return null;
+    return resolveTarget('index.html', classified.path);
+  };
+  const entries = [];
+  for (const element of document.querySelectorAll('script[src], link[href]')) {
+    const tag = element.tagName.toLowerCase();
+    const rel = (element.getAttribute('rel') ?? '').toLowerCase().split(/\s+/);
+    if (tag === 'link' && !rel.includes('modulepreload') && !rel.includes('preload')) continue;
+    const value = element.getAttribute(tag === 'script' ? 'src' : 'href') ?? '';
+    const target = named(value);
+    if (target === null) continue;
+    if (ENGINE_BUNDLE.test(target) || target.toLowerCase().endsWith('.wasm')) {
+      findings.push({ file: 'index.html', reference: value, rule: RULE_FIRST_PAINT });
+    } else if (tag === 'script' && fileSet.has(target)) {
+      entries.push(target);
+    }
+  }
+  for (const entry of entries) {
+    const full = path.join(distRoot, entry);
+    if (statSync(full).size > ENTRY_MAX_BYTES) {
+      findings.push({ file: entry, reference: `${String(statSync(full).size)} bytes > ${String(ENTRY_MAX_BYTES)}`, rule: RULE_ENTRY_SIZE });
+    }
+    for (const value of extractStaticImports(readFileSync(full, 'utf8'))) {
+      const classified = classifyRef(value);
+      if (classified.kind !== 'local') continue;
+      const target = resolveTarget(entry, classified.path);
+      if (target !== null && ENGINE_BUNDLE.test(target)) {
+        findings.push({ file: entry, reference: value, rule: RULE_ENTRY_STATIC });
+      }
+    }
+  }
+  return entries;
+}
+
+/**
+ * The wasm and worker references of the two engines, for the real-dist test (site-live Requirement 15, criterion 2).
+ * Hand: `engine-hand-*.js`, `hand-worker-*.js`, and `sim-worker-*.js`. Shell: `engine-light-*.js` and `worker-entry-*.js`.
+ * @param {string} distRoot
+ * @returns {{ handWasm: Ref[], shellWasm: Ref[], handWorker: Ref[], shellWorker: Ref[] }}
+ *   each entry is `{ file, value, target, exists }`
+ */
+export function findEngineReferences(distRoot) {
+  const files = listFiles(distRoot);
+  const fileSet = new Set(files);
+  const collect = (names, wanted) => {
+    const found = [];
+    for (const file of files) {
+      if (!names.test(file)) continue;
+      for (const ref of extractJsRefs(readFileSync(path.join(distRoot, file), 'utf8'))) {
+        if (!wanted.test(ref.value)) continue;
+        const classified = classifyRef(ref.value);
+        if (classified.kind !== 'local') continue;
+        const target = resolveTarget(file, classified.path);
+        found.push({ file, value: ref.value, target, exists: target !== null && fileSet.has(target) });
+      }
+    }
+    return found;
+  };
+  const hand = /^assets\/(?:engine-hand|hand-worker|sim-worker)-[^/]+\.js$/;
+  const shell = /^assets\/(?:engine-light|worker-entry)-[^/]+\.js$/;
+  const wasm = /\.wasm$/i;
+  return {
+    handWasm: collect(hand, wasm),
+    shellWasm: collect(shell, wasm),
+    handWorker: collect(hand, /(?:hand|sim)-worker-[^/]*\.js$/),
+    shellWorker: collect(shell, /worker-entry-[^/]*\.js$/),
+  };
 }
 
 /**
@@ -392,7 +572,8 @@ function main() {
     console.error(`${distRoot}  (directory)  site-dist-missing: run the build first`);
     process.exit(1);
   }
-  const findings = checkSite(distRoot);
+  const manifest = path.join(here, '..', 'build', 'bundled-packages.json');
+  const findings = checkSite(distRoot, { bundledPackages: manifest });
   if (findings.length > 0) {
     console.error(formatFindings(findings));
     process.exit(1);

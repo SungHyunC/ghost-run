@@ -2,6 +2,7 @@
 // byte-equal to the committed runs.json. Slow: it runs the real worlds, including MuJoCo.
 // Feature: site, Property 3: Recorded runs equal a fresh run
 // **Validates: Requirements 10.1, 10.2, 10.3, 10.6, 10.7, 10.8, 12.3**
+// Updated for Runs_File version 2 (site-live Requirement 11).
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import os from 'node:os';
@@ -9,8 +10,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseVariantConfig, sampleVariant } from '@ghost-run/drawer-arm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { tileLabel } from '../../scripts/lib/tile-label';
-import type { RunsFile } from '../../src/data/types';
+import { tileLabel } from '../../src/live/derive/tile-label';
+import type { PlanRecord, PresetRecord, RunsFile } from '../../src/data/types';
 
 const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
 const COMMITTED = join(SITE_DIR, 'src', 'data', 'runs.json');
@@ -46,41 +47,59 @@ afterAll(() => {
 });
 
 describe('recorded runs equal a fresh run', () => {
+  it('is a version 2 Runs_File with the nine Presets in order', () => {
+    expect(fresh.format).toBe('ghost-site-runs');
+    expect(fresh.version).toBe(2);
+    expect(fresh.worlds.shell.presets.map((p) => p.id)).toEqual(['shell-drop-users', 'shell-rm-data-build', 'shell-npm-test']);
+    expect(fresh.worlds.hand.presets.map((p) => p.id)).toEqual(['hand-fast-pull', 'hand-slow-pull', 'hand-strong-grip']);
+    expect(fresh.worlds.cloud.presets.map((p) => p.id)).toEqual(['cloud-delete-prod', 'cloud-make-public', 'cloud-delete-tmp']);
+  });
+
   it('is byte-equal to the committed runs.json', () => {
     expect(freshText).toBe(readFileSync(COMMITTED, 'utf8'));
   });
 
-  it('gives block for each plan and pass for each fixed plan with an unchanged reality', () => {
-    for (const w of Object.values(fresh.worlds)) {
-      expect(w.plan.verdict).toBe('block');
-      expect(w.plan.violatedWardIds).toEqual([w.ward.id]);
-      expect(w.fixed.verdict).toBe('pass');
-      expect(w.plan.p1.equal).toBe(true);
-      expect(w.fixed.p1.equal).toBe(true);
-      expect(w.plan.effectsOutside).toEqual([]);
-      expect(w.fixed.effectsOutside).toEqual([]);
+  it('gives block for the named Presets and pass for their Fixed_Plans with an unchanged reality', () => {
+    const presets = Object.values(fresh.worlds).flatMap((w) => w.presets);
+    const named = ['shell-drop-users', 'shell-rm-data-build', 'hand-fast-pull', 'cloud-delete-prod'];
+    for (const id of named) {
+      const p = presets.find((x) => x.id === id);
+      expect(p?.plan.verdict, id).toBe('block');
+      expect(p?.fixed?.verdict, id).toBe('pass');
+    }
+    for (const p of presets) {
+      expect(p.plan.p1.equal, p.id).toBe(true);
+      if (p.fixed !== null) expect(p.fixed.p1.equal, p.id).toBe(true);
     }
   });
 
-  it('holds the values of Requirement 10, criterion 3', () => {
+  it('holds the values of Requirement 11, criterion 6', () => {
     const { shell, hand, cloud } = fresh.worlds;
+    const get = (list: PresetRecord[], id: string): { plan: PlanRecord; fixed: PlanRecord } => {
+      const p = list.find((x) => x.id === id);
+      if (p === undefined || p.fixed === null) throw new Error(`${id} has no Fixed_Plan`);
+      return { plan: p.plan, fixed: p.fixed };
+    };
+    const s = get(shell.presets, 'shell-drop-users');
     expect(shell.ward.id).toBe('no-data-loss');
-    expect(shell.plan.facts['rowsLost']).toBe(1206);
-    expect(shell.fixed.facts['rowsLost']).toBe(0);
-    expect(shell.plan.message).toContain('would delete 1,206 rows from users');
+    expect(s.plan.facts['rowsLost']).toBe(1206);
+    expect(s.fixed.facts['rowsLost']).toBe(0);
+    expect(s.plan.message).toContain('would delete 1,206 rows from users');
 
+    const h = get(hand.presets, 'hand-fast-pull');
     expect(hand.ward.id).toBe('gentle-hands');
-    expect(hand.plan.facts).toMatchObject({ succeeded: 7, total: 8, maxForceN: 27.53, vaseTouched: 0, drawerOpeningM: 0.1216 });
-    expect(hand.fixed.facts).toMatchObject({ succeeded: 8, total: 8, maxForceN: 29.24, vaseTouched: 0 });
-    expect(hand.plan.message).toContain('joint limit exceeded in variant variant-6');
-    if (hand.plan.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
-    const tiles = hand.plan.copyAfter.tiles;
+    expect(h.plan.facts).toMatchObject({ succeeded: 7, total: 8, maxForceN: 27.53, vaseTouched: 0, drawerOpeningM: 0.1216 });
+    expect(h.fixed.facts).toMatchObject({ succeeded: 8, total: 8, maxForceN: 29.24, vaseTouched: 0 });
+    expect(h.plan.message).toContain('joint limit exceeded in variant variant-6');
+    if (h.plan.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
+    const tiles = h.plan.copyAfter.tiles;
     expect(tiles.filter((t) => t.outcome === 'failed').map((t) => t.id)).toEqual(['variant-3']);
     expect(tiles.filter((t) => t.jointLimit).map((t) => t.id)).toEqual(['variant-6']);
 
+    const c = get(cloud.presets, 'cloud-delete-prod');
     expect(cloud.ward.id).toBe('no-bucket-delete');
-    expect(cloud.plan.facts).toMatchObject({ removedBuckets: 'prod-assets', objectsRemoved: 3 });
-    expect(cloud.fixed.facts['removedBuckets']).toBe('tmp-build-cache');
+    expect(c.plan.facts).toMatchObject({ removedBuckets: 'prod-assets', objectsRemoved: 3 });
+    expect(c.fixed.facts['removedBuckets']).toBe('tmp-build-cache');
   });
 
   it('gives the eight Mockup tile labels for seed 42 and the real sampleVariant', () => {
@@ -88,7 +107,8 @@ describe('recorded runs equal a fresh run', () => {
     if (!parsed.ok) throw new Error('variant-config.json invalid');
     const labels = Array.from({ length: 8 }, (_, i) => tileLabel(sampleVariant(42, i, parsed.config)));
     expect(labels).toEqual(MOCKUP_LABELS);
-    if (fresh.worlds.hand.plan.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
-    expect(fresh.worlds.hand.plan.copyAfter.tiles.map((t) => t.label)).toEqual(MOCKUP_LABELS);
+    const first = fresh.worlds.hand.presets[0]?.plan.copyAfter;
+    if (first?.kind !== 'hand') throw new Error('hand scene expected');
+    expect(first.tiles.map((t) => t.label)).toEqual(MOCKUP_LABELS);
   });
 });

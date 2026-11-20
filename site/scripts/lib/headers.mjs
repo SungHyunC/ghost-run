@@ -2,25 +2,15 @@
 // and build the root file of the assembled site (design Component 11).
 // A block is a path line (no indentation) followed by indented header lines.
 
+import { landingHeaderPolicy } from './csp.mjs';
+
 /**
  * @typedef {{ path: string, headers: string[] }} HeaderBlock
  */
 
-const LANDING_POLICY = [
-  "default-src 'none'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "font-src 'self'",
-  "img-src 'self'",
-  "connect-src 'none'",
-  "base-uri 'none'",
-  "form-action 'none'",
-  "frame-ancestors 'none'",
-].join('; ');
-
 /** The three headers of the Landing_Page blocks, in order. */
 export const LANDING_HEADERS = Object.freeze([
-  `Content-Security-Policy: ${LANDING_POLICY}`,
+  `Content-Security-Policy: ${landingHeaderPolicy()}`,
   'X-Content-Type-Options: nosniff',
   'Referrer-Policy: no-referrer',
 ]);

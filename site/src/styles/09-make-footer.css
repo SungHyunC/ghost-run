@@ -12,4 +12,6 @@
 .agent .cmd{display:block;font-size:12.5px;background:#140b26;color:var(--mint);border-radius:10px;padding:8px 10px;margin-bottom:8px}
 .agent .proof{font-size:13px;color:var(--bone)}
 .foot{padding:16px 26px 22px;font-size:13px;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px dashed rgba(255,255,255,.12)}
+.foot-notice{margin-left:auto;color:var(--dim);font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.foot-notice:hover,.foot-notice:focus-visible{color:var(--text)}
 .foot span{padding:3px 9px;border-radius:999px;background:rgba(155,229,100,.1);color:var(--slime);font-size:12px}

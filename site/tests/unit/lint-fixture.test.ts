@@ -31,6 +31,33 @@ describe('lint rules', () => {
     expect(rules.length).toBeGreaterThan(0);
   });
 
+  it('accepts a @ghost-run/core import in src/live', async () => {
+    const rules = await lintFixture('src/live/__lint_fixture_core.ts', "import type { Scene } from '@ghost-run/core';\nexport type S = Scene;\n");
+    expect(rules).not.toContain('no-restricted-imports');
+  });
+
+  it('rejects the same import in src/components', async () => {
+    const rules = await lintFixture('src/components/__lint_fixture_core.ts', "import type { Scene } from '@ghost-run/core';\nexport type S = Scene;\n");
+    expect(rules).toContain('no-restricted-imports');
+  });
+
+  it('rejects fetch in src/live', async () => {
+    const rules = await lintFixture('src/live/__lint_fixture_fetch.ts', "export const f = () => fetch('https://a.example/');\n");
+    expect(rules).toContain('no-restricted-syntax');
+  });
+
+  it('rejects react in src/live', async () => {
+    const rules = await lintFixture('src/live/__lint_fixture_react.ts', "import { useState } from 'react';\nexport const u = useState;\n");
+    expect(rules).toContain('no-restricted-imports');
+  });
+
+  it('allows named app modules and rejects other app files in src/live', async () => {
+    const ok = await lintFixture('src/live/__lint_fixture_app_ok.ts', "import '../../../apps/ghost-shell/src/pipeline/run-playground';\n");
+    expect(ok).not.toContain('no-restricted-imports');
+    const bad = await lintFixture('src/live/__lint_fixture_app_bad.ts', "import '../../../apps/ghost-shell/src/App';\n");
+    expect(bad).toContain('no-restricted-imports');
+  });
+
   it('rejects Date.now in src/engine', async () => {
     const rules = await lintFixture('src/engine/__lint_fixture_clock.ts', 'export const t = () => Date.now();\n');
     expect(rules).toContain('no-restricted-syntax');

@@ -1063,3 +1063,88 @@ Requirement 2, criterion 8. Done on 2026-11-21 by Claude Code in Chrome, using p
 - At 390 px the logo wrapped onto two lines.
 
 **Security headers:** `/`, `/shell/`, `/kit/` and `/hand/` all loaded under the headers. No Content Security Policy violation was reported, and every requested file existed. The Ghost Hand demo ran under its path, with the MuJoCo wasm and the worker.
+
+## Site live: live walkthrough (site-live)
+
+Measured on 2026-11-21 from the build of `@ghost-run/site`; each section names its command or file.
+
+### Build output sizes
+
+Read with `ls -l` from `site/build/dist/assets/` after the review fixes of 2026-11-21 (bytes, not gzipped).
+
+| File | Role | Size (B) |
+|---|---|---|
+| `index-B1lRq9JQ.js` | Entry_Bundle (loads with the page) | 338,154 |
+| `engine-light-Cg-6NXPu.js` | Light engine chunk (Shell, Cloud, core, wards-config, `yaml`, world packages); the shared `common-*.js` chunk is no longer emitted | 202,810 |
+| `engine-hand-DjGBgS2y.js` | Page side of the Hand engine: starts the Hand worker and talks to it (loads only when Ghost Hand is picked) | 1,797 |
+| `hand-worker-jm0l0RkM.js` | Hand worker: MuJoCo glue, the pipeline, the world, and the fingerprints; runs outside the page policy (188,147 B gzipped) | 584,599 |
+| `sim-worker-BIhM3LDG.js` | Hand simulation worker, started by the Hand worker | 144,750 |
+| `worker-entry-zaQBj-ZU.js` | SQL worker entry | 42,764 |
+| `mujoco-sWiOVBwr.wasm` | MuJoCo WebAssembly (Hand only) | 11,201,302 |
+| `sql-wasm-CXIAVl5-.wasm` | SQLite WebAssembly (SQL worker) | 688,197 |
+| `style-DR16Dhmt.css` | Stylesheet | 27,484 |
+
+`THIRD_PARTY_NOTICES.txt` in `site/dist/` is 46,167 B. The Hand run moved into the worker because MuJoCo's glue builds functions from strings, which the page policy for `/` forbids (no `'unsafe-eval'`); the worker script is served from `/assets/`, which carries no page policy.
+
+### Build and test timings
+
+| Measurement | Command (in `site/`, or as named) | Result | Limit |
+|---|---|---|---|
+| Landing build | `corepack pnpm --filter @ghost-run/site build` (repository root) | 2.12 s wall | 60 s for `build:site` |
+| Assembly | `corepack pnpm --filter @ghost-run/site assemble` (repository root) | 2.06 s wall | 60 s |
+| Always-on suite | `corepack pnpm test` | 77 files, 679 tests passed, 22.47 s vitest duration, 22.88 s wall | 60 s |
+| Shell and Cloud parity test | `tests/unit/live-parity.test.ts` (13 tests) | 97 ms of test time, 831 ms vitest duration | none |
+| Gated Hand parity test | `corepack pnpm test:record`, file `tests/record/live-parity-hand.test.ts` (5 tests) | 6.85 s | none |
+| Other gated files | same run: `tests/record/live-hand.test.ts` (4 tests) 8.34 s; `tests/record/recorded-runs.test.ts` (5 tests) 4.47 s | | none |
+| Gated record project, all files | `corepack pnpm test:record` | 3 files, 14 tests passed, 9.00 s vitest duration, 9.17 s wall in the first run | none |
+
+### Additions beyond Mockup_V5 (Requirement 2, criterion 7)
+
+Each item is in `site/src/styles/` or the section components. The named requirement items are (a) to (f); the rest are small supporting additions made while porting.
+
+Requirement items:
+
+- (a) Warn look: `.stamp.warn` (amber stamp "ASK A HUMAN", `#ffd36b`) and `.bigcandle.flicker` (the flame animates with `candle-flicker`). The flicker is also listed in the reduced-motion block.
+- (b) `.live.rec`: the `Recorded run` form of the Live_Badge (dim text, neutral border).
+- (c) Shell pane rows for `build/` and `README.md`, and `.node.new` for any created entry (slime-colored, indented by `.l1` and `.l2`).
+- (d) `.tag.pub`: small tag on a Cloud bucket whose ACL or public-access block changed.
+- (e) The `joint limit` label of a Hand tile.
+- (f) Disabled Stepper steps: `.stepper button[aria-disabled="true"]` (opacity .45, default cursor) for steps that a stopped run cannot reach.
+
+Supporting additions:
+
+- `.sealnote` was removed in the review fixes of 2026-11-21: Mockup_V5 has a single sub-heading line, and the Live_Badge "Live in your browser" carries the message. The sentence next to the stamp (`#vnote`) was removed for the same reason.
+- Monospace font rule: `.site input.cmd,.site .term` use `ui-monospace,SFMono-Regular,Menlo,monospace`.
+- Hit areas of at least 24 by 24 px: `.tab,.ghostbtn,.runbtn,.presets button,.stepper button{min-width:24px;min-height:24px}` and `.sl input{min-height:24px}`.
+- Keyframe rename: the Actor animation is `actor-bob` (Mockup_V5 `bob`), because the page already has a `bob` keyframe for the hero and cauldron ghosts (`10-motion.css`). Duration and easing are unchanged (2.4 s, ease-in-out).
+- Hand plan display text: a Hand plan is shown as `grip N N, pull d m at s m/s` (for example `grip 15 N, pull 0.15 m at 0.15 m/s`), built from the sliders or the plan file. The earlier recorded display strings were free text such as `slow pull, gentle grip`. The values come from `site/src/live/derive/hand.ts` and the recorded runs in `site/src/data/runs.json`.
+
+### Contrast changes
+
+Test: `site/tests/unit/contrast.test.ts`. New pairs for the v5 rules were added; the rows of "Site contrast changes" above still apply (`.wchip` and `.rail button` no longer exist in the page after the v5 port, their rows are historical).
+
+| Selector | Property | Mockup_V5 value | New value | Ratio (old, new) |
+|---|---|---|---|---|
+| `.say p small` | text color | `#7a5cc4` | `#795bc3` | 4.45, at least 4.5 |
+
+This is the only value that the test comments list for task 13.1. The `.stepper button[aria-disabled="true"]` opacity (.45) is an inactive state and is not in the contrast table, as with the faded `.used span.off` chips.
+
+### Third-party notices
+
+Closed on 2026-11-21. `site/dist/THIRD_PARTY_NOTICES.txt` is generated at assembly from `site/build/bundled-packages.json`, which the landing build writes from the module graph of the page bundle, the engine chunks, and the workers: `@fontsource/fredoka` 5.3.0 (OFL-1.1), `@mujoco/mujoco` 4.0.1 (Apache-2.0), `react` 19.3.1, `react-dom` 19.3.1, `scheduler` 0.28.0 (MIT), `sql.js` 1.16.0 (MIT), and `yaml` 2.9.1 (ISC). License texts come from the installed packages; `@mujoco/mujoco` has no license file in its tarball, so its section takes the MuJoCo text of `apps/ghost-hand/notices/`, which also supplies the components compiled into `mujoco.wasm`. The site check fails when a bundled package has no section.
+
+### What the live demo does, and does not do
+
+- Rehearsed in the browser: Ghost Shell plans run through `runPlayground` on the in-memory project and sql.js (SQL worker with the app's 5 s watchdog); Ghost Cloud plans run on the mock cloud world; Ghost Hand plans run the MuJoCo simulation in a worker on a base copy and 8 haunted variants. All three use the same pipeline modules as the apps.
+- Reality is not changed: the Reality pane shows a drawn copy of the starting state, and the property tests (`live-reality`, fingerprint equality) check that every run leaves it as it was. Claims are not widened; P1 is claimed for these deterministic in-browser worlds only as the apps claim it.
+- Nothing is sent: the live code makes no network call (the no-network test and the lint rules cover `site/src/live/`); only same-origin `.js` and `.wasm` files load.
+- Recorded fallback: when an engine fails to load or a run fails, the page shows the Recorded_Run of the chosen Preset and the badge reads "Recorded run". A visitor's own plan is never shown as recorded; no run is shown for it.
+- The Ghost Hand engine (about 11.2 MB of wasm plus 414 KB of script) loads only after Ghost Hand is picked.
+
+### Browser load times
+
+browser load times: measured by the owner's agent in Chrome. Not yet measured.
+
+### Mockup comparison (Requirement 2, criterion 9)
+
+Comparison of the built Live_Section with Mockup_V5 at 920 px and 1280 px, each world at each of the five steps: not yet done. It is made by the owner's agent, not by a Kiro task.

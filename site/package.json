@@ -29,6 +29,7 @@
     "@ghost-run/drawer-arm": "workspace:*",
     "@ghost-run/ghost-cloud": "workspace:*",
     "@ghost-run/playground-shell": "workspace:*",
+    "@ghost-run/ui": "workspace:*",
     "@ghost-run/wards-config": "workspace:*",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",

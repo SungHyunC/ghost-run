@@ -15,7 +15,7 @@ afterEach(cleanup);
 // Structural classes of the Mockup (Requirement 2, criterion 7).
 const STRUCTURAL = [
   'site', 'nav', 'hero', 'sec', 'recipe', 'ing', 'parts', 'part', 'cards', 'cc', 'costume', 'theater', 'panes',
-  'pane', 'ward', 'verdict', 'actor', 'say', 'rail', 'wchip', 'xsw',
+  'pane', 'ward', 'verdict', 'actor', 'say', 'xsw', 'ctl', 'tabs', 'tab', 'stepper', 'planbox', 'presets', 'judge', 'live',
 ];
 
 describe('DUR', () => {

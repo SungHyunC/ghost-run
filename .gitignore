@@ -1,6 +1,7 @@
 # 의존성과 빌드 결과
 node_modules/
 dist/
+site/build/
 .DS_Store
 
 # 비밀값 (가짜 canary도 저장소 밖에서 만든다)

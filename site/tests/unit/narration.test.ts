@@ -1,12 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import runsJson from '../../src/data/runs.json';
+import { toWalkRuns } from '../../src/data/walk-records';
 import { NARRATION, narration } from '../../src/data/narration';
-import type { RunsFile, WorldRecord } from '../../src/data/types';
+import type { WalkRuns, RunsFile, WorldRecord } from '../../src/data/types';
 import type { Segment } from '../../src/engine/types';
 import { WORLDS } from '../../src/config';
 
-const runs = runsJson as unknown as RunsFile;
+const runs = toWalkRuns(runsJson as unknown as RunsFile);
 const text = (segs: Segment[]): string => segs.map((s) => s.text).join('');
 
 describe('narration', () => {
@@ -30,9 +31,9 @@ describe('narration', () => {
     expect(text(narration(runs.worlds.shell, 4))).toContain('0 rows lost, so the candle is lit.');
     expect(text(narration(runs.worlds.hand, 0))).toContain('into 8 haunted variants');
     expect(text(narration(runs.worlds.hand, 1))).toBe(
-      "Run. Eight ghost arms try fast pull at once. One of them can't finish.",
+      "Run. Eight ghost arms try the pull at once (grip 20 N, pull 0.2 m at 0.6 m/s). One of them can't finish. It hit a joint limit.",
     );
-    expect(text(narration(runs.worlds.hand, 2))).toContain('needs 95% success. We got 7 of 8.');
+    expect(text(narration(runs.worlds.hand, 2))).toContain('needs 95% success. We got 7 of 8 = 88%.');
     expect(text(narration(runs.worlds.hand, 4))).toContain('All 8 ghosts succeed under 30 N');
     expect(text(narration(runs.worlds.cloud, 0))).toContain('3 buckets and 7 objects');
     expect(text(narration(runs.worlds.cloud, 1))).toContain('prod-assets and its 3 objects are gone');

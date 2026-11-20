@@ -1,6 +1,6 @@
 // Plain-data types of the walkthrough engine. No field here is read by the Reality pane.
 
-import type { CheckRow, WorldId } from '../data/types';
+import type { CheckRow, ShellEntry, WorldId } from '../data/types';
 
 /** One run of narration text. `b` is bold, `code` is monospace. No HTML strings. */
 export interface Segment {
@@ -20,12 +20,29 @@ export type TileState = 'idle' | 'ok' | 'fail';
 
 export type BucketState = 'idle' | 'poof' | 'vanish';
 
+/** One table of the Shell copy. `bars` counts the bars that are gone, `cls` is the row class. */
+export interface ShellTableState {
+  name: string;
+  bars: number;
+  count: number;
+  tag: string;
+  cls: UsersClass;
+}
+
+/** One Cloud bucket of the copy. `tag` names a changed ACL or public-access block; empty when none. `objects` are the keys still in the copy. */
+export interface CloudBucketState {
+  name: string;
+  state: BucketState;
+  tag: string;
+  objects: string[];
+}
+
 /** The world items of the Copy pane, by world. */
 export type CopyItemState =
-  | { world: 'shell'; usersBarsGone: number; usersCount: number; usersTag: string; usersClass: UsersClass; bakShown: boolean }
+  | { world: 'shell'; tables: ShellTableState[]; entries: ShellEntry[] }
   | { world: 'hand'; tiles: TileState[] }
   /** Sorted by bucket name. */
-  | { world: 'cloud'; buckets: { name: string; state: BucketState }[] };
+  | { world: 'cloud'; buckets: CloudBucketState[] };
 
 export interface TermState {
   visible: boolean;
@@ -40,7 +57,9 @@ export interface ChecksState {
   eoShown: boolean;
 }
 
-export type Stamp = 'none' | 'BLOCKED' | 'PASS';
+export type Stamp = 'none' | 'BLOCKED' | 'PASS' | 'ASK A HUMAN';
+
+export type Candle = 'lit' | 'out' | 'flicker';
 
 export interface WalkState {
   world: WorldId;
@@ -58,16 +77,18 @@ export interface WalkState {
   term: TermState;
   copy: CopyItemState;
   checks: ChecksState;
-  candleOut: boolean;
+  candle: Candle;
   stamp: Stamp;
   note: string;
   badges: { fingerprint: boolean; go: boolean };
   narration: Segment[];
+  /** How many of the last stepper steps a stopped run cannot reach (0 to 4). */
+  disabledSteps: number;
 }
 
 /** What the Theater draws: the state plus the static ward and effectsOutside texts of the world. */
 export interface WalkView extends WalkState {
-  ward: { id: string; kindLine: string; effectsOutside: string };
+  ward: { id: string; effectsOutside: string };
 }
 
 /** The events of the timing table, one per mockup mutation. */
@@ -83,15 +104,16 @@ export type WalkEvent =
   | { type: 'checksClear'; scan: boolean }
   | { type: 'checkRow'; row: CheckRowView }
   | { type: 'wardTone'; tone: 'bad' | 'good' }
-  | { type: 'candle'; out: boolean }
+  | { type: 'candle'; state: Candle }
   | { type: 'stamp'; stamp: Stamp }
   | { type: 'note'; text: string }
   | { type: 'badges'; fingerprint: boolean; go: boolean }
   | { type: 'act'; act: WalkState['act'] }
-  | { type: 'shellBar'; index: number }
-  | { type: 'shellUsers'; usersClass: UsersClass; tag?: string }
-  | { type: 'shellCount'; value: number }
-  | { type: 'shellBak' }
+  | { type: 'table'; name: string; bars?: number; count?: number; tag?: string; cls?: UsersClass }
+  | { type: 'entry'; name: string; kind: ShellEntry['kind']; state: ShellEntry['state'] }
+  | { type: 'bucketTag'; name: string; tag: string }
+  | { type: 'bucketObjects'; name: string; objects: string[] }
+  | { type: 'disable'; count: number }
   | { type: 'handTile'; index: number; state: Exclude<TileState, 'idle'> }
   | { type: 'cloudBucket'; name: string; state: Exclude<BucketState, 'idle'> };
 

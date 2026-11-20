@@ -2,13 +2,13 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import runsJson from '../../src/data/runs.json';
-import type { RunsFile } from '../../src/data/types';
+import { toWalkRuns } from '../../src/data/walk-records';
+import type { RunsFile, WorldRecord } from '../../src/data/types';
 import type { Scheduler } from '../../src/engine/scheduler';
 import { buildScript, settle, STEP_START } from '../../src/engine/script';
-import type { InViewState } from '../../src/engine/useInView';
-import { useWalkthrough } from '../../src/engine/useWalkthrough';
+import { useWalk } from '../../src/engine/useWalk';
 
-const runs = runsJson as unknown as RunsFile;
+const runs = toWalkRuns(runsJson as unknown as RunsFile);
 const shell = runs.worlds.shell;
 
 interface Pending {
@@ -76,19 +76,29 @@ afterEach(() => {
   Reflect.deleteProperty(window, 'matchMedia');
 });
 
-function mount(rec: ReturnType<typeof recording>, initial: InViewState = 'pending') {
-  return renderHook(({ inView }: { inView: InViewState }) => useWalkthrough(runs, rec.scheduler, inView), {
-    initialProps: { inView: initial },
-  });
+function mount(rec: ReturnType<typeof recording>, settled = false) {
+  return renderHook(() => useWalk({ initial: shell, scheduler: rec.scheduler, settled }));
 }
 
-const expectedDelays = (steps: number[], base: number): number[] =>
+const expectedDelays = (record: WorldRecord, steps: number[], base: number): number[] =>
   steps
-    .flatMap((k) => buildScript(shell, k).map((t) => (STEP_START[k] ?? 0) - base + t.at))
+    .flatMap((k) => buildScript(record, k).map((t) => (STEP_START[k] ?? 0) - base + t.at))
     .sort((a, b) => a - b);
 
-describe('useWalkthrough', () => {
-  it('schedules nothing on mount and starts at step -1 of the Shell world', () => {
+/** The five Outcomes as records: the three Shell-style recorded ones plus a pass, a warn, and an unsupported one. */
+function variants(): Record<string, WorldRecord> {
+  const warnPlan = { ...shell.plan, verdict: 'warn' as const };
+  return {
+    'block-fixed': { ...shell, outcome: 'block-fixed' },
+    'block-open': { ...shell, outcome: 'block-open', fixed: null },
+    pass: { ...shell, outcome: 'pass', plan: { ...shell.plan, verdict: 'pass' }, fixed: null },
+    warn: { ...shell, outcome: 'warn', plan: warnPlan, fixed: null },
+    unsupported: { ...shell, outcome: 'unsupported', fixed: null, unsupported: { reason: 'x', known: ['a'] } },
+  };
+}
+
+describe('useWalk', () => {
+  it('schedules nothing on mount and starts at step -1 of the initial record', () => {
     const rec = recording();
     const { result } = mount(rec);
     expect(rec.pending.size).toBe(0);
@@ -97,11 +107,13 @@ describe('useWalkthrough', () => {
     expect(result.current.view.ward.id).toBe(shell.ward.id);
   });
 
-  it('plays the five steps at the table times when first seen, and reaches PASS', () => {
+  it('show plays the five steps at the table times and reaches PASS', () => {
     const rec = recording();
-    const { result, rerender } = mount(rec);
-    rerender({ inView: 'seen' });
-    expect(rec.delays()).toEqual(expectedDelays([0, 1, 2, 3, 4], 0));
+    const { result } = mount(rec);
+    act(() => {
+      result.current.controls.show(shell);
+    });
+    expect(rec.delays()).toEqual(expectedDelays(shell, [0, 1, 2, 3, 4], 0));
     act(() => {
       rec.runAll();
     });
@@ -110,44 +122,44 @@ describe('useWalkthrough', () => {
     expect(result.current.view).toMatchObject({ ...settle(shell, 4) });
   });
 
-  it('does not restart when the section is seen again', () => {
-    const rec = recording();
-    const { rerender } = mount(rec);
-    rerender({ inView: 'seen' });
-    const n = rec.pending.size;
-    rerender({ inView: 'seen' });
-    expect(rec.pending.size).toBe(n);
+  it('show with each Outcome schedules that record and settles to its final state', () => {
+    for (const [name, record] of Object.entries(variants())) {
+      const rec = recording();
+      const { result, unmount } = mount(rec);
+      act(() => {
+        result.current.controls.show(record);
+      });
+      expect(rec.delays(), name).toEqual(expectedDelays(record, [0, 1, 2, 3, 4], 0));
+      act(() => {
+        rec.runAll();
+      });
+      expect(result.current.record.outcome).toBe(name);
+      expect(result.current.view, name).toMatchObject({ ...settle(record, 4) });
+      unmount();
+    }
   });
 
-  it('pickWorld clears the previous run and plays the new world', () => {
+  it('show on another record clears the previous run and plays the new one', () => {
     const rec = recording();
-    const { result, rerender } = mount(rec);
-    rerender({ inView: 'seen' });
+    const { result } = mount(rec);
     act(() => {
-      rec.runAll();
-    });
-    act(() => {
-      result.current.controls.replay();
+      result.current.controls.show(shell);
     });
     const idsBefore = [...rec.pending.keys()];
     act(() => {
-      result.current.controls.pickWorld('hand');
+      result.current.controls.show(runs.worlds.hand);
     });
     expect(idsBefore.some((id) => rec.pending.has(id))).toBe(false);
     expect(result.current.world).toBe('hand');
     expect(result.current.step).toBe(-1);
-    const hand = runs.worlds.hand;
-    const want = [0, 1, 2, 3, 4]
-      .flatMap((k) => buildScript(hand, k).map((t) => (STEP_START[k] ?? 0) + t.at))
-      .sort((a, b) => a - b);
-    expect(rec.delays()).toEqual(want);
+    expect(rec.delays()).toEqual(expectedDelays(runs.worlds.hand, [0, 1, 2, 3, 4], 0));
   });
 
-  it('replay restarts the current world from the reset state', () => {
+  it('replay restarts the displayed record from the reset state', () => {
     const rec = recording();
     const { result } = mount(rec);
     act(() => {
-      result.current.controls.pickWorld('cloud');
+      result.current.controls.show(runs.worlds.cloud);
     });
     act(() => {
       rec.runAll();
@@ -166,12 +178,12 @@ describe('useWalkthrough', () => {
     const rec = recording();
     const { result } = mount(rec);
     act(() => {
-      result.current.controls.pickWorld('shell');
+      result.current.controls.show(shell);
     });
     act(() => {
       result.current.controls.jump(3);
     });
-    expect(rec.delays()).toEqual(expectedDelays([3], STEP_START[3] ?? 0));
+    expect(rec.delays()).toEqual(expectedDelays(shell, [3], STEP_START[3] ?? 0));
     expect(result.current.step).toBe(2);
     expect(result.current.view).toMatchObject({ ...settle(shell, 2) });
     act(() => {
@@ -181,21 +193,42 @@ describe('useWalkthrough', () => {
     expect(result.current.view.stamp).toBe('BLOCKED');
   });
 
+  it('jump on a step the record cannot reach is ignored: no timer changes, no state change', () => {
+    const rec = recording();
+    const { result } = mount(rec);
+    const unsupported = variants()['unsupported']!;
+    act(() => {
+      result.current.controls.show(unsupported);
+    });
+    act(() => {
+      rec.runAll();
+    });
+    const before = result.current.view;
+    act(() => {
+      result.current.controls.jump(2);
+    });
+    expect(rec.pending.size).toBe(0);
+    expect(result.current.view).toBe(before);
+    expect(result.current.view.disabledSteps).toBe(4);
+    act(() => {
+      result.current.controls.jump(0);
+    });
+    expect(rec.pending.size).toBeGreaterThan(0);
+  });
+
   it('shows the final state with no timer under Reduced_Motion, and jump is instant', () => {
     installMatchMedia(true);
     const rec = recording();
-    const { result, rerender } = mount(rec);
+    const { result } = mount(rec, true);
     expect(rec.pending.size).toBe(0);
     expect(result.current.view.stamp).toBe('PASS');
-    rerender({ inView: 'seen' });
-    expect(rec.pending.size).toBe(0);
     act(() => {
       result.current.controls.jump(1);
     });
     expect(rec.pending.size).toBe(0);
     expect(result.current.step).toBe(1);
     act(() => {
-      result.current.controls.pickWorld('hand');
+      result.current.controls.show(runs.worlds.hand);
     });
     expect(rec.pending.size).toBe(0);
     expect(result.current.world).toBe('hand');
@@ -205,8 +238,10 @@ describe('useWalkthrough', () => {
   it('cancels timers and shows the final state when Reduced_Motion turns on mid-walk', () => {
     const mm = installMatchMedia(false);
     const rec = recording();
-    const { result, rerender } = mount(rec);
-    rerender({ inView: 'seen' });
+    const { result } = mount(rec);
+    act(() => {
+      result.current.controls.show(shell);
+    });
     expect(rec.pending.size).toBeGreaterThan(0);
     act(() => {
       mm.set(true);
@@ -216,9 +251,9 @@ describe('useWalkthrough', () => {
     expect(result.current.view.stamp).toBe('PASS');
   });
 
-  it('shows the final state and schedules nothing when there is no in-view signal', () => {
+  it('holds the final state and schedules nothing when settled is set', () => {
     const rec = recording();
-    const { result } = mount(rec, 'unsupported');
+    const { result } = mount(rec, true);
     expect(rec.pending.size).toBe(0);
     expect(result.current.view.stamp).toBe('PASS');
     expect(result.current.step).toBe(4);
@@ -227,8 +262,10 @@ describe('useWalkthrough', () => {
   it('leaves zero pending timers and no listeners after unmount', () => {
     const mm = installMatchMedia(false);
     const rec = recording();
-    const { rerender, unmount } = mount(rec);
-    rerender({ inView: 'seen' });
+    const { result, unmount } = mount(rec);
+    act(() => {
+      result.current.controls.show(shell);
+    });
     expect(rec.pending.size).toBeGreaterThan(0);
     unmount();
     expect(rec.pending.size).toBe(0);

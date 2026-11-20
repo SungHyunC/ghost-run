@@ -497,3 +497,37 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - The wasm is served as `application/wasm`. The first request returned a Cloudflare 522 once, and later requests were 200.
   - `/shell/ko.html` redirects (308) to `/shell/ko`.
   - The landing walkthrough, a Ghost Shell run, the Korean page, the kit, and the Ghost Hand demo all ran with no console error.
+
+## 2026-11-21 (Sat)
+
+### Live walkthrough: drafts by Claude Code, built by Kiro
+
+- **Why.** The owner asked that "Watch the ghost work" become a real demo, then for a cleaner layout. Claude Code drew two drafts, v4 and v5. The owner approved v5, which is now `docs/design/live-walkthrough-mockup.html` with its brief `docs/design/live-walkthrough-brief.md`.
+- **What changed.** Section 3 now runs the real engines in the visitor's browser.
+  - **Ghost Shell:** `runPlayground`, with sql.js in a worker under the app's watchdog.
+  - **Ghost Cloud:** `runGhostCloudPlan`.
+  - **Ghost Hand:** the Ghost Hand pipeline with MuJoCo, inside a worker that the site creates.
+  - **Inputs:** visitors type a command (Shell, Cloud) or move three sliders (Hand), or pick a preset. The five animated steps show the live result.
+  - **Fix and go:** a blocked plan gets a second pass only when a known fix exists; otherwise the ghost says it will not make one up. Unsupported input is explained, not run.
+  - **Layout:** the v5 layout: one control card, a slim stepper, and one judgement row.
+- **Kiro runs** (agent `spec`, model Auto): spec 38.9 credits, then implementation 14.8 + 202.9, then review fixes 82.4, for 339.0 in total.
+  - The first implementation run stopped, as instructed, because it needed a workspace link to `@ghost-run/ui` that the spec did not name. Claude Code approved the link, and the run resumed.
+  - `apps/`, `worlds/`, `core/` and `ui/` were not changed.
+- **Review by Claude Code**, in Chrome under the real `_headers`, with presets and typed plans in all three worlds. It found six issues, and the fix run fixed all of them:
+  1. **Hand never ran live; it was the recording.** MuJoCo's embind glue builds functions with `new Function`. The page policy has no `'unsafe-eval'`, so the run threw an EvalError, and the adapter silently fell back to the recording.
+     - The fix moves the whole Hand run into a site-made worker. Its script is served from `/assets/` without the page policy, so the page policy stays strict.
+     - Engine failures now log one warning.
+  2. The plan input stayed read-only after "Fix and go".
+  3. A check chip showed ✓ although its ward blocked the plan: Cloud `aws s3 rm s3://prod-logs --recursive`. Chips now follow the ward verdict.
+  4. Without a fix, step 5 reset the ghost copy.
+  5. Two lines that are not in v5 were removed.
+  6. The third-party notices did not cover sql.js and yaml. They are now generated from the bundled packages.
+- **Checks.**
+  - Site: 82 test files, 726 tests.
+  - Ghost Shell: 236 tests. Ghost Hand: 273 tests.
+  - Build: `build:site` passes, and the site check reports no findings. `site/build/` is now ignored as build output.
+- **Live exercise in Chrome**, local and then on https://ghost-run-plus.pages.dev after redeploy:
+  - Shell: DROP TABLE is blocked, then the fix passes. A typed `rm -rf ./build` passes. `sudo rm -rf /` is explained as unsupported.
+  - Cloud: a typed `aws s3 rm s3://prod-logs --recursive` is blocked; 2 objects are deleted in the copy only.
+  - Hand: fast pull is blocked, then the revised plan passes. Strong grip is blocked live: 4 of 8 succeed, 43.1 N, and a joint limit is exceeded in 2 variants.
+  - No console error, and no request left the page.

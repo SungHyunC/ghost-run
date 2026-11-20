@@ -65,7 +65,26 @@ describe('stylesheets', () => {
     expect(last).toContain('@media (max-width:820px)');
     expect(last).toContain('@media (max-width:560px)');
     expect(read('10-motion.css')).toContain('@media (prefers-reduced-motion:reduce)');
-    expect(read('10-motion.css')).toContain('.wchip');
+    const motion = read('10-motion.css');
+    const reduced = motion.slice(motion.indexOf('@media (prefers-reduced-motion:reduce)'));
+    for (const c of ['.bigcandle.flicker .flame', '.stepper i', '.ward.scan', '.beam-on .beam path', '.tile.fail']) {
+      expect(reduced, c).toContain(c);
+    }
+    expect(read('11-responsive.css')).toContain('@media (max-width:760px)');
+  });
+
+  it('carries the v5 section rules and no rule of the old section', () => {
+    const sec = ['05-walkthrough', '06-pane-content', '07-judge', '08-actor-say'].map((n) => read(`${n}.css`)).join('\n');
+    for (const old of ['.wbar', '.wchip', '.rail', '.wchips', '.replay', '.seal']) {
+      expect(sec, old).not.toMatch(new RegExp(`${old.replace('.', '\\.')}(?![\\w-])\\s*[{,\\[.:]`));
+    }
+    for (const rule of [
+      '.live{', '.live.rec{', '.ctl{', '.tabs{', '.planbox{', '.presets{', '.stepper{', '.stepper button[aria-disabled="true"]{',
+      '.panes{', '.judge{', '.stamp.warn{', '.tag.pub{', '.node.new{', '.say p small{', '.actor{',
+    ]) {
+      expect(sec, rule).toContain(rule);
+    }
+    expect(read('10-motion.css')).toContain('.bigcandle.flicker .flame{');
   });
 
   it('applies the listed changes', () => {

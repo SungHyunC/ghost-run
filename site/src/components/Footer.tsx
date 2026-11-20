@@ -7,6 +7,9 @@ export function Footer() {
       {ITEMS.map((item) => (
         <span key={item}>{item}</span>
       ))}
+      <a className="foot-notice" href="./THIRD_PARTY_NOTICES.txt">
+        Third-party notices
+      </a>
     </footer>
   );
 }

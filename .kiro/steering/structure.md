@@ -62,7 +62,7 @@ ghost-run/
 - `wards-config/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only, through the public entry point `@ghost-run/core`.
 - `integrations/*` may also depend on `ghost-runner/` and `wards-config/`, only through their public entry points. `integrations/mcp` may depend on `integrations/kiro-hook` only through its `index.mjs`.
 - `core/` must not import `ghost-runner/` or `wards-config/` (enforced by an ESLint `no-restricted-imports` rule).
-- `site/` (`@ghost-run/site`): the public landing page and the build that assembles `site/dist/`. It may depend on `core/`, `wards-config/`, and `worlds/*` at build time, on the build output of `apps/*` and `ui/`, and, in one build-time record script, on the pipeline modules of `apps/ghost-shell` and `apps/ghost-hand`. No package may depend on `site/`.
+- `site/` (`@ghost-run/site`): the public landing page and the build that assembles `site/dist/`. `site/src/live/` may import `core/`, `wards-config/`, and `worlds/*` through their public entry points, and by relative path the pipeline modules, plan parsers, executor modules, and worker entry files of `apps/ghost-shell` and `apps/ghost-hand`. The rest of `site/src/` imports none of them. The build may also use the build output of `apps/*` and `ui/`. No package may depend on `site/`.
 - `core/` must not depend on any other folder in this repository.
 
 ## World Contract (`core/`)

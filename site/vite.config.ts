@@ -1,9 +1,16 @@
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
+// @ts-expect-error TS7016: plain .mjs module shared with the headers builder, no declaration file
+import { landingMetaPolicy } from './scripts/lib/csp.mjs';
+// @ts-expect-error TS7016: plain .mjs module shared with the build script and the site check, no declaration file
+import { bundledPackages } from './scripts/lib/bundled-packages.mjs';
+
+const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
+const MANIFEST = fileURLToPath(new URL('./build/bundled-packages.json', import.meta.url));
 
 // Same policy as the root _headers block, without frame-ancestors (a meta tag cannot set it).
-const CSP =
-  "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'";
+const CSP: string = landingMetaPolicy();
 
 const csp = (): Plugin => ({
   name: 'ghost-run-site-csp',
@@ -19,7 +26,9 @@ const csp = (): Plugin => ({
 
 export default defineConfig({
   base: './',
-  plugins: [react(), csp()],
+  // The page build writes the list of bundled third-party packages; the worker bundles add to it.
+  plugins: [react(), csp(), bundledPackages({ root: REPO_ROOT, out: MANIFEST }) as Plugin],
+  worker: { plugins: () => [bundledPackages({ root: REPO_ROOT }) as Plugin] },
   build: {
     outDir: 'build/dist',
     emptyOutDir: true,

@@ -8,7 +8,7 @@ Four decisions shape the design.
 
 1. **One folder imports engines.** `site/src/live/` is the only part of the page that imports `@ghost-run/*`, the world packages, and app source. Each world has one adapter that takes injected services (SQL executor, world factory, executor factory) and returns plain data. The code that creates a Worker lives in two small wiring modules, one per lazy chunk. The adapters run unchanged in Node tests with in-process services.
 2. **A live run is data of the existing shape.** An adapter returns a `Plan_Record` (the `PlanRecord` type of `site/src/data/types.ts`). The same pure derivation code builds the live records and the recorded records, so the recorded run (`runs.json`) and the live run are the same page. The walkthrough engine (`script.ts`, `reducer.ts`) keeps its one definition of "what the page shows at step N" and gains outcomes: block with a fix, block without a fix, pass, warn, and unsupported input.
-3. **Heavy code loads late, in two chunks.** The light chunk (Shell, Cloud, core, wards-config, the two world packages) loads when the section is near, and warms the SQL worker so that the 0.7 MB sql.js wasm is ready. The Hand chunk (the 11 MB MuJoCo wasm, the glue, the simulation worker) loads only after Ghost Hand is picked.
+3. **Heavy code loads late, in two chunks.** The light chunk (Shell, Cloud, core, wards-config, the two world packages) loads when the section is near, and warms the SQL worker so that the 0.7 MB sql.js wasm is ready. The Hand engine loads only after Ghost Hand is picked. On the page it is a 1.8 kB proxy chunk that starts the Hand_Worker (`hand-worker.ts`), a dedicated module worker that holds the MuJoCo glue (the 11 MB wasm), the world, the pipeline, and the simulation worker. The reason is the page policy: `script-src 'self' 'wasm-unsafe-eval'` has no `'unsafe-eval'`, and MuJoCo's embind glue builds functions from strings and throws `EvalError` on the main thread. A worker script served from `/assets/` carries no page policy, so the run happens there and the page policy stays as it is.
 4. **Failure shows the recording, never a fake.** An engine that cannot load or run falls back to the recorded run of a Preset and says "Recorded run". Visitor input has no recording, so it gets an honest message. "Live in your browser" appears only for a run that ran.
 
 The package stays `site/` (`@ghost-run/site`). The only edits outside `site/` and `.kiro/specs/site-live/` are `.kiro/steering/structure.md`, `README.md`, and `docs/measurements.md` (Requirements 1 and 18).
@@ -58,7 +58,10 @@ site/
       shell.ts  cloud.ts  hand.ts adapters (injected services; no Worker, no fetch)
       hand-plan.ts                slider values -> five actions
       engine-light.ts             wiring: SQL worker, wards text, Shell and Cloud engines
-      engine-hand.ts              wiring: sim-worker spawn, executor selection, Hand engine
+      engine-hand.ts              wiring only: createHandProxy with new Worker(hand-worker.ts)
+      hand-proxy.ts               page side: LiveEngine that forwards runs to the Hand_Worker
+      hand-protocol.ts            message types, HAND_TIMEOUT_MS, HAND_GUARD_MS (no MuJoCo import)
+      hand-worker.ts              module worker entry: world, pipeline, capabilities, sim-worker spawn
       loaders.ts                  LiveLoaders: dynamic imports, injectable
       classify.ts                 classify(answer, fixedAnswer) -> Outcome; toWalkRecord
     engine/
@@ -75,6 +78,8 @@ site/
   scripts/
     record-runs.measure.ts        CHANGED: calls the adapters
     lib/csp.mjs                   NEW: the landing policy, shared by Vite config and headers
+    lib/bundled-packages.mjs      NEW: Vite plugin that lists third-party packages of the bundles
+    lib/notices.mjs               NEW: renders THIRD_PARTY_NOTICES.txt from that list
     lib/headers.mjs check-site.mjs build-site.mjs   CHANGED (Components 12 and 13)
   vite.config.ts                  CHANGED: policy from csp.mjs
 ```
@@ -86,7 +91,9 @@ site/
 | `site/src/**` except `live/` | `react`, `react-dom`, `@fontsource/fredoka`, files of `site/` (including `site/src/live/types.ts`, `loaders.ts`, `classify.ts`, `presets.ts`, `input.ts` through type-only or pure imports) | any `@ghost-run/*` package, `sql.js`, `@mujoco/mujoco`, `apps/`, `worlds/`, `core/`, `ui/` |
 | `site/src/live/{shell,cloud,hand,presets,input,hand-plan}.ts` and `site/src/live/derive/*.ts` | `@ghost-run/core`, `@ghost-run/wards-config`, `@ghost-run/playground-shell`, `@ghost-run/drawer-arm`, `@ghost-run/ghost-cloud`, `@ghost-run/ui` (only `isHiddenDisplay` and `escapeForDisplay`), by relative path: `apps/ghost-shell/src/pipeline/run-playground`, `apps/ghost-shell/src/scenarios/project`, `apps/ghost-shell/src/plan/plan-file`, `apps/ghost-hand/src/pipeline/run`, `apps/ghost-hand/src/exec/select`, `apps/ghost-hand/src/capabilities`, `apps/ghost-hand/src/plan/plan-file`; plan files, wards files, and demo files through `?raw` | `react`, any DOM API |
 | `site/src/live/engine-light.ts` | the adapters, `apps/ghost-shell/src/sql-worker/worker-runner` (it holds the `new Worker`), `createWatchdogExecutor` of `@ghost-run/playground-shell` | |
-| `site/src/live/engine-hand.ts` | the Hand adapter, the executor modules, and `new Worker(new URL('../../../apps/ghost-hand/src/worker/sim-worker.ts', import.meta.url), { type: 'module' })` | |
+| `site/src/live/engine-hand.ts` | `hand-proxy.ts` only, plus `new Worker(new URL('./hand-worker.ts', import.meta.url), { type: 'module' })` | any world, app, or MuJoCo import |
+| `site/src/live/hand-proxy.ts`, `hand-protocol.ts` | `types.ts`, each other | MuJoCo, world, app, or `@ghost-run/*` code |
+| `site/src/live/hand-worker.ts` | `hand.ts`, `hand-protocol.ts`, `createGhostHandWorld`, the wards and variant-config files (`?raw`), `probeCapabilities` and `createExecutor` of the app, and `new Worker(new URL('../../../apps/ghost-hand/src/worker/sim-worker.ts', import.meta.url), { type: 'module' })` | `react`, page code |
 | `site/scripts/record-runs.measure.ts` | `site/src/live/*` (not the wiring modules), `@ghost-run/core`, `@ghost-run/wards-config`, `@ghost-run/playground-shell`, `@ghost-run/drawer-arm`, `vitest` | `ui/`, `ghost-runner/`, `integrations/` |
 
 The task that updates `.kiro/steering/structure.md` writes:
@@ -118,7 +125,7 @@ type LiveAnswer =
   | { status: 'ran'; run: LiveRun }
   | { status: 'unsupported'; reason: string; stepIndexes: number[] }   // fixed engine reason; no input echo
   | { status: 'rejected'; problem: 'empty' | 'too-long' | 'invalid-character' | 'out-of-range' }
-  | { status: 'failed'; cause: 'load' | 'run' | 'timeout' | 'internal' };
+  | { status: 'failed'; cause: 'load' | 'run' | 'timeout' | 'internal'; detail?: string };  // detail: console only, never shown
 
 interface LiveEngine {
   readonly world: WorldId;
@@ -168,28 +175,30 @@ A line with `--endpoint-url` gives verdict `warn` by the world's effect and is a
 
 ### Component 5: Ghost Hand adapter (`live/hand.ts`, `live/hand-plan.ts`)
 
-`createHandEngine({ createWorld, createExecutor, wardsText, variantConfigText, capabilities })`. All five are services; in the browser `engine-hand.ts` supplies them, in Node the tests supply `createGhostHandWorld` and `createInlineExecutor`.
+`createHandEngine({ createWorld, createExecutor, wardsText, variantConfigText, capabilities })`. All five are services; in the browser `hand-worker.ts` supplies them inside the Hand_Worker, in Node the tests supply `createGhostHandWorld` and `createInlineExecutor`.
 
 `buildHandPlan(values)` reads `apps/ghost-hand/plans/first.plan.json` (through `?raw` and the app's `parsePlanFile`), keeps actions 0, 1, and 4 (reach, reach, release), and builds action 2 (`grasp` with `force`) and action 3 (`pull` with `distance` and `speed`). Each action passes `validateAction`. The sliders are rounded before (Component 2).
 
-Run, per call: create the reference world (`createGhostHandWorld({ recordFrames: true })`, the setting of the record script) and an executor; call `runGhostHand({ plan, wardSet, variantConfig, seed: 42, variantCount: 8, world, executor, evidence: { selfCheck: { state: 'pending' }, capabilities }, planOrigin: 'scripted' })`; then `dispose` both in `finally`. A `GhostHandRunError` gives `unsupported` with the validator's message (a fixed string). A run longer than 30 s gives `failed: 'timeout'` (a timer started by the adapter through an injected scheduler; the page disposes the executor, which terminates the workers).
+Run, per call: create the reference world (`createGhostHandWorld({ recordFrames: true })`, the setting of the record script) and an executor; call `runGhostHand({ plan, wardSet, variantConfig, seed: 42, variantCount: 8, world, executor, evidence: { selfCheck: { state: 'pending' }, capabilities }, planOrigin: 'scripted' })`; then `dispose` both in `finally`. A `GhostHandRunError` gives `unsupported` with the validator's message (a fixed string). A run longer than 30 s gives `failed: 'timeout'` (`HAND_TIMEOUT_MS`, a timer started by the adapter through an injected scheduler; `hand.ts` re-exports the constant from `hand-protocol.ts`). The adapter's `failed` answers carry a console-only `detail`.
 
 The tile label rule moves from `scripts/lib/tile-label.ts` to `src/live/derive/tile-label.ts`, and the script file re-exports it, so that its tests stay valid. `handPlanRecord(...)` of `derive/hand.ts` builds checks (the three rows of `gentle-hands` from the ward's fields), tiles (label by `tileLabel` of the `site` spec, outcome, joint-limit flag from the structured `jointLimitExceeded` of the variant results, with the pattern of the `site` design as the fallback), and the facts.
 
 `live/hand.ts` also re-exports `probeCapabilities` of the app as `handCapabilities()`, so that the record script and the tests get it through the adapter module and import no app file themselves.
 
-Wiring (`engine-hand.ts`): `createExecutor` is `createExecutor({ factory, spawn })` of `apps/ghost-hand/src/exec/select.ts` with `spawn = () => new Worker(new URL('../../../apps/ghost-hand/src/worker/sim-worker.ts', import.meta.url), { type: 'module' })`. `capabilities` is `probeCapabilities()` of `apps/ghost-hand/src/capabilities.ts` (the pipeline needs it). That module imports `react-dom/server` and `import * as ui from '@ghost-run/ui'`, so the Hand chunk holds the whole kit and `react-dom/server`; this is the price of not changing the app (Open question O4).
+Wiring. The page side (`engine-hand.ts`) is `createHandProxy({ spawn, scheduler })` with `spawn = () => new Worker(new URL('./hand-worker.ts', import.meta.url), { type: 'module' })`. The proxy is a `LiveEngine` that serves runs one at a time and matches answers to runs by id. It posts `{ type: 'run', id, speed, force, distance }` and receives `{ type: 'answer', id, answer: LiveAnswer }`, plain data safe for structured clone. It answers `failed` with cause `load` (worker error before any answer), `run` (worker error after an answer), or `timeout` (a guard at `HAND_TIMEOUT_MS + HAND_GUARD_MS` = 32 s, which outlasts the adapter's own 30 s timer). After an error or a timeout it stops the worker and spawns a fresh one for the next run. `dispose()` posts `{ type: 'dispose' }`, terminates the worker, and ends a pending run. The messages and the two constants (`HAND_TIMEOUT_MS = 30_000`, `HAND_GUARD_MS = 2_000`) live in `hand-protocol.ts`, which imports no MuJoCo code.
+
+The worker side (`hand-worker.ts`) creates the adapter with `createGhostHandWorld`, the wards and variant-config texts (`?raw`), `probeCapabilities()` of `apps/ghost-hand/src/capabilities.ts`, and `createExecutor({ factory, spawn })` of `apps/ghost-hand/src/exec/select.ts` with `spawn = () => new Worker(new URL('../../../apps/ghost-hand/src/worker/sim-worker.ts', import.meta.url), { type: 'module' })`. On `run` it calls the adapter and posts the answer; on `dispose` it disposes the engine and closes. The capabilities module imports `react-dom/server` and `import * as ui from '@ghost-run/ui'`, so the whole kit lives in the Hand_Worker (584,599 B, 188,147 B gzip on 2026-11-21), not in a page chunk. The page chunk `engine-hand-HASH.js` is 1,797 B (Open question O4).
 
 ### Component 6: Lazy loading and the Vite build
 
 | Item | Rule |
 |---|---|
 | `loaders.ts` | `interface LiveLoaders { light(): Promise<LightEngines>; hand(): Promise<HandEngine> }`. The default is `{ light: () => import('./engine-light').then(m => m.createLightEngines()), hand: () => import('./engine-hand').then(m => m.createHandEngine()) }`. Tests pass spies. A rejected promise is not kept, so the next call retries. |
-| Chunk names | The module file names give `assets/engine-light-HASH.js` and `assets/engine-hand-HASH.js`. The workers are emitted by Vite as `assets/sim-worker-HASH.js` and `assets/worker-entry-HASH.js`. The wasm files are `assets/mujoco-HASH.wasm` (found by `new URL('mujoco.wasm', import.meta.url)` inside `@mujoco/mujoco`, as in the Hand app, which passes no `locateFile`) and `assets/sql-wasm-HASH.wasm` (the app's worker entry imports it with `?url`). Vite config changes only the policy source; `base: './'`, `assetsInlineLimit: 0`, and the default worker format stay, as in the apps. A build task confirms the five emitted names. |
+| Chunk names | The module file names give `assets/engine-light-HASH.js` (the Light_Engine) and `assets/engine-hand-HASH.js` (the 1,797 B Hand proxy). The Hand_Worker is emitted as `assets/hand-worker-HASH.js` (584,599 B; 188,147 B gzip on 2026-11-21). The simulation worker is `assets/sim-worker-HASH.js` (144,750 B) and the Shell SQL worker is `assets/worker-entry-HASH.js`. No shared `common-*.js` chunk is emitted any more. The wasm files are `assets/mujoco-HASH.wasm` (found by `new URL('mujoco.wasm', import.meta.url)` inside `@mujoco/mujoco`, as in the Hand app, which passes no `locateFile`) and `assets/sql-wasm-HASH.wasm` (the app's worker entry imports it with `?url`). Vite config changes only the policy source; `base: './'`, `assetsInlineLimit: 0`, and the default worker format stay, as in the apps. A build task confirms the five emitted names. |
 | Paths | The chunks and workers are resolved relative to the chunk URL (`import.meta.url`), so the Hand worker and wasm load from `<site root>/assets/` at a domain root and under a path prefix. Under CSP `worker-src 'self'` and `connect-src 'self'` they are same-origin. |
 | Near | `useInView(ref, { rootMargin: '200px 0px', threshold: 0 })` reports `near` once. The controller then calls `loaders.light()` and `warm()`. |
 | Seen | `useInView(ref, { threshold: 0.25 })` (the existing rule) starts the autoplay of the first Shell Preset. |
-| Hand | `loaders.hand()` is called only by `submit('hand', ...)` when the Hand engine is not loaded. Nothing else calls it. |
+| Hand | `loaders.hand()` is called only by `submit('hand', ...)` when the Hand engine is not loaded. Nothing else calls it. The proxy starts the Hand_Worker when it is created, so the worker and the wasm load at that first pick and not before. |
 | Missing IntersectionObserver | no engine loads by itself; the recorded final state of the first Preset shows with "Recorded run"; the first Run, Preset, or tab action loads the engine on demand. |
 | Duplicates | `site/dist/assets/` and `site/dist/hand/assets/` both hold `mujoco-*.wasm` (11 MB each). The assembly copies the app as it is, so this is accepted (Open question O7). |
 
@@ -219,19 +228,33 @@ function toWalkRecord(run: LiveRun, fixed: LiveRun | null, outcome: Outcome, sou
 
 `settle(record, upTo)` folds the same events, so a jump, a play, and the Reduced_Motion final state agree (Property L7). For `unsupported`, `settle(record, 4)` equals `settle(record, 0)`.
 
+**Check chips.** `derive/common.ts` holds `violationsOf` (the violations of one ward id), `reasonOf` (the engine's reason text), and `extraChips` (one chip per violated non-headline ward, in ward id order; `extraChip` builds one). A chip is ✗ exactly when its ward, or its kind of violation, appears in the live verdict. The step 3 tone event is `bad` when `violatedWardIds` is non-empty or any chip is ✗, and `good` otherwise (`checkEvents` in `script.ts`).
+
+| World | Chip rules |
+|---|---|
+| Shell | headline chip "rows lost, at most 0" is ok when the verdict has no violation of the headline ward id; extra chips for `protect-data` and `no-secret-egress` carry the engine's reason |
+| Hand | the three `gentle-hands` rows are ok when no violation matches `/^success rate /`, `/contact force .* exceeds max/`, and `/made forbidden contact/` respectively. A joint-limit or self-collision violation adds a fourth chip labelled with the ward id and the text "joint limit exceeded in N of 8 variants" or "self-collision in a variant" |
+| Cloud | the `no-bucket-delete` chip is ok when that ward has no violation. Its text comes from the protected buckets removed ("prod-assets deleted") and from objects removed from protected buckets that stay ("2 objects deleted in prod-logs"), else from the engine reason. The unprotected cases read "tmp-build-cache is not prod-*", "2 objects deleted in tmp-build-cache, none in prod-*", and "no bucket deleted" |
+
+The Cloud record gains the facts `objectsDeleted` and `objectsDeletedIn` only when a run empties a bucket that stays. `cloudEvents` then emits `bucketObjects` at the run time of step 2 for each surviving bucket that lost objects, and the Cloud Run narration says that those objects are gone in the copy.
+
+**Notes and the verdict card.** `VerdictCard` renders the candle and the stamp only, with the badges: no `#vnote` and no `.vtxt` wrapper. `Walkthrough` renders no `#sealnote`, and the `.sealnote` CSS rule is gone. The engine's `note` state and the note texts stay in `reducer.ts` and `script.ts` and are not rendered; the Speech_Bar says what the notes said. The constant `CLOUD_NO_REAL = " Ghost Cloud has no real mode yet."` is part of the Cloud narration: the step 4 pass verdict, the fixed-pass sentence of `block-fixed`, and the `pass` sentence of step 5.
+
+**Copy at step 5.** Only `block-fixed` emits `recopy`. `block-open`, `pass`, and `warn` have no `recopy`, so the copy at the end of step 5 equals the copy at the end of step 4 (a DOM test with the real Cloud world pins both).
+
 **Per-world pane state.**
 
 | World | Reality scene | Copy after the run |
 |---|---|---|
 | Shell | `project/` root; `app.db` with the tables of the database (`users` 1,206 rows and `orders` 3 rows in the fixture; bars = clamp(2, 12, round(rows / 100))); the non-hidden top-level entries of the project except any entry that matches a secret pattern of the egress ward: `app.db`, `build/`, `data/`, `package.json`, `README.md` | the same entries with state `intact`, `gone`, or `new` from the last scene; tables with state `intact`, `dropped` (the table is gone), or `soft` (rows kept and an `UPDATE <table> SET ...` names it; the tag is the SET text shortened to 24 code points) |
 | Hand | `the real arm` | eight tiles with label, outcome, and `jointLimit` |
-| Cloud | buckets with objects and the `protected` flag | buckets and objects that remain; a tag on a bucket whose ACL or public-access block differs from reality (`acl: public-read`, `public access open`) |
+| Cloud | buckets with objects and the `protected` flag | buckets and objects that remain (the copy state keeps `objects: string[]` per bucket, filled by `initialCopy` from the reality scene and set by the event `bucketObjects { name, objects }`); a tag on a bucket whose ACL or public-access block differs from reality (`acl: public-read`, `public access open`) |
 
 **Narration** (`data/narration.ts`) is a table of templates keyed by `(world, outcome, step)`; each template is a list of segments with number slots and a guard on the facts it names. The `block-fixed` Shell templates are those of Mockup_V5 with live numbers ("I run the plan on my copy… poof! {rowsLost} users are gone, but only in the copy." only when `rowsLost > 0` and the dropped or emptied table is `users`; otherwise "I run the plan on my copy. {entriesGone} entries are gone, but only in the copy." when entries vanished; otherwise "I run the plan on my copy. Nothing in the copy changed."). The ward sentences quote the engine's reasons through the segment type `code` or `text` (never HTML). The guard rule: a sentence names a fact only when the fact exists in `facts`, and the generic fallback names only the verdict and the ward ids.
 
 ### Component 8: The live controller (`useLiveWalkthrough`) and the record-driven hook
 
-`useWalk({ scheduler })` replaces the `runs`-driven `useWalkthrough`. It holds the same state, the same timer registry, and the same controls, with these inputs: `show(record)` resets and plays the record (or settles it under Reduced_Motion), `replay()` plays the displayed record again, `jump(n)` as before. It owns no knowledge of engines.
+`useWalk({ scheduler })` replaces the `runs`-driven `useWalkthrough`. It holds the same state, the same timer registry, and the same controls, with these inputs: `show(record)` resets and plays the record (or settles it under Reduced_Motion), `replay()` plays the displayed record again, `jump(n)` as before. It owns no knowledge of engines. It exposes `animating` (true while a run's timers are pending) and `controls.cancel()`, which cancels the timers and resets the state to `initialState` of the displayed record.
 
 `useLiveWalkthrough({ runs, loaders, scheduler, visibility })` composes `useWalk` with the engines. State: `world`, `plan` (the text or the slider values in the box), `known` (the Preset whose input equals the box, or none), `engineState` per engine (`idle | loading | ready | failed`), `busy`, `displayed` (`{ source: 'live' | 'recorded' | 'none' }`), and a run token.
 
@@ -267,8 +290,9 @@ sequenceDiagram
 | Tab or Preset or Run | `submit(world, input, presetId?)` |
 | Replay | `useWalk.replay()` (no engine call) |
 | Step button | `useWalk.jump(n)` (disabled for unreachable steps) |
-| Slider or text edit | updates `plan`; `known` becomes none unless the box equals a Preset; no engine call |
-| Engine load fails | `engineState = failed`; Component 9 |
+| Slider or text edit | `setText` and `setSliders` call `interrupt()`: when a run is busy (waiting for its engine) or animating, it bumps the run token, clears `busy` and the note, and calls `cancel()` on the walk. Every edit sets `edited`, which `execute`, `replay`, and `jump` clear. The plan updates; `known` becomes none unless the box equals a Preset; no engine call |
+| Plan box view | `Walkthrough` passes `rev = view.plan.rev && !edited` to the box (tag, fixed text, fixed slider values) and keeps `view.plan.rev` for the theater's ward name. `PlanBox` takes `animating`: the text input is `readOnly` only while `animating` and not unlocked by pointer-down or focus (the unlock resets when `animating` changes); the sliders are never disabled |
+| Engine load fails | `engineState = failed`; Component 9; one `console.warn` (see below) |
 | A newer `submit` while one is pending | the older `submit` result is dropped (token compare after every `await`); the older engine call finishes in the background |
 | Unmount | cancel timers, `dispose()` every engine, remove listeners, bump the token |
 
@@ -285,7 +309,9 @@ While a run is pending, the speech bar shows the loading line ("Summoning eight 
 | Rejected input | no engine call; the speech bar explains the problem and shows `echo(raw)` |
 | Engine failure with a Preset | `source: 'recorded'`: the Recorded_Run of that Preset from `runs.json`, built with `toWalkRecord(..., 'recorded')`; the badge "Recorded run"; one line of speech that the live engine did not start |
 | Engine failure with Visitor_Input | no run; one line of speech; the box is kept |
-| Hand timeout (30 s) | the executor is disposed, failure as above |
+| Hand timeout (30 s) | the adapter answers `timeout`, or the proxy guard at 32 s does; the proxy stops the Hand_Worker and starts a fresh one for the next run; failure as above |
+| Hand worker error | before any answer the cause is `load`, after an answer `run`; the proxy replaces the worker; a failed engine load is not kept and retries on the next Ghost Hand action |
+| Console | for every failed load, failed run, and failed Fixed_Plan run, the controller logs one `console.warn("[ghost-run] live <world> engine failed (<cause>: <detail>); showing the recorded run instead.")`. `detail` comes from `LiveAnswer.detail` and is never shown on the page |
 | `p1.equal` false | the verdict is `block` as the pipeline returns it; no fingerprint badge, no go badge; narration says the isolation check failed |
 
 ### Component 10: The v5 components and CSS
@@ -322,16 +348,22 @@ default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font
 
 This is the policy of the `site` design with the three changes of Requirement 14, criterion 1. The existing Site_Check rule against `'unsafe-eval'` matches the quoted token exactly (`/'unsafe-eval'/`), so `'wasm-unsafe-eval'` does not trip it; a test asserts this on the real policy. Nothing under CSP needs `style-src 'unsafe-inline'`: the Actor and the bars set styles through the CSSOM.
 
+`'unsafe-eval'` stays out of the policy on purpose. MuJoCo's embind glue builds functions from strings and throws `EvalError` on the main thread under this policy. The live Hand run therefore happens in the Hand_Worker, whose script is served from `/assets/` and carries no page policy (the page policy applies to documents; the `_headers` rule for `/` does not cover `/assets/*`). A test asserts that no chunk that runs under the page policy contains a Function-constructor call (Component 13).
+
 ### Component 13: Site_Check and Build_Script changes
 
 | Rule | Change |
 |---|---|
-| Engine_Bundles | `assets/engine-light-*.js`, `engine-hand-*.js`, `sim-worker-*.js`, `worker-entry-*.js` get the reference-form scan of the app bundles; the Entry_Bundle keeps the full string scan |
-| Wasm and worker references | the extractor already handles `new URL("x", import.meta.url)` and `new Worker(new URL(...))`; the real-dist test asserts at least one `.wasm` and one worker reference in each of the two engine chunks and that each target exists |
+| Engine_Bundles | `assets/engine-light-*.js`, `engine-hand-*.js`, `hand-worker-*.js`, `sim-worker-*.js`, `worker-entry-*.js` get the reference-form scan of the app bundles; the Entry_Bundle keeps the full string scan |
+| Wasm and worker references | the extractor already handles `new URL("x", import.meta.url)` and `new Worker(new URL(...))`; the real-dist test asserts at least one `.wasm` reference from the Hand files (`findEngineReferences` includes `hand-worker-*.js` in its Hand pattern) and one from the Shell SQL worker, and a `new Worker` reference to the Hand_Worker, the simulation worker, and the Shell SQL worker; each target exists |
 | First paint | fail when `index.html` has a `script`, `modulepreload`, or `preload` that names `engine-` or a `.wasm`, or when the Entry_Bundle has a static `import` of an `engine-` file |
 | Entry size | fail above 360 kB (`ENTRY_MAX_BYTES`; 284 kB today) |
 | Policy | the `/` blocks must contain `worker-src 'self'` and `connect-src 'self'` and `'wasm-unsafe-eval'` and nothing from the forbidden list; `/shell/*` unchanged |
-| Notice | `THIRD_PARTY_NOTICES.txt` at the root of `site/dist/`, copied from `apps/ghost-hand/dist/THIRD_PARTY_NOTICES.txt` by `build-site.mjs`; the build fails when the source is missing |
+| Notice | `THIRD_PARTY_NOTICES.txt` at the root of `site/dist/`, generated by `build-site.mjs` from `site/build/bundled-packages.json` (see below). The Site_Check requires the file and a link in `index.html` that resolves to it (the footer link of D6). With the option `bundledPackages` (a manifest path or the list; the CLI always passes the manifest) it adds the rules `RULE_NOTICE_PACKAGE` (a listed package has no section with heading, `License:` line, and text) and `RULE_NOTICE_LIST` (the list is missing or empty) |
+| Shared chunk | `assets/common-*.js` (a Rollup chunk that the engine chunks might share; none is emitted since the Hand code moved into the Hand_Worker) is classified as an Engine_Bundle: reference-form check only, and never named or statically imported by the first paint |
+| Reference forms | `new URL("x", self.location.href)` counts like `new URL("x", import.meta.url)` (the Shell SQL worker names its wasm file this way) |
+
+**Build_Script and notices.** `scripts/lib/bundled-packages.mjs` exports `packageOfId`, `idsOfBundle`, `readManifest`, and the Vite plugin `bundledPackages({ root, out })`. `vite.config.ts` adds it to `plugins` (it writes `site/build/bundled-packages.json` on `closeBundle`) and to `worker.plugins` (it only collects; a module-level map is shared by the page build and its worker builds, so the Hand_Worker, the simulation worker, and the SQL worker are covered). `scripts/lib/notices.mjs` exports `renderNotices`, `missingFromNotices`, and `packageHeading`. It matches license files by `/^(licen[cs]e|copying|notice)/i`, takes the text for `@mujoco/mujoco` (which ships no license file) from `apps/ghost-hand/notices/mujoco.LICENSE.txt`, and adds the components compiled into `mujoco.wasm` from `apps/ghost-hand/notices/sources.json`. `build-site.mjs` no longer copies the Ghost Hand notice; its `writeNotices` dependency writes `site/dist/THIRD_PARTY_NOTICES.txt` and fails with `missing build output: site/build/bundled-packages.json (...)` or `no license text for <name> <version>`. The copy of the Hand app under `site/dist/hand/` stays as it is.
 
 ### Component 14: Record script and `runs.json` version 2
 
@@ -417,9 +449,9 @@ interface WorldRecordV2 {
 
 ### Property 9: A superseded run never reaches the page (stale-run-discarded)
 
-*For any* sequence of controls (tab, Preset, Run, Replay, step, unmount) with generated delays and engine answer orders, after the last control the displayed record is the record of the latest accepted run; no event, narration, or badge of an older token is applied; the number of pending timers equals the events still to fire of the latest run (none after unmount, and none for an unsupported run after its step 1); and engines are disposed on unmount.
+*For any* sequence of controls (tab, Preset, Run, Replay, step, unmount) with generated delays and engine answer orders, after the last control the displayed record is the record of the latest accepted run; no event, narration, or badge of an older token is applied; the number of pending timers equals the events still to fire of the latest run (none after unmount, and none for an unsupported run after its step 1); engines are disposed on unmount; and an edit of the plan box while a run is animating or waiting for its engine cancels that run (its timers are cleared, its late answer is dropped, and `busy` is cleared).
 
-**Validates: Requirements 10.6, 10.7, 5.9**
+**Validates: Requirements 3.10, 10.6, 10.7, 5.9**
 
 ### Property 10: Failure keeps the page working (fallback-keeps-page-working)
 
@@ -450,7 +482,9 @@ interface WorldRecordV2 {
 | Shell SQL statement runs 5 s | the app's watchdog terminates the worker; the step is marked as the world marks it; the adapter returns `unsupported` with the watchdog reason |
 | Engine chunk import rejects | `failed: 'load'`; not kept; retried on the next action |
 | Worker cannot start, wasm fails to compile, or a policy blocks it | `failed: 'load'` or `'run'`; fallback by Component 9 |
-| Hand run longer than 30 s | `failed: 'timeout'`; executor and world disposed |
+| Hand run longer than 30 s | `failed: 'timeout'` (adapter timer, or the proxy guard at 32 s); the proxy stops the Hand_Worker and starts a fresh one for the next run |
+| Hand_Worker error | `failed: 'load'` before any answer, `'run'` after one; the proxy replaces the worker |
+| Edit while a run animates or waits | the run is cancelled (Component 8); no failure and no console warning |
 | Cloud internal-error run | `failed: 'internal'` |
 | Fixed_Plan run fails or does not pass | Outcome `block-open` with the fix not shown; its live verdict is shown only when it ran |
 | `p1.equal` false | verdict `block` as the pipeline returns it; no fingerprint or go badge |
@@ -477,19 +511,27 @@ The suite uses Vitest with Testing Library and jsdom, plus `fast-check`. It runs
 | `tests/unit/narration-live.test.ts` | templates are chosen only when their facts exist; no HTML in segments; numbers formatted |
 | `tests/unit/runs-shape.test.ts` | `runs.json` version 2: shape, expected verdicts for the named Presets, `p1.equal`, the values of Requirement 11, criterion 6 (from a fresh run in the gated project) |
 | `tests/unit/csp.test.ts`, `headers.property.test.ts` | Property L11 and the updated header tests |
-| `tests/unit/check-site*.test.ts`, `site-dist.test.ts` | the new Site_Check rules with fixtures; the real dist when it exists |
-| `tests/unit/build-site.test.ts` | the notice copy and its failure |
+| `tests/unit/check-site*.test.ts`, `site-dist.test.ts` | the new Site_Check rules with fixtures (including `RULE_NOTICE_PACKAGE` and `RULE_NOTICE_LIST`); the real dist when it exists, with the found Hand_Worker, simulation worker, SQL worker, and wasm references |
+| `tests/unit/build-site.test.ts` | the generated notice file in the assembled directory; failure when the manifest is missing or a package has no license text |
 | `tests/unit/lint-fixture.test.ts` | `site/src/live/` may import an engine; `site/src/components/` may not |
 | `tests/dom/live-loading.test.tsx` | Properties L5 and L6 with fake IntersectionObserver, loader spies, a Worker spy, and a fetch spy |
-| `tests/dom/live-controller.property.test.tsx` | Properties L9 and L10 with fake engines and a fake clock |
+| `tests/dom/live-controller.property.test.tsx` | Properties L9 and L10 with fake engines and a fake clock; L9 models "typing while a run animates cancels its timers" |
+| `tests/dom/live-edit.test.tsx` | edit during animation cancels; edit while the engine call is pending cancels; the input stays editable after "Fix and go"; the tag and fixed values clear on edit |
+| `tests/dom/live-warn.test.tsx` | one `console.warn` per failed load, failed run, and failed Fixed_Plan run, with world, cause, and detail; none on the page |
+| `tests/unit/hand-proxy.test.ts` | the proxy with a fake worker: id matching, serial runs, `load`, `run`, and `timeout` causes (32 s guard), fresh worker after an error, `dispose` ends the pending run |
+| `tests/unit/chip-truth.test.ts` | chips follow the live ward verdict: every subset of the four Hand violation kinds, the Shell and Cloud cases with the real worlds, the tone event |
+| `tests/unit/landing-build.test.ts` (`landing-build`) | the built chunks and workers; no chunk under the page policy contains a Function-constructor call (the Hand_Worker is exempt); the page-side Hand files import no MuJoCo, world, or app code |
+| `tests/unit/notices.test.ts` | `renderNotices`, `missingFromNotices`, the license file match, the MuJoCo fallback, the components list, both failure messages |
 | `tests/dom/live-input.test.tsx` | Property L3 (DOM side): typed `<img onerror>` text, hidden characters (built from code points), over-limit text |
 | `tests/dom/live-reality.property.test.tsx` | Property L2, page form (extends `reality.property.test.tsx`) |
 | `tests/dom/live-no-network.test.tsx` | Property L4 |
-| `tests/dom/control-card.test.tsx` | tabs (`role`, `aria-selected`, arrow keys), Replay, Presets row and `on` class, slider labels, ranges equal `WORLD_CONFIG`, Run button busy state, the plan tag |
+| `tests/dom/control-card.test.tsx` | tabs (`role`, `aria-selected`, arrow keys), Replay, Presets row and `on` class, slider labels, ranges equal `WORLD_CONFIG`, Run button busy state, the plan tag, the input `readOnly` only while animating and unlocked by pointer-down or focus, sliders never disabled |
 | `tests/dom/stepper.test.tsx` | the dots, jump, disabled steps for `unsupported`, `aria-current` |
 | `tests/dom/speech.test.tsx` | the step label, the live region updates once per step, the typed text never enters it |
-| `tests/dom/outcomes.test.tsx` | the five Outcomes render the right stamp, candle, note, badges, and plan box |
-| `tests/dom/live-badge.test.tsx` | hidden before a run; "Live in your browser" only for live; "Recorded run" for the fallback |
+| `tests/dom/outcomes.test.tsx` | the five Outcomes render the right stamp, candle, badges, and plan box; the verdict card holds only candle and stamp (no `#vnote`, no `#sealnote`); step 5 keeps the copy for `block-open`, `pass`, and `warn` and re-copies only for `block-fixed` |
+| `tests/dom/chips.test.tsx` | chip rows and tone in the DOM for each world, including the Cloud object list after `rm --recursive` |
+| `tests/dom/live-badge.test.tsx` | hidden before a run; "Live in your browser" only for live; "Recorded run" for the fallback and for the first Reduced_Motion paint |
+| `tests/dom/a11y.test.tsx` | tab roles and roving tabindex, slider labels and `aria-valuetext`, one polite region, `aria-busy`, disabled steps with `aria-disabled` |
 | `tests/dom/reduced-motion-live.test.tsx` | recorded final state at load; live final state after near; no timer |
 | `tests/unit/theater-place.test.ts` | the bubble stays inside the Theater for every Actor position |
 | `tests/unit/classes.test.tsx`, `contrast.test.ts` | the updated class list and the added color pairs |
@@ -534,11 +576,11 @@ Checked on 2026-11-21. The design follows the repository.
 | O1 | Shell commands: `cat`, `cp`, `curl`, `echo`, `ls`, `mkdir`, `mv`, `npm`, `rm`, `sqlite3`, `touch` (11) | The handler table of `worlds/playground-shell/src/shell/commands/index.ts` and the app README list 15: also `pwd`, `find`, `true`, `false` | `KNOWN_SHELL` holds 15 and a test compares it with the handler table or the README table. The visitor sees all 15. |
 | O2 | Run through `runPlayground` and sql.js | The app runs sql.js in a Web Worker under a 5 s watchdog; `initInlineSql` is documented for tests and jsdom and would block the main thread on a runaway statement | The Shell adapter takes a `SqlExecutor`; the page uses `createWatchdogExecutor` with the app's `createWorkerRunner`. Node tests use the inline executor. |
 | O3 | `_headers` for `/` gains `'wasm-unsafe-eval'`, `worker-src 'self'`, `connect-src 'self'`; the site check must keep passing | Nobody has loaded Ghost Hand under a policy (the `site` design D5); the Hand app has no policy. The three additions may not be enough (for example if the MuJoCo glue needs a `blob:` origin) | The design applies the three additions. The browser check of Requirement 14 decides. An engine blocked by the policy takes the fallback path, so the page works either way. If the check fails, the owner decides on a further directive. |
-| O4 | Reuse the Ghost Hand pipeline and its worker executor | `runGhostHand` imports `capabilities.ts`, which imports `react-dom/server` and `import * as ui from '@ghost-run/ui'`; the executor and the plan parser also reach `@ghost-run/ui`. The Hand chunk therefore holds the whole kit and `react-dom/server` | Accepted: changing the app is out of scope. The chunk size is measured and recorded. The Entry_Bundle budget is unaffected because the chunk is lazy. |
-| O5 | The Hand worker "under the site's paths" | The worker is created in `apps/ghost-hand/src/main.tsx`, an entry with side effects that cannot be imported; the MuJoCo wasm is found by `new URL('mujoco.wasm', import.meta.url)` inside `@mujoco/mujoco`, with no `locateFile` | `engine-hand.ts` creates its own `new Worker(new URL('<path to sim-worker.ts>', import.meta.url), { type: 'module' })`. Vite emits the worker and the wasm into `assets/` of the Landing_Page build. A build task confirms the file names. |
+| O4 | Reuse the Ghost Hand pipeline and its worker executor | `runGhostHand` imports `capabilities.ts`, which imports `react-dom/server` and `import * as ui from '@ghost-run/ui'`; the executor and the plan parser also reach `@ghost-run/ui`. The Hand_Worker therefore holds the whole kit and `react-dom/server` | Accepted: changing the app is out of scope. The kit lives in the Hand_Worker (584,599 B; 188,147 B gzip), so neither the Entry_Bundle nor the page-side Hand chunk (1,797 B) carries it. Both budgets are unaffected because the worker loads only after Ghost Hand is picked. |
+| O5 | The Hand worker "under the site's paths" | The worker is created in `apps/ghost-hand/src/main.tsx`, an entry with side effects that cannot be imported; the MuJoCo wasm is found by `new URL('mujoco.wasm', import.meta.url)` inside `@mujoco/mujoco`, with no `locateFile` | `hand-worker.ts` creates the `sim-worker.ts` workers (the app's `main.tsx` cannot be imported), and `engine-hand.ts` only wires `createHandProxy` with `new Worker(new URL('./hand-worker.ts', import.meta.url), { type: 'module' })`. The reason for the extra worker is that MuJoCo's glue throws `EvalError` on the main thread under the page policy, which has no `'unsafe-eval'`. Vite emits the Hand_Worker, the simulation worker, and the wasm into `assets/` of the Landing_Page build. A build task confirms the file names. |
 | O6 | Check chips "using the ward engine's own reasons and numbers" | The ward engine returns only violations (`wardId`, `reason`); the existing chips (`rows lost, at most 0`, `contact force, at most 30 N`) are derived by the record script from scenes and ward fields | Shared derivation (Component 5, Requirement 11). The headline ward keeps the mockup's chips; every other violated ward adds one chip with the engine's reason. |
 | O7 | `site/dist` unchanged apart from `_headers` | The Landing_Page build now emits its own `mujoco-*.wasm` (11 MB) and the Hand app's copy stays in `site/dist/hand/assets/` | Accepted. Both are copied as they are. The size is recorded in `docs/measurements.md`. |
-| O8 | Nothing about third-party notices | `apps/ghost-hand/dist/THIRD_PARTY_NOTICES.txt` carries the MuJoCo and library notices; the Landing_Page now ships the MuJoCo wasm | The assembly copies that file to the site root and fails when it is missing. Owner decision: keep, or link the notice from the footer. |
+| O8 | Nothing about third-party notices | `apps/ghost-hand/dist/THIRD_PARTY_NOTICES.txt` carries the MuJoCo and library notices; the Landing_Page now ships the MuJoCo wasm | The build generates `site/dist/THIRD_PARTY_NOTICES.txt` from the Bundled_Packages_List (Component 13) and fails when the list is missing or a package has no license text. Owner decision (D6): keep, and link the notice from the footer. |
 | O9 | Cloud preset "make it public": `aws s3api put-bucket-acl --bucket prod-assets --acl public-read` | The repository demo `02-make-bucket-public.txt` has two lines (`delete-public-access-block`, then `put-bucket-acl`). The world's README says every ACL value change on a protected bucket is blocked by `no-public-bucket` | The Preset is the single line of the brief. Its verdict comes from the run, not from the spec; the committed `runs.json` records it. |
 | O10 | Shell pane as in the mockup (`project/`, `app.db`, `package.json`, `data/`) | The Preset `rm -rf ./data ./build` removes `build/`, and a visitor can remove `README.md`; the mockup shows neither | The pane lists the non-hidden top-level entries (adds `build/` and `README.md`); `.env` is never listed. Listed as an addition in Requirement 2, criterion 7. |
 | O11 | "The first preset of each world autoplays when the section scrolls into view" | The `site` page autoplays Ghost Shell only, and picking a tab plays the world | Ghost Shell autoplays when Seen. Picking Ghost Hand or Ghost Cloud runs that world's first Preset. |
@@ -555,4 +597,4 @@ Checked on 2026-11-21. The design follows the repository.
 | D3 | Reduced motion: show the recorded final state first, then swap to the live final state. | Yes; the two are equal by Property L1. |
 | D4 | The input limit. | 256 code points for Shell and Cloud text. |
 | D5 | The Hand timeout. | 30 s, then the fallback. |
-| D6 | Whether the footer links the third-party notice (O8). | No link; the file is at the site root. |
+| D6 | Whether the footer links the third-party notice (O8). | Owner decision: yes. One small link "Third-party notices" at the end of the footer, `href="./THIRD_PARTY_NOTICES.txt"`; nothing else in the footer changes. The notice file is generated, not copied. |

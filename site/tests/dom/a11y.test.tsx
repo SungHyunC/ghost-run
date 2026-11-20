@@ -51,7 +51,7 @@ describe('page accessibility', () => {
   it('shows the verdict and the check rows as text', () => {
     const { container } = render(<App />);
     expect(container.querySelector('#verdict #stamp')).not.toBeNull();
-    expect(container.querySelector('#verdict #vnote')).not.toBeNull();
+    expect(container.querySelector('#verdict #vnote')).toBeNull();
     expect(container.querySelector('#ward #checks')).not.toBeNull();
     for (const row of container.querySelectorAll('#checks .chk')) {
       expect(row.classList.contains('ok') || row.classList.contains('bad')).toBe(true);
@@ -59,10 +59,20 @@ describe('page accessibility', () => {
     }
   });
 
+  it('has no plan bar in the Theater, and the speech bar keeps its label inside the live region', () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('#theater #plan')).toBeNull();
+    expect(container.querySelector('#theater #plancode')).toBeNull();
+    expect(container.querySelector('#theater .say #sayt[aria-live="polite"]')).not.toBeNull();
+  });
+
   it('reaches every link, button, and the switch with the Tab key', async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
-    const expected = [...container.querySelectorAll<HTMLElement>('a[href], button, input')];
+    // Inputs that are `hidden` are not focusable; the tabs that are not selected are reached with the arrow keys (roving tabindex).
+    const expected = [...container.querySelectorAll<HTMLElement>('a[href], button, input')].filter(
+      (el) => !el.closest('[hidden]') && !el.hidden && !(el.getAttribute('role') === 'tab' && el.tabIndex === -1),
+    );
     expect(expected.length).toBeGreaterThan(10);
     expect(container.querySelector('#xray')).not.toBeNull();
     for (const el of expected) {

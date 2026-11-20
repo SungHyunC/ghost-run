@@ -1,12 +1,30 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { tileLabel } from '../../scripts/lib/tile-label';
-import type { PlanRecord, RunsFile, WorldRecord } from '../../src/data/types';
+import { tileLabel } from '../../src/live/derive/tile-label';
+import type { PlanRecord, PresetRecord, RunsFile } from '../../src/data/types';
 
 const text = readFileSync(new URL('../../src/data/runs.json', import.meta.url), 'utf8');
 const runs = JSON.parse(text) as RunsFile;
-const worlds = Object.values(runs.worlds) as WorldRecord[];
-const records: PlanRecord[] = worlds.flatMap((w) => [w.plan, w.fixed]);
+const worlds = Object.values(runs.worlds);
+const presets = worlds.flatMap((w) => w.presets);
+const records: PlanRecord[] = presets.flatMap((p) => (p.fixed === null ? [p.plan] : [p.plan, p.fixed]));
+const preset = (id: string): PresetRecord => {
+  const found = presets.find((p) => p.id === id);
+  if (found === undefined) throw new Error(`Preset ${id} missing`);
+  return found;
+};
+const fixedOf = (id: string): PlanRecord => {
+  const f = preset(id).fixed;
+  if (f === null) throw new Error(`Preset ${id} has no Fixed_Plan`);
+  return f;
+};
+
+const PRESET_IDS = {
+  shell: ['shell-drop-users', 'shell-rm-data-build', 'shell-npm-test'],
+  hand: ['hand-fast-pull', 'hand-slow-pull', 'hand-strong-grip'],
+  cloud: ['cloud-delete-prod', 'cloud-make-public', 'cloud-delete-tmp'],
+};
+const BLOCKING = ['shell-drop-users', 'shell-rm-data-build', 'hand-fast-pull', 'cloud-delete-prod'];
 
 const MOCKUP_LABELS = [
   'friction \u00D70.41',
@@ -32,26 +50,32 @@ function checkSorted(value: unknown, path: string): void {
 describe('runs.json shape', () => {
   it('has the format, version, seed, and variant count', () => {
     expect(runs.format).toBe('ghost-site-runs');
-    expect(runs.version).toBe(1);
+    expect(runs.version).toBe(2);
     expect(runs.seed).toBe(42);
     expect(runs.variantCount).toBe(8);
     expect(Object.keys(runs.worlds)).toEqual(['cloud', 'hand', 'shell']);
-    expect(records).toHaveLength(6);
   });
 
-  it('blocks each plan and passes each fixed plan with equal fingerprints', () => {
+  it('holds the nine Presets in the order of Requirement 8 and the four Fixed_Plans', () => {
+    for (const w of worlds) expect(w.presets.map((p) => p.id)).toEqual(PRESET_IDS[w.id]);
+    expect(presets.filter((p) => p.fixed !== null).map((p) => p.id).sort()).toEqual([...BLOCKING].sort());
+    expect(records).toHaveLength(13);
+  });
+
+  it('blocks the named Presets, passes their Fixed_Plans, and keeps reality equal in every run', () => {
+    for (const id of BLOCKING) {
+      expect(preset(id).plan.verdict, id).toBe('block');
+      expect(fixedOf(id).verdict, id).toBe('pass');
+      expect(fixedOf(id).violatedWardIds, id).toEqual([]);
+    }
     for (const w of worlds) {
-      expect(w.plan.verdict).toBe('block');
-      expect(w.plan.violatedWardIds).toEqual([w.ward.id]);
-      expect(w.fixed.verdict).toBe('pass');
-      expect(w.fixed.violatedWardIds).toEqual([]);
+      expect(preset(PRESET_IDS[w.id][0] as string).plan.violatedWardIds).toContain(w.ward.id);
     }
     for (const r of records) {
       expect(r.p1.equal).toBe(true);
       expect(Object.keys(r.p1).sort()).toEqual(['after', 'before', 'equal']);
       expect(r.p1.before).toMatch(/^[0-9a-f]{16,}$/);
       expect(r.p1.after).toBe(r.p1.before);
-      expect(r.effectsOutside).toEqual([]);
     }
   });
 
@@ -62,35 +86,36 @@ describe('runs.json shape', () => {
   });
 
   it('holds the measured Ghost Shell values', () => {
-    const { shell } = runs.worlds;
-    expect(shell.plan.facts['rowsLost']).toBe(1206);
-    expect(shell.fixed.facts['rowsLost']).toBe(0);
-    expect(shell.plan.message).toContain('would delete 1,206 rows from users');
+    const plan = preset('shell-drop-users').plan;
+    expect(plan.facts['rowsLost']).toBe(1206);
+    expect(fixedOf('shell-drop-users').facts['rowsLost']).toBe(0);
+    expect(plan.message).toContain('would delete 1,206 rows from users');
+    expect(preset('shell-rm-data-build').plan.violatedWardIds).toEqual(['protect-data']);
   });
 
   it('holds the measured Ghost Hand values', () => {
-    const { hand } = runs.worlds;
-    expect(hand.plan.facts).toMatchObject({ succeeded: 7, total: 8, maxForceN: 27.53, vaseTouched: 0, drawerOpeningM: 0.1216 });
-    expect(hand.fixed.facts).toMatchObject({ succeeded: 8, total: 8, maxForceN: 29.24, vaseTouched: 0 });
-    expect(hand.plan.checks.map((c) => c.measured)).toEqual(['7 of 8 = 88%', '27.5 N', 'untouched']);
-    expect(hand.fixed.checks.map((c) => c.measured)).toEqual(['8 of 8 = 100%', '29.2 N', 'untouched']);
-    expect(hand.plan.message).toContain('joint limit exceeded in variant variant-6');
-    expect(hand.plan.facts['jointLimitVariants']).toBe('variant-6');
+    const plan = preset('hand-fast-pull').plan;
+    const fixed = fixedOf('hand-fast-pull');
+    expect(plan.facts).toMatchObject({ succeeded: 7, total: 8, maxForceN: 27.53, vaseTouched: 0, drawerOpeningM: 0.1216 });
+    expect(fixed.facts).toMatchObject({ succeeded: 8, total: 8, maxForceN: 29.24, vaseTouched: 0 });
+    expect(plan.checks.map((c) => c.measured)).toEqual(['7 of 8 = 88%', '27.5 N', 'untouched']);
+    expect(fixed.checks.map((c) => c.measured)).toEqual(['8 of 8 = 100%', '29.2 N', 'untouched']);
+    expect(plan.message).toContain('joint limit exceeded in variant variant-6');
+    expect(plan.facts['jointLimitVariants']).toBe('variant-6');
+    expect(plan.display).toBe('grip 20 N, pull 0.2 m at 0.6 m/s');
   });
 
   it('holds the measured Ghost Cloud values', () => {
-    const { cloud } = runs.worlds;
-    expect(cloud.plan.facts).toMatchObject({ removedBuckets: 'prod-assets', objectsRemoved: 3 });
-    expect(cloud.fixed.facts['removedBuckets']).toBe('tmp-build-cache');
+    expect(preset('cloud-delete-prod').plan.facts).toMatchObject({ removedBuckets: 'prod-assets', objectsRemoved: 3 });
+    expect(fixedOf('cloud-delete-prod').facts['removedBuckets']).toBe('tmp-build-cache');
   });
 
   it('records eight Hand variants whose labels follow tileLabel and match the Mockup', () => {
-    const { hand } = runs.worlds;
-    for (const role of [hand.plan, hand.fixed]) {
-      expect(role.copyAfter.kind).toBe('hand');
-    }
-    if (hand.plan.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
-    const tiles = hand.plan.copyAfter.tiles;
+    const plan = preset('hand-fast-pull').plan;
+    const fixed = fixedOf('hand-fast-pull');
+    expect(fixed.copyAfter.kind).toBe('hand');
+    if (plan.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
+    const tiles = plan.copyAfter.tiles;
     expect(tiles.map((t) => t.id)).toEqual(Array.from({ length: 8 }, (_, i) => `variant-${i}`));
     for (const t of tiles) {
       expect(t.params.handleOffsetM).toHaveLength(3);
@@ -103,7 +128,7 @@ describe('runs.json shape', () => {
     expect(tiles.map((t) => t.label)).toEqual(MOCKUP_LABELS);
     expect(tiles.filter((t) => t.outcome === 'failed').map((t) => t.id)).toEqual(['variant-3']);
     expect(tiles.filter((t) => t.jointLimit).map((t) => t.id)).toEqual(['variant-6']);
-    if (hand.fixed.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
-    expect(hand.fixed.copyAfter.tiles.every((t) => t.outcome === 'passed')).toBe(true);
+    if (fixed.copyAfter.kind !== 'hand') throw new Error('hand scene expected');
+    expect(fixed.copyAfter.tiles.every((t) => t.outcome === 'passed')).toBe(true);
   });
 });

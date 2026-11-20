@@ -4,17 +4,18 @@ import fc from 'fast-check';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WorldId } from '../../src/config';
 import runsJson from '../../src/data/runs.json';
-import type { RunsFile } from '../../src/data/types';
+import { toWalkRuns } from '../../src/data/walk-records';
+import type { WalkRuns, RunsFile } from '../../src/data/types';
 import type { Scheduler } from '../../src/engine/scheduler';
 import { buildScript, STEP_START } from '../../src/engine/script';
-import { useWalkthrough } from '../../src/engine/useWalkthrough';
+import { useWalk } from '../../src/engine/useWalk';
 
 /**
  * **Property 7: Timer hygiene**
  * **Validates: Requirements 11.5, 11.6, 11.7, 16.1, 16.2, 16.5, 16.6**
  */
 
-const runs = runsJson as unknown as RunsFile;
+const runs = toWalkRuns(runsJson as unknown as RunsFile);
 const WORLDS: WorldId[] = ['shell', 'hand', 'cloud'];
 
 interface Timer {
@@ -111,7 +112,7 @@ describe('Property 7: timer hygiene', () => {
     fc.assert(
       fc.property(fc.array(opArb, { minLength: 1, maxLength: 12 }), fc.boolean(), (ops, unmountAtEnd) => {
         const vs = virtualScheduler();
-        const { result, unmount } = renderHook(() => useWalkthrough(runs, vs.scheduler));
+        const { result, unmount } = renderHook(() => useWalk({ initial: runs.worlds.shell, scheduler: vs.scheduler }));
         let world: WorldId = 'shell';
         let due: number[] = [];
 
@@ -132,7 +133,7 @@ describe('Property 7: timer hygiene', () => {
             vs.state.gen++;
             act(() => {
               const c = result.current.controls;
-              if (op.kind === 'pick') c.pickWorld(op.world);
+              if (op.kind === 'pick') c.show(runs.worlds[op.world]);
               else if (op.kind === 'replay') c.replay();
               else c.jump(op.n);
             });
@@ -175,11 +176,11 @@ describe('Property 7: timer hygiene', () => {
       fc.property(fc.array(opArb, { minLength: 1, maxLength: 12 }), (ops) => {
         installMatchMedia(true);
         const vs = virtualScheduler();
-        const { result, unmount } = renderHook(() => useWalkthrough(runs, vs.scheduler, 'seen'));
+        const { result, unmount } = renderHook(() => useWalk({ initial: runs.worlds.shell, scheduler: vs.scheduler }));
         for (const op of ops) {
           act(() => {
             const c = result.current.controls;
-            if (op.kind === 'pick') c.pickWorld(op.world);
+            if (op.kind === 'pick') c.show(runs.worlds[op.world]);
             else if (op.kind === 'replay') c.replay();
             else if (op.kind === 'jump') c.jump(op.n);
             else vs.advance(op.ms);

@@ -24,7 +24,7 @@ const SHELL_FILE = `/*
 `;
 
 const ROOT_CSP =
-  "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+  "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 const EXPECTED_ROOT = `/
   Content-Security-Policy: ${ROOT_CSP}

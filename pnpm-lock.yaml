@@ -462,6 +462,9 @@ importers:
       '@ghost-run/playground-shell':
         specifier: workspace:*
         version: link:../worlds/playground-shell
+      '@ghost-run/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@ghost-run/wards-config':
         specifier: workspace:*
         version: link:../wards-config

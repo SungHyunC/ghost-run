@@ -1,0 +1,435 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Update steering and the lint rules": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843717
+      },
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195849232
+      }
+    ],
+    "1.2 Share the landing policy between the Vite config and the headers": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843723
+      },
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195988401
+      }
+    ],
+    "1.3 Write property test for the landing policy": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843727
+      },
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196190661
+      }
+    ],
+    "2.1 Write `live/types.ts` and `live/input.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843730
+      },
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196253675
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196371740
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196375024
+      }
+    ],
+    "2.2 Write property test for input handling": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843733
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196565326
+      }
+    ],
+    "3.1 Write `live/presets.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843735
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196619747
+      }
+    ],
+    "3.2 Write `live/hand-plan.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843737
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196733824
+      }
+    ],
+    "3.3 Write property test for slider plans": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843739
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196786527
+      }
+    ],
+    "4.1 Change the data types and add `derive/common.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843740
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795196839944
+      }
+    ],
+    "5.1 Write `live/shell.ts` and `live/derive/shell.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843742
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795197055824
+      }
+    ],
+    "6.1 Write `live/cloud.ts` and `live/derive/cloud.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843743
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795197238399
+      }
+    ],
+    "6.2 Write property test for Reality in the engines": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843745
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795197363471
+      }
+    ],
+    "7.1 Write `live/hand.ts` and `live/derive/hand.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843746
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795197449612
+      }
+    ],
+    "8.1 Move the record script onto the adapters and re-record `runs.json`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843747
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795197642874
+      }
+    ],
+    "8.2 Write the parity tests": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843749
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198013578
+      }
+    ],
+    "9.1 Change the engine types and the reducer": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843751
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198142009
+      }
+    ],
+    "9.2 Write `live/classify.ts`": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843752
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198278277
+      }
+    ],
+    "9.3 Write property test for classification": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843753
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198338318
+      }
+    ],
+    "9.4 Change `script.ts` and `narration.ts` for the five outcomes": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843754
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198409563
+      }
+    ],
+    "9.5 Write property test for settling and playing": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843756
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198800826
+      }
+    ],
+    "10.1 Write the record-driven hook and the visibility options": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843757
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795198926578
+      }
+    ],
+    "10.2 Write `live/loaders.ts` and the controller": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843758
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795199130034
+      }
+    ],
+    "10.3 Write property test for stale runs": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843760
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795199548306
+      }
+    ],
+    "10.4 Write property test for fallback": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843761
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795199708846
+      }
+    ],
+    "10.5 Write the loading tests": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843762
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795199796442
+      }
+    ],
+    "11.1 Port the v5 styles": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843763
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795199909156
+      }
+    ],
+    "11.2 Write the control card, plan box, presets row, and stepper": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843765
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795200128259
+      }
+    ],
+    "11.3 Change the theater, cards, actor, and speech bar": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843766
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795200506053
+      }
+    ],
+    "11.4 Wire the section and the Live_Badge": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843767
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795200827362
+      }
+    ],
+    "11.5 Write the page-form Reality test": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843768
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795201091567
+      }
+    ],
+    "11.6 Write the no-network test": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843769
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795201227055
+      }
+    ],
+    "12.1 Write the wiring modules and check the build output": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843770
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795201740024
+      }
+    ],
+    "12.2 Update the Site_Check and the Build_Script": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843771
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795201916745
+      }
+    ],
+    "13.1 Update the README and the measurements": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843772
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795202177662
+      }
+    ],
+    "14. Final checkpoint: build the site and run every gate": [
+      {
+        "executionId": "1e3f35a7-cb2e-41e8-adc2-639b86d8a794",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795195843774
+      },
+      {
+        "executionId": "42679ce8-a8f9-483f-9c27-6718f7e26149",
+        "chatSessionId": "sess_4712f7aa-09af-4310-9215-debc2035c4f9",
+        "timestamp": 1795202384962
+      }
+    ]
+  }
+}

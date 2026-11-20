@@ -237,4 +237,16 @@ describe('Make and Footer', () => {
     ]);
     expect(page?.querySelector('section#make')?.nextElementSibling).toBe(foot);
   });
+
+  it('ends the footer with a relative link to the third-party notices', () => {
+    const { container } = render(<App />);
+    const foot = container.querySelector('.page')?.lastElementChild;
+    const anchors = [...(foot?.querySelectorAll('a') ?? [])];
+    expect(anchors).toHaveLength(1);
+    const link = anchors[0];
+    expect(link?.textContent).toBe('Third-party notices');
+    expect(link?.getAttribute('href')).toBe('./THIRD_PARTY_NOTICES.txt');
+    expect(link?.hasAttribute('target')).toBe(false);
+    expect(foot?.lastElementChild).toBe(link);
+  });
 });

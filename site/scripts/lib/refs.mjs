@@ -97,10 +97,14 @@ export function extractCssRefs(css) {
 
 const STR = String.raw`(["'\`])([^"'\`$\\\n]+)\1`;
 const JS_PATTERNS = [
-  { source: 'js-import', regex: new RegExp(String.raw`\bimport\s*\(\s*${STR}\s*[,)]`, 'g') },
+  { source: 'js-import', dynamic: true, regex: new RegExp(String.raw`\bimport\s*\(\s*${STR}\s*[,)]`, 'g') },
   { source: 'js-import', regex: new RegExp(String.raw`\bimport\s*${STR}`, 'g') },
   { source: 'js-import', regex: new RegExp(String.raw`[}*\w$]\s*\bfrom\s*${STR}`, 'g') },
-  { source: 'js-new-url', regex: new RegExp(String.raw`\bnew\s+URL\s*\(\s*${STR}\s*,\s*import\.meta\.url\s*\)`, 'g') },
+  // The base is `import.meta.url`, or `self.location.href` (the Shell SQL worker names its wasm file this way).
+  {
+    source: 'js-new-url',
+    regex: new RegExp(String.raw`\bnew\s+URL\s*\(\s*${STR}\s*,\s*(?:import\.meta\.url|(?:self\.)?location\.href)\s*\)`, 'g'),
+  },
   { source: 'js-worker', regex: new RegExp(String.raw`\bnew\s+(?:Shared)?Worker\s*\(\s*${STR}`, 'g') },
 ];
 
@@ -118,6 +122,24 @@ export function extractJsRefs(js) {
     }
   }
   return refs;
+}
+
+/**
+ * Static import targets only (`import "x"`, `import {a} from "x"`, `export * from "x"`).
+ * A dynamic `import("x")` is not included (site-live Requirement 15, criterion 3).
+ * @param {string} js
+ * @returns {string[]}
+ */
+export function extractStaticImports(js) {
+  const targets = [];
+  for (const { source, dynamic, regex } of JS_PATTERNS) {
+    if (source !== 'js-import' || dynamic === true) continue;
+    for (const match of js.matchAll(regex)) {
+      const value = (match[2] ?? '').trim();
+      if (value !== '') targets.push(value);
+    }
+  }
+  return targets;
 }
 
 /**

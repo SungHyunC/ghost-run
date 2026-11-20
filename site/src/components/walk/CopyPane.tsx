@@ -18,7 +18,7 @@ export function CopyPane({ record, copy, fixed = false }: CopyPaneProps) {
   if (reality.kind === 'shell' && copy.world === 'shell') return <ShellPane side="copy" scene={reality} state={copy} />;
   if (reality.kind === 'cloud' && copy.world === 'cloud') return <CloudPane side="copy" scene={reality} state={copy} />;
   if (reality.kind === 'hand' && copy.world === 'hand') {
-    const after = (fixed ? record.fixed : record.plan).copyAfter;
+    const after = (fixed ? (record.fixed ?? record.plan) : record.plan).copyAfter;
     return <HandPane side="copy" tiles={after.kind === 'hand' ? after.tiles : []} state={copy} />;
   }
   return null;

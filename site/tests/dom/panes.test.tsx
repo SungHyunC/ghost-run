@@ -4,10 +4,11 @@ import { Sprite } from '../../src/components/art/Sprite';
 import { CopyPane } from '../../src/components/walk/CopyPane';
 import { RealityPane } from '../../src/components/walk/RealityPane';
 import runsJson from '../../src/data/runs.json';
-import type { RunsFile } from '../../src/data/types';
+import { toWalkRuns } from '../../src/data/walk-records';
+import type { WalkRuns, RunsFile } from '../../src/data/types';
 import { settle } from '../../src/engine/script';
 
-const runs = runsJson as unknown as RunsFile;
+const runs = toWalkRuns(runsJson as unknown as RunsFile);
 
 afterEach(cleanup);
 
@@ -65,8 +66,8 @@ describe('CopyPane', () => {
     expect(run.querySelectorAll('.bar.gone')).toHaveLength(12);
     cleanup();
     const fix = render(<CopyPane record={rec} copy={settle(rec, 4).copy} />).container;
-    expect(fix.querySelector('.bak')?.className).toContain('show');
-    expect(text(fix.querySelector('.bak .new'))).toBe('new');
+    expect(fix.querySelector('[data-entry="app.db.bak"]')?.className).toContain('new');
+    expect(text(fix.querySelector('[data-entry="app.db.bak"] .new'))).toBe('new');
     expect(fix.querySelector('[data-t="users"]')?.className).toContain('soft');
     expect(text(fix.querySelector('[data-t="users"] .tag'))).toBe('deleted_at = 1');
   });
@@ -105,6 +106,33 @@ describe('CopyPane', () => {
     const fix = render(<CopyPane record={rec} copy={settle(rec, 4).copy} />).container;
     expect(fix.querySelector('[data-b="tmp-build-cache"]')?.className).toContain('vanish');
     expect(fix.querySelectorAll('.bucket.vanish')).toHaveLength(1);
+  });
+
+  it('Shell copy strikes a removed entry, shows a created entry with the new badge, and leaves Reality alone', () => {
+    const rec = runs.worlds.shell;
+    const entries = [
+      ...(rec.reality.kind === 'shell' ? rec.reality.entries : []).map((e, k) => (k === 0 ? { ...e, state: 'gone' as const } : e)),
+      { name: 'made.txt', kind: 'file' as const, state: 'new' as const },
+    ];
+    const first = entries[0];
+    if (first === undefined) throw new Error('entries');
+    const { container } = render(<CopyPane record={rec} copy={{ ...(settle(rec, 0).copy as Extract<ReturnType<typeof settle>['copy'], { world: 'shell' }>), entries }} />);
+    expect(container.querySelector(`[data-entry="${first.name}"] s`)).not.toBeNull();
+    expect(container.querySelector('[data-entry="made.txt"]')?.className).toContain('new');
+    cleanup();
+    const real = render(<RealityPane scene={rec.reality} />).container;
+    expect(real.querySelector('s')).toBeNull();
+    expect(real.querySelector('.new')).toBeNull();
+  });
+
+  it('Cloud copy shows the tag of a changed ACL on its bucket', () => {
+    const rec = runs.worlds.cloud;
+    const state = settle(rec, 0).copy;
+    if (state.world !== 'cloud') throw new Error('cloud');
+    const buckets = state.buckets.map((b) => (b.name === 'prod-assets' ? { ...b, tag: 'acl: public-read' } : b));
+    const { container } = render(<CopyPane record={rec} copy={{ ...state, buckets }} />);
+    expect(text(container.querySelector('[data-b="prod-assets"] .tag.pub'))).toBe('acl: public-read');
+    expect(container.querySelectorAll('.tag.pub')).toHaveLength(1);
   });
 
   it('all decorative svg is aria-hidden', () => {

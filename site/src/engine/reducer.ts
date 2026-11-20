@@ -18,9 +18,12 @@ export function initialCopy(record: WorldRecord): CopyItemState {
   const { reality } = record;
   switch (record.id) {
     case 'shell': {
-      const rows =
-        reality.kind === 'shell' ? (reality.tables.find((t) => t.name === SHELL_TABLE)?.rows ?? 0) : 0;
-      return { world: 'shell', usersBarsGone: 0, usersCount: rows, usersTag: '', usersClass: 'none', bakShown: false };
+      if (reality.kind !== 'shell') return { world: 'shell', tables: [], entries: [] };
+      return {
+        world: 'shell',
+        tables: reality.tables.map((t) => ({ name: t.name, bars: 0, count: t.rows, tag: '', cls: 'none' as const })),
+        entries: reality.entries.map((e) => ({ ...e })),
+      };
     }
     case 'hand': {
       const after = record.plan.copyAfter;
@@ -28,9 +31,12 @@ export function initialCopy(record: WorldRecord): CopyItemState {
       return { world: 'hand', tiles: Array.from({ length: n }, () => 'idle' as const) };
     }
     case 'cloud': {
-      const buckets = reality.kind === 'cloud' ? reality.buckets.map((b) => b.name) : [];
-      buckets.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-      return { world: 'cloud', buckets: buckets.map((name) => ({ name, state: 'idle' as const })) };
+      const buckets = reality.kind === 'cloud' ? reality.buckets.map((b) => ({ name: b.name, objects: [...b.objects] })) : [];
+      buckets.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+      return {
+        world: 'cloud',
+        buckets: buckets.map(({ name, objects }) => ({ name, state: 'idle' as const, tag: '', objects })),
+      };
     }
   }
 }
@@ -50,11 +56,12 @@ export function initialState(record: WorldRecord): WalkState {
     term: { visible: false, typed: '', caret: false },
     copy: initialCopy(record),
     checks: { rows: [], scan: false, tone: 'none', eoShown: false },
-    candleOut: false,
+    candle: 'lit',
     stamp: 'none',
     note: NOTE_WAITING,
     badges: { fingerprint: false, go: false },
     narration: [],
+    disabledSteps: 0,
   };
 }
 
@@ -84,7 +91,7 @@ export function reduceWalk(state: WalkState, event: WalkEvent): WalkState {
     case 'wardTone':
       return { ...state, checks: { ...state.checks, tone: event.tone, eoShown: true } };
     case 'candle':
-      return { ...state, candleOut: event.out };
+      return { ...state, candle: event.state };
     case 'stamp':
       return { ...state, stamp: event.stamp };
     case 'note':
@@ -93,26 +100,45 @@ export function reduceWalk(state: WalkState, event: WalkEvent): WalkState {
       return { ...state, badges: { fingerprint: event.fingerprint, go: event.go } };
     case 'act':
       return { ...state, act: event.act };
-    case 'shellBar': {
+    case 'table': {
       const c = state.copy;
       if (c.world !== 'shell') return state;
-      return { ...state, copy: { ...c, usersBarsGone: Math.max(c.usersBarsGone, event.index + 1) } };
+      const tables = c.tables.map((t) =>
+        t.name === event.name
+          ? {
+              ...t,
+              bars: event.bars ?? t.bars,
+              count: event.count ?? t.count,
+              tag: event.tag ?? t.tag,
+              cls: event.cls ?? t.cls,
+            }
+          : t,
+      );
+      return { ...state, copy: { ...c, tables } };
     }
-    case 'shellUsers': {
+    case 'entry': {
       const c = state.copy;
       if (c.world !== 'shell') return state;
-      return { ...state, copy: { ...c, usersClass: event.usersClass, usersTag: event.tag ?? c.usersTag } };
+      const known = c.entries.some((e) => e.name === event.name);
+      const entries = known
+        ? c.entries.map((e) => (e.name === event.name ? { ...e, state: event.state } : e))
+        : [...c.entries, { name: event.name, kind: event.kind, state: event.state }];
+      return { ...state, copy: { ...c, entries } };
     }
-    case 'shellCount': {
+    case 'bucketTag': {
       const c = state.copy;
-      if (c.world !== 'shell') return state;
-      return { ...state, copy: { ...c, usersCount: event.value } };
+      if (c.world !== 'cloud') return state;
+      const buckets = c.buckets.map((b) => (b.name === event.name ? { ...b, tag: event.tag } : b));
+      return { ...state, copy: { ...c, buckets } };
     }
-    case 'shellBak': {
+    case 'bucketObjects': {
       const c = state.copy;
-      if (c.world !== 'shell') return state;
-      return { ...state, copy: { ...c, bakShown: true } };
+      if (c.world !== 'cloud') return state;
+      const buckets = c.buckets.map((b) => (b.name === event.name ? { ...b, objects: [...event.objects] } : b));
+      return { ...state, copy: { ...c, buckets } };
     }
+    case 'disable':
+      return { ...state, disabledSteps: Math.max(0, Math.min(4, event.count)) };
     case 'handTile': {
       const c = state.copy;
       if (c.world !== 'hand' || event.index < 0 || event.index >= c.tiles.length) return state;

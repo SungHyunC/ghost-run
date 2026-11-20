@@ -86,7 +86,7 @@ class FakeObserver {
   observe = vi.fn();
   constructor(
     private readonly cb: (entries: { isIntersecting: boolean }[]) => void,
-    readonly options: { threshold: number },
+    readonly options: { threshold: number; rootMargin?: string },
   ) {
     FakeObserver.instances.push(this);
   }
@@ -95,9 +95,9 @@ class FakeObserver {
   }
 }
 
-function Probe() {
+function Probe({ margin }: { margin?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const state = useInView(ref);
+  const state = useInView(ref, margin === undefined ? {} : { rootMargin: margin, threshold: 0 });
   return <div ref={ref} data-state={state} />;
 }
 
@@ -122,6 +122,27 @@ describe('useInView', () => {
     expect(state()).toBe('seen');
     expect(obs.disconnect).toHaveBeenCalled();
     expect(FakeObserver.instances).toHaveLength(1);
+  });
+
+  it('passes rootMargin and threshold to the observer and reports once', () => {
+    FakeObserver.instances = [];
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    const { container } = render(<Probe margin="600px 0px" />);
+    const obs = FakeObserver.instances[0]!;
+    expect(obs.options).toEqual({ threshold: 0, rootMargin: '600px 0px' });
+    act(() => {
+      obs.fire(true);
+    });
+    expect(container.firstElementChild?.getAttribute('data-state')).toBe('seen');
+    expect(obs.disconnect).toHaveBeenCalledTimes(1);
+    expect(obs.options.rootMargin).toBe('600px 0px');
+  });
+
+  it('keeps the default options when none are given', () => {
+    FakeObserver.instances = [];
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    render(<Probe />);
+    expect(FakeObserver.instances[0]!.options).toEqual({ threshold: 0.25 });
   });
 
   it('reports unsupported without IntersectionObserver', () => {

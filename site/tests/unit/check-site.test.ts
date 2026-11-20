@@ -93,14 +93,14 @@ describe('checkSite local links', () => {
 
 const REPO = 'https://github.com/SungHyunC/ghost-run';
 const LANDING_POLICY =
-  "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+  "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const SHELL_POLICY =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const HEADERS = `/\n  Content-Security-Policy: ${LANDING_POLICY}\n/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/shell/*\n  Content-Security-Policy: ${SHELL_POLICY}\n`;
 
 function validSite(): Record<string, string> {
   return {
-    'index.html': `<!doctype html><meta http-equiv="Content-Security-Policy" content="${LANDING_POLICY.replace(/; frame-ancestors 'none'/, '')}"><link rel="icon" href="favicon.svg"><link rel="stylesheet" href="assets/s.css"><script type="module" src="assets/app.js"></script><a href="${REPO}" rel="noopener noreferrer">GitHub</a><a href="shell/">s</a>`,
+    'index.html': `<!doctype html><meta http-equiv="Content-Security-Policy" content="${LANDING_POLICY.replace(/; frame-ancestors 'none'/, '')}"><link rel="icon" href="favicon.svg"><link rel="stylesheet" href="assets/s.css"><script type="module" src="assets/app.js"></script><a href="${REPO}" rel="noopener noreferrer">GitHub</a><a href="shell/">s</a><footer><a href="./THIRD_PARTY_NOTICES.txt">Third-party notices</a></footer>`,
     'favicon.svg': '<svg xmlns="http://www.w3.org/2000/svg"/>',
     'favicon.ico': 'ico',
     'assets/app.js': `const a="http://www.w3.org/2000/svg";const r="${REPO}";const e="https://react.dev/errors/";`,
@@ -110,6 +110,7 @@ function validSite(): Record<string, string> {
     'shell/ko.html': '',
     'hand/index.html': '',
     'kit/index.html': '',
+    'THIRD_PARTY_NOTICES.txt': 'notices',
     _headers: HEADERS,
   };
 }
@@ -153,10 +154,10 @@ describe('checkSite external URLs, headers scope, and structure', () => {
       expect(found.some((f) => f.reference === REPO && /repository URL/.test(f.rule)), `${file}: ${extra}`).toBe(true);
     }
     const csp = validSite();
-    csp['_headers'] = HEADERS.replace("connect-src 'none'", `connect-src ${REPO}`);
+    csp['_headers'] = HEADERS.replace("connect-src 'self'", `connect-src ${REPO}`);
     expect(checkSite(makeDist(csp)).some((f) => /repository URL in a Content/.test(f.rule))).toBe(true);
     const meta = validSite();
-    meta['index.html'] = meta['index.html']!.replace("connect-src 'none'", `connect-src ${REPO}`);
+    meta['index.html'] = meta['index.html']!.replace("connect-src 'self'", `connect-src ${REPO}`);
     expect(checkSite(makeDist(meta)).some((f) => f.file === 'index.html' && /repository URL in a Content/.test(f.rule))).toBe(true);
   });
 
@@ -176,7 +177,7 @@ describe('checkSite external URLs, headers scope, and structure', () => {
 
   it('flags forbidden policy tokens, and allows data: and unsafe-inline only in the shell block', () => {
     const bad = checkSite(
-      makeDist({ ...validSite(), _headers: HEADERS.replace("script-src 'self';", "script-src 'self' https://x.example 'unsafe-eval' * data: 'unsafe-inline';") }),
+      makeDist({ ...validSite(), _headers: HEADERS.replace("script-src 'self' 'wasm-unsafe-eval';", "script-src 'self' 'wasm-unsafe-eval' https://x.example 'unsafe-eval' * data: 'unsafe-inline';") }),
     );
     const tokens = bad.filter((f) => f.rule.startsWith('headers-policy')).map((f) => f.reference.split('  ')[1]);
     expect(tokens).toEqual(expect.arrayContaining(['https:', "'unsafe-eval'", '*', 'data:', "'unsafe-inline'"]));
@@ -207,10 +208,113 @@ describe('checkSite external URLs, headers scope, and structure', () => {
     expect(rules).toEqual(expect.arrayContaining([expect.stringMatching(/inline <script>/), expect.stringMatching(/style attribute/)]));
   });
 
+  it('flags a missing notice file and a missing notice link', () => {
+    const noFile = validSite();
+    delete noFile['THIRD_PARTY_NOTICES.txt'];
+    expect(checkSite(makeDist(noFile)).map((f) => f.reference)).toEqual(expect.arrayContaining(['(THIRD_PARTY_NOTICES.txt)', './THIRD_PARTY_NOTICES.txt']));
+    const noLink = validSite();
+    noLink['index.html'] = noLink['index.html']!.replace(/<footer>.*<\/footer>/, '');
+    expect(checkSite(makeDist(noLink)).map((f) => f.rule)).toEqual([expect.stringMatching(/no link to THIRD_PARTY_NOTICES/)]);
+  });
+
+  it('accepts the notice link as a string literal of the Entry_Bundle (the footer is rendered by React)', () => {
+    const files = validSite();
+    files['index.html'] = files['index.html']!.replace(/<footer>.*<\/footer>/, '');
+    files['assets/app.js'] += 'createElement("a",{href:"./THIRD_PARTY_NOTICES.txt"});';
+    expect(checkSite(makeDist(files))).toEqual([]);
+  });
+
   it('does not scan strings in a copied app bundle', () => {
     const files = validSite();
     files['hand/assets/app.js'] = 'const u="https://example.invalid/docs";// see https://other.example/';
     files['hand/index.html'] = '<script type="module" src="assets/app.js"></script>';
     expect(checkSite(makeDist(files))).toEqual([]);
+  });
+});
+
+describe('checkSite engine bundles, first paint, entry size, and policy of /', () => {
+  const ENGINE = {
+    'assets/engine-light-AAA.js': 'import{a}from"./common-CCC.js";import{b}from"./app.js";new Worker(new URL(""+new URL("worker-entry-WWW.js",import.meta.url).href,import.meta.url));',
+    'assets/engine-hand-BBB.js': 'import{a}from"./common-CCC.js";new URL(""+new URL("mujoco-MMM.wasm",import.meta.url));new URL(""+new URL("sim-worker-SSS.js",import.meta.url));',
+    'assets/common-CCC.js': 'export const a=1;const u="https://engine.example/inside-a-string";',
+    'assets/worker-entry-WWW.js': 'const w=new URL("sql-wasm-QQQ.wasm",self.location.href).href;',
+    'assets/sim-worker-SSS.js': 'const u="https://worker.example/x";',
+    'assets/mujoco-MMM.wasm': 'w',
+    'assets/sql-wasm-QQQ.wasm': 'w',
+  };
+  const withEngines = (): Record<string, string> => ({
+    ...validSite(),
+    ...ENGINE,
+    'assets/app.js': `import("./engine-light-AAA.js");import("./engine-hand-BBB.js");const r="${REPO}";`,
+  });
+
+  it('accepts engine chunks, their workers and wasm files, and does not scan their strings', () => {
+    expect(checkSite(makeDist(withEngines()))).toEqual([]);
+  });
+
+  it('flags a wasm or worker file that an engine chunk names but the site lacks', () => {
+    for (const gone of ['assets/mujoco-MMM.wasm', 'assets/sql-wasm-QQQ.wasm', 'assets/sim-worker-SSS.js', 'assets/worker-entry-WWW.js']) {
+      const files = withEngines();
+      delete files[gone];
+      expect(checkSite(makeDist(files)).some((f) => /does not exist/.test(f.rule)), gone).toBe(true);
+    }
+  });
+
+  it('flags an engine chunk, the shared chunk, or a wasm file named in index.html', () => {
+    for (const tag of [
+      '<script type="module" src="assets/engine-hand-BBB.js"></script>',
+      '<link rel="modulepreload" href="assets/engine-light-AAA.js">',
+      '<link rel="modulepreload" href="assets/common-CCC.js">',
+      '<link rel="preload" href="assets/mujoco-MMM.wasm" as="fetch">',
+    ]) {
+      const files = withEngines();
+      files['index.html'] += tag;
+      expect(checkSite(makeDist(files)).map((f) => f.rule.split(':')[0]), tag).toContain('first-paint');
+    }
+  });
+
+  it('flags a static import of an engine chunk in the entry, and allows a dynamic import', () => {
+    const files = withEngines();
+    files['assets/app.js'] = 'import{x}from"./engine-light-AAA.js";' + files['assets/app.js'];
+    expect(checkSite(makeDist(files)).map((f) => f.rule)).toEqual([expect.stringMatching(/static import of an Engine_Bundle/)]);
+    const shared = withEngines();
+    shared['assets/app.js'] = 'import"./common-CCC.js";' + shared['assets/app.js'];
+    expect(checkSite(makeDist(shared)).map((f) => f.rule)).toEqual([expect.stringMatching(/static import of an Engine_Bundle/)]);
+  });
+
+  it('flags an entry above the limit and accepts one exactly at it', async () => {
+    const { ENTRY_MAX_BYTES } = (await import(/* @vite-ignore */ modulePath)) as { ENTRY_MAX_BYTES: number };
+    expect(ENTRY_MAX_BYTES).toBe(360_000);
+    const at = withEngines();
+    at['assets/app.js'] = at['assets/app.js']!.padEnd(ENTRY_MAX_BYTES, ' ');
+    expect(checkSite(makeDist(at))).toEqual([]);
+    const over = withEngines();
+    over['assets/app.js'] = over['assets/app.js']!.padEnd(ENTRY_MAX_BYTES + 1, ' ');
+    expect(checkSite(makeDist(over)).map((f) => f.rule)).toEqual([expect.stringMatching(/larger than the limit/)]);
+  });
+
+  it('requires worker-src, connect-src \'self\', and wasm-unsafe-eval in the policy of /', () => {
+    const cases: Array<[string, string]> = [
+      ["worker-src 'self'; ", ''],
+      ["connect-src 'self'", "connect-src 'none'"],
+      ["'wasm-unsafe-eval'", ''],
+      ["connect-src 'self'", "connect-src 'self' 'none'"],
+    ];
+    for (const [from, to] of cases) {
+      const files = validSite();
+      files['_headers'] = HEADERS.replace(from, to);
+      const rules = checkSite(makeDist(files)).map((f) => f.rule.split(':')[0]);
+      expect(rules, `${from} -> ${to}`).toContain('headers-policy');
+    }
+    // The /shell/* block is not held to this rule.
+    const shell = validSite();
+    shell['_headers'] = HEADERS.replace(SHELL_POLICY, "default-src 'none'");
+    expect(checkSite(makeDist(shell))).toEqual([]);
+  });
+
+  it('accepts wasm-unsafe-eval and rejects unsafe-eval', () => {
+    const files = validSite();
+    files['_headers'] = HEADERS.replace("'wasm-unsafe-eval'", "'wasm-unsafe-eval' 'unsafe-eval'");
+    expect(checkSite(makeDist(files)).map((f) => f.reference).join(' ')).toContain("'unsafe-eval'");
   });
 });

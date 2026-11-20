@@ -14,7 +14,9 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readManifest } from './lib/bundled-packages.mjs';
 import { buildRootHeaders } from './lib/headers.mjs';
+import { renderNotices } from './lib/notices.mjs';
 import { renderWorldSizeFile } from './world-size.mjs';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -35,6 +37,12 @@ const COPIES = [
   { from: 'apps/ghost-hand/dist', to: 'hand', label: '/hand/' },
   { from: 'ui/dist', to: 'kit', label: '/kit/' },
 ];
+
+/**
+ * The third-party notice at the root of site/dist/ (site-live Requirement 18, criterion 3). The site writes it
+ * itself from the list of packages that the landing build found in its bundle and engine chunks.
+ */
+const NOTICE = { to: 'THIRD_PARTY_NOTICES.txt', manifest: 'site/build/bundled-packages.json' };
 
 class StepError extends Error {}
 
@@ -89,6 +97,12 @@ const defaultDeps = {
     if (r.status !== 0) throw new Error(`${r.stderr ?? ''}${r.stdout ?? ''}`.trim() || `exit code ${String(r.status)}`);
   },
   cpSync,
+  /** Writes the notices file of the landing bundle: one section per bundled package, plus the MuJoCo components. */
+  writeNotices(root, target) {
+    const manifest = join(root, NOTICE.manifest);
+    if (!isFile(manifest)) throw new StepError(`missing build output: ${NOTICE.manifest} (build it with: corepack pnpm --filter @ghost-run/site build)`);
+    writeFileSync(target, renderNotices({ root, packages: readManifest(manifest) }));
+  },
 };
 
 function checkSources(root) {
@@ -174,6 +188,8 @@ export async function buildSite({ root, flags = {}, deps = {} }) {
         filter: (src) => !src.endsWith('.DS_Store'),
       });
     }
+    step = NOTICE.to;
+    d.writeNotices(root, join(distDir, NOTICE.to));
     step = 'site/dist/shell/_headers';
     rmSync(join(distDir, 'shell', '_headers'), { force: true });
     step = 'site/dist/_headers';
@@ -182,6 +198,7 @@ export async function buildSite({ root, flags = {}, deps = {} }) {
       lines.push(`${copy.label} ${String(countFiles(join(root, copy.from)) - (copy.to === 'shell' ? 1 : 0))} files`);
     }
     lines.push('/_headers 1 file');
+    lines.push(`/${NOTICE.to} 1 file`);
   } catch (error) {
     rmSync(distDir, { recursive: true, force: true });
     return fail(`copy failed: ${step} (${reason(error)})`);
