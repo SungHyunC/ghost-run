@@ -1,0 +1,2 @@
+aws s3api delete-public-access-block --bucket prod-assets
+aws s3api put-bucket-acl --bucket prod-assets --acl public-read

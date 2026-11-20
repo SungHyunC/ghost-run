@@ -1,0 +1,15 @@
+# Wards of the ghost-cloud world. Paths are virtual (see README):
+#   BUCKET and BUCKET/KEY               a bucket and its objects
+#   _acl/BUCKET                         the ACL of a bucket
+#   _public-access-block/BUCKET         the public access block of a bucket
+# A pattern has an implicit trailing "**", so "prod-*" covers a bucket and every object below it.
+# The attribute paths start with "_", so "prod-*" never matches them and the two wards do not overlap.
+wards:
+  - id: no-bucket-delete
+    kind: path
+    deny: [delete]
+    paths: ["prod-*"]
+  - id: no-public-bucket
+    kind: path
+    deny: [delete, overwrite]
+    paths: ["_acl/prod-*", "_public-access-block/prod-*"]
