@@ -28,13 +28,13 @@ export interface Box {
 
 // -- Geometry (SVG user units) ------------------------------------------------
 
-export const VIEW = { x: -60, y: -14, w: 1360, h: 650 } as const;
+export const VIEW = { x: -60, y: -26, w: 1360, h: 600 } as const;
 export const NODE_W = 350;
 export const NODE_H = 112;
 const COL = [205, 645, 1085] as const;
 const ROW_TOP = 124;
-const ROW_BOTTOM = 524;
-export const JUDGE = { cx: 1085, cy: 332, hw: 165, hh: 74 } as const;
+const ROW_BOTTOM = 490;
+export const JUDGE = { cx: 1085, cy: 322, hw: 165, hh: 72 } as const;
 export const LOOP_X = -18;
 
 function box(cx: number, cy: number): Box {
@@ -101,6 +101,9 @@ export const EDGES: Readonly<Record<FlowEdgeId, readonly Point[]>> = {
     { x: NODES.plan.x, y: midY(NODES.plan) },
   ],
 };
+
+/** Where the "fix the plan" label sits: beside the loop, between the plan row and the block line. */
+export const FIX_LABEL = { x: LOOP_X + 12, y: Math.round((ROW_TOP + NODE_H / 2 + BLOCK_Y) / 2) + 6 } as const;
 
 export function pathOf(points: readonly Point[]): string {
   return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`).join(' ');

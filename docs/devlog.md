@@ -414,3 +414,12 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 - Unchanged: the judging pipeline, the playground world, the ui kit components and their tests, every text pinned by the existing tests, the button names the tests use, and the rule of no inline style in `main`.
 - Checks: ghost-shell typecheck and lint pass, 211 tests in 38 files pass (15 new: geometry, routes and tours of the flow, its DOM behaviour including reduced motion and Replay, and the page-text rules), and `test:dist` reports `check-dist: ok`. Checked by screenshots in Chrome at 1440 px (dark and lights on) and 390 px.
 
+### Ghost Shell page, second pass: visuals first (Claude Code, not Kiro)
+
+- The owner asked for the visual parts to come first and to be easy to see. Changes, still presentation only:
+  - One view for pick, run, and watch: on wide screens the five scenarios are a rail beside the flow diagram, so the Run ghost button, the flying ghost, and the three candle outcomes fit one 1440x900 screen. A new run also scrolls the diagram into view.
+  - A bolder diagram: each node has its own color tile, the three outcome boxes are always red, amber, or green, the ghost is larger with two afterimages while it flies, the candle smokes when it goes out, the reached outcome pulses, and the caption starts with a colored verdict pill.
+  - The mirror stage (`apps/ghost-shell/src/stage/`): a picture of reality and the ghost copy drawn from the run's first and last scene, its changes, and its observed events. Scenario 1 shows the 1,206 user rows fading out of the copy with "-1,206, table dropped"; scenarios 2 and 5 strike out every deleted path; scenario 3 marks `.env` as read and draws the network attempt leaving the copy to `setup-check.example:443`, stamped "Blocked by the wards". It plays once when it scrolls into view and is hidden from screen readers, because the kit Mirror World table under it stays the full record.
+  - The blacklight panel turns ultraviolet when switched on, the red thread ends are cards, and the graveyard entries are tombstones.
+- Checks: ghost-shell typecheck and lint pass, 225 tests in 40 files pass (14 more: the stage model with two fast-check properties, and the stage picture for scenarios 1 to 4 with real runs), and `check-dist: ok`. Screenshots in Chrome at 1440 px (dark and lights on), 1024 px, and 390 px.
+

@@ -7,14 +7,16 @@ import {
   FLOW_EDGE_APPROVED,
   FLOW_EDGE_FIX,
   FLOW_HEADING,
+  FLOW_JUDGE_SUB,
   FLOW_NODES,
+  FLOW_PILL,
   FLOW_REPLAY_LABEL,
   FLOW_SUMMARY_TEXT,
-  FLOW_JUDGE_SUB,
 } from '../page-texts';
 import {
   DWELL_MS,
   EDGES,
+  FIX_LABEL,
   JUDGE,
   NODES,
   STATIONS,
@@ -138,15 +140,15 @@ const NODE_ICONS: Readonly<Record<Exclude<FlowNodeId, 'judge'>, () => ReactNode>
 
 // -- The ghost -------------------------------------------------------------------
 
+const GHOST_BODY =
+  'M-24 26 L-24 -6 C-24 -22 -13 -33 0 -33 C13 -33 24 -22 24 -6 L24 26 Q20 33 16 27 Q12 21 8 27 Q4 33 0 27 Q-4 21 -8 27 Q-12 33 -16 27 Q-20 21 -24 26 Z';
+
 function GhostSprite() {
   return (
-    <g className="gf-sprite">
+    <g className="gf-sprite" transform="scale(1.3)">
       <ellipse cx={0} cy={44} rx={18} ry={4} className="gf-ghost-shadow" />
       <ellipse cx={0} cy={0} rx={34} ry={38} className="gf-ghost-glow" filter="url(#gf-blur)" />
-      <path
-        className="gf-ghost-body"
-        d="M-24 26 L-24 -6 C-24 -22 -13 -33 0 -33 C13 -33 24 -22 24 -6 L24 26 Q20 33 16 27 Q12 21 8 27 Q4 33 0 27 Q-4 21 -8 27 Q-12 33 -16 27 Q-20 21 -24 26 Z"
-      />
+      <path className="gf-ghost-body" d={GHOST_BODY} />
       <g className="gf-ghost-face">
         <ellipse cx={-8} cy={-8} rx={3.6} ry={5.2} className="gf-ghost-eye" />
         <ellipse cx={8} cy={-8} rx={3.6} ry={5.2} className="gf-ghost-eye" />
@@ -176,10 +178,20 @@ export function GhostFlow({ run }: GhostFlowProps) {
   const index = reduced ? lastIndex : Math.min(current.index, lastIndex);
   const step = current.tour[index] ?? current.tour[lastIndex];
 
+  const figureRef = useRef<HTMLElement>(null);
   const ghostRef = useRef<SVGGElement>(null);
   const spriteRef = useRef<SVGGElement>(null);
+  const echoRefs = [useRef<SVGGElement>(null), useRef<SVGGElement>(null)] as const;
   const lastPos = useRef<GhostPos>(step?.pos ?? 'plan');
   const [face, setFace] = useState<'left' | 'right'>('right');
+
+  // A new run brings the diagram into view, so the ghost is seen flying.
+  useEffect(() => {
+    if (run === undefined) return;
+    const fig = figureRef.current;
+    if (fig === null || typeof fig.scrollIntoView !== 'function') return;
+    fig.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+  }, [run, reduced]);
 
   useEffect(() => {
     if (step === undefined) return undefined;
@@ -206,6 +218,13 @@ export function GhostFlow({ run }: GhostFlowProps) {
         offset: total === 0 ? 1 : (lengths[i] ?? 0) / total,
       }));
       animations.push(ghost.animate(frames, { duration, easing: EASE }));
+      echoRefs.forEach((r, n) => {
+        const echo = r.current;
+        if (echo === null || typeof echo.animate !== 'function') return;
+        const last = frames.length - 1;
+        const echoFrames = frames.map((f, i) => ({ ...f, opacity: i === 0 || i === last ? 0 : 0.34 - n * 0.12 }));
+        animations.push(echo.animate(echoFrames, { duration, easing: EASE, delay: 70 * (n + 1) }));
+      });
       if (sprite !== null && typeof sprite.animate === 'function') {
         const lean = first !== undefined && last !== undefined && last.x < first.x ? -7 : 7;
         animations.push(
@@ -233,7 +252,8 @@ export function GhostFlow({ run }: GhostFlowProps) {
       if (timer !== undefined) clearTimeout(timer);
       for (const a of animations) a.finish();
     };
-    // The effect runs once per shown step of a round.
+    // The effect runs once per shown step of a round; the echo refs are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current.round, index, lastIndex, reduced, step]);
 
   if (step === undefined) return null;
@@ -250,7 +270,7 @@ export function GhostFlow({ run }: GhostFlowProps) {
   };
 
   return (
-    <figure className="gf" aria-labelledby="gf-heading">
+    <figure ref={figureRef} className="gf" aria-labelledby="gf-heading">
       <div className="gf-head">
         <h2 id="gf-heading" className="gf-heading">
           {FLOW_HEADING}
@@ -293,10 +313,10 @@ export function GhostFlow({ run }: GhostFlowProps) {
           {(Object.keys(EDGES) as FlowEdgeId[]).map((id) => (
             <path key={id} d={pathOf(EDGES[id])} className="gf-edge" data-edge={id} markerEnd="url(#gf-arrow-line)" />
           ))}
-          <text x={-6} y={258} className="gf-edge-label">
+          <text x={FIX_LABEL.x} y={FIX_LABEL.y} className="gf-edge-label">
             {FLOW_EDGE_FIX}
           </text>
-          <text x={(NODES.flicker.x + NODES.flicker.w + NODES.lit.x) / 2} y={NODES.lit.y + NODES.lit.h / 2 - 14} className="gf-edge-label" textAnchor="middle">
+          <text x={(NODES.flicker.x + NODES.flicker.w + NODES.lit.x) / 2} y={NODES.lit.y + NODES.lit.h / 2 - 12} className="gf-edge-label gf-edge-label-tight" textAnchor="middle">
             {FLOW_EDGE_APPROVED}
           </text>
 
@@ -328,14 +348,16 @@ export function GhostFlow({ run }: GhostFlowProps) {
                 (id === 'lit' && step.outcome === 'pass'));
             return (
               <g key={id} className="gf-node" data-node={id} data-state={nodeState(id)} data-on={on}>
+                {on ? <rect key={`p-${current.round}`} x={b.x} y={b.y} width={b.w} height={b.h} rx={20} className="gf-pulse" /> : null}
                 <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={20} className="gf-node-box" />
-                <g transform={`translate(${b.x + 44} ${b.y + b.h / 2})`}>
+                <rect x={b.x + 16} y={b.y + b.h / 2 - 29} width={58} height={58} rx={16} className="gf-tile" />
+                <g transform={`translate(${b.x + 45} ${b.y + b.h / 2})`}>
                   <Icon />
                 </g>
-                <text x={b.x + 84} y={b.y + b.h / 2 - 4} className="gf-node-title">
+                <text x={b.x + 90} y={b.y + b.h / 2 - 4} className="gf-node-title">
                   {text.title}
                 </text>
-                <text x={b.x + 84} y={b.y + b.h / 2 + 24} className="gf-node-sub">
+                <text x={b.x + 90} y={b.y + b.h / 2 + 24} className="gf-node-sub">
                   {text.sub}
                 </text>
               </g>
@@ -348,7 +370,7 @@ export function GhostFlow({ run }: GhostFlowProps) {
               d={`M${JUDGE.cx} ${JUDGE.cy - JUDGE.hh} L${JUDGE.cx + JUDGE.hw} ${JUDGE.cy} L${JUDGE.cx} ${JUDGE.cy + JUDGE.hh} L${JUDGE.cx - JUDGE.hw} ${JUDGE.cy} Z`}
               className="gf-node-box"
             />
-            <g transform={`translate(${JUDGE.cx - 78} ${JUDGE.cy - 2})`}>
+            <g transform={`translate(${JUDGE.cx - 82} ${JUDGE.cy + 2}) scale(1.35)`}>
               <CandleIcon />
             </g>
             <text x={JUDGE.cx - 50} y={JUDGE.cy - 4} className="gf-node-title">
@@ -359,7 +381,12 @@ export function GhostFlow({ run }: GhostFlowProps) {
             </text>
           </g>
 
-          {/* The ghost. */}
+          {/* The ghost and its two afterimages (seen only while it flies). */}
+          {echoRefs.map((r, n) => (
+            <g key={n} ref={r} className="gf-echo" transform={`translate(${station.x} ${station.y})`}>
+              <path d={GHOST_BODY} transform="scale(1.3)" />
+            </g>
+          ))}
           <g
             ref={ghostRef}
             className="gf-ghost"
@@ -379,6 +406,11 @@ export function GhostFlow({ run }: GhostFlowProps) {
             <li key={i} data-state={i < index ? 'done' : i === index ? 'now' : 'next'} data-outcome={s.outcome ?? 'none'} />
           ))}
         </ol>
+        {step.outcome === undefined ? null : (
+          <span className="gf-pill" data-outcome={step.outcome}>
+            {FLOW_PILL[step.outcome]}
+          </span>
+        )}
         <p className="gf-caption-text" data-outcome={step.outcome ?? 'none'}>
           {step.caption}
         </p>

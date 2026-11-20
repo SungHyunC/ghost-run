@@ -1,9 +1,17 @@
 import { SCENARIOS } from '../scenarios/scenarios';
 import type { PageAction, PageState } from '../state/reducer';
 import { APPLY_FIXED_PLAN_LABEL, RUN_GHOST_LABEL } from '../texts';
-import { FIXED_PLAN_HINT, SCENARIOS_INTRO, SCENARIO_CARDS, SELECTED_TEXT, STEP_PICK_LABEL } from '../page-texts';
+import {
+  FIXED_PLAN_HINT,
+  SCENARIOS_HEADING_HINT,
+  SCENARIOS_INTRO,
+  SCENARIO_CARDS,
+  SELECTED_TEXT,
+  STEP_PICK_LABEL,
+} from '../page-texts';
 import { escapeForDisplay } from '../ui-imports';
 import { GhostMark } from './GhostMark';
+import { ScenarioIcon } from './ScenarioIcon';
 
 export interface ScenarioBarProps {
   readonly state: PageState;
@@ -15,12 +23,14 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
   const canApplyFixed = selected?.fixedPlan !== undefined;
   return (
     <section className="gk-section gs-pick" aria-labelledby="gs-scenarios-h">
-      <div className="gs-section-head">
-        <p className="gs-step">{STEP_PICK_LABEL}</p>
-        <h2 id="gs-scenarios-h" className="gk-heading">
-          Scenarios
-        </h2>
-        <p className="gs-section-intro">{SCENARIOS_INTRO}</p>
+      <div className="gs-pick-head">
+        <div>
+          <p className="gs-step">{STEP_PICK_LABEL}</p>
+          <h2 id="gs-scenarios-h" className="gk-heading">
+            Scenarios
+          </h2>
+          <p className="gs-section-intro">{SCENARIOS_HEADING_HINT}</p>
+        </div>
       </div>
       <div role="group" aria-label="Scenario selector" className="gs-cards">
         {SCENARIOS.map((s) => {
@@ -32,6 +42,7 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
               key={s.id}
               type="button"
               className="gk-button gs-card"
+              data-scenario={s.id}
               aria-pressed={pressed}
               aria-label={`${s.id}. ${title}`}
               aria-describedby={`gs-card-${s.id}-d`}
@@ -40,17 +51,22 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
               }}
             >
               <span className="gs-card-top" aria-hidden="true">
-                <span className="gs-card-num">{`0${s.id}`}</span>
-                <span className="gs-card-tag">{card.tag}</span>
+                <span className="gs-card-icon">
+                  <ScenarioIcon id={s.id} />
+                </span>
+                <span className="gs-card-meta">
+                  <span className="gs-card-num">{`0${s.id}`}</span>
+                  <span className="gs-card-tag">{card.tag}</span>
+                </span>
               </span>
               <span className="gs-card-title" aria-hidden="true">
                 {title}
               </span>
-              <span className="gs-card-blurb" id={`gs-card-${s.id}-d`}>
-                {card.blurb}
-              </span>
               <span className="gs-card-cmd gs-mono" aria-hidden="true">
                 {escapeForDisplay(s.plan[0]?.command ?? '')}
+              </span>
+              <span className="gk-sr-only" id={`gs-card-${s.id}-d`}>
+                {card.blurb}
               </span>
               {pressed ? (
                 <span className="gs-card-picked" aria-hidden="true">
@@ -82,6 +98,18 @@ export function ScenarioBar({ state, dispatch }: ScenarioBarProps) {
         >
           {APPLY_FIXED_PLAN_LABEL}
         </button>
+      </div>
+      <div className="gs-pick-foot">
+        <p className="gs-picked-line" aria-hidden="true">
+          {selected === undefined ? (
+            SCENARIOS_INTRO
+          ) : (
+            <>
+              <strong>{escapeForDisplay(selected.title)}</strong>
+              {`: ${SCENARIO_CARDS[selected.id].blurb}`}
+            </>
+          )}
+        </p>
         <p className="gs-hint">{FIXED_PLAN_HINT}</p>
       </div>
     </section>

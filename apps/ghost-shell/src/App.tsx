@@ -17,9 +17,10 @@ import {
   HERO_POINTS,
   INSPECT_HEADING,
   INSPECT_INTRO,
-  STAGE_INTRO,
   STEP_INSPECT_LABEL,
-  STEP_RUN_LABEL,
+  STEP_TOOLS_LABEL,
+  TOOLS_HEADING,
+  TOOLS_INTRO,
 } from './page-texts';
 import { GhostMark } from './screens/GhostMark';
 import { Notices } from './screens/Notices';
@@ -99,23 +100,16 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
               </ul>
             </div>
           </div>
-          <GhostFlow {...(flowRun === undefined ? {} : { run: flowRun })} />
         </header>
 
         <Notices state={state} sqlFailed={sqlFailed} dispatch={controller.dispatch} />
 
-        <ScenarioBar state={state} dispatch={controller.dispatch} />
-
-        <div className="gs-block">
-          <div className="gs-block-head">
-            <p className="gs-step">{STEP_RUN_LABEL}</p>
-            <p className="gs-section-intro">{STAGE_INTRO}</p>
-          </div>
-          <div className="gs-stage">
-            <PlanPanel state={state} dispatch={controller.dispatch} />
-            <RunPanel run={state.run} />
-          </div>
+        <div className="gs-theater">
+          <ScenarioBar state={state} dispatch={controller.dispatch} />
+          <GhostFlow {...(flowRun === undefined ? {} : { run: flowRun })} />
         </div>
+
+        <RunPanel run={state.run} />
 
         <div className="gs-block">
           <div className="gs-block-head">
@@ -123,9 +117,18 @@ export function App({ services, sqlReady, wardsText }: AppProps) {
             <h2 className="gs-block-title">{INSPECT_HEADING}</h2>
             <p className="gs-section-intro">{INSPECT_INTRO}</p>
           </div>
+          <PossessionPanel state={state} dispatch={controller.dispatch} />
           <GraveyardPanel state={state} dispatch={controller.dispatch} />
-          <div className="gs-lower">
-            <PossessionPanel state={state} dispatch={controller.dispatch} />
+        </div>
+
+        <div className="gs-block">
+          <div className="gs-block-head">
+            <p className="gs-step">{STEP_TOOLS_LABEL}</p>
+            <h2 className="gs-block-title">{TOOLS_HEADING}</h2>
+            <p className="gs-section-intro">{TOOLS_INTRO}</p>
+          </div>
+          <div className="gs-tools">
+            <PlanPanel state={state} dispatch={controller.dispatch} />
             <WardsEditor
               state={state}
               dispatch={controller.dispatch}

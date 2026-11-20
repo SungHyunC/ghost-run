@@ -24,11 +24,11 @@ export function PossessionPanel({ state, dispatch }: PossessionPanelProps) {
   const sources = useMemo(() => sourcesOf(provenance, readme), [provenance, readme]);
   const actionLabels = useMemo(() => plan.map((a) => escapeForDisplay(a.command)), [plan]);
   return (
-    <section className="gk-section" aria-labelledby="gs-possession-h">
+    <section className="gk-section gs-possession" aria-labelledby="gs-possession-h">
       <h2 id="gs-possession-h" className="gk-heading">Possession</h2>
       <RedThreadView needles={run?.needles ?? []} links={run?.links ?? []} actionLabels={actionLabels} />
       <BlacklightView sources={sources} />
-      <div className="gs-actions">
+      <div className="gs-actions gs-purify">
         <button
           type="button"
           className="gk-button"
@@ -39,9 +39,11 @@ export function PossessionPanel({ state, dispatch }: PossessionPanelProps) {
           {PURIFY_LABEL}
         </button>
       </div>
-      <p>{PURIFY_NOTE_TEXT}</p>
-      <p>{POSSESSION_ACTION_TEXT}</p>
-      <p>{CANARY_TEXT}</p>
+      <div className="gs-possession-notes">
+        <p>{PURIFY_NOTE_TEXT}</p>
+        <p>{POSSESSION_ACTION_TEXT}</p>
+        <p>{CANARY_TEXT}</p>
+      </div>
     </section>
   );
 }

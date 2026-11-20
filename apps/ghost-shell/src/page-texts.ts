@@ -48,3 +48,26 @@ export const INSPECT_HEADING = 'Look closer';
 export const INSPECT_INTRO =
   'The graveyard keeps every blocked command. The red thread and the blacklight show where a possessed action came from. The wards decide what counts as harm.';
 export const FOOTER_TEXT = 'Ghost Run+, MIT license, made for Kiroween 2026';
+
+// -- Mirror stage (the picture of reality and the ghost copy) ------------------------
+
+export const STAGE_REAL_TITLE = 'Reality';
+export const STAGE_REAL_SUB = 'before the ghost run';
+export const STAGE_COPY_TITLE = 'Ghost copy';
+export const STAGE_COPY_SUB = 'after the ghost ran the plan';
+export const STAGE_OUTSIDE_TITLE = 'Outside the copy';
+export const STAGE_ROWS_WORD = 'rows';
+export const STAGE_TABLE_DROPPED = 'table dropped';
+export const STAGE_SECRET_TAG = 'secret read';
+export const STAGE_AFTER_READ = 'after reading';
+export const STAGE_STATUS_TAG = { same: '', deleted: 'deleted', created: 'new', changed: 'changed' } as const;
+export const STAGE_STAMP = { block: 'Blocked by the wards', warn: 'A human decides', pass: 'Allowed by the wards' } as const;
+
+// -- Verdict pill of the flow caption -------------------------------------------------
+
+export const FLOW_PILL = { block: 'Candle out', warn: 'Flicker', pass: 'Candle lit' } as const;
+export const SCENARIOS_HEADING_HINT = 'Pick a haunting, then run its ghost and watch it below.';
+export const RUN_DETAILS_HEADING = 'Every change, step by step';
+export const STEP_TOOLS_LABEL = 'Make your own';
+export const TOOLS_HEADING = 'Write a plan, tune the wards';
+export const TOOLS_INTRO = 'Type commands into a plan or load a plan file, and edit the wards the ghost is judged by. Nothing here is saved.';
