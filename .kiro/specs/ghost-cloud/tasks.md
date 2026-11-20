@@ -108,55 +108,55 @@ Each run starts by running `corepack pnpm --filter @ghost-run/ghost-cloud test` 
     - If any of Properties 1 to 4 or 11 fails, stop and fix before task 7. This is the checkpoint of run 1.
     - _Requirements: 3.2, 3.3, 4.1, 6.2_
 
-- [ ] 7. Parser and step property tests
-  - [ ] 7.1 Write `tests/prop-05-parser-totality.test.ts` and `tests/support/format-action.ts` [no-docker]
+- [x] 7. Parser and step property tests
+  - [x] 7.1 Write `tests/prop-05-parser-totality.test.ts` and `tests/support/format-action.ts` [no-docker]
     - Three generators: random Unicode strings; mutations of valid lines (extra token, unknown option, shell operator, line over 1,024 characters, a hidden character from `\u` escapes); valid lines. `formatAction` is the test-only inverse of the parser.
     - **Property 5: Parser totality**
     - **Validates: Requirements 1.2, 1.3, 12.5**
 
-  - [ ] 7.2 Write `tests/prop-06-parser-roundtrip.test.ts` [no-docker]
+  - [x] 7.2 Write `tests/prop-06-parser-roundtrip.test.ts` [no-docker]
     - **Property 6: Parser round trip**
     - **Validates: Requirements 1.2**
 
-  - [ ] 7.3 Write `tests/prop-07-step-purity.test.ts` [no-docker]
+  - [x] 7.3 Write `tests/prop-07-step-purity.test.ts` [no-docker]
     - Use a wider action generator than `actionArb`: also missing buckets, empty or invalid keys, and `unsupported` actions.
     - **Property 7: Step purity**
     - **Validates: Requirements 1.4, 1.5, 1.6, 2.3**
 
-- [ ] 8. Diff, render, fingerprint, and effects property tests
-  - [ ] 8.1 Write `tests/prop-08-diff.test.ts` [no-docker]
+- [x] 8. Diff, render, fingerprint, and effects property tests
+  - [x] 8.1 Write `tests/prop-08-diff.test.ts` [no-docker]
     - The oracle flattens states in the test (not through the Reference_Model's interpreter) and checks the five clauses of Property 8.
     - **Property 8: Diff minimality and order**
     - **Validates: Requirements 2.4**
 
-  - [ ] 8.2 Write `tests/prop-09-render-fingerprint.test.ts` [no-docker]
+  - [x] 8.2 Write `tests/prop-09-render-fingerprint.test.ts` [no-docker]
     - **Property 9: Render purity and fingerprint stability**
     - **Validates: Requirements 2.5, 2.6**
 
-  - [ ] 8.3 Write `tests/prop-10-effects.test.ts` [no-docker]
+  - [x] 8.3 Write `tests/prop-10-effects.test.ts` [no-docker]
     - Include `endpointUrl` strings that do not match the host pattern.
     - **Property 10: Effects**
     - **Validates: Requirements 2.7**
 
-- [ ] 9. Ward soundness and the negative control
-  - [ ] 9.1 Write `tests/prop-12-ward-soundness.test.ts` [no-docker]
+- [x] 9. Ward soundness and the negative control
+  - [x] 9.1 Write `tests/prop-12-ward-soundness.test.ts` [no-docker]
     - Plans from `actionArb`, run through `runGhostCloudPlan`; the expected set and verdict come from the Reference_Model events (design, Property 12).
     - **Property 12: Ward soundness (P5 for supported plans)**
     - **Validates: Requirements 5.2, 5.3, 5.4, 5.5, 8.1**
 
-  - [ ] 9.2 Write `tests/prop-17-negative-control.test.ts` [no-docker]
+  - [x] 9.2 Write `tests/prop-17-negative-control.test.ts` [no-docker]
     - Three wrappers around `createGhostCloudWorld({ reality })`: `step` writes to the injected store (P1), `diff` drops one change (P2), `step` mutates its input (P3). `verifyWorld` must throw a `VerificationError` with the right property id for each.
     - **Property 17: Gate catches a broken world**
     - **Validates: Requirements 3.2, 3.3, 8.1**
 
-- [ ] 10. Pipeline property tests
-  - [ ] 10.1 Write `tests/prop-13-pipeline-floor.test.ts` [no-docker]
+- [x] 10. Pipeline property tests
+  - [x] 10.1 Write `tests/prop-13-pipeline-floor.test.ts` [no-docker]
     - Plans of 0 to 50 lines mixing lines from `formatAction` and unsupported lines. Compare with the verdict computed from the engine verdict.
     - Add a P1 case: a world factory whose `step` writes into the injected `reality` store makes the run `block` with `p1.equal === false`, one P1 notice, and the lowered-claim line in the message. With a correct world, `p1.equal` is true and `before` equals `after`.
     - **Property 13: Pipeline floor and notices**
     - **Validates: Requirements 12.2, 12.4, 12.6, 12.10**
 
-  - [ ] 10.2 Write `tests/prop-14-pipeline-shape.test.ts` [no-docker]
+  - [x] 10.2 Write `tests/prop-14-pipeline-shape.test.ts` [no-docker]
     - Arrays of 0 to 80 random strings. Assert no throw, per-line records, `truncatedLines`, scenes, the cut-off notice, and `structuredClone` plus JSON round-trip equality. Add one example test with a broken world factory (internal error path). Assert that `p1` holds hashes only and survives the JSON round trip.
     - **Property 14: Pipeline totality and shape**
     - **Validates: Requirements 12.5, 12.7, 12.8, 12.9**
