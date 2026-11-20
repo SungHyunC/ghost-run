@@ -1,4 +1,4 @@
-// Fixed texts of the app. Every user-visible constant string lives here.
+// Fixed texts of the app. Every user-visible constant string lives here or in page-texts.ts (hero, flow, cards).
 // The Blacklight disclaimer ("Text analysis does not catch every injection.") comes from the ui kit only.
 // The words "sealed" and "isolated" appear in none of them (Requirement 18.7).
 
@@ -60,3 +60,4 @@ export const WARDS_IN_MEMORY_TEXT =
   'This edit is an in-memory copy. It is not saved and the bundled wards.yaml file does not change.';
 export const WARDS_ERRORS_LABEL = 'wards.yaml errors';
 export const WARDS_DOWNLOAD_FILE_NAME = 'wards.yaml';
+

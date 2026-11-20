@@ -66,20 +66,22 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
   };
 
   return (
-    <section className="gk-section" aria-labelledby="gs-plan-h">
+    <section className="gk-section gs-plan" aria-labelledby="gs-plan-h">
       <h2 id="gs-plan-h" className="gk-heading">Plan</h2>
-      <p>
-        Plan name: <span data-plan-name>{escapeForDisplay(meta.name)}</span>
-      </p>
-      <p>{meta.origin === 'recorded' ? RECORDED_PLAN_TEXT : SCRIPTED_PLAN_TEXT}</p>
-      {meta.note === undefined ? null : (
+      <div className="gs-meta">
         <p>
-          Note: <span data-plan-note>{escapeForDisplay(meta.note)}</span>
+          Plan name: <span data-plan-name>{escapeForDisplay(meta.name)}</span>
         </p>
-      )}
-      <p>
-        Project fixture: <span className="gs-mono">{escapeForDisplay(meta.projectName)}</span>
-      </p>
+        <p>{meta.origin === 'recorded' ? RECORDED_PLAN_TEXT : SCRIPTED_PLAN_TEXT}</p>
+        {meta.note === undefined ? null : (
+          <p>
+            Note: <span data-plan-note>{escapeForDisplay(meta.note)}</span>
+          </p>
+        )}
+        <p>
+          Project fixture: <span className="gs-mono">{escapeForDisplay(meta.projectName)}</span>
+        </p>
+      </div>
       <ol className="gs-mono gs-steps" aria-label="Plan steps">
         {state.plan.map((action, i) => {
           const step = steps?.[i];
@@ -127,7 +129,7 @@ export function PlanPanel({ state, dispatch }: PlanPanelProps) {
         </label>
         <button type="submit" className="gk-button">{ADD_TO_PLAN_LABEL}</button>
       </form>
-      <div className="gs-actions">
+      <div className="gs-actions gs-file-actions">
         <button
           type="button"
           className="gk-button"
