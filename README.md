@@ -2,6 +2,8 @@
 
 Let your agent's ghost try it first.
 
+**Live site:** https://ghost-run-plus.pages.dev: the landing page, [Ghost Shell](https://ghost-run-plus.pages.dev/shell/), [Ghost Hand](https://ghost-run-plus.pages.dev/hand/), and the [UI kit](https://ghost-run-plus.pages.dev/kit/).
+
 ## What it is
 
 Ghost Run+ lets an AI agent rehearse an irreversible action in a copy of the world before it runs for real. A "ghost" plays the agent's plan against a mirror world (a copy of the files, the database, or the physics scene). Declared guard rules, called wards and written in `wards.yaml`, judge the result, and the real action proceeds only if every ward passes. It addresses two failures: a plain mistake, such as an agent deleting a production database during a code freeze (reported publicly for a Replit agent in July 2025), and possession, where hidden instructions in a document the agent reads steer it. A blocked agent gets the ward id, the numbers, and a seance link, so it can fix the plan and try again.
@@ -106,7 +108,7 @@ The first plan prints `GHOST RUN BLOCKED by ward gentle-hands` and exits with co
 
 ## Landing site
 
-The landing page lives in `site/` (`@ghost-run/site`). Source: [site/](https://github.com/SungHyunC/ghost-run/tree/main/site) in the repository https://github.com/SungHyunC/ghost-run. The deployed URL will be added here after deployment.
+The landing page lives in `site/` (`@ghost-run/site`). Source: [site/](https://github.com/SungHyunC/ghost-run/tree/main/site) in the repository https://github.com/SungHyunC/ghost-run. It is deployed at https://ghost-run-plus.pages.dev (Cloudflare Pages, free plan). The deploy is a direct upload of `site/dist/` with `npx wrangler pages deploy site/dist --project-name ghost-run-plus --branch main`. Cloudflare Pages applies the root `_headers` file. One behavior to know: it redirects `/shell/ko.html` to `/shell/ko`.
 
 Build it from the repository root:
 

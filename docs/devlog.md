@@ -483,3 +483,17 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 
   A Kiro fix run fixed all five, plus a stale line in tasks.md, for 4.3 credits. The site now has 422 tests. The comparison is recorded in `docs/measurements.md`.
 - **Credits:** the landing site cost 209.4 in total (spec 43.4, implementation 161.7, fixes 4.3).
+
+### Deployment of the site (Claude Code)
+
+- **Host.** At the owner's request the site went to Cloudflare Pages, project `ghost-run-plus`, at https://ghost-run-plus.pages.dev. The owner chose it over Netlify for three reasons:
+  - The Netlify free plan is credit-based, about 30 GB of bandwidth a month, and a free site is paused when the credits run out. One visit that includes Ghost Hand loads about 15 MB.
+  - Cloudflare Pages applies the same `_headers` file.
+  - The largest file, the 11 MB MuJoCo wasm, is under the 25 MiB per-file limit.
+- **Login.** Wrangler 4.86.0 logged in with OAuth and only the scopes `account:read`, `user:read` and `pages:write` (plus `offline_access`), not Wrangler's default list. The owner's browser agent (Aside) opened the consent page. The access can be revoked in the Cloudflare dashboard under Connected Applications.
+- **Deploy.** A direct upload of the committed build: `wrangler pages deploy site/dist --project-name ghost-run-plus --branch main` sent 28 files plus `_headers`.
+- **Live checks** (curl and Chrome):
+  - `/` and `/shell/*` carry their Content-Security-Policy headers. `/hand/` and `/kit/` have none, as designed; the kit keeps its meta tag.
+  - The wasm is served as `application/wasm`. The first request returned a Cloudflare 522 once, and later requests were 200.
+  - `/shell/ko.html` redirects (308) to `/shell/ko`.
+  - The landing walkthrough, a Ghost Shell run, the Korean page, the kit, and the Ghost Hand demo all ran with no console error.
