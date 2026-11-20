@@ -1,0 +1,9 @@
+{
+  "format": "ghost-site-world-size",
+  "version": 1,
+  "worlds": {
+    "drawer-arm": 2647,
+    "ghost-cloud": 789,
+    "playground-shell": 2569
+  }
+}

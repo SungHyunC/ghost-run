@@ -35,6 +35,8 @@ ghost-run/
 │  └─ ghost-hand/           # App 2: browser MuJoCo robot arm variants
 │                           # 3D ghost overlay (Three.js)
 │                           # Node entry point (headless run)
+├─ site/                    # Separate workspace package (@ghost-run/site): the public
+│                           # landing page and the build that assembles site/dist/
 ├─ worlds/                  # Drop-in folder for additional World implementations
 │  └─ drawer-arm/           # Robot arm world for Ghost Hand
 │                           # wards.yaml: drawer-arm wards file
@@ -60,6 +62,7 @@ ghost-run/
 - `wards-config/` is a separate workspace package (not under `integrations/`). It may depend on `core/` only, through the public entry point `@ghost-run/core`.
 - `integrations/*` may also depend on `ghost-runner/` and `wards-config/`, only through their public entry points. `integrations/mcp` may depend on `integrations/kiro-hook` only through its `index.mjs`.
 - `core/` must not import `ghost-runner/` or `wards-config/` (enforced by an ESLint `no-restricted-imports` rule).
+- `site/` (`@ghost-run/site`): the public landing page and the build that assembles `site/dist/`. It may depend on `core/`, `wards-config/`, and `worlds/*` at build time, on the build output of `apps/*` and `ui/`, and, in one build-time record script, on the pipeline modules of `apps/ghost-shell` and `apps/ghost-hand`. No package may depend on `site/`.
 - `core/` must not depend on any other folder in this repository.
 
 ## World Contract (`core/`)

@@ -3,6 +3,8 @@
 // The words "sealed" and "isolated" appear in none of them (Requirement 18.7).
 
 export const APP_TITLE = 'Ghost Shell';
+export const HOME_LINK_TEXT = 'Ghost Run+ home';
+export const HOME_LINK_HREF = '../';
 export const APP_TAGLINE = "Let your agent's ghost try it first.";
 
 export const SCRIPTED_PLAN_TEXT = 'Scripted plan: not decided by an LLM in this page.';

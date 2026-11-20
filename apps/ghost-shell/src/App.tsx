@@ -8,7 +8,7 @@ import { PlanPanel } from './screens/PlanPanel';
 import { GraveyardPanel } from './screens/GraveyardPanel';
 import { PossessionPanel } from './screens/PossessionPanel';
 import { WardsEditor } from './screens/WardsEditor';
-import { APP_TITLE, WARDS_DOWNLOAD_FILE_NAME } from './texts';
+import { APP_TITLE, HOME_LINK_HREF, HOME_LINK_TEXT, WARDS_DOWNLOAD_FILE_NAME } from './texts';
 import { StringsContext } from './i18n/context';
 import { STRINGS } from './i18n/strings';
 import type { Locale } from './i18n/strings';
@@ -85,6 +85,9 @@ export function App({ services, sqlReady, wardsText, locale }: AppProps) {
                 <span className="gs-eyebrow">{t.eyebrow}</span>
                 <a className="gs-lang" href={t.switchHref} hrefLang={t.switchLang} lang={t.switchLang}>
                   {t.switchLabel}
+                </a>
+                <a className="gs-lang" href={HOME_LINK_HREF}>
+                  {HOME_LINK_TEXT}
                 </a>
               </p>
               <h1>{APP_TITLE}</h1>

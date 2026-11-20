@@ -163,6 +163,39 @@ body {
   font-weight: 600;
 }
 
+.gh-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.gh-hero-tags .gh-eyebrow {
+  margin: 0;
+}
+
+.gh-home-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid var(--gh-accent);
+  border-radius: 999px;
+  color: var(--gh-accent-strong);
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.gh-home-link:hover {
+  background: var(--gh-accent-tint);
+}
+
+.gh-home-link:focus-visible {
+  outline: 3px solid var(--gk-focus);
+  outline-offset: 2px;
+}
+
 @media (max-width: 34rem) {
   .gh-brand-sep,
   .gh-brand-app {

@@ -1,0 +1,41 @@
+{
+  "strings": [
+    {
+      "value": "http://www.w3.org/1999/xhtml",
+      "files": "assets/*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "http://www.w3.org/2000/svg",
+      "files": "assets/*.js, **/*.svg",
+      "reason": "XML namespace identifier (SVG markup and React). It names a namespace and is never fetched."
+    },
+    {
+      "value": "http://www.w3.org/1998/Math/MathML",
+      "files": "assets/*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "http://www.w3.org/1999/xlink",
+      "files": "assets/*.js, **/*.svg",
+      "reason": "XML namespace identifier (SVG markup and React). It names a namespace and is never fetched."
+    },
+    {
+      "value": "http://www.w3.org/XML/1998/namespace",
+      "files": "assets/*.js",
+      "reason": "XML namespace identifier that React uses as a name and never fetches."
+    },
+    {
+      "value": "https://react.dev/errors/",
+      "files": "assets/*.js",
+      "reason": "Owner decision O2 (Requirement 20, criterion 5b). React DOM's production build holds this error-documentation prefix as a string in its error-decoder message. It is shown as text in an error and is never a request target. The apps' own bundles hold it too."
+    },
+    {
+      "value": "https://github.com/SungHyunC/ghost-run",
+      "files": "index.html, assets/*.js",
+      "reason": "Owner decision O1 (Requirement 20, criterion 5c): the one repository URL (REPO_URL in src/config.ts). Valid only as the href of an anchor with rel=\"noopener noreferrer\" (and as a string in the Landing_Page bundle). Never in a resource attribute, a link href, a CSS url(), or the Content-Security-Policy.",
+      "anchorOnly": true,
+      "requiredRel": "noopener noreferrer"
+    }
+  ]
+}

@@ -62,6 +62,7 @@ export const RESTORE_FAILED_TEXT = 'Restore check failed: this browser did not r
 
 // Page design (hero, rail, ghost lineup, sections). Labels only; no requirement pins them.
 export const APP_BRAND = 'Ghost Run+';
+export const HOME_LINK_TEXT = 'Ghost Run+ home';
 export const HERO_EYEBROW = 'Physics playground';
 export const HERO_LEAD =
   'Before a robot arm moves, eight ghost arms try the same plan in haunted copies of the world: more friction, a heavier drawer, a lagging controller. If a ghost touches the vase or pulls too hard, the candle goes out and the arm stays still.';

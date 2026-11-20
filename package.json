@@ -8,6 +8,7 @@
     "build": "\"$npm_execpath\" -r build",
     "test": "\"$npm_execpath\" -r --workspace-concurrency=1 --no-bail test",
     "typecheck": "\"$npm_execpath\" -r --workspace-concurrency=1 --no-bail typecheck",
-    "lint": "\"$npm_execpath\" -r --workspace-concurrency=1 --no-bail lint"
+    "lint": "\"$npm_execpath\" -r --workspace-concurrency=1 --no-bail lint",
+    "build:site": "\"$npm_execpath\" --filter @ghost-run/ghost-shell --filter @ghost-run/ghost-hand --filter @ghost-run/ui run build && \"$npm_execpath\" --filter @ghost-run/site run assemble && \"$npm_execpath\" --filter @ghost-run/site run check"
   }
 }

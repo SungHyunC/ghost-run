@@ -992,3 +992,74 @@ Command: `corepack pnpm exec vitest run` and `GHOST_PBT_MODE=nightly corepack pn
 | Nightly_Run | 10,000 | 33.45 s | 33.96 s | 34.9 s |
 
 The Short_Run is inside the 55 s save-time budget and uses 100 examples, so no written reason for a lower count is needed. Property 17 (negative control) uses 100 examples per case in both modes: an earlier Nightly_Run with 10,000 examples in that file did not finish in over an hour because of the shrink of a failing gate.
+
+## Site contrast changes
+
+Test: `site/tests/unit/contrast.test.ts` (Requirement 15, criterion 7). Translucent backgrounds are composited over `#1c0e3b`. Each Mockup value below failed its limit (4.5 for normal text, 3 for component borders) and was raised only as far as the limit, at the precision of the stylesheet. All other curated pairs (text and the borders of the page controls) pass with the Mockup values.
+
+| Selector | Property | Old value | New value | Ratio (old, new) |
+|---|---|---|---|---|
+| `.btn` | border color | `var(--line)` = `rgba(255,255,255,.15)` | `rgba(255,255,255,.34)` | 1.54, 3.04 |
+| `.wchip` | border color | `var(--line)` | `rgba(255,255,255,.34)` | 1.54, 3.04 |
+| `.rail button` | border color | `var(--line)` | `rgba(255,255,255,.34)` | 1.54, 3.04 |
+| `.xsw input` | border color | `rgba(255,255,255,.18)` | `rgba(255,255,255,.34)` | 1.71, 3.04 |
+| `.fpb` | background (white text) | `#2f8f3e` | `#2d873b` | 4.10, 4.53 |
+| `.dropped .tag` | background (white text) | `var(--red)` = `#ff6b7a` | `#c2525d` | 2.75, 4.51 |
+| `.tile.fail .res` | background (white text) | `var(--red)` | `#c2525d` | 2.75, 4.51 |
+
+`--line` and `--red` themselves are unchanged; cards, panels, and the red outline of a failed tile keep the Mockup values. The faded `.used span.off` chips (opacity .32) are an inactive state and are not tested.
+
+## Site measurements
+
+Measured on the Reference_Machine (macOS, Apple Silicon), Node v20.20.2, vitest 3.2.7, with the three app builds present (`apps/ghost-shell/dist`, `apps/ghost-hand/dist`, `ui/dist`).
+
+| Measurement | Command (in `site/`) | Result | Limit |
+|---|---|---|---|
+| Gated record test (task 5.5) | `corepack pnpm test:record` | 4 tests passed, 4.37 s test time, 4.84 s vitest duration, 5.47 s wall | none |
+| Full site test run | `corepack pnpm test` | 44 files, 415 tests passed, 23.14 s vitest duration, 23.69 s wall | 60 s |
+| `assemble` | `corepack pnpm assemble` | 1.16 s wall | 60 s |
+
+The record test is gated behind `GHOST_SITE_RECORD=1` (Requirement 21, criterion 3) because it runs the Record_Script, which runs the real worlds, and compares the fresh output byte for byte with the committed `runs.json`. The plain `corepack pnpm test` leaves it out, so the full run stays well inside 60 s. The slowest file in the full run is `tests/dom/reality.property.test.tsx` (about 21.7 s).
+
+Counts printed by the Build_Script (`corepack pnpm assemble`):
+
+```
+/ 12 files
+/shell/ 6 files
+/hand/ 6 files
+/kit/ 3 files
+/_headers 1 file
+```
+
+Possession scan: `scanFiles` from `@ghost-run/core/possession-node` over the 125 text files of `site/` and `.kiro/specs/site/` (tracked and untracked, excluding ignored paths such as `node_modules`, `dist`, and `build`; binary files `png`, `ico`, `woff`, `woff2`, `wasm` skipped). Output: `outcome: clean`, `totalFindings: 0`, no file with an error.
+
+## Site screenshot comparison (manual, Claude Code)
+
+Requirement 2, criterion 8. Done on 2026-11-21 by Claude Code in Chrome, using playwright-core with the system Chrome. The built `site/dist` was compared with `docs/design/landing-mockup.html`.
+
+**Setup**
+- `site/dist` was served by a small local server that applies the root `_headers` rules (Cloudflare Pages and Netlify format).
+- Widths: 390, 920 and 1280 px.
+- Moments compared:
+  - the hero
+  - the recipe
+  - the costumes, with X-ray off and on
+  - the walkthrough scenes: Shell verdict, Hand run, Hand fix and go (pass), Cloud judge
+
+**Result:** the page matches the mockup.
+
+**Remaining visible differences, all intended:**
+- The page fills the window. The content column is at most 1040 px wide, and the hero stars and hill span the full width. Because of the wider column, some lines wrap differently from the framed mockup. One example is the hero heading at 920 px.
+- The contrast changes in "Site contrast changes" above.
+- The variant-6 tile carries a "joint limit" label. It comes from the recorded run.
+- Nav entries and card links are real links.
+- The apps have a "Ghost Run+ home" pill.
+
+**Fixed after the first comparison** (Kiro fix run, 4.3 credits):
+- The Ghost Hand home link was hidden under the Lights switch.
+- `/favicon.ico` was missing, so `/shell/` and `/hand/` got a 404.
+- The Ghost Cloud effectsOutside line differed from the mockup.
+- At 1280 px the hero hill stopped at the column edge.
+- At 390 px the logo wrapped onto two lines.
+
+**Security headers:** `/`, `/shell/`, `/kit/` and `/hand/` all loaded under the headers. No Content Security Policy violation was reported, and every requested file existed. The Ghost Hand demo ran under its path, with the MuJoCo wasm and the worker.

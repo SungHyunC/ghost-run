@@ -1,0 +1,49 @@
+{
+  "name": "@ghost-run/site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost Run+ landing site and the build that assembles site/dist/",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build-site.mjs --landing-only",
+    "assemble": "node scripts/build-site.mjs",
+    "check": "node scripts/check-site.mjs",
+    "record": "node scripts/record-runs.mjs",
+    "test": "vitest run",
+    "test:record": "GHOST_SITE_RECORD=1 vitest run --project record",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@fontsource/fredoka": "5.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@eslint-react/eslint-plugin": "5.30.3",
+    "@ghost-run/core": "workspace:*",
+    "@ghost-run/drawer-arm": "workspace:*",
+    "@ghost-run/ghost-cloud": "workspace:*",
+    "@ghost-run/playground-shell": "workspace:*",
+    "@ghost-run/wards-config": "workspace:*",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.12",
+    "@types/node": "^20.19.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^10.15.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "fast-check": "^4.10.2",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.73.0",
+    "vite": "^7.3.8",
+    "vitest": "^3.2.7"
+  }
+}

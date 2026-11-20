@@ -21,6 +21,7 @@ This repository is a Kiroween 2026 entry in the Skeleton Crew category: one reus
 | Skeleton | `.kiro/agents/world-smith.json` | The `world-smith` agent, which builds a new world from that template |
 | App 1 | `apps/ghost-shell/` with `worlds/playground-shell/` | Shell and SQL plans run against an in-memory project and an in-browser SQLite database |
 | App 2 | `apps/ghost-hand/` with `worlds/drawer-arm/` | A browser MuJoCo robot arm tries a plan on 8 haunted variants before the "real" arm runs it |
+| Third world (Ghost Cloud) | `worlds/ghost-cloud/` | The third world, built by the `world-smith` agent. It has no real mode and no screen of its own yet |
 
 A new world implements the six functions of `World<S, A>` (`core/src/types.ts`). Four are primary: `snapshot`, `step`, `diff`, and `render`. Two are auxiliary: `fingerprint` and `effectsOutside`. The world then inherits the ghost runner, the wards engine, the possession detector, and the UI kit. See "Build a world with the `world-smith` agent" and "Start a new world from the template" below.
 
@@ -102,6 +103,18 @@ node dist-node/cli.js validate plans/revised.plan.json
 ```
 
 The first plan prints `GHOST RUN BLOCKED by ward gentle-hands` and exits with code 2. The revised plan prints `GHOST RUN PASSED: all 1 ward cleared.` and exits with code 0. `validate` exits with 0 for a valid plan file and 65 for an invalid one.
+
+## Landing site
+
+The landing page lives in `site/` (`@ghost-run/site`). Source: [site/](https://github.com/SungHyunC/ghost-run/tree/main/site) in the repository https://github.com/SungHyunC/ghost-run. The deployed URL will be added here after deployment.
+
+Build it from the repository root:
+
+```
+corepack pnpm build:site
+```
+
+The command builds the three apps and the kit, assembles the result into `site/dist/`, and runs the site check. `site/dist/` holds the landing page at `/`, Ghost Shell at `/shell/`, Ghost Hand at `/hand/`, and the kit gallery at `/kit/`.
 
 ## Ghost Shell
 
@@ -386,7 +399,7 @@ The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json`
 
 **Plan revision recorded with the Kiro CLI**: the revised Ghost Hand plan `apps/ghost-hand/plans/revised.plan.json` was decided by a Kiro CLI 3.4.0 session (model Auto, 2026-11-18). It ran the first plan, read the block message, and chose the grasp force and pull values over several attempts. The attempts and messages are in `docs/measurements.md`, section "Plan revision recording".
 
-**Not written by Kiro**: the Ghost Shell page design was written with Claude Code on 2026-11-20 at the owner's request: the hero, the animated ghost flow (`apps/ghost-shell/src/flow/`), the mirror stage picture of reality and the ghost copy (`apps/ghost-shell/src/stage/`), the Korean page (`apps/ghost-shell/ko.html`, `apps/ghost-shell/src/i18n/`), the scenario cards, the page texts in `apps/ghost-shell/src/page-texts.ts`, the stylesheet `apps/ghost-shell/src/page.css`, and their tests. The judging pipeline, the playground world, the ui kit components, and every spec, hook, and steering file stay as Kiro wrote them. The Ghost Hand page design was also written with Claude Code on 2026-11-20 at the owner's request: the layout, the scenario rail, the ghost lineup (`apps/ghost-hand/src/components/GhostLineup.tsx`), the angled camera preset, and the stylesheet `apps/ghost-hand/src/page.css`; the drawer-arm world, the pipeline, and the claim texts stay as Kiro wrote them.
+**Not written by Kiro**: the Ghost Shell page design was written with Claude Code on 2026-11-20 at the owner's request: the hero, the animated ghost flow (`apps/ghost-shell/src/flow/`), the mirror stage picture of reality and the ghost copy (`apps/ghost-shell/src/stage/`), the Korean page (`apps/ghost-shell/ko.html`, `apps/ghost-shell/src/i18n/`), the scenario cards, the page texts in `apps/ghost-shell/src/page-texts.ts`, the stylesheet `apps/ghost-shell/src/page.css`, and their tests. The judging pipeline, the playground world, the ui kit components, and every spec, hook, and steering file stay as Kiro wrote them. The Ghost Hand page design was also written with Claude Code on 2026-11-20 at the owner's request: the layout, the scenario rail, the ghost lineup (`apps/ghost-hand/src/components/GhostLineup.tsx`), the angled camera preset, and the stylesheet `apps/ghost-hand/src/page.css`; the drawer-arm world, the pipeline, and the claim texts stay as Kiro wrote them. The landing page design draft (mockup) was made by Claude Code, and Kiro built the page from it.
 
 ## Dependencies and data
 
@@ -432,12 +445,21 @@ The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json`
 | `core` (`@ghost-run/core`) | 0.0.0 | no runtime dependencies (`core/package.json` has no `dependencies` field) | MIT (this repository) |
 | Fonts, icons, and assets of `ui` | none | Icons, flame, smoke, and tombstone shapes are original SVG paths written in `ui/` as code (MIT). Fonts: none, system stacks only. Audio: none | MIT (this repository) |
 | Fonts, icons, and assets of `apps/ghost-hand` | none | The app uses only primitive shapes and system fonts | none |
+| @fontsource/fredoka | 5.3.0 | Runtime dependency of `site`, self-hosted Fredoka font files (weights 400 to 700, latin subset) for the landing page | OFL-1.1 (`package.json` license field) |
+| `site/public/favicon.svg` | n/a | Favicon of the landing page, an original ghost drawn for this project | MIT (this repository) |
+| Other fonts, icons, images, and audio of `site` | none | The landing page has no audio and no font, icon, or image asset besides Fredoka and the favicon. Its icons and art are inline SVG paths written in `site/src/` | MIT (this repository) |
 
 Notes for the Ghost Hand rows:
 
 - fast-check, vitest, typescript, and @types/node (rows above) are also dev dependencies of `apps/ghost-hand` and `worlds/drawer-arm`, at the same installed versions.
 - The `@mujoco/mujoco` `package.json` license field says Apache-2.0, but the published tarball contains no LICENSE file.
 - The MuJoCo WebAssembly file bundles components with their own licenses. They are listed in `docs/research.md`: Qhull, tinyxml2, tinyobjloader, libccd, miniz, and lodepng. The third-party notices file is `dist/THIRD_PARTY_NOTICES.txt`, generated by the build of `apps/ghost-hand` (see the Ghost Hand section).
+
+Notes for the site rows:
+
+- `site` (`@ghost-run/site`) is the landing page. Versions and licenses were read from the installed `package.json` files.
+- Runtime dependencies of `site`: `react` 19.3.1 (MIT), `react-dom` 19.3.1 (MIT), and `@fontsource/fredoka` 5.3.0 (OFL-1.1).
+- Development dependencies of `site`, all in the table above at the same installed versions: `typescript`, `eslint`, `typescript-eslint`, `@types/node`, `vite`, `@vitejs/plugin-react`, `vitest`, `fast-check`, `jsdom`, `@testing-library/react`, `@testing-library/dom`, `@testing-library/user-event`, `@types/react`, `@types/react-dom`, `@eslint-react/eslint-plugin`, and `eslint-plugin-react-hooks`. The workspace packages `@ghost-run/core`, `@ghost-run/wards-config`, `@ghost-run/playground-shell`, `@ghost-run/drawer-arm`, and `@ghost-run/ghost-cloud` are MIT and part of this repository; only the record script uses them.
 
 Notes for the wards-config rows:
 

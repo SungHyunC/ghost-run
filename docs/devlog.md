@@ -438,3 +438,48 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 - Presentation only. The drawer-arm world, the pipeline, and the claim texts are unchanged; the page stylesheet has no animation or transition (a Ghost Hand test requires it), so the only motion is the 3D renderer. The lineup is hidden from screen readers because the variant table stays the accessible record.
 - Checks: ghost-hand typecheck (both configs) and lint pass, 272 tests in 36 files pass, and the build succeeds. Screenshots in Chrome with software WebGL at 1440 px (dark and lights on) and 390 px.
 
+### Landing site: research and design draft (Claude Code), spec by Kiro
+
+- **Why.** The owner asked for one place to see the template and both apps.
+- **Research.** Devpost pages were read through the Aside browser agent; the Impulse Kit site and repository were checked directly.
+  - The Kiroween 2025 Best Skeleton Crew winner, Impulse Kit, was one GitHub Pages site. Its landing page links to its example apps and to the empty template.
+  - The overall winner, InteractionKit, was a Skeleton Crew entry with no live site.
+  - The 2026 rules ask for "2 separate repo folders for the 2 separate applications". Whether one repository is enough is not answered; two forum threads ask it and have no visible reply. The apps therefore stay in `apps/`, and the site goes into a new `site/` folder.
+- **Assembly check.** All three builds use `base: './'`: `apps/ghost-shell/dist`, `apps/ghost-hand/dist`, and `ui/dist`. They were copied into subfolders of one directory and served. Every file loaded, and the Ghost Hand demo ran, including the MuJoCo wasm and its worker. Only the root favicon was missing.
+- **Design draft.** Claude Code made it at the owner's request; the owner reviewed three rounds. The theme is "One skeleton, three costumes", in three parts:
+  - **Recipe:** your world in six functions + the skeleton's eight parts = a ghost-run app.
+  - **Costume cards:** an X-ray switch shows the same skeleton inside every app. Each card lists the skeleton parts that app uses, checked against its imports.
+  - **Walkthrough:** a Kiro-inspired ghost (original art, not the Kiro logo) copies the world, types the plan on the copy, judges it with the wards, blows the candle out, and passes the fixed plan.
+
+  The draft is saved as `docs/design/landing-mockup.html` and `docs/design/landing-brief.md`.
+- **Ghost Hand facts for the draft** (`ghost-hand-run --json`, seed 42):
+  - `fast pull` is blocked with `failedVariants: ["variant-3"]` (drawer friction 1.68 times the base), so success is 7 of 8.
+  - The runner also reports a joint limit exceeded in `variant-6`.
+  - The recorded `slow pull, gentle grip` passes with 8 of 8.
+- **Kiro spec run** (Kiro CLI 3.5.0, agent `spec`, model Auto): 83 tool calls, 43.4 credits, commit `4bd3913`.
+  - It wrote `.kiro/specs/site/`: 24 requirements, 12 correctness properties, and 20 tasks.
+  - Kiro checked every fact of the brief against the repository and listed 12 differences. For example, the Ghost Cloud world is 789 lines, shown as "about 800".
+- **Owner decisions passed to the implementation run:**
+  - The nav links to the repository URL.
+  - `https://react.dev/errors/` is allowlisted as a string that makes no request.
+  - No `/hand/*` header block for now.
+- **Credits.** On 2026-11-20 the owner dropped the 1,000-credit floor: all credits may be used, but not wastefully.
+- **Kiro implementation run** (agent `spec`, model Auto): 1,027 tool calls and 161.7 credits.
+  - All 67 task items of `.kiro/specs/site/tasks.md` are done.
+  - `corepack pnpm build:site` assembles `site/dist`: `/` (landing), `/shell/`, `/hand/`, `/kit/`, and one root `_headers`.
+  - The site check reports no findings.
+  - 419 site tests pass.
+  - Claude Code reran the checks:
+    - site typecheck, lint and tests: pass
+    - Ghost Shell: 236 tests, passing in two runs in a row
+    - Ghost Hand: 273 tests
+  - Kiro saw one Ghost Shell suite failure during its run that it did not diagnose, and the reruns passed. Watch for a flaky test there.
+- **Review.** Claude Code compared screenshots of the built site with the mockup at 390, 920 and 1280 px, under the real headers. It found five issues:
+  - the Ghost Hand home link hidden under the Lights switch
+  - a missing `/favicon.ico`
+  - one Cloud text differing from the mockup
+  - a hero edge at 1280 px
+  - the logo wrapping on phones
+
+  A Kiro fix run fixed all five, plus a stale line in tasks.md, for 4.3 credits. The site now has 422 tests. The comparison is recorded in `docs/measurements.md`.
+- **Credits:** the landing site cost 209.4 in total (spec 43.4, implementation 161.7, fixes 4.3).

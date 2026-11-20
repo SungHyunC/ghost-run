@@ -48,6 +48,13 @@ describe('Ghost Shell app shell', () => {
     expect(container.querySelector('[data-theme]')?.getAttribute('data-theme')).toBe('dark');
   });
 
+  it('renders the Ghost Run+ home link in the header with a relative target', () => {
+    const { container } = render(<App services={harness().services} />);
+    const link = within(container.querySelector('header.gs-hero') as HTMLElement).getByText('Ghost Run+ home');
+    expect(link.tagName).toBe('A');
+    expect(link.getAttribute('href')).toBe('../');
+  });
+
   it('shows the title, the tagline, and only the no-run text before the first run', () => {
     const { container } = render(<App services={harness().services} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Ghost Shell');

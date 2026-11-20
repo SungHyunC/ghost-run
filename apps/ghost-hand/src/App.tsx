@@ -40,6 +40,7 @@ import {
   FAILED_SUMMARY_NOTE,
   FOOTER_TEXT,
   HERO_EYEBROW,
+  HOME_LINK_TEXT,
   HERO_LEAD,
   HERO_POINTS,
   INSPECT_HEADING,
@@ -367,7 +368,12 @@ function Screen({ services }: { readonly services: AppServices }) {
         </p>
         <div className="gh-hero-grid">
           <div>
-            <p className="gh-eyebrow">{HERO_EYEBROW}</p>
+            <p className="gh-hero-tags">
+              <span className="gh-eyebrow">{HERO_EYEBROW}</span>
+              <a className="gh-home-link" href="../">
+                {HOME_LINK_TEXT}
+              </a>
+            </p>
             <h1>{APP_TITLE}</h1>
             <p className="gh-tagline">{APP_TAGLINE}</p>
           </div>

@@ -435,6 +435,82 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
 
+  site:
+    dependencies:
+      '@fontsource/fredoka':
+        specifier: 5.3.0
+        version: 5.3.0
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@eslint-react/eslint-plugin':
+        specifier: 5.30.3
+        version: 5.30.3(eslint@10.15.0)(typescript@5.9.3)
+      '@ghost-run/core':
+        specifier: workspace:*
+        version: link:../core
+      '@ghost-run/drawer-arm':
+        specifier: workspace:*
+        version: link:../worlds/drawer-arm
+      '@ghost-run/ghost-cloud':
+        specifier: workspace:*
+        version: link:../worlds/ghost-cloud
+      '@ghost-run/playground-shell':
+        specifier: workspace:*
+        version: link:../worlds/playground-shell
+      '@ghost-run/wards-config':
+        specifier: workspace:*
+        version: link:../wards-config
+      '@testing-library/dom':
+        specifier: ^10.4.2
+        version: 10.4.2
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@testing-library/user-event':
+        specifier: ^14.6.12
+        version: 14.6.12(@testing-library/dom@10.4.2)
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: ^5.2.0
+        version: 5.2.0(vite@7.3.8(@types/node@20.19.43)(lightningcss@1.33.0)(yaml@2.9.1))
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0
+      eslint-plugin-react-hooks:
+        specifier: ^7.1.1
+        version: 7.1.1(eslint@10.15.0)
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
+      jsdom:
+        specifier: ^26.1.0
+        version: 26.1.0
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.73.0
+        version: 8.73.0(eslint@10.15.0)(typescript@5.9.3)
+      vite:
+        specifier: ^7.3.8
+        version: 7.3.8(@types/node@20.19.43)(lightningcss@1.33.0)(yaml@2.9.1)
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@20.19.43)(jsdom@26.1.0)(lightningcss@1.33.0)(yaml@2.9.1)
+
   ui:
     dependencies:
       '@ghost-run/core':
@@ -1001,6 +1077,9 @@ packages:
   '@eslint/plugin-kit@0.7.3':
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@fontsource/fredoka@5.3.0':
+    resolution: {integrity: sha512-s2IhjQ50wDnKkkaKmjhtL0rxQg6ITsVusiipM3m7zUwVZZbbCKsscNDkngwp28xVzfIt7neWrkgU1qKqyTycQg==}
 
   '@hono/node-server@2.1.9':
     resolution: {integrity: sha512-Sk4NQd3GFY0WZWCzndwFMPwJhtD0y9qjsQ+pjID0/03nK9pxyBCUoUHCho8QYBLBVhi0ssL8UkNPHqbgSOFPIQ==}
@@ -2962,6 +3041,8 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
       levn: 0.4.1
+
+  '@fontsource/fredoka@5.3.0': {}
 
   '@hono/node-server@2.1.9(hono@4.13.19)':
     dependencies:

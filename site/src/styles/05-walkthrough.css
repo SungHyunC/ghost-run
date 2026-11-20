@@ -1,0 +1,40 @@
+/* ---------- 3. watch the ghost work ---------- */
+.wbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px 38px}
+.wchips{display:flex;flex-wrap:wrap;gap:8px}
+.wchip{appearance:none;display:flex;align-items:center;gap:7px;border:2px solid rgba(255,255,255,.34);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:5px 12px 5px 6px;font:600 14px/1 inherit;cursor:pointer}
+.wchip svg{width:28px;height:26px}
+.wchip[aria-pressed="true"]{border-color:var(--pump);background:rgba(255,138,61,.16);box-shadow:0 4px 0 rgba(255,138,61,.35)}
+.replay{margin-left:auto}
+.rail{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;counter-reset:none}
+.rail button{appearance:none;width:100%;height:100%;text-align:left;display:grid;grid-template-columns:24px 1fr;gap:0 7px;align-items:center;border-radius:14px;border:2px solid rgba(255,255,255,.34);background:rgba(255,255,255,.04);color:var(--dim);padding:7px 8px;font:500 13px/1.2 inherit;cursor:pointer;transition:background .3s,border-color .3s,color .3s}
+.rail .n{grid-row:span 2;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);font-weight:700;font-size:12.5px}
+.rail b{font-weight:600;color:var(--text);font-size:13.5px}
+.rail code{font-size:10.5px;color:var(--pump2)}
+.rail button.done{border-color:rgba(155,229,100,.45)}
+.rail button.done .n{background:var(--slime);color:#173b07}
+.rail button.now{border-color:var(--kiro);background:rgba(144,70,255,.22);box-shadow:0 0 0 3px rgba(144,70,255,.22),0 0 22px rgba(144,70,255,.45)}
+.rail button.now .n{background:var(--kiro);color:#fff}
+
+.theater{position:relative;border-radius:24px;padding:14px 16px 16px;background:radial-gradient(500px 200px at 50% 0%,rgba(144,70,255,.18),transparent 70%),#160b2e;border:2px solid rgba(144,70,255,.35);overflow:hidden}
+.plan{position:relative;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--dim);max-width:72%;margin:0 0 14px;min-height:30px}
+.plan-h{white-space:nowrap;font-weight:600;color:var(--bone)}
+.plan pre{margin:0;padding:4px 9px;border-radius:9px;background:#0c0618;border:1.5px solid rgba(255,255,255,.14);color:#e9e2ff;font-size:11.5px;white-space:pre-wrap;transition:border-color .3s,background .3s}
+.plan.rev pre{border-color:var(--slime);background:#0e1a0c}
+.rev-tag{white-space:nowrap;display:none;font-size:11px;font-weight:700;color:#173b07;background:var(--slime);padding:1px 7px;border-radius:999px;transform:rotate(-3deg)}
+.plan.rev .rev-tag{display:inline-block}
+.panes{display:grid;grid-template-columns:1fr 64px 1.25fr;align-items:stretch;min-height:236px}
+.pane{position:relative;border-radius:18px;padding:10px 12px 12px}
+.pane-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:600;font-size:14px;margin-bottom:8px}
+.real{background:linear-gradient(180deg,#f8efdc,#efe2c4);color:#3b2b10;border:2.5px solid #d7c39a}
+.copy{background:repeating-linear-gradient(0deg,rgba(174,245,223,.05) 0 1px,transparent 1px 16px),repeating-linear-gradient(90deg,rgba(174,245,223,.05) 0 1px,transparent 1px 16px),rgba(174,245,223,.08);color:#e9fff8;border:2.5px dashed var(--mint)}
+.seal{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:rgba(174,245,223,.18);color:var(--mint)}
+.real .badge{position:absolute;right:10px;top:-12px}
+.badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;opacity:0;transform:scale(.7);transition:opacity .3s,transform .3s}
+.badge.show{opacity:1;transform:none}
+.fpb{background:#2d873b;color:#fff}.gob{background:var(--kiro);color:#fff}
+.gutter{position:relative;display:flex;align-items:center;justify-content:center}
+.beam{width:64px;height:40px;opacity:0;transition:opacity .3s}
+.beam path{stroke:var(--mint);stroke-width:4;fill:none;stroke-linecap:round;stroke-dasharray:2 9}
+.beam-on .beam{opacity:1}
+.beam-on .beam path{animation:flow .6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-22}}

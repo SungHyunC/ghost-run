@@ -1,0 +1,643 @@
+{
+  "format": "ghost-site-runs",
+  "seed": 42,
+  "variantCount": 8,
+  "version": 1,
+  "worlds": {
+    "cloud": {
+      "fixed": {
+        "checks": [
+          {
+            "label": "never delete prod-*",
+            "measured": "tmp-build-cache is not prod-*",
+            "ok": true
+          }
+        ],
+        "commands": [
+          "aws s3 rb s3://tmp-build-cache --force"
+        ],
+        "copyAfter": {
+          "buckets": [
+            {
+              "name": "prod-assets",
+              "objects": [
+                "css/site.css",
+                "img/logo.txt",
+                "index.html"
+              ],
+              "protected": true
+            },
+            {
+              "name": "prod-logs",
+              "objects": [
+                "2026/01/app.log",
+                "2026/02/app.log"
+              ],
+              "protected": true
+            }
+          ],
+          "kind": "cloud"
+        },
+        "display": "aws s3 rb s3://tmp-build-cache --force",
+        "effectsOutside": [],
+        "facts": {
+          "bucketsRemoved": 1,
+          "objectsRemoved": 2,
+          "removedBuckets": "tmp-build-cache"
+        },
+        "message": "GHOST RUN PASSED: all 2 wards cleared.",
+        "p1": {
+          "after": "e4e7288f409ebca98887842cd8048390a5316d8dc65fcb3f75bb6b10295391b0",
+          "before": "e4e7288f409ebca98887842cd8048390a5316d8dc65fcb3f75bb6b10295391b0",
+          "equal": true
+        },
+        "verdict": "pass",
+        "violatedWardIds": []
+      },
+      "id": "cloud",
+      "plan": {
+        "checks": [
+          {
+            "label": "never delete prod-*",
+            "measured": "prod-assets deleted",
+            "ok": false
+          }
+        ],
+        "commands": [
+          "aws s3 rb s3://prod-assets --force"
+        ],
+        "copyAfter": {
+          "buckets": [
+            {
+              "name": "prod-logs",
+              "objects": [
+                "2026/01/app.log",
+                "2026/02/app.log"
+              ],
+              "protected": true
+            },
+            {
+              "name": "tmp-build-cache",
+              "objects": [
+                "cache/a.txt",
+                "cache/b.txt"
+              ],
+              "protected": false
+            }
+          ],
+          "kind": "cloud"
+        },
+        "display": "aws s3 rb s3://prod-assets --force",
+        "effectsOutside": [],
+        "facts": {
+          "bucketsRemoved": 1,
+          "objectsRemoved": 3,
+          "removedBuckets": "prod-assets"
+        },
+        "message": "GHOST RUN BLOCKED by ward no-bucket-delete: would delete protected path prod-assets. Limit the command to paths the ward does not protect, or back up the protected paths first.\nAlso violated ward no-bucket-delete: would delete protected path prod-assets/css/site.css.\nAlso violated ward no-bucket-delete: would delete protected path prod-assets/img/logo.txt.\nAlso violated ward no-bucket-delete: would delete protected path prod-assets/index.html.",
+        "p1": {
+          "after": "e4e7288f409ebca98887842cd8048390a5316d8dc65fcb3f75bb6b10295391b0",
+          "before": "e4e7288f409ebca98887842cd8048390a5316d8dc65fcb3f75bb6b10295391b0",
+          "equal": true
+        },
+        "verdict": "block",
+        "violatedWardIds": [
+          "no-bucket-delete"
+        ]
+      },
+      "reality": {
+        "buckets": [
+          {
+            "name": "prod-assets",
+            "objects": [
+              "css/site.css",
+              "img/logo.txt",
+              "index.html"
+            ],
+            "protected": true
+          },
+          {
+            "name": "prod-logs",
+            "objects": [
+              "2026/01/app.log",
+              "2026/02/app.log"
+            ],
+            "protected": true
+          },
+          {
+            "name": "tmp-build-cache",
+            "objects": [
+              "cache/a.txt",
+              "cache/b.txt"
+            ],
+            "protected": false
+          }
+        ],
+        "kind": "cloud"
+      },
+      "ward": {
+        "id": "no-bucket-delete",
+        "kind": "path",
+        "line": "kind: path · deny delete on prod-*"
+      }
+    },
+    "hand": {
+      "fixed": {
+        "checks": [
+          {
+            "label": "success, at least 95%",
+            "measured": "8 of 8 = 100%",
+            "ok": true
+          },
+          {
+            "label": "contact force, at most 30 N",
+            "measured": "29.2 N",
+            "ok": true
+          },
+          {
+            "label": "never touch the vase",
+            "measured": "untouched",
+            "ok": true
+          }
+        ],
+        "commands": [
+          "slow pull, gentle grip"
+        ],
+        "copyAfter": {
+          "kind": "hand",
+          "tiles": [
+            {
+              "id": "variant-0",
+              "jointLimit": false,
+              "label": "friction ×0.41",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 2,
+                "drawerFrictionN": 0.8210274104494601,
+                "drawerMassKg": 1.1868112042313441,
+                "handleOffsetM": [
+                  0.003630907967686653,
+                  0.001232582407537848,
+                  0.002221182507928461
+                ],
+                "sensorNoiseM": 0.002291657910682261
+              }
+            },
+            {
+              "id": "variant-1",
+              "jointLimit": false,
+              "label": "handle 5.5 mm",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 3,
+                "drawerFrictionN": 1.8697998041752726,
+                "drawerMassKg": 0.6070095309522002,
+                "handleOffsetM": [
+                  0.002156240865588188,
+                  -0.0012424168889410795,
+                  -0.004934601399581879
+                ],
+                "sensorNoiseM": 0.0023169391478877516
+              }
+            },
+            {
+              "id": "variant-2",
+              "jointLimit": false,
+              "label": "delay 5 steps",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 5,
+                "drawerFrictionN": 0.9256046945229173,
+                "drawerMassKg": 1.0754881407832726,
+                "handleOffsetM": [
+                  0.0014593139104545115,
+                  0.0011580449477769433,
+                  -0.004763228602241725
+                ],
+                "sensorNoiseM": 0.0026314965987112374
+              }
+            },
+            {
+              "id": "variant-3",
+              "jointLimit": false,
+              "label": "friction ×1.68",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 2,
+                "drawerFrictionN": 3.355154531658627,
+                "drawerMassKg": 0.5992496310034766,
+                "handleOffsetM": [
+                  0.0031614750791341068,
+                  -0.0009504197537899018,
+                  -0.0023381700878962876
+                ],
+                "sensorNoiseM": 0.0002418327033519745
+              }
+            },
+            {
+              "id": "variant-4",
+              "jointLimit": false,
+              "label": "mass ×1.76",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 3,
+                "drawerFrictionN": 3.266953415120952,
+                "drawerMassKg": 1.0589942078338934,
+                "handleOffsetM": [
+                  0.0016813429873436692,
+                  0.00003194465464912365,
+                  0.0019803241593763232
+                ],
+                "sensorNoiseM": 0.0020463073351420463
+              }
+            },
+            {
+              "id": "variant-5",
+              "jointLimit": false,
+              "label": "delay 3 steps",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 3,
+                "drawerFrictionN": 1.8933081426657736,
+                "drawerMassKg": 0.8620600858703256,
+                "handleOffsetM": [
+                  -0.0017682829778641464,
+                  -0.001379006115021184,
+                  0.002482606314588338
+                ],
+                "sensorNoiseM": 0.0015817635606508703
+              }
+            },
+            {
+              "id": "variant-6",
+              "jointLimit": false,
+              "label": "friction ×0.30",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 4,
+                "drawerFrictionN": 0.6018936958862469,
+                "drawerMassKg": 0.5162535609444603,
+                "handleOffsetM": [
+                  0.0001416517011821267,
+                  0.0007053830511868,
+                  -0.0012628160626627504
+                ],
+                "sensorNoiseM": 0.0004070072486065328
+              }
+            },
+            {
+              "id": "variant-7",
+              "jointLimit": false,
+              "label": "mass ×0.66",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 0,
+                "drawerFrictionN": 1.9324713848764077,
+                "drawerMassKg": 0.397011909680441,
+                "handleOffsetM": [
+                  0.0013424712102860208,
+                  -0.0004190801668446512,
+                  -0.0019741907250136136
+                ],
+                "sensorNoiseM": 0.0018240077805239709
+              }
+            }
+          ]
+        },
+        "display": "slow pull, gentle grip",
+        "effectsOutside": [],
+        "facts": {
+          "drawerOpeningM": 0.1276,
+          "jointLimitVariants": "",
+          "maxForceN": 29.24,
+          "succeeded": 8,
+          "total": 8,
+          "vaseTouched": 0
+        },
+        "message": "GHOST RUN PASSED: all 1 ward cleared.",
+        "p1": {
+          "after": "a8daa6420f8d990180391f6a4355af62a6e65bbb56678e2bc20958fdf050757c",
+          "before": "a8daa6420f8d990180391f6a4355af62a6e65bbb56678e2bc20958fdf050757c",
+          "equal": true
+        },
+        "verdict": "pass",
+        "violatedWardIds": []
+      },
+      "id": "hand",
+      "plan": {
+        "checks": [
+          {
+            "label": "success, at least 95%",
+            "measured": "7 of 8 = 88%",
+            "ok": false
+          },
+          {
+            "label": "contact force, at most 30 N",
+            "measured": "27.5 N",
+            "ok": true
+          },
+          {
+            "label": "never touch the vase",
+            "measured": "untouched",
+            "ok": true
+          }
+        ],
+        "commands": [
+          "fast pull"
+        ],
+        "copyAfter": {
+          "kind": "hand",
+          "tiles": [
+            {
+              "id": "variant-0",
+              "jointLimit": false,
+              "label": "friction ×0.41",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 2,
+                "drawerFrictionN": 0.8210274104494601,
+                "drawerMassKg": 1.1868112042313441,
+                "handleOffsetM": [
+                  0.003630907967686653,
+                  0.001232582407537848,
+                  0.002221182507928461
+                ],
+                "sensorNoiseM": 0.002291657910682261
+              }
+            },
+            {
+              "id": "variant-1",
+              "jointLimit": false,
+              "label": "handle 5.5 mm",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 3,
+                "drawerFrictionN": 1.8697998041752726,
+                "drawerMassKg": 0.6070095309522002,
+                "handleOffsetM": [
+                  0.002156240865588188,
+                  -0.0012424168889410795,
+                  -0.004934601399581879
+                ],
+                "sensorNoiseM": 0.0023169391478877516
+              }
+            },
+            {
+              "id": "variant-2",
+              "jointLimit": false,
+              "label": "delay 5 steps",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 5,
+                "drawerFrictionN": 0.9256046945229173,
+                "drawerMassKg": 1.0754881407832726,
+                "handleOffsetM": [
+                  0.0014593139104545115,
+                  0.0011580449477769433,
+                  -0.004763228602241725
+                ],
+                "sensorNoiseM": 0.0026314965987112374
+              }
+            },
+            {
+              "id": "variant-3",
+              "jointLimit": false,
+              "label": "friction ×1.68",
+              "outcome": "failed",
+              "params": {
+                "commandDelaySteps": 2,
+                "drawerFrictionN": 3.355154531658627,
+                "drawerMassKg": 0.5992496310034766,
+                "handleOffsetM": [
+                  0.0031614750791341068,
+                  -0.0009504197537899018,
+                  -0.0023381700878962876
+                ],
+                "sensorNoiseM": 0.0002418327033519745
+              }
+            },
+            {
+              "id": "variant-4",
+              "jointLimit": false,
+              "label": "mass ×1.76",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 3,
+                "drawerFrictionN": 3.266953415120952,
+                "drawerMassKg": 1.0589942078338934,
+                "handleOffsetM": [
+                  0.0016813429873436692,
+                  0.00003194465464912365,
+                  0.0019803241593763232
+                ],
+                "sensorNoiseM": 0.0020463073351420463
+              }
+            },
+            {
+              "id": "variant-5",
+              "jointLimit": false,
+              "label": "delay 3 steps",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 3,
+                "drawerFrictionN": 1.8933081426657736,
+                "drawerMassKg": 0.8620600858703256,
+                "handleOffsetM": [
+                  -0.0017682829778641464,
+                  -0.001379006115021184,
+                  0.002482606314588338
+                ],
+                "sensorNoiseM": 0.0015817635606508703
+              }
+            },
+            {
+              "id": "variant-6",
+              "jointLimit": true,
+              "label": "friction ×0.30",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 4,
+                "drawerFrictionN": 0.6018936958862469,
+                "drawerMassKg": 0.5162535609444603,
+                "handleOffsetM": [
+                  0.0001416517011821267,
+                  0.0007053830511868,
+                  -0.0012628160626627504
+                ],
+                "sensorNoiseM": 0.0004070072486065328
+              }
+            },
+            {
+              "id": "variant-7",
+              "jointLimit": false,
+              "label": "mass ×0.66",
+              "outcome": "passed",
+              "params": {
+                "commandDelaySteps": 0,
+                "drawerFrictionN": 1.9324713848764077,
+                "drawerMassKg": 0.397011909680441,
+                "handleOffsetM": [
+                  0.0013424712102860208,
+                  -0.0004190801668446512,
+                  -0.0019741907250136136
+                ],
+                "sensorNoiseM": 0.0018240077805239709
+              }
+            }
+          ]
+        },
+        "display": "fast pull",
+        "effectsOutside": [],
+        "facts": {
+          "drawerOpeningM": 0.1216,
+          "jointLimitVariants": "variant-6",
+          "maxForceN": 27.53,
+          "succeeded": 7,
+          "total": 8,
+          "vaseTouched": 0
+        },
+        "message": "GHOST RUN BLOCKED by ward gentle-hands: success rate 7/8 (0.88) below minimum 0.95. Reduce speed or contact force, or change the plan, and rehearse again.\nAlso violated ward gentle-hands: joint limit exceeded in variant variant-6.",
+        "p1": {
+          "after": "a8daa6420f8d990180391f6a4355af62a6e65bbb56678e2bc20958fdf050757c",
+          "before": "a8daa6420f8d990180391f6a4355af62a6e65bbb56678e2bc20958fdf050757c",
+          "equal": true
+        },
+        "verdict": "block",
+        "violatedWardIds": [
+          "gentle-hands"
+        ]
+      },
+      "reality": {
+        "kind": "hand",
+        "label": "the real arm"
+      },
+      "ward": {
+        "id": "gentle-hands",
+        "kind": "physics",
+        "line": "kind: physics"
+      }
+    },
+    "shell": {
+      "fixed": {
+        "checks": [
+          {
+            "label": "rows lost, at most 0",
+            "measured": "0",
+            "ok": true
+          }
+        ],
+        "commands": [
+          "cp app.db app.db.bak",
+          "sqlite3 app.db \"UPDATE users SET deleted_at = 1\""
+        ],
+        "copyAfter": {
+          "files": [
+            "app.db",
+            "app.db.bak",
+            "package.json",
+            "data/"
+          ],
+          "kind": "shell",
+          "tables": [
+            {
+              "name": "users",
+              "note": "deleted_at = 1",
+              "rows": 1206,
+              "state": "soft"
+            },
+            {
+              "name": "orders",
+              "rows": 3,
+              "state": "intact"
+            }
+          ]
+        },
+        "display": "cp app.db app.db.bak && sqlite3 app.db \"UPDATE users SET deleted_at = 1\"",
+        "effectsOutside": [],
+        "facts": {
+          "rowsLost": 0
+        },
+        "message": "GHOST RUN PASSED: all 3 wards cleared.",
+        "p1": {
+          "after": "b52806233b86c5878b14274e8de0b4f13352c9a6dc508a512b0474616c8d65f8",
+          "before": "b52806233b86c5878b14274e8de0b4f13352c9a6dc508a512b0474616c8d65f8",
+          "equal": true
+        },
+        "verdict": "pass",
+        "violatedWardIds": []
+      },
+      "id": "shell",
+      "plan": {
+        "checks": [
+          {
+            "label": "rows lost, at most 0",
+            "measured": "1,206 from users",
+            "ok": false
+          }
+        ],
+        "commands": [
+          "sqlite3 app.db \"DROP TABLE users;\""
+        ],
+        "copyAfter": {
+          "files": [
+            "app.db",
+            "package.json",
+            "data/"
+          ],
+          "kind": "shell",
+          "tables": [
+            {
+              "name": "users",
+              "rows": 0,
+              "state": "dropped"
+            },
+            {
+              "name": "orders",
+              "rows": 3,
+              "state": "intact"
+            }
+          ]
+        },
+        "display": "sqlite3 app.db \"DROP TABLE users;\"",
+        "effectsOutside": [],
+        "facts": {
+          "rowsLost": 1206
+        },
+        "message": "GHOST RUN BLOCKED by ward no-data-loss: would delete 1,206 rows from users. Try a soft delete or a migration with a backup.",
+        "p1": {
+          "after": "b52806233b86c5878b14274e8de0b4f13352c9a6dc508a512b0474616c8d65f8",
+          "before": "b52806233b86c5878b14274e8de0b4f13352c9a6dc508a512b0474616c8d65f8",
+          "equal": true
+        },
+        "verdict": "block",
+        "violatedWardIds": [
+          "no-data-loss"
+        ]
+      },
+      "reality": {
+        "files": [
+          "app.db",
+          "package.json",
+          "data/"
+        ],
+        "kind": "shell",
+        "root": "project/",
+        "tables": [
+          {
+            "name": "users",
+            "rows": 1206
+          },
+          {
+            "name": "orders",
+            "rows": 3
+          }
+        ]
+      },
+      "ward": {
+        "id": "no-data-loss",
+        "kind": "sql",
+        "line": "kind: sql · tables: users, orders"
+      }
+    }
+  }
+}

@@ -6,5 +6,6 @@ packages:
   - apps/*
   - integrations/*
   - worlds/*
+  - site
 allowBuilds:
   esbuild: true
