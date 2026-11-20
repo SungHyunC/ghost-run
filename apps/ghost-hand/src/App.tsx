@@ -9,10 +9,13 @@ import { Candle, Graveyard, KitRoot, SeanceView, escapeForDisplay as esc } from 
 import type { WardSet } from '@ghost-run/core';
 import { formatConfigError } from '@ghost-run/wards-config';
 import { ClaimsPanel } from './components/ClaimsPanel';
+import { GhostLineup } from './components/GhostLineup';
+import { GhostMark } from './components/GhostMark';
 import { OverlayView } from './components/OverlayView';
 import type { CreateOverlay } from './components/OverlayView';
 import { PlanPanel } from './components/PlanPanel';
 import { ReferencePanel } from './components/ReferencePanel';
+import { ScenarioRail } from './components/ScenarioRail';
 import { VariantTable } from './components/VariantTable';
 import { probeCapabilities } from './capabilities';
 import type { VariantExecutor } from './exec/executor';
@@ -31,8 +34,23 @@ import type { SelfCheckResult } from './self-check';
 import { parseSeedInput } from './inputs';
 import { ENGINE_START_FAILURE_TEXT, GRAVEYARD_DROP_TEXT, MESSAGE_PANEL_LABEL, P2_TEXT_ENABLED } from './texts';
 import {
+  APP_BRAND,
   APP_TAGLINE,
   APP_TITLE,
+  FAILED_SUMMARY_NOTE,
+  FOOTER_TEXT,
+  HERO_EYEBROW,
+  HERO_LEAD,
+  HERO_POINTS,
+  INSPECT_HEADING,
+  INSPECT_INTRO,
+  NO_GHOSTS_TEXT,
+  RESULT_HEADING,
+  STEP_INSPECT_LABEL,
+  STEP_RESULT_LABEL,
+  TOOLS_INTRO,
+  TOOLS_LABEL,
+  failedSummaryText,
   DEMO_STEP_DONE,
   DEMO_STEP_RUN_FIRST,
   DEMO_STEP_RUN_REVISED,
@@ -327,11 +345,41 @@ function Screen({ services }: { readonly services: AppServices }) {
   const variantTotal = run === null ? 0 : run.rows.length - 1;
   const open = state.openGraveId === null ? undefined : state.graveyard.find((e) => e.id === state.openGraveId);
 
+  const forceLimitN = useMemo(() => {
+    if (wardSet === null) return null;
+    const limits = wardSet.wards.flatMap((w) => (w.kind === 'physics' ? [w.max_contact_force_n] : []));
+    return limits.length === 0 ? null : Math.min(...limits);
+  }, [wardSet]);
+  const selectedScenarioId = SCENARIOS.find((s) => s.plan === state.plan)?.id ?? null;
+  const planSeed = { text: seedText, error: seedResult.ok ? null : seedResult.error, onChange: onSeedText };
+  const canPlayDemo = engine.status === 'ready' && configReady && seedResult.ok;
+
   return (
     <main className="gh-page" aria-label={APP_TITLE}>
-      <header className="gh-title">
-        <h1>{APP_TITLE}</h1>
-        <p className="gh-tagline">{APP_TAGLINE}</p>
+      <header className="gh-hero">
+        <p className="gh-brand">
+          <GhostMark className="gh-brand-mark" />
+          <span className="gh-brand-name">{APP_BRAND}</span>
+          <span className="gh-brand-sep" aria-hidden="true">
+            /
+          </span>
+          <span className="gh-brand-app">{APP_TITLE}</span>
+        </p>
+        <div className="gh-hero-grid">
+          <div>
+            <p className="gh-eyebrow">{HERO_EYEBROW}</p>
+            <h1>{APP_TITLE}</h1>
+            <p className="gh-tagline">{APP_TAGLINE}</p>
+          </div>
+          <div>
+            <p className="gh-lead">{HERO_LEAD}</p>
+            <ul className="gh-points">
+              {HERO_POINTS.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </header>
 
       <div role="status" aria-live="polite" className="gk-sr-only">
@@ -378,31 +426,61 @@ function Screen({ services }: { readonly services: AppServices }) {
         </p>
       ) : null}
 
-      <Candle verdict={run?.wardVerdict} claims={claims} />
+      <div className="gh-theater">
+        <ScenarioRail
+          scenarios={SCENARIOS}
+          selectedId={selectedScenarioId}
+          onLoadScenario={onLoadScenario}
+          onPlayDemo={onPlayDemo}
+          canPlayDemo={canPlayDemo}
+          demoActive={demoActive}
+          demoStatus={demoStatus}
+          canRun={canRun}
+          busy={state.running}
+          onRun={onRun}
+          seed={planSeed}
+        />
+        <OverlayView
+          input={referenceOverlay ?? run?.overlay ?? null}
+          tableId={tableId}
+          createOverlay={services.createOverlay}
+          reducedMotion={reducedMotion}
+        />
+      </div>
 
-      <div className="gh-columns">
-        <div className="gh-column">
-          <PlanPanel
-            plan={state.plan}
-            errors={state.planError}
-            seed={{ text: seedText, error: seedResult.ok ? null : seedResult.error, onChange: onSeedText }}
-            canRun={canRun}
-            busy={state.running}
-            onLoadText={onLoadText}
-            onDownload={() => {
-              if (state.plan !== null) services.download(PLAN_DOWNLOAD_NAME, printPlanFile(state.plan));
-            }}
-            onRun={onRun}
-            onClear={() => {
-              dispatch({ type: 'plan-cleared' });
-            }}
-            scenarios={SCENARIOS}
-            onLoadScenario={onLoadScenario}
-            onPlayDemo={onPlayDemo}
-            canPlayDemo={engine.status === 'ready' && configReady && seedResult.ok}
-            demoActive={demoActive}
-            demoStatus={demoStatus}
-          />
+      <div className="gh-block gh-result" data-verdict={run?.verdict ?? 'none'}>
+        <div className="gh-block-head">
+          <p className="gh-step">{STEP_RESULT_LABEL}</p>
+          <h2 className="gh-block-title">{RESULT_HEADING}</h2>
+        </div>
+        <div className="gh-verdict-row">
+          <Candle verdict={run?.wardVerdict} claims={claims} />
+          <div className="gh-summary" data-failed={failedCount > 0}>
+            {run === null ? (
+              <p className="gh-summary-empty">{NO_GHOSTS_TEXT}</p>
+            ) : (
+              <>
+                <p className="gh-summary-big">{failedSummaryText(failedCount, variantTotal)}</p>
+                <p className="gh-summary-note">{FAILED_SUMMARY_NOTE}</p>
+              </>
+            )}
+          </div>
+          <section className="gk-section gh-message-panel" aria-label={MESSAGE_PANEL_LABEL}>
+            <h2 className="gk-heading">{MESSAGE_PANEL_LABEL}</h2>
+            {run === null ? null : <pre className="gh-message gh-mono">{esc(run.message, { keepNewline: true })}</pre>}
+          </section>
+        </div>
+        <GhostLineup rows={run?.rows ?? []} targetOpeningM={WORLD_CONFIG.targetOpeningM} forceLimitN={forceLimitN} />
+        <VariantTable id={tableId} rows={run?.rows ?? []} />
+      </div>
+
+      <div className="gh-block">
+        <div className="gh-block-head">
+          <p className="gh-step">{STEP_INSPECT_LABEL}</p>
+          <h2 className="gh-block-title">{INSPECT_HEADING}</h2>
+          <p className="gh-intro">{INSPECT_INTRO}</p>
+        </div>
+        <div className="gh-two">
           <ReferencePanel
             canExecute={engine.status === 'ready' && canExecuteReference(state) && !referenceBusy && !demoActive}
             canReset={engine.status === 'ready' && referenceDrawerM !== null && !referenceBusy && !state.running}
@@ -418,22 +496,38 @@ function Screen({ services }: { readonly services: AppServices }) {
             p1Failed={run !== null && !run.p1.equal}
           />
         </div>
-        <div className="gh-column">
-          <OverlayView
-            input={referenceOverlay ?? run?.overlay ?? null}
-            tableId={tableId}
-            createOverlay={services.createOverlay}
-            reducedMotion={reducedMotion}
-          />
-          <VariantTable id={tableId} rows={run?.rows ?? []} />
-          <section className="gk-section" aria-label={MESSAGE_PANEL_LABEL}>
-            <h2 className="gk-heading">{MESSAGE_PANEL_LABEL}</h2>
-            {run === null ? null : <pre className="gh-message gh-mono">{esc(run.message, { keepNewline: true })}</pre>}
-          </section>
-        </div>
       </div>
 
-      <section aria-label={GRAVEYARD_HEADING}>
+      <div className="gh-block">
+        <div className="gh-block-head">
+          <p className="gh-step">{TOOLS_LABEL}</p>
+          <p className="gh-intro">{TOOLS_INTRO}</p>
+        </div>
+        <PlanPanel
+          part="details"
+          plan={state.plan}
+          errors={state.planError}
+          seed={planSeed}
+          canRun={canRun}
+          busy={state.running}
+          onLoadText={onLoadText}
+          onDownload={() => {
+            if (state.plan !== null) services.download(PLAN_DOWNLOAD_NAME, printPlanFile(state.plan));
+          }}
+          onRun={onRun}
+          onClear={() => {
+            dispatch({ type: 'plan-cleared' });
+          }}
+          scenarios={SCENARIOS}
+          onLoadScenario={onLoadScenario}
+          onPlayDemo={onPlayDemo}
+          canPlayDemo={canPlayDemo}
+          demoActive={demoActive}
+          demoStatus={demoStatus}
+        />
+      </div>
+
+      <section aria-label={GRAVEYARD_HEADING} className="gh-graveyard">
         {open !== undefined ? (
           <SeanceView
             entry={open}
@@ -453,6 +547,11 @@ function Screen({ services }: { readonly services: AppServices }) {
           </>
         )}
       </section>
+
+      <footer className="gh-footer">
+        <GhostMark className="gh-footer-mark" />
+        <span>{FOOTER_TEXT}</span>
+      </footer>
     </main>
   );
 }

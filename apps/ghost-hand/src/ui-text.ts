@@ -42,6 +42,7 @@ export const OVERLAY_NAME =
   'Ghost arm overlay. The same results are listed in the variant table below.';
 export const CAMERA_FRONT_LABEL = 'Front view';
 export const CAMERA_SIDE_LABEL = 'Side view';
+export const CAMERA_ANGLED_LABEL = 'Angled view';
 export const FRAME_SLIDER_LABEL = 'Frame';
 export const REPLAY_LABEL = 'Replay';
 export const REDUCED_MOTION_TEXT = 'Reduced motion: showing the final frame. Use the frame slider to step through.';
@@ -58,3 +59,41 @@ export function liveRegionText(candle: 'lit' | 'flickering' | 'out', failed: num
 }
 
 export const RESTORE_FAILED_TEXT = 'Restore check failed: this browser did not reproduce a reused snapshot.';
+
+// Page design (hero, rail, ghost lineup, sections). Labels only; no requirement pins them.
+export const APP_BRAND = 'Ghost Run+';
+export const HERO_EYEBROW = 'Physics playground';
+export const HERO_LEAD =
+  'Before a robot arm moves, eight ghost arms try the same plan in haunted copies of the world: more friction, a heavier drawer, a lagging controller. If a ghost touches the vase or pulls too hard, the candle goes out and the arm stays still.';
+export const HERO_POINTS = ['Runs in this tab', 'Eight haunted variants', 'No LLM in this page'] as const;
+export const STEP_PICK_LABEL = 'Step 1';
+export const RAIL_HINT = 'Play the demo, or pick a plan and run its ghosts.';
+export const SCENARIO_NOTES: Readonly<Record<string, string>> = {
+  'fast-pull': 'Pulls fast and grips hard.',
+  'slow-pull': 'Pulls slowly and grips gently.',
+};
+export const STEP_RESULT_LABEL = 'Step 2';
+export const RESULT_HEADING = 'What the ghosts did';
+export const NO_GHOSTS_TEXT = 'Play the demo or run a plan to see the ghosts.';
+export function failedSummaryText(failed: number, total: number): string {
+  return `${failed} of ${total} ghosts failed`;
+}
+export const FAILED_SUMMARY_NOTE = 'Every ghost must pass before the arm may move.';
+export const LINEUP_TITLE = 'Ghost lineup';
+export const LINEUP_BASE_NAME = 'base run';
+export function lineupGhostName(index: number): string {
+  return `ghost ${index}`;
+}
+export const LINEUP_PASS_TAG = 'pass';
+export const LINEUP_FAIL_TAG = 'fail';
+export const LINEUP_DRAWER = 'drawer';
+export const LINEUP_FORCE = 'force';
+export const LINEUP_VASE_TOUCHED = 'vase touched';
+export const LINEUP_NO_HAUNTING = 'no haunting';
+export const STEP_INSPECT_LABEL = 'Step 3';
+export const INSPECT_HEADING = 'Look closer';
+export const INSPECT_INTRO =
+  'Run the passing plan on the reference arm, and read what this page claims and what it does not.';
+export const TOOLS_LABEL = 'Make your own';
+export const TOOLS_INTRO = 'Load your own plan file, or download the plan you ran. Nothing here is saved.';
+export const FOOTER_TEXT = 'Ghost Run+, MIT license, made for Kiroween 2026';

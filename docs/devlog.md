@@ -432,3 +432,9 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 - A slip caught by the repository's own hygiene test: a regular expression written with `\u200B`-style escapes reached the new test file as literal invisible characters (the escapes were decoded on the way into the file). The file was rewritten with real escapes, and every changed file was scanned for code points outside ASCII and Hangul before the commit.
 - Checks: ghost-shell typecheck and lint pass, 235 tests in 42 files pass (dictionary shape and cleanliness, and the Korean page run from its own buttons), and `check-dist: ok` for both pages.
 
+### Ghost Hand page redesign (Claude Code, not Kiro)
+
+- Same design language as the new Ghost Shell page, visuals first: a theater with the scenario rail (fast pull, slow pull and gentle grip, Play demo, Run ghost, seed) beside the 3D ghost arms, with a new angled camera preset that is now the default (Front and Side views unchanged); a verdict row with the candle as a colored card, a large "N of 8 ghosts failed" summary, and the message the agent receives; and a ghost lineup that draws every run row: pass or fail, drawer opening against the 0.12 m threshold, contact force against the 30 N ward, flags for vase, joint limit, and self collision, and the two strongest haunted parameters. In the fast pull run it shows ghost 4 with a short drawer and ghost 7 over a joint limit.
+- Presentation only. The drawer-arm world, the pipeline, and the claim texts are unchanged; the page stylesheet has no animation or transition (a Ghost Hand test requires it), so the only motion is the 3D renderer. The lineup is hidden from screen readers because the variant table stays the accessible record.
+- Checks: ghost-hand typecheck (both configs) and lint pass, 272 tests in 36 files pass, and the build succeeds. Screenshots in Chrome with software WebGL at 1440 px (dark and lights on) and 390 px.
+

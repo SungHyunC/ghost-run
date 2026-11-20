@@ -6,6 +6,7 @@ import type { CameraPreset, OverlayRenderer } from '../overlay/renderer';
 import type { OverlayInput } from '../pipeline/types';
 import { WEBGL_FALLBACK_TEXT } from '../texts';
 import {
+  CAMERA_ANGLED_LABEL,
   CAMERA_FRONT_LABEL,
   CAMERA_SIDE_LABEL,
   FRAME_SLIDER_LABEL,
@@ -56,7 +57,8 @@ export function OverlayView({ input, tableId, createOverlay, reducedMotion }: Ov
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<OverlayRenderer | null>(null);
   const [unavailable, setUnavailable] = useState(false);
-  const [preset, setPreset] = useState<CameraPreset>('front');
+  // The angled view is the default: from the front the ghost arms hide behind each other.
+  const [preset, setPreset] = useState<CameraPreset>('angled');
   const [frame, setFrame] = useState(0);
   const theme = useKitTheme(sectionRef);
 
@@ -102,7 +104,7 @@ export function OverlayView({ input, tableId, createOverlay, reducedMotion }: Ov
 
   const canStep = model !== null && totalFrames > 1 && !unavailable;
   return (
-    <section className="gk-section" aria-labelledby={headingId} ref={sectionRef}>
+    <section className="gk-section gh-overlay" aria-labelledby={headingId} ref={sectionRef}>
       <h2 className="gk-heading" id={headingId}>
         {OVERLAY_HEADING}
       </h2>
@@ -116,7 +118,18 @@ export function OverlayView({ input, tableId, createOverlay, reducedMotion }: Ov
         hidden={unavailable}
       />
       {reducedMotion && !unavailable ? <p className="gk-note">{REDUCED_MOTION_TEXT}</p> : null}
-      <div className="gh-actions">
+      <div className="gh-actions gh-view-actions">
+        <button
+          type="button"
+          className="gk-button"
+          aria-pressed={preset === 'angled'}
+          disabled={unavailable}
+          onClick={() => {
+            setPreset('angled');
+          }}
+        >
+          {CAMERA_ANGLED_LABEL}
+        </button>
         <button
           type="button"
           className="gk-button"

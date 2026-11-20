@@ -34,6 +34,11 @@ export interface PlanPanelProps {
   readonly demoActive: boolean;
   /** Current demo step text; null when no demo ran. */
   readonly demoStatus: string | null;
+  /**
+   * `all` (default): the whole panel. `details`: the plan, the file controls, Download, and Clear only;
+   * the page then shows the scenarios, Play demo, Run ghost, and the seed in its rail.
+   */
+  readonly part?: 'all' | 'details';
 }
 
 function actionLabel(a: GhostHandAction, index: number): string {
@@ -43,11 +48,12 @@ function actionLabel(a: GhostHandAction, index: number): string {
 /** Plan summary, load, download, run, clear, and the seed. Every string from a Plan_File is escaped. */
 export function PlanPanel(props: PlanPanelProps) {
   const { plan, errors, canRun, busy } = props;
+  const all = props.part !== 'details';
   const headingId = useId();
   const fileId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
   return (
-    <section className="gk-section" aria-labelledby={headingId}>
+    <section className={all ? 'gk-section' : 'gk-section gh-plan'} aria-labelledby={headingId}>
       <h2 className="gk-heading" id={headingId}>
         {PLAN_HEADING}
       </h2>
@@ -94,7 +100,8 @@ export function PlanPanel(props: PlanPanelProps) {
           }}
         />
       </div>
-      <SeedInput {...props.seed} disabled={busy} />
+      {all ? <SeedInput {...props.seed} disabled={busy} /> : null}
+      {all ? (
       <div className="gh-actions" role="group" aria-label={SCENARIOS_LABEL}>
         {props.scenarios.map((s) => (
           <button
@@ -118,11 +125,14 @@ export function PlanPanel(props: PlanPanelProps) {
           {PLAY_DEMO_LABEL}
         </button>
       </div>
-      {props.demoStatus !== null ? <p role="status">{props.demoStatus}</p> : null}
+      ) : null}
+      {all && props.demoStatus !== null ? <p role="status">{props.demoStatus}</p> : null}
       <div className="gh-actions">
-        <button type="button" className="gk-button" disabled={!canRun || busy} onClick={props.onRun}>
-          {RUN_GHOST_LABEL}
-        </button>
+        {all ? (
+          <button type="button" className="gk-button" disabled={!canRun || busy} onClick={props.onRun}>
+            {RUN_GHOST_LABEL}
+          </button>
+        ) : null}
         <button type="button" className="gk-button" disabled={plan === null} onClick={props.onDownload}>
           {DOWNLOAD_PLAN_LABEL}
         </button>

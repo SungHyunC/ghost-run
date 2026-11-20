@@ -9,7 +9,7 @@ import { FADE_DURATION_MS, OVERLAY_COLORS, OVERLAY_OPACITY } from './overlay-tok
 import type { OverlayTheme } from './overlay-tokens';
 import type { OverlayArm, OverlayViewModel } from './view-model';
 
-export type CameraPreset = 'front' | 'side';
+export type CameraPreset = 'front' | 'side' | 'angled';
 
 export interface OverlayRenderer {
   setModel(model: OverlayViewModel, opts: { reducedMotion: boolean }): void;
@@ -31,6 +31,8 @@ const GHOST_SATURATION = 0.5;
 const CAMERA_PRESETS: Record<CameraPreset, { pos: readonly [number, number, number]; target: readonly [number, number, number] }> = {
   front: { pos: [0, 1.5, 0.75], target: [0, 0.1, 0.3] },
   side: { pos: [1.5, 0.2, 0.75], target: [0, 0.1, 0.3] },
+  // Three-quarter view from the front right and above, so the ghost arms do not hide behind each other.
+  angled: { pos: [1.05, 1.15, 1.0], target: [0, 0.12, 0.28] },
 };
 
 interface ArmDraw {
