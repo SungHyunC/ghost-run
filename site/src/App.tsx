@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Sprite } from './components/art/Sprite';
 import { Book } from './components/Book';
 import { Costumes } from './components/Costumes';
@@ -14,6 +15,7 @@ import runsJson from './data/runs.json';
 import type { RunsFile } from './data/types';
 import worldSize from './data/world-size.json';
 import { roundLines } from './engine/format';
+import { useChromeHeights } from './engine/useChromeHeights';
 import { usePaging } from './engine/usePaging';
 
 const runs = runsJson as unknown as RunsFile;
@@ -22,9 +24,11 @@ const LINE_COUNT = roundLines(worldSize.worlds['ghost-cloud']);
 // Five Book_Pages: cover (hero), recipe, costumes, run, make (with the footer last).
 export function App() {
   const paging = usePaging();
+  const siteRef = useRef<HTMLDivElement>(null);
+  useChromeHeights(siteRef);
   const { state, visibility } = paging;
   return (
-    <div className="site" {...paging.siteProps}>
+    <div className="site" ref={siteRef} {...paging.siteProps}>
       <Sprite />
       <div className="wrap">
         <Nav current="home" onHome={paging.onHome} />

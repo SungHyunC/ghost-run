@@ -640,3 +640,21 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - a full suite run on the final commit
   - switching the gate on in this repository, which needs the owner's confirmation
   - the three days of approval counts
+
+### Landing on large screens (reported by a visitor)
+
+- **What was wrong.** A visitor on a large monitor said the landing looked broken. Claude Code reproduced it in Chrome at 1920×1080 and 2560×1440:
+  - The 1040 px page painted its own gradient, so both of its edges showed as vertical lines from the nav down to the page bar.
+  - The cover scene had a fixed height of 560 px, so the lower half of the page was empty.
+  - The kit and app pages were fine. The earlier review only covered 1280 px wide at 800 and 900 px tall.
+- **Fix by Kiro** (site-pages group 12, 4.5 and 2.5 credits):
+  - The page gradient moved to a full-bleed layer, so the edges are gone and a turning page still covers the one below.
+  - The cover fills its page: the hills sit on the page bar, the content is centered, and it grows with the viewport (the H1 goes from 40 to 64 px).
+  - Short pages are centered vertically.
+  - The browser now measures the nav and page-bar heights. This removed a 1 px document overflow that would show a scrollbar on Windows.
+- **Review** in Chrome at 390×844, 768×1024, 1280×800, 1440×900, 1920×1080 and 2560×1440:
+  - No page edges.
+  - The hills meet the page bar at every size.
+  - Page 4 still fits 1280×800.
+  - No overflow on the cover. The Skeleton page still scrolls 5 px at 1280×800, as before.
+- Redeployed.

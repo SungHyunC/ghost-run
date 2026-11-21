@@ -181,6 +181,11 @@ This spec covers these parts:
 8. WHILE the Live_Section is taller than the visible window, THE speech bar (`.say`) SHALL be `position: sticky` just above the Page_Bar (`bottom: calc(var(--bar-h) + 8px)`), so that the Page_Bar never covers the narration.
 9. WHILE the window is 560 px wide or less, THE world tabs of the Live_Section SHALL stay on one horizontal row with the Replay button (no wrapping, smaller tabs, icons hidden). This replaces the wrapping rule of Mockup_V6 at 760 px for phones.
 
+10. AT every window width from 320 px to 2560 px, THE Landing_Page SHALL show no page edge while a Book_Page is at rest: the page gradient SHALL be painted on a full-bleed layer (100vw, centered on the page, behind the content), and the Book_Page itself SHALL be transparent. WHILE a Book_Page has the class `leave-next` or `enter-back`, THE turning page SHALL still hide the page under it. The nav and the Page_Bar SHALL keep their look.
+11. THE cover (`.page>.hero`) SHALL be as tall as a Book_Page (`calc(100svh - var(--nav-h) - var(--bar-h))`, with the `100vh` fallback), THE hills and pumpkins SHALL sit at the bottom of the page just above the Page_Bar, and THE text group and the art SHALL be centered vertically in the space above the hills. On phones the stacked layout SHALL stay and the cover SHALL still fill the page height.
+12. WHILE the window is wider than 820 px, THE cover SHALL scale with the window: the H1 is 40 px at 1280 px and grows to at most 64 px (`clamp(16px,1.25vw,25.6px)` as the cover's base size, in `em`), and the text, the buttons, and the art (ghost, moon, candle, bats, pumpkins, hills) grow with it. At 1280 by 800 the cover keeps its look. Above 1280 px the cover SHALL be wider than the 1040 px column (65em), centered on it.
+13. WHEN the content of a Book_Page is shorter than the page, THE content SHALL be centered vertically; WHEN it is taller, it SHALL start at the top and scroll as before. Page 4 SHALL still fit 1280 by 800 as in criterion 7. THE paging, hash, keys, swipe, `inert`, live region, autoplay-on-entry, and X-ray-on-entry behavior and Reduced_Motion SHALL not change.
+
 ### Requirement 9: Per-Page Start
 
 **User Story:** As a visitor, I want the demos to start when I reach their page, and only then.

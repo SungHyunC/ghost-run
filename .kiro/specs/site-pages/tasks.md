@@ -269,6 +269,32 @@ The plan follows this order:
     - `docs/measurements.md` and `tests/unit/measurements.test.ts`: Landing index entry 115,491 B, closure 346,648 B (limit 360,000 B); Showcase closure 285,426 B; the deviations above are listed.
     - _Requirements: 20.4, 20.6_
 
+- [x] 12. Large screens
+  - [x] 12.1 Make the page background seamless at every width
+    - `12-book.css`: remove the gradient from `.page`, add `isolation:isolate`, and paint it on `.page::before` (full-bleed, 100vw, `z-index:-1`). The turn classes still hide the page under them.
+    - _Requirements: 8.10_
+
+  - [x] 12.2 Fill the page with the cover and scale it up
+    - `.page>.hero` gets the page's min-height calc (with the `100vh` fallback) and centered content. Above 820 px the cover is sized in `em` (H1 40 px at 1280 px, at most 64 px), and above 1280 px it is 65em wide. Phones keep the stacked layout.
+    - _Requirements: 8.11, 8.12_
+
+  - [x] 12.3 Center short pages
+    - `.page` is a flex column with `margin-top:auto` on the first child and `margin-bottom:auto` on the last, so short content is centered and tall content scrolls from the top. Page 4 still fits 1280 by 800.
+    - _Requirements: 8.13_
+
+  - [x] 12.4 Update and add tests
+    - `tests/unit/styles.test.ts`: the page rule is flex; a new test pins the full-bleed or transparent page background, the cover's min-height, the centering margins, and the H1 clamp.
+    - _Requirements: 8.10, 8.11, 8.12, 8.13_
+
+  - [x] 12.5 Run the gates
+    - `@ghost-run/site` test, typecheck, and lint; `corepack pnpm build:site`; the site check. All pass. The landing closure is unchanged at 346,648 B (limit 360,000 B), because only CSS changed.
+    - _Requirements: 21.1, 21.2_
+
+  - [x] 12.6 Measure the nav and the page bar so a page is exactly one window tall
+    - `src/engine/useChromeHeights.ts`, called from `App`: a `ResizeObserver` on `.nav` and `.pagebar` writes their real heights to `--nav-h` and `--bar-h` on `.site` on mount and on every resize. The CSS values (64 px, 68 px) stay as fallbacks for the first paint and no-JS. Fixes the 1 px page scroll (real heights 60 and 73).
+    - `tests/unit/use-chrome-heights.test.tsx`: fake `ResizeObserver`; both properties are set on mount, updated on resize, and the observer disconnects on unmount.
+    - _Requirements: 8.11, 8.13_
+
 ## Notes
 
 - Every task is required. No task is marked optional.
@@ -304,7 +330,11 @@ The plan follows this order:
     { "id": 13, "tasks": ["8.4"] },
     { "id": 14, "tasks": ["9.1"] },
     { "id": 15, "tasks": ["10"] },
-    { "id": 16, "tasks": ["11.1", "11.2", "11.3", "11.4"] }
+    { "id": 16, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
+    { "id": 17, "tasks": ["12.1", "12.2", "12.3"] },
+    { "id": 18, "tasks": ["12.4"] },
+    { "id": 19, "tasks": ["12.5"] },
+    { "id": 20, "tasks": ["12.6"] }
   ]
 }
 ```

@@ -110,7 +110,7 @@ describe('stylesheets', () => {
     const book = read('12-book.css');
     expect(book).toMatch(/\.page\{display:none;/);
     expect(book).toContain('.page.on{position:relative}');
-    expect(book).toContain('.page.on,.page.leave-next,.page.enter-back{display:block}');
+    expect(book).toContain('.page.on,.page.leave-next,.page.enter-back{display:flex;flex-direction:column}');
     expect(book).toContain('100svh');
     expect(book).toContain('--nav-h');
     expect(book).toContain('--bar-h');
@@ -125,5 +125,33 @@ describe('stylesheets', () => {
     expect(book).toMatch(/\.pg-btn\{[^}]*min-width:24px;min-height:24px/);
     expect(book).toMatch(/\.pg-dot\{[^}]*min-width:24px;min-height:24px/);
     expect(book).toContain('@media (max-width:390px)');
+  });
+
+  it('keeps the large-screen rules: full-bleed page background and a cover as tall as the page', () => {
+    const book = read('12-book.css');
+    const rule = (sel: string): string => {
+      const at = book.indexOf(`\n${sel}{`);
+      expect(at, sel).toBeGreaterThanOrEqual(0);
+      return book.slice(at, book.indexOf('}', at));
+    };
+    // The page itself is transparent at rest; the gradient sits on a 100vw layer behind the content.
+    expect(rule('.page')).not.toContain('background');
+    expect(rule('.page')).toContain('isolation:isolate');
+    const layer = rule('.page::before');
+    expect(layer).toContain('left:calc(50% - 50vw)');
+    expect(layer).toContain('width:100vw');
+    expect(layer).toContain('z-index:-1');
+    expect(layer).toContain('linear-gradient(');
+    // The cover is as tall as the page, with the 100vh fallback, and is not pinned to 560 px.
+    const hero = rule('.page>.hero');
+    expect(hero).toContain('min-height:calc(100vh - var(--nav-h) - var(--bar-h))');
+    expect(hero).toContain('min-height:calc(100svh - var(--nav-h) - var(--bar-h))');
+    expect(hero).not.toContain('560px');
+    // Pages 2 to 5 center short content and scroll tall content.
+    expect(book).toContain('.page>:first-child{margin-top:auto}');
+    expect(book).toContain('.page>:last-child{margin-bottom:auto}');
+    // H1: 40 px at 1280 px, at most 64 px.
+    expect(book).toContain('clamp(16px,1.25vw,25.6px)');
+    expect(book).toContain('.page>.hero h1{font-size:2.5em');
   });
 });
