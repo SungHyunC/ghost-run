@@ -253,7 +253,7 @@ describe('ghost_diff', () => {
     for (const id of ['nope', 'g-nope']) {
       const r = await call(client, 'ghost_diff', { id });
       expect(r.isError).toBe(true);
-      expect(r.content[0].text).toBe('unknown run id');
+      expect(r.content[0].text).toMatch(/^Workspace root: .+\nunknown run id$/);
     }
     await client.close();
   });

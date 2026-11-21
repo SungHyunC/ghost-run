@@ -4,6 +4,7 @@ import { loadWardsFile } from '@ghost-run/wards-config/node';
 import { analyze } from '@ghost-run/ghost-runner';
 import { buildGrammar, buildSecretMatcher, classifySafe, resolveWardsFile } from '@ghost-run/kiro-hook';
 import { defineTool, cutCommand } from '../tool-kit.mjs';
+import { DEFAULT_WARDS_NOTICE, hasNoWardsFile, parseDefaultWards } from '../wards-source.mjs';
 import { errorResult, makeResult } from '../result.mjs';
 
 export const MAX_VALIDATION_STRINGS = 50;
@@ -15,13 +16,18 @@ const DESCRIPTION =
 
 /** @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server @param {import('../tool-kit.mjs').ToolContext} ctx */
 export function register(server, ctx) {
-  defineTool(server, ctx, 'wards_check', DESCRIPTION, async (/** @type {{ plan: { command: string, cwd?: string }[] }} */ args) => {
+  defineTool(server, ctx, 'wards_check', DESCRIPTION, async (/** @type {{ plan: { command: string, cwd?: string }[] }} */ args, /** @type {import('../tool-kit.mjs').ToolContext} */ ctx) => {
     const load = ctx.deps['loadWardsFile'] ?? loadWardsFile;
     const file = resolveWardsFile(ctx.root, ctx.env);
     /** @type {any} */
     let result;
     try {
-      result = await load(file);
+      if (hasNoWardsFile(ctx.root, ctx.env)) {
+        result = parseDefaultWards();
+        ctx.notices.push(DEFAULT_WARDS_NOTICE);
+      } else {
+        result = await load(file);
+      }
     } catch {
       return errorResult('wards file could not be loaded', { validation: ['wards file could not be loaded'], rehearsed: false });
     }

@@ -110,6 +110,8 @@ function depsOf(/** @type {Partial<any>} */ over = {}) {
     loadWards: loadOk,
     clock: () => FIXED_NOW,
     uuid: () => 'run-fixed_1',
+    // The committed WARN_MODE is 'ask'. These cases pin the exit2 fallback; the ask delivery has its own cases below.
+    warnMode: /** @type {'exit2' | 'ask'} */ ('exit2'),
     store: createGateStore(root),
     fsView: makeMemTree({ [root]: { dir: true } }),
     ...over,
@@ -277,6 +279,16 @@ describe('decide: shell calls', () => {
     expect(d).toMatchObject({ kind: 'deny', exit: 2 });
     expect(d.stderr).toContain(SELF_PROTECT_NOTICE);
     expect(await statKinds()).toEqual(['seen', 'ghosted', 'warned']);
+  });
+
+  it('in ask mode a warn is the host prompt with the warn message, exit 0, and never an allow text', async () => {
+    const ev = makeHookEvent('execute_bash', { command: 'make', cwd: tmp.dir });
+    const d = await decide(inputOf(ev), depsOf({ runPlan: runPlanOf(fakeResult()), warnMode: 'ask' }));
+    expect(d).toMatchObject({ kind: 'ask', exit: 0, stderr: '' });
+    const j = JSON.parse(d.stdout);
+    expect(j.hookSpecificOutput.permissionDecision).toBe('ask');
+    expect(j.hookSpecificOutput.permissionDecisionReason).toContain(CWD_OUTSIDE_NOTICE);
+    expect(d.stdout).not.toContain('"allow"');
   });
 
   it('a cwd outside the workspace is a warn without a ghost run and without a ghosted event', async () => {

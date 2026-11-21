@@ -91,7 +91,7 @@ describe('decision mapping', () => {
         if (eff === 'pass') {
           expect(d.exit).toBe(0);
           expect(d.kind).toBe('allow');
-          expect(d.stdout).toMatch(/^GHOST RUN PASSED: all \d+ wards cleared\./);
+          expect(d.stdout).toMatch(/^GHOST RUN PASSED: all \d+ wards? cleared\./);
           expect(d.stdout).not.toContain('permissionDecision');
           expect(d.stderr).toBe('');
           // pass is never reached for Plan_B, a non-ok status, or a non-pass verdict

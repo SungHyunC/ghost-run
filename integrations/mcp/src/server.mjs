@@ -1,7 +1,9 @@
 // MCP server `ghost-run`: five advisory tools over stdio. STDOUT is protocol only.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { RootsListChangedNotificationSchema } from '@modelcontextprotocol/sdk/types.js';
 import { TOOL_NAMES } from './schemas.mjs';
+import { createWorkspaceResolver, localRoots, ownFolderOf } from './workspace.mjs';
 import { register as registerGhostRun } from './tools/ghost_run.mjs';
 import { register as registerGhostDiff } from './tools/ghost_diff.mjs';
 import { register as registerGhostTrace } from './tools/ghost_trace.mjs';
@@ -20,25 +22,49 @@ export const TOOL_REGISTRY = {
   blacklight: registerBlacklight,
 };
 
+/** Longest wait for the client's answer to roots/list. */
+const ROOTS_TIMEOUT_MS = 5000;
+
 /**
  * @param {{
  *   root?: string,
  *   env?: Record<string, string | undefined>,
  *   deps?: Record<string, any>,
  *   stderr?: (line: string) => void,
+ *   workspace?: Partial<import('./workspace.mjs').WorkspaceSources>,
  * }} [options]
+ * `root` fixes the workspace root (tests). Otherwise the root is resolved per call (workspace.mjs);
+ * `workspace` injects the sources (cwd, own folder, roots) so a test needs no host.
  * deps carries injectable doubles for the tools (for example `runPlan`, `storeDir`).
  */
 export function createServer(options = {}) {
   const stderr = options.stderr ?? ((/** @type {string} */ line) => { process.stderr.write(`${line}\n`); });
+  const env = options.env ?? process.env;
+  const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
+  const getRoots = async () => {
+    if (!server.server.getClientCapabilities()?.roots) return null;
+    const answer = await server.server.listRoots(undefined, { timeout: ROOTS_TIMEOUT_MS });
+    return localRoots(answer.roots);
+  };
+  const resolver = createWorkspaceResolver({
+    env,
+    cwd: () => process.cwd(),
+    ownDir: ownFolderOf(import.meta.url),
+    getRoots,
+    ...options.workspace,
+  });
+  server.server.setNotificationHandler(RootsListChangedNotificationSchema, () => {
+    resolver.invalidate();
+  });
   /** @type {import('./tool-kit.mjs').ToolContext} */
   const ctx = {
-    root: options.root ?? process.cwd(),
-    env: options.env ?? process.env,
+    root: options.root ?? '',
+    env,
     deps: options.deps ?? {},
     log: (message) => stderr(`[ghost-run-mcp] ${message}`),
+    notices: [],
+    ...(options.root === undefined ? { resolveRoot: (workspace) => resolver.resolve(workspace) } : {}),
   };
-  const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
   for (const name of TOOL_NAMES) TOOL_REGISTRY[name](server, ctx);
   return { server, ctx };
 }

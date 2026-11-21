@@ -586,6 +586,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - IDE steps: open the scratch folder in Kiro IDE, trust it (click the trust button in the trust dialog), reload the window (Cmd+Shift+P, "Developer: Reload Window"), start a new chat session, and send: (1) "Run the shell command: ls" (expect: allowed, no hook output); (2) "Run the shell command: rm -rf data" in a clone that contains a `data/` folder (expect: blocked, the chat shows the block message that names `protect-data`); (3) "Overwrite the existing file data/a.csv with the text hi" in a clone that contains `data/a.csv` (expect: blocked by the write judgment, naming `protect-data`). Creating a new file such as data/x.txt is allowed by design, because the path wards of `protect-data` deny only delete and overwrite. Then rename `core/dist` in the scratch clone, send "Run the shell command: echo hello" (expect: blocked with the line `GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build).`), and rename it back. Write down for each case whether the IDE blocked the call and whether the agent saw the hook message.
     - CLI steps: in a terminal run `cd <scratch>` and `kiro-cli chat`, repeat the same four messages and write down the same facts. Check that an exit code 2 blocks the call in the CLI and that the message reaches the agent.
     - Record the results in `docs/measurements.md` as one entry (a table of case, IDE result, CLI result). If any case lets the call through, mark the gate as not safe to enable and report it in the final checkpoint.
+    - CLI side recorded 2026-11-21 in `docs/measurements.md`; the IDE side is pending.
     - _Requirements: 2.9, 7.8, 8.7_
 
   - [ ] 17.2 MANUAL (human): verify whether a Pre Tool Use `ask` output raises an approval prompt (IDE and CLI)
@@ -593,17 +594,20 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - For each of three tool trust settings (a) `execute_bash` not trusted, (b) `execute_bash` trusted (in the IDE add the command pattern `echo *` to the trusted commands in the Kiro settings; in the CLI use the tool trust command, for example `/tools`), (c) trust-all or autopilot mode: send "Run the shell command: echo ghost-run-ask-probe". Judge: a prompt appeared if the host showed an approval dialog or a confirmation line before the command ran, with the reason text `probe: ask test`; a decline blocked the call if you decline and the chat shows no command output. Also check the log line `askTest: asked` in `.ghost-run/probe/events.jsonl`.
     - Record in `docs/measurements.md` a table with the rows (a), (b), (c) and the columns IDE prompt shown, IDE decline blocked, CLI prompt shown, CLI decline blocked, reason text shown. Add the `ask` row to the `Probe results` table. Set `probe-ask.json` back to `enabled: false`.
     - Decision rule written in the entry: `WARN_MODE` may become `ask` only if both hosts show the prompt and a decline blocks the call in all three settings, or in the untrusted setting if the README then states the trusted-tool limit; if the IDE and the CLI differ, `WARN_MODE` stays `exit2` for both.
+    - CLI side recorded 2026-11-21 in `docs/measurements.md`; the IDE side is pending.
     - _Requirements: 10.3, 10.4, 10.11, 7.3_
 
   - [ ] 17.3 Decide `WARN_MODE` from the `ask` verification and update the gate constant
     - **Depends on task 17.2.** Keep `WARN_MODE = 'exit2'` in `gate-config.mjs` unless the decision rule of task 17.2 allows `ask`. If it allows `ask`, change the constant to `'ask'` (a Self_Protected_Path, so the change needs the human) and add a test that pins the committed value to the recorded decision. If it does not, add a test that pins `'exit2'` and a note in `gate-config.mjs` that names the `docs/measurements.md` entry.
     - Both modes are already covered by Property 1. A `warn` never exits 0 without the `ask` JSON.
+    - Decision (human, 2026-11-21): `WARN_MODE` is `ask`, after the IDE 1.4.236 and CLI prompt tests. This task stays unticked as a record of the decision rule; the change itself is task 22.3.
     - _Requirements: 10.3, 10.4, 7.3, 7.9_
 
   - [ ] 17.4 MANUAL (human): install the power from the folder in a second project and record the evidence
     - **Depends on tasks 15.3 and 16.2.** Use a second, empty project folder outside this repository.
     - Steps: open the second project in Kiro IDE and trust it; open the Powers panel and choose "Add Custom Power", then "Local folder", and select `integrations/power` of this repository; when the install finishes, open the MCP servers view and confirm that the `ghost-run` server is running and lists the five tools (note the exact prefixed names the host shows); start a new chat and send "I want to run rm -rf build to clean up" and check whether the `ghost-run` skill is activated (the chat shows the skill name or the agent calls `wards_check`); ask the agent to call `wards_check` for the plan `ls`. If the server does not start because `server/ghost-run-mcp.mjs` does not resolve, run `pnpm power:link` (task 15.4), copy the absolute path from `mcp.local.json` into the power install, and record that the fallback was needed.
     - Save a screen capture or a log of the three observations (server listed with the five tools, keyword activates the skill, `wards_check` answer) for the Kiro usage report. Append the result and the displayed tool names to `docs/measurements.md`, and write the displayed names into `integrations/power/README.md` (design O3).
+    - CLI side recorded 2026-11-21 in `docs/measurements.md`; the IDE side is pending. The CLI side found that the server worked on the power folder; fixed by task 21; repeat the CLI check after the fix and then the IDE side.
     - _Requirements: 20.6, 20.8_
 
 - [x] 18. Documentation
@@ -641,7 +645,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Checklist:
       - Check A (tests): Full test suite passes: `pnpm -r build`, `pnpm -r test`, and `pnpm lint`, with the `[docker]` tests run on a Docker machine (a `skipped (docker unavailable)` line is not a pass), and the `[docker]` leftover-container test passes.
       - Check B (safe list): Safe list verified: the built-in entries skip the ghost (`ls`, `pwd`, `git status`, `git diff`, `echo hi`), and each of `ls; rm x`, `cat .env`, `git diff --output=out`, and a command with `$(...)` goes through the ghost (checked in the scratch clone of task 17.1 with the Stats_Events `safe-skip` and `ghosted`).
-      - Check C (approval path): Approval path verified: the committed `WARN_MODE` equals the decision of task 17.3 and, because `ask` is confirmed only if the probe shows the prompt in both IDE and CLI, it is `exit2` until then. A `warn` call (for example `pnpm install` with network in the ghost run) was observed to exit 2 with the warn message in both hosts, and a command that contains `ghost-run approve` is denied. The README states what a human does for a necessary command (run it outside the agent, or approve it through the host prompt when `ask` is confirmed).
+      - Check C (approval path): Approval path verified: the committed `WARN_MODE` is `ask` (decision of 2026-11-21, task 22.3). A `warn` call (for example `pnpm install` with network in the ghost run) was observed to raise the host prompt with the warn message in both hosts, Deny blocks the call, and a command that contains `ghost-run approve` is still denied. The README states what a human does for a necessary command (approve it through the host prompt, or run it outside the agent).
       - Check D (fail closed): Fail-closed behavior verified in the scratch clone in both hosts, each case blocks the call with exit 2: a crash (an injected throw in a copy of `main.mjs`), a timeout (a runner that hangs past the watchdog, or a command that exceeds it), a missing wards file (rename `apps/ghost-shell/wards.yaml`), a missing build (rename `core/dist`), and a dynamic import failure (a syntax error in a copy of `main.mjs`).
       - Check E (hygiene): The experiment B hooks and the probe hooks are disabled, `.ghost-run/` is ignored, the human disable path (`enabled: false` in the hook entry) is known, and the possession scan of the repository is `clean`.
       - Check F (hand-off): The ghost-runner `runId` hand-off status is written down: either the option exists and the hung-runner cleanup test passes, or the README states that Requirement 8 criterion 9 is not claimed for a hung runner.
@@ -657,7 +661,87 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
 - [ ] 20. Final checkpoint - Ensure all tests pass
   - Run `pnpm -r build`, `pnpm lint`, `pnpm --filter @ghost-run/kiro-hook test`, `pnpm --filter @ghost-run/mcp test`, and `typecheck` for both packages, in the Short_Run, and, where Docker is available, the `[docker]` tests. Confirm: every property of the design (1 to 21) has a test with at least 100 runs in the Short_Run and the Short_Run is within 60 s without Docker; the hook file format test, the exp-b retirement test, and the probe-disabled test pass; the five hook files exist (or the recorded reason for a missing `world-scaffold.json` stands); the possession scan of `integrations/`, `.kiro/hooks/`, and `.kiro/specs/kiro-integration/` is `clean`; the source-scan test passes; no `.ghost-run/` content is in the working tree; the README tables list every dependency with its license; the `core`, `ghost-runner`, `wards-config`, and `ui` ESLint import bans hold; the `Probe results` table, the exit-code table, the `ask` table, the timing entry, and the power install entry exist in `docs/measurements.md`; the open items that remain (O7 `safeCommands`, O12 `runId`, O10, `ui` import ban if `ui` was missing) are listed in the checkpoint report with the spec that owns each. Ensure all tests pass, ask the user if questions arise.
 
+- [x] 21. Fix round 2026-11-21: the power works in another project (the `PWD` source of 21.1 is superseded by task 22)
+  - [x] 21.1 Workspace root resolver, per-call context, and roots/list
+    - `integrations/mcp/src/workspace.mjs` resolves the workspace root per tool call in this order: MCP `roots/list`, `GHOST_RUN_WORKSPACE`, the working directory, `PWD`; the last two are skipped when they are the power's own folder (superseded by task 22.1: `PWD` is no longer a source and the `workspace` input is added). With no root every tool returns `workspace root unknown: ...` and does nothing else.
+    - `src/tool-kit.mjs` builds a per-call context (`root`, `notices`) and adds the first line `Workspace root: <path>` plus notice lines to each result (re-applying the 64 KiB cap). `src/server.mjs` asks the client for roots only when it declared the `roots` capability, caches the answer, and clears the cache on `notifications/roots/list_changed`.
+    - Tests: `integrations/mcp/tests/workspace-root.test.mjs` (resolution order, own-folder skip, roots cache and list_changed, root-unknown error with no runner call and no write).
+    - _Requirements: 18.6, 18.11, 18.12, 18.13, 18.14_
+
+  - [x] 21.2 Default wards for `wards_check` and `ghost_run`
+    - `src/default-wards.mjs` embeds the default wards text and `src/wards-source.mjs` loads it only when no wards file exists (`GHOST_RUN_WARDS_FILE` unset and neither `<root>/wards.yaml` nor `<root>/apps/ghost-shell/wards.yaml` present), adding the default-wards notice. A wards file that exists but is invalid still gives an error result (fail closed). The Ghost_Gate is unchanged and still denies on a missing file.
+    - Tests: the embedded text is pinned byte for byte to `apps/ghost-shell/wards.yaml`; notice present for the defaults; an invalid file gives an error with no notice; a project wards file wins.
+    - _Requirements: 19.17, 19.18, 19.19_
+
+  - [x] 21.3 Box sources in the power and rebuilt bundle
+    - `integrations/mcp/scripts/bundle.mjs` gets `copyBox`, which copies `ghost-runner/box` to the committed `integrations/power/box/` (files ending in `.local` excluded). The committed bundle `integrations/power/server/ghost-run-mcp.mjs` is rebuilt, with no absolute path and no user name.
+    - Tests: `integrations/mcp/tests/power-box.test.mjs` (the copy equals `ghost-runner/box`; `findBoxDir` from the bundle folder finds `power/box`) and `integrations/mcp/tests/power-install.test.mjs` (the bundle copied to a fake install folder starts there with `GHOST_RUN_WORKSPACE` and with neither, where it refuses to work on its own folder; the `PWD` case was removed by task 22.1).
+    - _Requirements: 19.15, 19.20, 19.21, 20.5, 20.6_
+
+  - [x] 21.4 SKILL.md description says when to use the skill
+    - The one-line `description` of `integrations/power/skills/ghost-run/SKILL.md` names the trigger (before a destructive or risky command such as `rm -rf`, `DROP TABLE`, a migration, a deploy, or a read of `.env`), so the skill loads for such requests.
+    - _Requirements: 20.3, 20.10_
+
+  - [x] 21.5 Documentation of the fix round
+    - Update `integrations/power/README.md` (root resolution, `GHOST_RUN_WORKSPACE`, default wards, box folder), `integrations/mcp/README.md` (workspace root, notice lines, default wards), and the section "Use it in your Kiro" of the root `README.md`.
+    - _Requirements: 18.6, 20.5, 20.6_
+
+  - [x] 21.6 Make parallel test runs independent
+    - `apps/ghost-shell/tests/build/dist.test.ts` and `tests/build/build-smoke.test.ts` each build into their own temporary outDir and no longer share `apps/ghost-shell/dist`.
+    - `ghost-runner/tests/repo-world.docker.test.ts` and `tests/verify-world.docker.test.ts` compare only the run ids that the test process issued (helper `ghost-runner/tests/own-run-ids.ts`), not every container with the label `ghost-run.run-id`.
+    - _Requirements: 23.3_
+
+  - [x] 21.7 Record the CLI side of the host checks in `docs/measurements.md`
+    - Entry "Host checks before enabling the gate (2026-11-21, Kiro CLI 3.5.0, Docker 29.9.3)": evidence for tasks 17.1, 17.2, and 19.1; the IDE columns read "pending". This only records evidence; the manual tasks stay open.
+    - _Requirements: 20.6, 20.10_
+
+- [x] 22. Fix round 2 2026-11-21
+  - [x] 22.1 Workspace root: remove the `PWD` source and add the `workspace` input
+    - `integrations/mcp/src/workspace.mjs`: remove `PWD` as a source. The order becomes `roots/list` (only when the client declared `roots`), `GHOST_RUN_WORKSPACE`, the working directory unless it is the Own_Folder, then the `workspace` input (used only when no root exists).
+    - Add the optional string input `workspace` to the zod schema of all five tools (`ghost_run`, `ghost_diff`, `ghost_trace`, `wards_check`, `blacklight`). Validate it: absolute path, realpath of an existing folder, not `/`, not the home folder, not the Own_Folder; each failure returns an error result that names the reason. If a root already exists and the real path of `workspace` differs, return `workspace does not match this server's workspace root` and change nothing. If no root exists and no valid `workspace` is given, return the `workspace root unknown: pass `workspace` ...` error with no runner call and no write.
+    - Keep the path confinement of KI-P8 unchanged for the resolved root. The Ghost_Gate stays unchanged.
+    - Property tests in `integrations/mcp/tests/workspace-input.pbt.test.mjs` [no-docker], with injected sources (no Kiro host): Property 22 generates any server that has a root (client roots, `GHOST_RUN_WORKSPACE`, or a working directory) and any `workspace` value (existing folders, other folders, relative strings, junk), and checks that the root of the call equals the root without `workspace` (an equal path is accepted, a different one gives the mismatch error, the root never moves). Property 23 generates `workspace` values that are `/`, the home folder (also with trailing slashes, `.` and `..` segments, and symlinks to it), and the Own_Folder (also through a symlink), and checks that each is refused with its reason and that no runner call and no write happens.
+    - **Property 22: The workspace input never moves a rooted server**
+    - **Property 23: Root, home folder, and own folder are always refused**
+    - **Validates: Requirements 18.15, 18.16, 18.17, 18.18**
+    - Update `integrations/mcp/tests/power-install.test.mjs` (remove the `PWD` case, add cases for `workspace` given and for neither) and `integrations/mcp/tests/workspace-root.test.mjs` (no `PWD` source, `workspace` used only without a root, mismatch error, unknown-root error, each refusal reason).
+    - _Requirements: 18.6, 18.11, 18.12, 18.13, 18.14, 18.15, 18.16, 18.17, 18.18, 19.10_
+
+  - [x] 22.2 Documentation and rebuilt bundle for the `workspace` input
+    - Add to `integrations/power/skills/ghost-run/SKILL.md` the sentence ``Pass `workspace` = the absolute path of the current project root in every call.`` (exact text, no hidden character).
+    - Update `integrations/power/README.md` and `integrations/mcp/README.md`: the resolution order without `PWD`, the `workspace` input and its refusal reasons, and why `PWD` is not a source (it names the launch folder of the host, not the project of the window).
+    - Rebuild the committed bundle `integrations/power/server/ghost-run-mcp.mjs` with `pnpm --filter @ghost-run/mcp bundle` (the exact script name is in `integrations/mcp/package.json`); requirement 19.15 holds (no absolute path, no user name in the bundle).
+    - Update the entry "Host checks before enabling the gate" in `docs/measurements.md`: keep the CLI `PWD` result as measured and add why `PWD` was removed (in the IDE it is the launch folder of Kiro for every window). This task is the only one of wave 23 that edits `docs/measurements.md`.
+    - **Depends on task 22.1.**
+    - _Requirements: 18.6, 18.15, 19.15, 20.3, 20.5, 20.6_
+
+  - [x] 22.3 Commit `WARN_MODE = 'ask'` and update the warn documentation
+    - `integrations/kiro-hook/gate-config.mjs`: set `WARN_MODE = 'ask'` with a comment that names the `docs/measurements.md` entry (`Host checks before enabling the gate`) and the date 2026-11-21 (a Self_Protected_Path: the human decided).
+    - Add a pin test in `integrations/kiro-hook/tests/` (for example `warn-mode.test.mjs`) that asserts the committed value is `'ask'`, and that `gate-config.mjs` names the measurements entry and `2026-11-21`.
+    - Check Property 1 (task 7.2) for `ask`: a `warn` never exits 0 without the `ask` JSON (with `permissionDecision: "ask"` and the warn message as reason), a `block` stays exit 2, a `pass` never emits `allow`. Extend the test if the `ask` mode lacks a case.
+    - Update the sentences in `integrations/kiro-hook/README.md` (and the root `README.md` section "Use it in your Kiro" if it has them) that say a human runs a warned command outside the agent: a warned command raises the host prompt, Allow runs it, Deny blocks it; running it outside the agent is still possible; a command containing `ghost-run approve` is denied.
+    - _Requirements: 10.3, 10.4, 7.3, 7.9_
+
+  - [x] 22.4 Remove the global container comparison from `gate-docker.test.mjs` [docker]
+    - `integrations/kiro-hook/tests/gate-docker.test.mjs`, near line 195: remove the comparison of the labeled containers (`labeled()`) before and after against every container with the label `ghost-run.run-id`, or restrict it to the run ids that this test process issued (same idea as `ghost-runner/tests/own-run-ids.ts`, task 21.6). The check must not fail when another test file or process runs a container at the same time.
+    - _Requirements: 8.2, 23.3_
+
+  - [x] 22.5 Replace `pending` in `docs/measurements.md` with the IDE results
+    - In the entry "Host checks before enabling the gate", replace each IDE column that reads `pending` with the IDE 1.4.236 results for task 17.1 (exit-code cases), 17.2 (`ask` prompt in the settings a, b, c), 17.4 (power install in a second project), and the sleeping-Docker case. Use only results that the human gave; where a result is still missing, write `not measured` with the reason, never a guess.
+    - This task edits `docs/measurements.md` and runs in its own wave. It only records evidence: the manual tasks 17.1, 17.2, and 17.4 stay unticked until the human ticks them.
+    - **Depends on task 22.2.**
+    - _Requirements: 2.9, 10.3, 20.6, 25.9_
+
+  - [x] 22.6 Gates for fix round 2
+    - Run `pnpm -r build`; rebuild the bundle and check that it equals the committed file; `pnpm --filter @ghost-run/mcp test`, `typecheck`, `lint`; `pnpm --filter @ghost-run/kiro-hook test`, `typecheck`, `lint`, with the kiro-hook suite run twice in a row with Docker available (the second run must also pass, which shows that no test depends on leftovers or on other containers); the possession scan tests (`integrations/`, `.kiro/hooks/`, `.kiro/specs/kiro-integration/` stay `clean`); and `validate_spec_format` on this file.
+    - Report any `skipped (docker unavailable)` line as skipped and not as passed.
+    - **Depends on tasks 22.1, 22.2, 22.3, 22.4, and 22.5.**
+    - _Requirements: 19.15, 22.5, 23.3_
+
 ## Notes
+
+- Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.
+- Task 21 was added after the first pass as a fix round. The CLI half of task 17.4 found the root failure (the server worked on the power folder); the IDE half is pending.
 
 - Every task is required. No task is marked optional. No test sub-task carries the `*` marker.
 - Properties 1 to 21 keep the numbering and titles of `design.md`. Properties 1 to 9 are KI-P1 to KI-P9 of Requirement 23. Property map: 1 (task 7.2), 2 (5.4), 3 (8.4), 4 (4.7), 5 (4.6), 6 (6.4), 7 (12.2), 8 (14.7), 9 (8.5), 10 (7.4), 11 (6.5), 12 (7.3), 13 (7.6), 14 (8.6), 15 (8.7), 16 (4.5), 17 (14.5), 18 (14.6), 19 (11.2), 20 (13.2), 21 (4.4).
@@ -693,7 +777,13 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     { "id": 16, "tasks": ["16.1", "16.2", "16.3", "16.4", "18.4", "18.5", "18.6"] },
     { "id": 17, "tasks": ["17.4"] },
     { "id": 18, "tasks": ["19.1"] },
-    { "id": 19, "tasks": ["19.2"] }
+    { "id": 19, "tasks": ["19.2"] },
+    { "id": 20, "tasks": ["20"] },
+    { "id": 21, "tasks": ["21.1", "21.2", "21.3", "21.4", "21.5", "21.6", "21.7"] },
+    { "id": 22, "tasks": ["22.1", "22.3", "22.4"] },
+    { "id": 23, "tasks": ["22.2"] },
+    { "id": 24, "tasks": ["22.5"] },
+    { "id": 25, "tasks": ["22.6"] }
   ]
 }
 ```

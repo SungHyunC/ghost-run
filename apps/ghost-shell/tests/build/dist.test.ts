@@ -1,20 +1,23 @@
 // Builds once and checks the final static output: headers, same-origin wasm and worker, the bundled
 // wards text, and the dist URL check script.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const appRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const dist = join(appRoot, 'dist');
+// Each test file builds into its own temporary folder. Vitest runs files in parallel, and a shared
+// apps/ghost-shell/dist was emptied by one build while the other file read it.
+const dist = mkdtempSync(join(tmpdir(), 'ghost-shell-dist-'));
 const assets = join(dist, 'assets');
 
 let jsFiles: { name: string; text: string }[] = [];
 let wasmFiles: string[] = [];
 
 beforeAll(() => {
-  execFileSync(join(appRoot, 'node_modules', '.bin', 'vite'), ['build'], {
+  execFileSync(join(appRoot, 'node_modules', '.bin', 'vite'), ['build', '--outDir', dist, '--emptyOutDir'], {
     cwd: appRoot,
     stdio: 'pipe',
     env: { ...process.env, NODE_ENV: 'production' },
@@ -23,6 +26,10 @@ beforeAll(() => {
   jsFiles = names.filter((n) => n.endsWith('.js')).map((name) => ({ name, text: readFileSync(join(assets, name), 'utf8') }));
   wasmFiles = names.filter((n) => n.endsWith('.wasm'));
 }, 120_000);
+
+afterAll(() => {
+  rmSync(dist, { recursive: true, force: true });
+});
 
 describe('ghost-shell dist', () => {
   it('has _headers with the CSP and without COOP or COEP', () => {
@@ -40,7 +47,7 @@ describe('ghost-shell dist', () => {
   });
 
   it('passes scripts/check-dist.mjs', () => {
-    const result = spawnSync(process.execPath, [join(appRoot, 'scripts', 'check-dist.mjs')], { cwd: appRoot, encoding: 'utf8' });
+    const result = spawnSync(process.execPath, [join(appRoot, 'scripts', 'check-dist.mjs'), dist], { cwd: appRoot, encoding: 'utf8' });
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });

@@ -20,15 +20,17 @@ const action = z.object({
 });
 
 export const planSchema = z.array(action).min(1).max(MAX_PLAN_ACTIONS);
+/** Optional absolute path of the agent's project root; the server validates it (workspace.mjs). */
+export const workspaceSchema = z.string().min(1).max(4096).optional();
 export const idSchema = z.string().regex(ID_PATTERN);
 
 /** Raw zod shapes, as `registerTool` takes them. */
 export const INPUT_SHAPES = {
-  ghost_run: { plan: planSchema },
-  ghost_diff: { id: idSchema },
-  ghost_trace: { id: idSchema, session: idSchema.optional() },
-  wards_check: { plan: planSchema },
-  blacklight: { path: z.array(z.string()).min(1).max(MAX_PATHS) },
+  ghost_run: { plan: planSchema, workspace: workspaceSchema },
+  ghost_diff: { id: idSchema, workspace: workspaceSchema },
+  ghost_trace: { id: idSchema, session: idSchema.optional(), workspace: workspaceSchema },
+  wards_check: { plan: planSchema, workspace: workspaceSchema },
+  blacklight: { path: z.array(z.string()).min(1).max(MAX_PATHS), workspace: workspaceSchema },
 };
 
 /** Annotations: only `ghost_run` is not read-only, and it is not destructive. */

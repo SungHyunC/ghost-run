@@ -1,17 +1,17 @@
 // Feature: ghost-runner, task 14.8: verifyWorld conformance for the Repo_World.
 // Validates: Requirements 17.9, 2.1, 2.9
 // [docker] Needs the box image; skipped (docker unavailable) otherwise via describeDocker.
-import { spawnSync } from 'node:child_process';
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import fc from 'fast-check';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import type { WardSet, World } from '@ghost-run/core';
 import { verifyWorld } from '@ghost-run/core/verify';
 import { createRepoWorld } from '../src/world/repo-world.js';
 import type { RepoState, ShellAction } from '../src/world/types.js';
 import { describeDocker } from './docker-available.js';
 import { createFixtureRepo, type FixtureRepo } from './fixtures/repo.js';
+import { leftoversOf } from './own-run-ids.js';
 import { NUM_RUNS, PBT_MODE, testTimeoutMs } from './pbt-config.js';
 
 const WARDS: WardSet = {
@@ -53,25 +53,15 @@ function repoStateEquals(a: RepoState, b: RepoState): boolean {
   return fa.length === fb.length && fa.every((x, i) => x === fb[i]);
 }
 
-function ghostLeftovers(): string[] {
-  const out: string[] = [];
-  for (const args of [
-    ['ps', '-a', '-q'],
-    ['volume', 'ls', '-q'],
-  ]) {
-    const r = spawnSync('docker', [...args, '--filter', 'label=ghost-run.run-id'], { encoding: 'utf8' });
-    out.push(...r.stdout.split('\n').filter((l) => l.trim() !== ''));
-  }
-  return out;
-}
+// Only the run ids that this test process issued count as leftovers (see own-run-ids.ts).
+const issued = vi.hoisted(() => new Set<string>());
+vi.mock('node:crypto', async (orig) => (await import('./own-run-ids.js')).recordRandomUuid(await orig<typeof import('node:crypto')>(), issued));
 
 describeDocker('verifyWorld on the Repo_World (docker)', () => {
   let fixture: FixtureRepo;
   let world: ReturnType<typeof createRepoWorld>;
-  const before = new Set<string>();
 
   beforeAll(async () => {
-    for (const id of ghostLeftovers()) before.add(id);
     fixture = await createFixtureRepo();
     world = createRepoWorld({ original: fixture.root });
   });
@@ -79,7 +69,8 @@ describeDocker('verifyWorld on the Repo_World (docker)', () => {
   afterAll(async () => {
     await world.dispose();
     fixture.cleanup();
-    expect(ghostLeftovers().filter((id) => !before.has(id))).toEqual([]);
+    expect(issued.size).toBeGreaterThan(0);
+    expect(leftoversOf(issued)).toEqual([]);
   });
 
   it(

@@ -393,7 +393,7 @@ Recorded 2026-11-18 for task 1.6 of `.kiro/specs/kiro-integration`; the IDE colu
 | (g) Parallel Pre Tool Use hooks overlap (design O5) | Not measured: the `PreToolUse` lines carry no timestamps, so overlap cannot be read from the log | Not measured: the `PreToolUse` lines carry no timestamps, so overlap cannot be read from the log | cli: lines 35 and 36 are two consecutive `PreToolUse` events and have no `at` field; ide: lines 25 and 26, and 27 and 28, have no `at` field |
 | (h) `timeout` at entry level (`hooks[].timeout`) | Honored: the `entry` run has a `start` and no `end` in all three runs, and the next record starts 1.01, 1.04, and 1.01 s later | Honored: a 3 s wait with `timeout: 1` was cut after about 1 s (the `entry` run has a `start` and no `end`; the next record starts 1.03 s later) | cli: lines 5 and 6; ide: lines 5 and 6, 12 and 13, 19 and 20 |
 | (h) `timeout` inside `action` | Ignored: `start` and `end` are 3.00 s apart in all three runs | Ignored: the 3 s wait ran to the end (`start` and `end` 3.00 s apart) | cli: lines 6 and 7; ide: lines 6 and 7, 13 and 14, 20 and 21 |
-| (i) `ask` permission decision | pending (task 17.2) | pending (task 17.2) | `probe-ask.json` (disabled) |
+| (i) `ask` permission decision | Measured on 2026-11-21 (CLI 3.5.0): the prompt shows the reason, Deny blocks; see "Host checks before enabling the gate" | Measured on 2026-11-21 (IDE 1.4.236): the prompt shows the reason, Deny blocks; see "Host checks before enabling the gate" | `probe-ask.json` (disabled) |
 
 ## Playground world contract run time (task 7.6)
 
@@ -1216,3 +1216,96 @@ Measured by Claude Code on the Reference_Machine, before the fix, with the VM st
 Warm-up call (measured by Claude Code on the Reference_Machine, 2026-11-21): a detached `docker version` does not wake the VM. After a `docker version` at 07:49:50 UTC the Docker Desktop idle log showed no VM start and no "VM stopped" event for 30 minutes, and a `docker info` at 08:20 still took 1.88 s (cold start; the next calls took 0.03 to 0.13 s). The proxy answers the version query without starting the engine. The warm-up therefore runs `docker info --format '{{.ServerVersion}}'`, which is an engine call.
 
 Fix: one wake retry of 10 s after a timed-out 2 s check (`DOCKER_WAKE_RETRY_MS`), `dockerWakeRetried` in the run record, and the `docker-warmup` hook (disabled until task 19.1). The measurement with the fix in the IDE is part of the manual task 19.1 and is not recorded here yet.
+
+## Host checks before enabling the gate (2026-11-21, Kiro CLI 3.5.0, Docker 29.9.3)
+
+Run by Claude Code in scratch clones and in a second project. These are the CLI results and the IDE results (Kiro IDE 1.4.236, measured by Claude Code on 2026-11-21 with the human answering the prompts). No task is ticked from this entry: 17.1, 17.2, 17.4, and 19.1 stay open.
+
+### 17.1 Exit codes (scratch clone, ghost-gate and docker-warmup enabled)
+
+Messages sent through `kiro-cli chat --no-interactive --trust-all-tools`.
+
+| Case | CLI result | IDE result |
+|---|---|---|
+| "Run the shell command: ls" | allowed, ran, no hook text | the `ghost-gate` (shell) and `docker-warmup` (shell) hooks ran; the stats line was `safe-skip`; the IDE's own approval prompt for `ls` followed (Allow); the command ran with no hook text |
+| "Run the shell command: rm -rf data" | blocked (exit 2); the agent got "GHOST RUN BLOCKED by ward protect-data: would delete protected path data" plus `data/a.csv` and `data/b.csv`; `data/` intact | the agent first ran a read-only inspection, which was ghosted and passed and then needed the IDE approval; the agent then asked for confirmation; after "Yes, I confirm": "GHOST RUN BLOCKED by ward protect-data: would delete protected path data" plus `data/a.csv`, `data/keep.txt`, and `data/rows.csv`; the agent reported it and did not retry; `data/` intact |
+| "Overwrite the existing file data/a.csv with the text hi" | the write tool was blocked by protect-data; the agent reported 1 overwritten, 0 rows lost; file unchanged | "GHOST RUN BLOCKED by ward protect-data: would overwrite protected path data/a.csv ... 1 overwritten"; the file was unchanged |
+| `core/dist` renamed, "Run the shell command: echo hello" | blocked with "GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build)." | "GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build)." |
+
+Sleeping Docker (requirement 25):
+
+- The Docker Desktop VM process stopped by itself after the idle period (Resource Saver).
+- 20 s later the `rm -rf` case ran through the CLI.
+- It was blocked after a real box rehearsal: `isolation.mode` `docker-box`, P1, P5, and P6 claimed, `dockerCheckMs` 1656, `dockerWakeRetried` false.
+
+Order in the IDE (Kiro IDE 1.4.236, gate-clone at 0372934, `ghost-gate` and `docker-warmup` enabled, permission mode Supervised): the gate runs before the IDE's own approval prompt. A blocked call never reaches that prompt.
+
+Sleeping Docker in the IDE (requirement 25, task 19.1):
+
+- The read-only inspection command above was the first Docker use after about 14 idle minutes: `dockerCheckMs` 2589, `dockerWakeRetried` true, `isolation.mode` `docker-box`, `rehearsed` true, P1 claimed.
+- The warm-up hook ran in the same moment and could not save the first check. The retry did.
+- The next run had `dockerCheckMs` 132.
+
+### 17.2 The `ask` probe (`probe-ask.json` only, gate disabled, interactive `kiro-cli chat`)
+
+| Setting | Prompt shown | Reason text shown | Decline blocked | IDE |
+|---|---|---|---|---|
+| (a) shell not trusted | yes: "probe: ask test requires approval", Allow / Deny | yes | yes: "User denied tool execute_bash. Reason shown: probe: ask test", not executed | yes: permission mode Supervised, no trusted commands. "Your approval is required to continue: probe: ask test", Allow / Deny. After Deny the agent reported: "The command didn't run. A PreToolUse hook blocked it and gave the reason probe: ask test" |
+| (b) shell trusted (`--trust-tools=shell`; a plain `echo` ran without a prompt in this setting) | yes | yes | yes | yes: workspace setting `kiroAgent.autoApproveAgentCommands: ["echo *"]`. A plain `echo trusted-check` ran without a prompt. The probe command still showed the prompt, and Deny blocked it |
+| (c) trust all (`--trust-all-tools`) | yes | yes | yes | yes: `kiroAgent.autoApproveAgentCommands: ["*"]` and permission mode "Approve for me". The prompt still appeared and waited, and Deny blocked it |
+
+- In the CLI the prompt waits for the human. Allow is the preselected choice (Enter allows).
+- `askTest: asked` was logged in `.ghost-run/probe/events.jsonl` for each call (three times in the IDE).
+- Decision rule of task 17.2: met in all six cells (prompt with the reason, and Deny blocks, in both hosts and in all three settings).
+- Decision (task 17.3, by the human, 2026-11-21): `WARN_MODE = 'ask'` in `integrations/kiro-hook/gate-config.mjs`. A `block` stays exit 2.
+
+### 19.1 Evidence (CLI and direct gate runs in the scratch clone)
+
+- Check B (safe list): `ls`, `pwd`, `git status`, `git diff`, and `echo hi` gave the stats `safe-skip`. `ls; rm x`, `cat .env`, `git diff --output=out`, and `echo $(whoami)` gave `ghosted` (all passed).
+- Check C (approval path):
+  - `curl -s https://example.com` gave "GHOST RUN NEEDS HUMAN APPROVAL: 3 notice(s) outside the copy or needing review. First: step 0 has side effect outside the copy: url to example.com", exit 2, in the CLI.
+  - `npx ghost-run approve g-1` gave "GHOST RUN GATE ERROR: rule approval-command: this command is reserved for humans", exit 2.
+  - `pnpm install` passed (no network effect was recorded).
+- Check D (fail closed): each case exited 2 when run directly and was blocked in the CLI.
+
+  | Case | Message |
+  |---|---|
+  | crash (a throw injected in `main.mjs`) | internal-error |
+  | syntax error in `main.mjs` | GATE UNAVAILABLE |
+  | wards file renamed | wards-file error |
+  | `core/dist` renamed | GATE UNAVAILABLE |
+  | `sleep 120` | NEEDS HUMAN APPROVAL after 27 s: "the rehearsal did not finish cleanly" |
+
+- Check E (hygiene):
+  - every hook file is committed with `enabled: false`
+  - `.ghost-run/` is in `.gitignore`
+  - the disable path is in the `integrations/kiro-hook` README
+  - the possession scan of all 1,321 tracked text files is clean
+- Check A (full suite in a fresh clone of 0372934):
+  - build, lint, and typecheck passed
+  - test failed in two packages: the ghost-shell race (both build tests wrote `apps/ghost-shell/dist`), and the two ghost-runner leftover checks (`repo-world.docker.test.ts`, `verify-world.docker.test.ts`) plus the P19 property timing out at 530 s while other gate runs used Docker at the same time
+  - the ghost-runner suite was re-run alone: P19 passed in 93 s with 100 docker-box examples, and repo-world (5 tests) and verify-world passed. The re-run then stalled while the Mac slept and was stopped; its other 11 files had passed in the full run
+  - conclusion: the three failures came from other Docker use at the same time, not from the product. The two test races were fixed on 2026-11-21 (task 21.6); Check A is not re-confirmed by this entry.
+
+### 17.4 Power installed in a second project (CLI side)
+
+- `kiro-cli powers install <repo>/integrations/power` printed `Installed power "ghost-run"` and copied the folder to `~/.kiro/powers/installed/ghost-run/`.
+- The agent listed the tools as `blacklight`, `ghost_diff`, `ghost_run`, `ghost_trace`, `wards_check`. A call shows as `@ghost-run/ghost-run/wards_check`.
+- IDE 1.4.236 (power installed with `kiro-cli powers install`): the Powers panel lists ghost-run ("Rehearse risky agent actions in a se..., by Ghost Run+ contributors") under Installed. The tool names are `blacklight`, `ghost_diff`, `ghost_run`, `ghost_trace`, `wards_check`. The approval prompts named `@ghost-run` (loading the power) and `@ghost-run/ghost-run/wards_check`.
+- IDE: "I want to run rm -rf build to clean up" did not load the power or the skill. The agent inspected, found no build folder, and asked.
+- IDE: `wards_check` for `ls` failed with the old root rule (`cannot read wards file: ~/.kiro/powers/installed/ghost-run/wards.yaml`), the same as the CLI. Fixed in task 21 and task 22.1. To be re-checked after fix round 2.
+- `wards_check` for the plan `ls` failed: `wards file is not valid`, `wards.yaml: [file-unreadable]: cannot read wards file: ~/.kiro/powers/installed/ghost-run/wards.yaml`.
+- Cause: the server took its working directory as the workspace root, and a power's server starts in the power's install folder. Fixed by task 21.1 to 21.3 (root order, default wards, box sources in the power).
+- The message "I want to run rm -rf build to clean up" did not load the skill; the agent ran the command. The skill was listed as an available command of type skill. Fixed by the new SKILL.md description (task 21.4); not yet re-measured in a host.
+
+Facts from a throwaway probe power (CLI 3.5.0, and Kiro IDE 1.4.236 measured on 2026-11-21 with two windows open, ask2 and gate-clone, Kiro launched from the ghost-run repository folder):
+
+| Fact | Value |
+|---|---|
+| Server working directory | the power's install folder, in the CLI and in the IDE (each IDE window starts its own server) |
+| `${workspaceFolder}`, `${workspaceRoot}`, `${cwd}`, `${env:PWD}` in `args` and `env` of `mcp.json` | passed literally, not substituted (CLI and IDE) |
+| Client capabilities | `{ elicitation }` only; no `roots` (CLI and IDE) |
+| Environment `PWD` (CLI) | the folder where kiro-cli was started (the user's project) |
+| Environment `PWD` and `VSCODE_CWD` (IDE) | the folder Kiro was launched from (the ghost-run repository), not the workspace of the window (gate-clone) |
+
+Why `PWD` was removed as a root source (task 22.1): the CLI result above stays as measured, but in the IDE `PWD` names the launch folder of Kiro for every window, so it silently picked the wrong project. The root order is now MCP roots, `GHOST_RUN_WORKSPACE`, the working directory unless it is the server's own folder, then the `workspace` input of the tools (used only when no root exists). The SKILL.md body tells the agent to pass `workspace` in every call.

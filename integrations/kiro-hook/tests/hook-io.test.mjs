@@ -30,7 +30,7 @@ const wait = () => new Promise((r) => setTimeout(r, 20));
 
 describe('gate-config', () => {
   it('exports the design constants', () => {
-    expect(config.WARN_MODE).toBe('exit2');
+    expect(config.WARN_MODE).toBe('ask');
     expect(config.WATCHDOG_MS).toBe(50_000);
     expect(config.RUNNER_DEADLINE_SEC).toBe(44);
     expect(config.SEMAPHORE_SLOTS).toBe(2);

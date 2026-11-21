@@ -51,7 +51,7 @@ async function walk(dir, acc) {
 
 /** @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server @param {import('../tool-kit.mjs').ToolContext} ctx */
 export function register(server, ctx) {
-  defineTool(server, ctx, 'blacklight', DESCRIPTION, async (/** @type {{ path: string[] }} */ args) => {
+  defineTool(server, ctx, 'blacklight', DESCRIPTION, async (/** @type {{ path: string[] }} */ args, /** @type {import('../tool-kit.mjs').ToolContext} */ ctx) => {
     let realRoot;
     try {
       realRoot = await realpath(ctx.root);

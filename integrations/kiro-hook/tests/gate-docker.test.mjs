@@ -192,7 +192,8 @@ describe.skipIf(!dockerAvailable)(labeled_('[docker] ghost-gate hook process', d
       expect(labeled(record.runId), `scenario ${s.id} leftover container`).toEqual([]);
       expect(existsSync(join(tmpdir(), 'ghost-run', record.runId))).toBe(false);
     }
-    expect(labeled().filter((id) => !before.has(id))).toEqual([]);
+    // No global comparison of labeled containers here: other Docker work (other test files, other runs) may
+    // add or remove containers at any time. The per-scenario labeled(record.runId) checks above cover this test.
     // The original workspace is untouched by the five ghost runs (P1).
     expect(existsSync(join(ws, 'data', 'a.csv'))).toBe(true);
     expect(existsSync(join(ws, 'build', 'out.js'))).toBe(true);
@@ -258,9 +259,9 @@ describe.skipIf(!dockerAvailable)(labeled_('[docker] ghost-gate hook process', d
       report: { snapshots: [], changes: [[]], effectsOutside: [[]], observedEvents: [], variantResults: [] },
       isolation: { mode: 'docker-box', p1Claimed: true, p5Claimed, p6Claimed, readOnlyMounts: [] },
     });
-    const full = decisionFromRunResult(make(true, true), { wardCount: 1 }).stderr;
-    const low5 = decisionFromRunResult(make(false, true), { wardCount: 1 }).stderr;
-    const low6 = decisionFromRunResult(make(true, false), { wardCount: 1 }).stderr;
+    const full = decisionFromRunResult(make(true, true), { wardCount: 1, warnMode: 'exit2' }).stderr;
+    const low5 = decisionFromRunResult(make(false, true), { wardCount: 1, warnMode: 'exit2' }).stderr;
+    const low6 = decisionFromRunResult(make(true, false), { wardCount: 1, warnMode: 'exit2' }).stderr;
     expect(full).not.toContain(CLAIM_LOWERED);
     expect(low5).toContain(CLAIM_LOWERED);
     expect(low6).toContain(CLAIM_LOWERED);

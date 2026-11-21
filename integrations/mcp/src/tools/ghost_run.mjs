@@ -9,7 +9,6 @@ import {
   diffSummary,
   enforceCaps,
   loadCanaries,
-  loadWardsForHook,
   redactCanaries,
   storePaths,
   appendLine,
@@ -17,6 +16,7 @@ import {
 } from '@ghost-run/kiro-hook';
 import { confinePath } from '../confine.mjs';
 import { defineTool } from '../tool-kit.mjs';
+import { DEFAULT_WARDS_NOTICE, loadWardsOrDefault } from '../wards-source.mjs';
 import { errorResult, makeResult } from '../result.mjs';
 
 /** Pipeline deadline of the runner in the MCP process (there is no 60 s hook limit). */
@@ -92,7 +92,7 @@ async function confinePlan(root, plan) {
 
 /** @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server @param {import('../tool-kit.mjs').ToolContext} ctx */
 export function register(server, ctx) {
-  defineTool(server, ctx, 'ghost_run', GHOST_RUN_DESCRIPTION, (args) => serialize(() => handle(args, ctx)));
+  defineTool(server, ctx, 'ghost_run', GHOST_RUN_DESCRIPTION, (args, c) => serialize(() => handle(args, c)));
 }
 
 /**
@@ -101,8 +101,9 @@ export function register(server, ctx) {
  */
 async function handle(args, ctx) {
   const root = ctx.root;
-  const load = await (ctx.deps.loadWards ?? loadWardsForHook)(root, ctx.env);
+  const load = await (ctx.deps.loadWards ?? loadWardsOrDefault)(root, ctx.env);
   if (!load.ok) return errorResult(['Wards file error:', ...load.errors.slice(0, 5)].join('\n'));
+  if (load.builtin === true) ctx.notices.push(DEFAULT_WARDS_NOTICE);
   const wardSet = load.wardSet;
 
   const confined = await confinePlan(root, args.plan);

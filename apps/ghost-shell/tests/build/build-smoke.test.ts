@@ -1,24 +1,31 @@
 // Runs the real Vite build once and checks the facts task 3.3 verifies (wasm asset, worker chunk,
 // no node: specifier, yaml parser in the browser bundle).
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const appRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const dist = join(appRoot, 'dist');
+// Each test file builds into its own temporary folder. Vitest runs files in parallel, and a shared
+// apps/ghost-shell/dist was emptied by one build while the other file read it.
+const dist = mkdtempSync(join(tmpdir(), 'ghost-shell-dist-'));
 const assets = join(dist, 'assets');
 
 let jsFiles: { name: string; text: string }[] = [];
 let wasmFiles: string[] = [];
 
 beforeAll(() => {
-  execFileSync(join(appRoot, 'node_modules', '.bin', 'vite'), ['build'], { cwd: appRoot, stdio: 'pipe', env: { ...process.env, NODE_ENV: 'production' } });
+  execFileSync(join(appRoot, 'node_modules', '.bin', 'vite'), ['build', '--outDir', dist, '--emptyOutDir'], { cwd: appRoot, stdio: 'pipe', env: { ...process.env, NODE_ENV: 'production' } });
   const names = readdirSync(assets);
   jsFiles = names.filter((n) => n.endsWith('.js')).map((name) => ({ name, text: readFileSync(join(assets, name), 'utf8') }));
   wasmFiles = names.filter((n) => n.endsWith('.wasm'));
 }, 120_000);
+
+afterAll(() => {
+  rmSync(dist, { recursive: true, force: true });
+});
 
 describe('ghost-shell vite build', () => {
   it('emits a same-origin sql.js wasm file referenced from a JS file', () => {

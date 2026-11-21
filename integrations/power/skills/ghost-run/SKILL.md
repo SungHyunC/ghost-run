@@ -1,6 +1,6 @@
 ---
 name: ghost-run
-description: Rehearse a risky command in a sealed copy and check it against wards before running it for real.
+description: Use before a destructive or risky command (rm -rf, DROP TABLE, a migration, a deploy, reading .env): rehearse it in a sealed copy and check it against wards first.
 ---
 
 # Ghost Run
@@ -17,12 +17,16 @@ Before any of these, call `wards_check` first and then `ghost_run`:
 - a deploy
 - a command that reads secret files such as `.env`
 
+## Which project
+
+Pass `workspace` = the absolute path of the current project root in every call.
+
 ## Reading the result
 
 The verdict is one of three values:
 
 - `pass`: no ward was violated in the rehearsal.
-- `warn`: the plan has a side effect outside the sealed copy. A human must decide. Do not proceed on your own.
+- `warn`: the plan has a side effect outside the sealed copy. The host asks the human to allow or deny the command. Do not proceed on your own.
 - `block`: a ward was violated. The result names the ward and the numbers.
 
 Each result also states which safety claims it makes:

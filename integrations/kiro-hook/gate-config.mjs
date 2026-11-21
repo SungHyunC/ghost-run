@@ -1,8 +1,9 @@
 // Gate constants. This file is a Self_Protected_Path and reads no environment
-// variable. WARN_MODE stays 'exit2' until task 17.3.
+// variable. WARN_MODE is 'ask': measured in Kiro IDE 1.4.236 and Kiro CLI 3.5.0 on 2026-11-21, see the entry
+// "Host checks before enabling the gate" in docs/measurements.md (task 17.3, decided by the human).
 
 /** How a warn verdict is delivered to the host. */
-export const WARN_MODE = 'exit2';
+export const WARN_MODE = 'ask';
 
 /** Watchdog of the gate process, in milliseconds. */
 export const WATCHDOG_MS = 50_000;

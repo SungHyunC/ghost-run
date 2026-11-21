@@ -256,7 +256,7 @@ describe('duplicate-skip rule (design D10)', () => {
     expect(stateOf().stats).toBeNull();
     await log(post('execute_bash', { command: 'npm test' }));
     expect(stateOf().stats).toMatchObject({ commandsExecuted: 1 });
-    expect(WARN_MODE).toBe('exit2');
+    expect(WARN_MODE).toBe('ask');
   });
 });
 

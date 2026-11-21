@@ -10,8 +10,8 @@ Ghost Run+ lets an AI agent rehearse an irreversible action in a copy of the wor
 
 ## Use it in your Kiro
 
-- Advisory tools: in the Kiro Powers panel choose Add Custom Power, then Import from folder, and select `integrations/power`. This adds the `ghost-run` MCP tools and skill.
-- Enforcement: copy `integrations/kiro-hook/` and the entries of `.kiro/hooks/ghost-gate.json` (and `docker-warmup.json`) into your project, then set `enabled` to `true`. Run `corepack pnpm -r build` once first. The hooks are committed disabled.
+- **Start from this template** (enforcement): clone the repository, run `corepack pnpm install` and `corepack pnpm -r build`, build the box image (`corepack pnpm --filter @ghost-run/ghost-runner box:build`), open the folder in Kiro and trust it, set `enabled` to `true` in `.kiro/hooks/ghost-gate.json` and `.kiro/hooks/docker-warmup.json`, and start a new session. The hooks are committed disabled. The gate depends on the workspace packages (`core`, `ghost-runner`, `wards-config`), so copying `integrations/kiro-hook/` into another project does not build.
+- **In an existing project**: install the power for the advisory tools and the skill. In the Kiro Powers panel choose Add Custom Power and Import from folder, or run `kiro-cli powers install <repository>/integrations/power`. Nothing enforces a verdict there. See [integrations/power/README.md](integrations/power/README.md) for the workspace root rule, the default wards, and the box image.
 - Full rehearsal needs Docker and the box image (`corepack pnpm --filter @ghost-run/ghost-runner box:build`).
 - Without Docker the gate falls back to static analysis (Plan B) and asks for human approval. It does not claim P1 isolation in that mode.
 - Docker Desktop's Resource Saver can stop its VM when idle. The gate retries once with a longer deadline, so a sleeping Docker is not mistaken for a missing one. See [integrations/kiro-hook/README.md](integrations/kiro-hook/README.md).
@@ -52,7 +52,7 @@ flowchart LR
 2. The runner copies the real state (files, database, or physics scene). Reality is not touched.
 3. The ghost runs the plan on the copy: inside a Docker box in real mode, or on the base world and the haunted variants in Ghost Hand.
 4. The wards judge the changes and observed events.
-5. The candle shows the verdict: `pass` (lit), `warn` (flickering, a human approves), or `block` (out).
+5. The candle shows the verdict: `pass` (lit), `warn` (flickering, the host asks the human to allow or deny), or `block` (out).
 6. On `pass` the real action runs. On `block` the agent receives the ward id, the numbers, and a seance link, fixes the plan, and rehearses again.
 
 ## Quick start

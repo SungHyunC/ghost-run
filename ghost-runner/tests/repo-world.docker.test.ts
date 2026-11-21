@@ -1,25 +1,22 @@
 // [docker] Repo_World.step against the real box image.
 // Validates: Requirements 2.2, 2.3, 2.4, 12.2, 14.7
-import { spawnSync } from 'node:child_process';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { createRepoWorld, type RepoWorldOptions } from '../src/world/repo-world.js';
 import { fingerprintOriginal } from '../src/fs/fingerprint.js';
 import { describeDocker } from './docker-available.js';
+import { leftoversOf } from './own-run-ids.js';
 import { createFixtureRepo, USERS_ROWS, CANARY, type FixtureRepo } from './fixtures/repo.js';
 
-function runningGhostContainers(): string[] {
-  const r = spawnSync('docker', ['ps', '-a', '-q', '--filter', 'label=ghost-run.run-id'], { encoding: 'utf8' });
-  return r.stdout.split('\n').filter((l) => l.trim() !== '');
-}
+// Only the run ids that this test process issued count as leftovers (see own-run-ids.ts).
+const issued = vi.hoisted(() => new Set<string>());
+vi.mock('node:crypto', async (orig) => (await import('./own-run-ids.js')).recordRandomUuid(await orig<typeof import('node:crypto')>(), issued));
 
 describeDocker('Repo_World.step in a real box', () => {
   let fixture: FixtureRepo;
   let world: ReturnType<typeof createRepoWorld>;
   const opts = (): RepoWorldOptions => ({ original: fixture.root });
-  const containersBefore = new Set<string>();
 
   beforeAll(async () => {
-    for (const id of runningGhostContainers()) containersBefore.add(id);
     fixture = await createFixtureRepo();
     world = createRepoWorld(opts());
   });
@@ -27,7 +24,8 @@ describeDocker('Repo_World.step in a real box', () => {
   afterAll(async () => {
     await world.dispose();
     fixture.cleanup();
-    expect(runningGhostContainers().filter((id) => !containersBefore.has(id))).toEqual([]);
+    expect(issued.size).toBeGreaterThan(0);
+    expect(leftoversOf(issued)).toEqual([]);
   });
 
   it('runs an action on a clone, reports Changes, and never touches the input directory or Original', async () => {

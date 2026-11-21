@@ -132,14 +132,17 @@ describe('Property 15: approval commands are denied', { timeout: FILE_TIMEOUT_MS
     );
   });
 
-  it('a write tool call that targets .ghost-run/approvals/ is denied with exit 2 and no ghost run', async () => {
+  it('a write tool call that targets .ghost-run/approvals/ is never allowed and is not ghosted (host prompt in ask mode)', async () => {
     await fc.assert(
       fc.asyncProperty(writeTargetArb, async (ev) => {
         const { decision, runPlan } = await run({ ...ev, cwd: root });
-        expect(decision.kind).toBe('deny');
-        expect(decision.exit).toBe(2);
-        expect(decision.stdout).toBe('');
-        expect(decision.stderr.length).toBeGreaterThan(0);
+        // The gate reads no approval state, so a write there is only a Self_Protected_Path warn: with the
+        // committed WARN_MODE 'ask' the human answers the host prompt; the call is never an allow.
+        expect(decision.kind).toBe('ask');
+        expect(decision.exit).toBe(0);
+        expect(decision.stderr).toBe('');
+        expect(JSON.parse(decision.stdout).hookSpecificOutput.permissionDecision).toBe('ask');
+        expect(decision.stdout).not.toContain('"allow"');
         expect(runPlan).not.toHaveBeenCalled();
       }),
       { ...FC_PARAMS, numRuns: Math.max(FC_PARAMS.numRuns, 100) },
@@ -168,6 +171,6 @@ describe('Property 15: approval commands are denied', { timeout: FILE_TIMEOUT_MS
     const hit = await run(shellEvent("sh -c 'GHOST-RUN Approve g-1'", { cwd: root }));
     expect(hit.decision).toMatchObject({ kind: 'deny', exit: 2, stderr: APPROVAL_COMMAND_LINE });
     const w = await run({ ...writeEvent('.ghost-run/approvals/g-1.json', '{}'), cwd: root });
-    expect(w.decision).toMatchObject({ kind: 'deny', exit: 2 });
+    expect(w.decision).toMatchObject({ kind: 'ask', exit: 0 });
   });
 });

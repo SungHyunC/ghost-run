@@ -1,0 +1,3 @@
+// Built-in default wards for the MCP tools, used only when the workspace has no Wards_File.
+// A test pins this text to apps/ghost-shell/wards.yaml. An installed power has no apps/ folder.
+export const DEFAULT_WARDS_YAML = "wards:\n  - id: protect-data\n    kind: path\n    deny: [delete, overwrite]\n    paths: [\"data/**\", \"db/*.sqlite\", \".env\"]\n  - id: no-data-loss\n    kind: sql\n    tables: [users, orders]\n    max_rows_lost: 0\n  - id: no-secret-egress\n    kind: egress\n    secrets: [\".env\", \"**/*.pem\"]\n    allow_hosts: [registry.npmjs.org]\nsafe_commands: [ls, pwd, cat, \"git status\", \"git diff\"]\n";
