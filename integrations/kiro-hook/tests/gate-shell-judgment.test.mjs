@@ -106,7 +106,7 @@ describe('judgeShell', () => {
     expect(runPlan).toHaveBeenCalledTimes(1);
     const [plan, opts] = runPlan.mock.calls[0];
     expect(plan).toEqual([{ command: 'echo hi' }]);
-    expect(opts).toEqual({ original: root, wardSet, pipelineDeadlineSec: 37, runId: 'run-fixed_1' });
+    expect(opts).toEqual({ original: root, wardSet, pipelineDeadlineSec: 37, runId: 'run-fixed_1', dockerWakeRetryMs: 10_000 });
     expect(j).toMatchObject({ decision: 'judged', verdict: 'block', rehearsed: true, runId: 'run-fixed_1', notices: ['n1'], floors: [] });
   });
 

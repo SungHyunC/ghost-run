@@ -388,6 +388,20 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Dependency note (ghost-runner next round, `RunnerOptions.runId`):** the sub-test that kills a hung runner and checks cleanup by label reports `skipped (runner runId option missing)` until the option exists (`RUNNER_SUPPORTS_RUN_ID`), and is enabled when it does. All other sub-tests do not need the option.
     - _Requirements: 8.9, 23.3, 5.9, 5.10_
 
+  - [x] 8.11 Add the Docker wake retry to the gate and test it [no-docker, one docker]
+    - `integrations/kiro-hook/gate-config.mjs` has the new constants `DOCKER_WAKE_RETRY_MS = 10_000` and `WARMUP_BUDGET_MS = 1_000`. `lib/gate/shell-judgment.mjs` passes `dockerWakeRetryMs: DOCKER_WAKE_RETRY_MS` to `runPlan`. The runner (`ghost-runner` Requirement 3, criterion 11) repeats a timed-out 2 s availability check once with the 10 s deadline, capped by the pipeline deadline; a daemon error or a missing `docker` binary is not retried; when both deadlines fail, the result is Plan_B (static analysis, NEEDS HUMAN APPROVAL), so fail-closed is unchanged. The 2 s plus 10 s stay inside `RUNNER_DEADLINE_SEC` (44) and `WATCHDOG_MS` (50,000). The Run_Record holds `phases.dockerCheckMs` and the new boolean `dockerWakeRetried`.
+    - Cause measured 2026-11-21 (`docs/measurements.md`, heading `Docker Resource Saver wake-up`): Resource Saver stops the VM after 5 idle minutes, the first `docker info` took 1.88 s, the IDE gate check timed out at 2010 to 2021 ms in 4 runs, and shell replays took 55 to 158 ms.
+    - Tests: `tests/gate-wake.test.mjs` (5 tests: the constants; the option passed; daemon down gives static analysis without retry; a timeout past both deadlines gives static analysis with the retry recorded; one `[docker]` test in which a slow first check and a fast retry give a full docker-box run with `rehearsed: true`), plus the constants in `tests/hook-io.test.mjs` and the option value in `tests/gate-shell-judgment.test.mjs`.
+    - **Depends on tasks 6.2 and 8.2.**
+    - _Requirements: 25.1, 25.2, 25.3, 25.4, 25.5, 25.10, 25.11, 8.8, 9.1_
+
+  - [x] 8.12 Add the `docker-warmup` hook, its entry, and its tests [no-docker]
+    - `integrations/kiro-hook/docker-warmup.mjs` and `lib/warmup.mjs` start one detached `docker info --format {{.ServerVersion}}` (an engine call; `docker version` does not wake a stopped Docker Desktop VM, see `docs/measurements.md`) (`spawn` with `detached: true`, `stdio: 'ignore'`, `shell: false`, then `unref`), throttled by a stamp file in the OS temp folder to one start per 60 s (`THROTTLE_MS`). The script never reads STDIN, prints nothing, and always exits 0 within `WARMUP_BUDGET_MS`.
+    - `.kiro/hooks/docker-warmup.json`: trigger `PreToolUse`, matcher `shell`, entry-level `timeout: 5`, `enabled: false` until task 19.1. The host probe (CLI 3.4.0, IDE 1.4.215) never registered a prompt-submit trigger and `ALLOWED_TRIGGERS` has none, so the Pre Tool Use of the shell call is used; a prompt-submit trigger stays a candidate for a later probe (design O20).
+    - Tests: `tests/docker-warmup.test.mjs` (8 tests: exit 0 within the budget with no output; the detached process survives the parent; the throttle; docker missing; no shell and no network code; unit tests of `warmUp`; the hook entry is committed disabled), and `tests/worlds-config.test.mjs` is covered by task 16.3.
+    - **Depends on tasks 3.2 and 8.11.**
+    - _Requirements: 25.6, 25.7, 25.8, 25.11, 2.1, 2.3, 2.10_
+
 - [x] 9. Checkpoint - Gate core complete
   - Run `pnpm -r build`, `pnpm --filter @ghost-run/kiro-hook test`, `typecheck`, and `lint`. Confirm that Properties 1 to 6, 9 to 16, and 21 pass with at least 100 runs, that the `[docker]` tests report `skipped (docker unavailable)` where Docker is absent, that the source-scan test passes, and that `ghost-gate.json` exists with `enabled: false`. Ensure all tests pass, ask the user if questions arise.
 
@@ -558,27 +572,35 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Measurement task on the Reference_Machine (Apple M1): record the Median_Of_5 and the maximum of the gate latency for a Safe_Command (budget 1.0 s), a Write_Judgment (1.0 s), the gate overhead above the runner for the five Ghost Shell scenarios (1.0 s above the runner budget; Docker needed, otherwise write `skipped (docker unavailable)`), a ghost-log record of 1 MiB (5 s), and the whole Short_Run of the package (60 s without Docker). Append one entry to `docs/measurements.md` with the numbers, the versions of Node and vitest, and a statement of any budget that was exceeded and the follow-up. A budget that is exceeded is reported and not hidden. Print the stats table produced by `formatStatsTable` for the session as an example.
     - _Requirements: 23.6, 4.8, 6.9, 8.11, 13.9_
 
+  - [x] 16.3 Fix `vitest.worlds.config.ts` so it loads from a clean checkout [no-docker]
+    - `vitest.worlds.config.ts` no longer imports `vitest/config`, which resolves only from a package folder and not from the root of a clean checkout. The config is a plain object. `integrations/kiro-hook/tests/worlds-config.test.mjs` (3 tests) checks that the file imports only `node:` modules and that the documented command loads it.
+    - _Requirements: 25.11, 22.1_
+
+  - [x] 16.4 Remove a flake in `ui/tests/model/p2-candle.test.ts` [no-docker]
+    - The test gets explicit examples so that every unknown value type (string, number, boolean, null) is always covered, whatever the generated examples are. Unrelated to the wake retry; recorded here only so that the change is listed.
+    - _Requirements: 23.5_
+
 - [ ] 17. Host verification (manual tasks for the human)
-  - [~] 17.1 MANUAL (human): verify the exit-code behavior of the gate in Kiro IDE and Kiro CLI
+  - [ ] 17.1 MANUAL (human): verify the exit-code behavior of the gate in Kiro IDE and Kiro CLI
     - **Depends on tasks 8.3 and 9.** Run this task in a scratch clone and not in this repository. Make a scratch clone (`git clone` of this repository into a temporary folder), run `pnpm install` and `pnpm -r build` there, and in the scratch clone set `enabled` to `true` in `ghost-gate.json` (and keep the exp-b files disabled). The gate in this repository stays disabled.
-    - IDE steps: open the scratch folder in Kiro IDE, trust it (click the trust button in the trust dialog), reload the window (Cmd+Shift+P, "Developer: Reload Window"), start a new chat session, and send: (1) "Run the shell command: ls" (expect: allowed, no hook output); (2) "Run the shell command: rm -rf data" in a clone that contains a `data/` folder (expect: blocked, the chat shows the block message that names `protect-data`); (3) "Create the file data/x.txt with the text hi" (expect: blocked by the write judgment). Then rename `core/dist` in the scratch clone, send "Run the shell command: echo hello" (expect: blocked with the line `GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build).`), and rename it back. Write down for each case whether the IDE blocked the call and whether the agent saw the hook message.
+    - IDE steps: open the scratch folder in Kiro IDE, trust it (click the trust button in the trust dialog), reload the window (Cmd+Shift+P, "Developer: Reload Window"), start a new chat session, and send: (1) "Run the shell command: ls" (expect: allowed, no hook output); (2) "Run the shell command: rm -rf data" in a clone that contains a `data/` folder (expect: blocked, the chat shows the block message that names `protect-data`); (3) "Overwrite the existing file data/a.csv with the text hi" in a clone that contains `data/a.csv` (expect: blocked by the write judgment, naming `protect-data`). Creating a new file such as data/x.txt is allowed by design, because the path wards of `protect-data` deny only delete and overwrite. Then rename `core/dist` in the scratch clone, send "Run the shell command: echo hello" (expect: blocked with the line `GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build).`), and rename it back. Write down for each case whether the IDE blocked the call and whether the agent saw the hook message.
     - CLI steps: in a terminal run `cd <scratch>` and `kiro-cli chat`, repeat the same four messages and write down the same facts. Check that an exit code 2 blocks the call in the CLI and that the message reaches the agent.
     - Record the results in `docs/measurements.md` as one entry (a table of case, IDE result, CLI result). If any case lets the call through, mark the gate as not safe to enable and report it in the final checkpoint.
     - _Requirements: 2.9, 7.8, 8.7_
 
-  - [~] 17.2 MANUAL (human): verify whether a Pre Tool Use `ask` output raises an approval prompt (IDE and CLI)
+  - [ ] 17.2 MANUAL (human): verify whether a Pre Tool Use `ask` output raises an approval prompt (IDE and CLI)
     - **Depends on task 8.3 and the probe files of task 1.2.** Use the scratch clone of task 17.1 or this repository with the gate disabled. Enable only `probe-ask.json` (set `enabled` to `true`), reload the window or start a new CLI session.
     - For each of three tool trust settings (a) `execute_bash` not trusted, (b) `execute_bash` trusted (in the IDE add the command pattern `echo *` to the trusted commands in the Kiro settings; in the CLI use the tool trust command, for example `/tools`), (c) trust-all or autopilot mode: send "Run the shell command: echo ghost-run-ask-probe". Judge: a prompt appeared if the host showed an approval dialog or a confirmation line before the command ran, with the reason text `probe: ask test`; a decline blocked the call if you decline and the chat shows no command output. Also check the log line `askTest: asked` in `.ghost-run/probe/events.jsonl`.
     - Record in `docs/measurements.md` a table with the rows (a), (b), (c) and the columns IDE prompt shown, IDE decline blocked, CLI prompt shown, CLI decline blocked, reason text shown. Add the `ask` row to the `Probe results` table. Set `probe-ask.json` back to `enabled: false`.
     - Decision rule written in the entry: `WARN_MODE` may become `ask` only if both hosts show the prompt and a decline blocks the call in all three settings, or in the untrusted setting if the README then states the trusted-tool limit; if the IDE and the CLI differ, `WARN_MODE` stays `exit2` for both.
     - _Requirements: 10.3, 10.4, 10.11, 7.3_
 
-  - [~] 17.3 Decide `WARN_MODE` from the `ask` verification and update the gate constant
+  - [ ] 17.3 Decide `WARN_MODE` from the `ask` verification and update the gate constant
     - **Depends on task 17.2.** Keep `WARN_MODE = 'exit2'` in `gate-config.mjs` unless the decision rule of task 17.2 allows `ask`. If it allows `ask`, change the constant to `'ask'` (a Self_Protected_Path, so the change needs the human) and add a test that pins the committed value to the recorded decision. If it does not, add a test that pins `'exit2'` and a note in `gate-config.mjs` that names the `docs/measurements.md` entry.
     - Both modes are already covered by Property 1. A `warn` never exits 0 without the `ask` JSON.
     - _Requirements: 10.3, 10.4, 7.3, 7.9_
 
-  - [~] 17.4 MANUAL (human): install the power from the folder in a second project and record the evidence
+  - [ ] 17.4 MANUAL (human): install the power from the folder in a second project and record the evidence
     - **Depends on tasks 15.3 and 16.2.** Use a second, empty project folder outside this repository.
     - Steps: open the second project in Kiro IDE and trust it; open the Powers panel and choose "Add Custom Power", then "Local folder", and select `integrations/power` of this repository; when the install finishes, open the MCP servers view and confirm that the `ghost-run` server is running and lists the five tools (note the exact prefixed names the host shows); start a new chat and send "I want to run rm -rf build to clean up" and check whether the `ghost-run` skill is activated (the chat shows the skill name or the agent calls `wards_check`); ask the agent to call `wards_check` for the plan `ls`. If the server does not start because `server/ghost-run-mcp.mjs` does not resolve, run `pnpm power:link` (task 15.4), copy the absolute path from `mcp.local.json` into the power install, and record that the fallback was needed.
     - Save a screen capture or a log of the three observations (server listed with the five tools, keyword activates the skill, `wards_check` answer) for the Kiro usage report. Append the result and the displayed tool names to `docs/measurements.md`, and write the displayed names into `integrations/power/README.md` (design O3).
@@ -608,8 +630,13 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Edit `requirements.md` and `design.md` of this spec only for these items: extend the property table of Requirement 23 with Properties 10 to 21 of the design (design O17), mark design open items O7, O8, O10, O11, O12, O13, O14, O16, and O17 as resolved or still open with the date and the value found by the tasks that settled them (O7 `safeCommands` present or still `[]`; O12 `runId` present or not), and record in the Requirement 10 notes the result of task 17.3. Change no other text.
     - _Requirements: 23.1, 23.2, 10.3_
 
+  - [x] 18.6 Document the Docker Resource Saver case in the READMEs
+    - `integrations/kiro-hook/README.md` has the section `Docker Desktop Resource Saver`: what happens (the VM stops after 5 idle minutes and the first `docker info` takes about 1.9 s), the single 10 s retry of the gate, the `docker-warmup` hook that the human enables, and that turning Resource Saver off also removes the case. The root `README.md` has the section `Use it in your Kiro`, which links to it.
+    - **Depends on tasks 8.11, 8.12, and 18.1.**
+    - _Requirements: 25.9_
+
 - [ ] 19. Enable the gate for our own development (target 2026-11-22)
-  - [~] 19.1 MANUAL (human confirms): pre-enable checklist, then switch the gate on
+  - [ ] 19.1 MANUAL (human confirms): pre-enable checklist, then switch the gate on
     - This is a checkpoint-style task. The agent does not enable the gate. A human works through the checklist, confirms each check (A to F) only when verified, and records the evidence in `docs/measurements.md`. Do not enable the gate before every check is confirmed.
     - Checklist:
       - Check A (tests): Full test suite passes: `pnpm -r build`, `pnpm -r test`, and `pnpm lint`, with the `[docker]` tests run on a Docker machine (a `skipped (docker unavailable)` line is not a pass), and the `[docker]` leftover-container test passes.
@@ -619,21 +646,22 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
       - Check E (hygiene): The experiment B hooks and the probe hooks are disabled, `.ghost-run/` is ignored, the human disable path (`enabled: false` in the hook entry) is known, and the possession scan of the repository is `clean`.
       - Check F (hand-off): The ghost-runner `runId` hand-off status is written down: either the option exists and the hung-runner cleanup test passes, or the README states that Requirement 8 criterion 9 is not claimed for a hung runner.
     - After checks A to F are confirmed, the human sets `enabled` to `true` in both entries of `.kiro/hooks/ghost-gate.json` (through the Kiro hooks panel or the file), reloads the window or starts a new session, runs `ls` and one blocked call to confirm, and appends the date and the evidence to `docs/measurements.md`.
+    - Also set `enabled` to `true` in `.kiro/hooks/docker-warmup.json`, and re-measure `dockerCheckMs` in the IDE after a stop of more than 5 minutes (Docker Desktop Resource Saver); record in `docs/measurements.md` whether `dockerWakeRetried` was `true`.
     - **Depends on tasks 16.2, 17.1, 17.2, 17.3, 17.4, and 18.1.**
     - _Requirements: 10.11, 8.2, 8.6, 21.1_
 
-  - [~] 19.2 MANUAL (human): record the number of approvals per development day
+  - [ ] 19.2 MANUAL (human): record the number of approvals per development day
     - From the first day the gate is enabled, count the human approvals (and, in `exit2` mode, the commands that you had to run outside the agent) per development day, and append the counts to `docs/measurements.md` together with the `summarizeStats` table of the session for at least three working days. Record which necessary commands needed approval (for example a dependency install).
     - _Requirements: 10.11, 13.8_
 
-- [~] 20. Final checkpoint - Ensure all tests pass
+- [ ] 20. Final checkpoint - Ensure all tests pass
   - Run `pnpm -r build`, `pnpm lint`, `pnpm --filter @ghost-run/kiro-hook test`, `pnpm --filter @ghost-run/mcp test`, and `typecheck` for both packages, in the Short_Run, and, where Docker is available, the `[docker]` tests. Confirm: every property of the design (1 to 21) has a test with at least 100 runs in the Short_Run and the Short_Run is within 60 s without Docker; the hook file format test, the exp-b retirement test, and the probe-disabled test pass; the five hook files exist (or the recorded reason for a missing `world-scaffold.json` stands); the possession scan of `integrations/`, `.kiro/hooks/`, and `.kiro/specs/kiro-integration/` is `clean`; the source-scan test passes; no `.ghost-run/` content is in the working tree; the README tables list every dependency with its license; the `core`, `ghost-runner`, `wards-config`, and `ui` ESLint import bans hold; the `Probe results` table, the exit-code table, the `ask` table, the timing entry, and the power install entry exist in `docs/measurements.md`; the open items that remain (O7 `safeCommands`, O12 `runId`, O10, `ui` import ban if `ui` was missing) are listed in the checkpoint report with the spec that owns each. Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
 
 - Every task is required. No task is marked optional. No test sub-task carries the `*` marker.
 - Properties 1 to 21 keep the numbering and titles of `design.md`. Properties 1 to 9 are KI-P1 to KI-P9 of Requirement 23. Property map: 1 (task 7.2), 2 (5.4), 3 (8.4), 4 (4.7), 5 (4.6), 6 (6.4), 7 (12.2), 8 (14.7), 9 (8.5), 10 (7.4), 11 (6.5), 12 (7.3), 13 (7.6), 14 (8.6), 15 (8.7), 16 (4.5), 17 (14.5), 18 (14.6), 19 (11.2), 20 (13.2), 21 (4.4).
-- Requirement traceability (requirement: tasks). 1: 1.1, 2.1 to 2.5, 14.1, 18.4. 2: 1.2, 3.2, 8.3, 10.3, 11.4, 12.3, 13.3, 16.1, 18.1. 3: 4.1, 5.1, 5.2, 6.2, 8.1. 4: 5.2, 5.3, 5.4, 8.5. 5: 6.2, 7.1, 8.1, 18.1. 6: 6.3, 6.4, 6.5. 7: 7.1, 7.2, 7.3, 7.5. 8: 4.1, 6.1, 8.2, 8.8, 8.10. 9: 7.1, 7.4, 18.1. 10: 5.5, 8.7, 17.2, 17.3, 19.1, 19.2. 11: 18.1, 18.4. 12: 2.4, 4.2, 4.3, 4.5, 4.7. 13: 4.3, 4.6, 10.1, 10.2, 18.2. 14: 7.5, 7.6. 15: 11.1, 11.2, 11.3. 16: 12.1, 12.2. 17: 13.1, 13.2, 13.3. 18: 14.1 to 14.4, 14.8. 19: 14.2 to 14.7. 20: 15.1 to 15.4, 17.4. 21: 3.1, 3.2. 22: 16.1. 23: 8.9, 14.8, 16.2, 18.5. 24: 1.1 to 1.8.
+- Requirement traceability (requirement: tasks). 1: 1.1, 2.1 to 2.5, 14.1, 18.4. 2: 1.2, 3.2, 8.3, 10.3, 11.4, 12.3, 13.3, 16.1, 18.1. 3: 4.1, 5.1, 5.2, 6.2, 8.1. 4: 5.2, 5.3, 5.4, 8.5. 5: 6.2, 7.1, 8.1, 18.1. 6: 6.3, 6.4, 6.5. 7: 7.1, 7.2, 7.3, 7.5. 8: 4.1, 6.1, 8.2, 8.8, 8.10. 9: 7.1, 7.4, 18.1. 10: 5.5, 8.7, 17.2, 17.3, 19.1, 19.2. 11: 18.1, 18.4. 12: 2.4, 4.2, 4.3, 4.5, 4.7. 13: 4.3, 4.6, 10.1, 10.2, 18.2. 14: 7.5, 7.6. 15: 11.1, 11.2, 11.3. 16: 12.1, 12.2. 17: 13.1, 13.2, 13.3. 18: 14.1 to 14.4, 14.8. 19: 14.2 to 14.7. 20: 15.1 to 15.4, 17.4. 21: 3.1, 3.2. 22: 16.1. 23: 8.9, 14.8, 16.2, 18.5. 24: 1.1 to 1.8. 25: 8.11, 8.12, 16.3, 18.6.
 - The Kiro host facts that tasks 1.4, 1.5, 17.1, 17.2, and 17.4 depend on (labels of dialogs and commands) are written from the documentation and may differ slightly in the installed version. If a label differs, record the real label in the notes and continue.
 - Waves 3 to 7 contain the manual probe steps. Coding tasks that do not depend on a probe fact are placed in the same waves so they overlap with the human work. Every task that depends on a probe fact names task 1.7 and is placed after it.
 - Manual tasks (1.4, 1.5, 17.1, 17.2, 17.4, 19.1, 19.2) are for a human. An agent executing the plan stops at them and asks the user for the result, and never ticks them on its own.
@@ -657,12 +685,12 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     { "id": 8, "tasks": ["3.2", "6.3", "10.1", "11.1", "12.1", "13.1"] },
     { "id": 9, "tasks": ["6.4", "6.5", "8.1", "10.2", "10.3", "11.2", "11.3", "11.4", "12.2", "12.3", "13.2", "13.3"] },
     { "id": 10, "tasks": ["8.2", "8.4", "8.5", "8.6", "8.7"] },
-    { "id": 11, "tasks": ["8.3", "8.8", "8.9", "8.10", "14.2"] },
-    { "id": 12, "tasks": ["14.3", "17.1"] },
+    { "id": 11, "tasks": ["8.3", "8.8", "8.9", "8.10", "8.11", "14.2"] },
+    { "id": 12, "tasks": ["8.12", "14.3", "17.1"] },
     { "id": 13, "tasks": ["14.4", "17.2"] },
     { "id": 14, "tasks": ["14.5", "14.6", "14.7", "14.8", "15.2", "17.3"] },
     { "id": 15, "tasks": ["15.3", "15.4", "18.1", "18.2", "18.3"] },
-    { "id": 16, "tasks": ["16.1", "16.2", "18.4", "18.5"] },
+    { "id": 16, "tasks": ["16.1", "16.2", "16.3", "16.4", "18.4", "18.5", "18.6"] },
     { "id": 17, "tasks": ["17.4"] },
     { "id": 18, "tasks": ["19.1"] },
     { "id": 19, "tasks": ["19.2"] }

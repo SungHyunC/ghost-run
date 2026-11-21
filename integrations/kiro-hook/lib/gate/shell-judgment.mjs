@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { RUN_ID_RE, runPlan as realRunPlan } from '@ghost-run/ghost-runner';
-import { COMMAND_MAX_CODE_POINTS } from '../../gate-config.mjs';
+import { COMMAND_MAX_CODE_POINTS, DOCKER_WAKE_RETRY_MS } from '../../gate-config.mjs';
 import { createSelfProtect } from './self-protect.mjs';
 import { withSlot } from './semaphore.mjs';
 import { runnerBudgetSec } from './watchdog.mjs';
@@ -161,6 +161,7 @@ export async function judgeShell(ctx, deps = {}) {
         wardSet: ctx.wardSet,
         pipelineDeadlineSec: runnerBudgetSec(elapsed),
         runId,
+        dockerWakeRetryMs: DOCKER_WAKE_RETRY_MS,
       });
       return { ok: /** @type {const} */ (true), result: output.result };
     } catch {

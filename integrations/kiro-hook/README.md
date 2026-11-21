@@ -93,6 +93,15 @@ A change under `.kiro/hooks/**`, `integrations/kiro-hook/**`, `integrations/mcp/
 
 **blacklight-steering.** The hook sees only files that the agent saved. The HTML comment category applies to markdown files and flags a comment inside a code fence. It detects no invisible character outside the possession categories, and text analysis does not catch every injection.
 
+## Docker Desktop Resource Saver
+
+Docker Desktop's Resource Saver stops its VM after five idle minutes. The next engine call has to start the VM again. Measured on 2026-11-21 with the VM stopped, the first `docker info` took 1.88 s and the following calls 0.03 to 0.13 s. The gate's availability check allows 2 s (`AVAILABILITY_LIMIT_MS`), and the first check of an idle session landed just over it. In Kiro IDE it timed out (2010 to 2021 ms in 4 runs) and the gate fell back to static analysis with `NEEDS HUMAN APPROVAL`. Details are in `docs/measurements.md`, heading `Docker Resource Saver wake-up`.
+
+- **Fast path.** A reachable daemon still answers within the 2 s check. Nothing changes.
+- **Wake retry.** If the 2 s check times out, the gate repeats it once with `DOCKER_WAKE_RETRY_MS = 10_000` (`gate-config.mjs`), capped by the runner deadline of 44 s, so 2 s + 10 s stays inside the 50 s watchdog. Only after the retry also fails does the gate use static analysis. A daemon that answers with an error, or a missing `docker` binary, is not retried. The run record has `phases.dockerCheckMs` and `dockerWakeRetried`.
+- **Warm-up hook.** `docker-warmup.mjs` is a Pre Tool Use hook for `shell` calls (`.kiro/hooks/docker-warmup.json`, committed disabled until task 19.1). It starts one detached `docker info --format '{{.ServerVersion}}'` (an engine call; `docker version` does not wake a stopped Docker Desktop VM, see `docs/measurements.md`), at most once per 60 s, prints nothing, never waits, and always exits 0. The probe (CLI 3.4.0 and IDE 1.4.215) recorded no prompt-submit trigger, so it warms up on the Pre Tool Use of the first shell call instead. It cannot save the first check when it runs in the same moment as the gate, which is why the retry exists.
+- **Alternative.** Turning Resource Saver off in Docker Desktop (Settings, Resources) also removes the delay. The gate stays fail-closed either way.
+
 ## Experiment B
 
 `exp-b-gate.mjs` and `.kiro/hooks/exp-b-*.json` were a measurement of a pattern-based block (19 blocks, all false positives or bypassed). They are kept, disabled, and nothing imports them. The gate decides from the diff of a ghost run, not from the shape of a command.

@@ -182,11 +182,12 @@ Comparison. The documentation (hooks page, schema table) lists `timeout` and `en
 | `blacklight-steering.json` | 1 | `PostFileSave`, `(^\|/)\.kiro/` | Script checks `^\.kiro/`. `timeout: 10`. |
 | `world-scaffold.json` | 1 | file-create trigger (candidate `PostFileCreate`), `(^\|/)worlds/[^/]+/` | Written only after the probe confirms the identifier (O1). `timeout: 10`. Resolved (CLI 3.4.0, 2026-11-18): the trigger `PostFileCreate` is confirmed in the CLI, so the file may be written with `FILE_CREATE_TRIGGER = 'PostFileCreate'`. Resolved (IDE 1.4.215, 2026-11-19): the IDE fires the same trigger, so the file is written for both hosts. |
 | `probe-host-facts.json` | several | all candidate triggers | Created first. `enabled: false` once the results table exists in `docs/measurements.md`. |
+| `docker-warmup.json` | 1 | `PreToolUse`, `shell` | `timeout: 5` (entry level). Committed with `enabled: false` until task 19.1. The script never blocks and prints nothing (section Docker wake retry and warm-up, Requirement 25). |
 | `exp-b-block-rm-rf.json`, `exp-b-log-write.json` | 1 each | unchanged | `enabled: false`. |
 
 The file-event matcher is a regular expression over a path whose form (absolute or workspace-relative) is unconfirmed, so the matchers are unanchored prefilters and the script is the authority (`file-event.mjs` makes the path workspace-relative first).
 
-Format test (`tests/hook-files.test.mjs`): parse every `.kiro/hooks/*.json`; require `version: "v1"`; non-empty `name`; a trigger from the list `PreToolUse, PostToolUse, PostFileCreate, PostFileSave, PostFileDelete, PermissionRequest`; for file triggers a matcher that compiles with `new RegExp`; `action.type: "command"`; a `command` that matches `^node integrations/kiro-hook/[a-z0-9-]+\.mjs$` with an existing script (the probe entries may add `--timeout-test=<placement>`); entry-level `timeout` of 1 to 60 for non-`exp-b-` files; an explicit boolean `enabled`; no absolute path and no user name. A second test fails when any `exp-b-` file has `enabled: true` while `ghost-gate.json` has any enabled entry (Requirement 21 criterion 3), and a third fails when `probe-host-facts.json` is enabled while the devlog results table exists (Requirement 24 criterion 6).
+Format test (`tests/hook-files.test.mjs`): parse every `.kiro/hooks/*.json`; require `version: "v1"`; non-empty `name`; a trigger from the list `PreToolUse, PostToolUse, PostFileCreate, PostFileSave, PostFileDelete, PermissionRequest`; for file triggers a matcher that compiles with `new RegExp`; `action.type: "command"`; a `command` that matches `^node integrations/kiro-hook/[a-z0-9-]+\.mjs$` with an existing script (the probe entries may add `--timeout-test=<placement>`); entry-level `timeout` of 1 to 60 for non-`exp-b-` files; an explicit boolean `enabled`; no absolute path and no user name. The format test also requires `enabled: false` in `docker-warmup.json` until task 19.1 sets it. A second test fails when any `exp-b-` file has `enabled: true` while `ghost-gate.json` has any enabled entry (Requirement 21 criterion 3), and a third fails when `probe-host-facts.json` is enabled while the devlog results table exists (Requirement 24 criterion 6).
 
 ### Hook I/O and bootstrap (`hook-io.mjs`, `ghost-gate.mjs`)
 
@@ -340,6 +341,50 @@ Message construction. The ward text comes from `renderMessage(verdict, { wardCou
 Diff summary. `diffSummary(changes)` counts per kind over all steps (`file-deleted`, `file-overwritten`, `file-created`, `symlink-changed`; rows lost from `sql-row-count` by the rule `dropped ? max(0, rowsBefore) : max(0, rowsBefore - rowsAfter)`), writes the header `Diff summary: <a> deleted, <b> overwritten, <c> created, <d> symlinks changed, <n> rows lost.`, then at most 10 lines `  <kind> <path>` with `sanitizeJudgeText(path)` in `compareCodePoints` order of the path (tie-break kind), then `+<k> more changes.` when more exist, and finally cuts at 1,200 code points on a line boundary. A Write_Judgment summary uses the derived Changes the same way. The wards sanitizer is imported under the name `sanitizeJudgeText`. `core` exports a `sanitizeText` from both `wards` and `possession`, which cannot both be exported under one name (O11), so the Hook_Package depends on `wards` exporting its function as `sanitizeJudgeText`, as the requirements already call it.
 
 Messages contain only ward ids and reasons from the engine, the claim line, the diff summary, the floor lines, and the seance link (Requirement 7 criterion 5). The gate never forwards `description`, `explanation`, ghost stdout, payload bytes, or `secretValues`. The words `sealed` and `isolated` appear in no gate-owned fixed string; the exact Plan B sentence required by Requirement 9 contains `isolation` and that is the only form used.
+
+### Docker wake retry and warm-up (`gate-config.mjs`, `docker-warmup.mjs`, `lib/warmup.mjs`, Requirement 25)
+
+Cause (measured 2026-11-21, `docs/measurements.md`, heading `Docker Resource Saver wake-up`). Docker Desktop Resource Saver stops the VM after 5 idle minutes. With the VM stopped, the first `docker info` took 1.88 s. The IDE gate's availability check has a 2 s deadline and timed out at 2010 to 2021 ms in 4 runs, so the runner fell back to static analysis. Replays from a shell took 55 to 158 ms because the VM was already awake.
+
+Flow of the retry. The gate passes `dockerWakeRetryMs: DOCKER_WAKE_RETRY_MS` from `lib/gate/shell-judgment.mjs` to `runPlan`. The runner (`ghost-runner` Requirement 3, criterion 11) then works as follows.
+
+1. Run the availability check with the 2 s deadline. If it succeeds, continue with the docker box as before (fast path, no retry).
+2. If it times out, repeat it once with the `dockerWakeRetryMs` deadline, capped by the remaining pipeline deadline.
+3. If it fails with a daemon error or the `docker` binary is missing, do not retry; the result is Plan B.
+4. If the retry also times out, the result is Plan B (static analysis, NEEDS HUMAN APPROVAL). Fail-closed is unchanged: a non-safe command is never allowed without a rehearsal or a human approval.
+5. The Run_Record (the serialized `RunResult`) holds `phases.dockerCheckMs` and `dockerWakeRetried` (boolean).
+
+| Constant | Value | File | Meaning |
+|---|---|---|---|
+| `DOCKER_WAKE_RETRY_MS` | 10,000 | `integrations/kiro-hook/gate-config.mjs` | Deadline of the single retry |
+| `WARMUP_BUDGET_MS` | 1,000 | `integrations/kiro-hook/gate-config.mjs` | The warm-up hook exits within this time |
+| `THROTTLE_MS` | 60,000 | `integrations/kiro-hook/lib/warmup.mjs` | At most one warm-up start per 60 s |
+| `RUNNER_DEADLINE_SEC` | 44 | `gate-config.mjs` (existing) | Upper bound of `runPlan` |
+| `WATCHDOG_MS` | 50,000 | `gate-config.mjs` (existing) | Gate watchdog |
+
+Why 2 s + 10 s fits. The two checks add at most 12 s, which is inside `RUNNER_DEADLINE_SEC` (44 s). The gate already starts `runPlan` with `pipelineDeadlineSec = min(44, floor(48 - elapsedSec))`, and the retry is capped by that deadline, so the runner still returns its own `pipeline-deadline` result before 48 s. The 50 s watchdog and the 60 s Hook_Limit are therefore not reached by the retry. A worst case of 12 s for the check leaves at least 32 s for the ghost run.
+
+Warm-up script control flow (`docker-warmup.mjs` calls `warmUp` of `lib/warmup.mjs`).
+
+1. Arm a timer of `WARMUP_BUDGET_MS` that exits with code 0.
+2. Read the stamp file in the OS temp folder. If its time is less than `THROTTLE_MS` old, exit 0 without starting a process.
+3. Otherwise write the stamp, then start one `docker info --format {{.ServerVersion}}` (an engine call; `docker version` does not wake a stopped Docker Desktop VM, see `docs/measurements.md`) with `spawn(..., { detached: true, stdio: 'ignore', shell: false })` and `unref()`. The child outlives the hook process and wakes the VM.
+4. On any error (missing `docker` binary, unwritable stamp, spawn error) exit 0.
+
+The script never reads STDIN, prints nothing on STDOUT or STDERR, never denies or asks, has no shell-string execution and no network code, and exits 0 on every path. A hook exit code other than 2 does not block, and the output is empty, so nothing reaches the agent.
+
+Fallback trigger decision. The warm-up is most useful at the start of a prompt. The host probe (CLI 3.4.0, IDE 1.4.215) never registered a prompt-submit trigger, and `ALLOWED_TRIGGERS` of the format test has none. The design therefore warms up on the Pre Tool Use of the shell call (`PreToolUse`, matcher `shell`). The warm-up and the gate hook then start at the same event, so the warm-up helps the later shell calls and only partly the first one; the gate retry covers the first call. A prompt-submit trigger stays a candidate for a later probe (open item O20).
+
+Tests (`integrations/kiro-hook/tests/`).
+
+| File | Tests | Covers |
+|---|---|---|
+| `gate-wake.test.mjs` | 5 | constants; the option passed to `runPlan`; daemon down gives static analysis without retry; a timeout past both deadlines gives static analysis with `dockerWakeRetried` recorded; `[docker]` slow first check then fast retry gives a full docker-box run with `rehearsed: true` |
+| `docker-warmup.test.mjs` | 8 | exit 0 within the budget with no output; the detached process survives the parent; throttle; docker missing; no shell and no network code; unit tests of `warmUp`; hook entry committed disabled |
+| `worlds-config.test.mjs` | 3 | `vitest.worlds.config.ts` imports only `node:` modules and the documented command loads it |
+| `hook-io.test.mjs`, `gate-shell-judgment.test.mjs` | existing files | the constant values and the option value |
+
+The `[docker]` test reports `skipped (docker unavailable)` when Docker is unavailable.
 
 ### Watchdog and failure handling (`watchdog.mjs`, Requirement 8)
 
@@ -743,7 +788,7 @@ For all `session_id` strings, `sessionKey` returns a string that matches `^[A-Za
 | `runPlan` rejects | gate | exit 2, `GHOST RUN GATE ERROR: runner-failed; ...` |
 | Runner status `timeout`, `copy-timeout`, `pipeline-deadline` | gate | floor `warn`; `exit2` mode exits 2, `ask` mode asks; message has the fixed floor line |
 | Runner status `isolation-violation` | gate | `block`, exit 2 |
-| Docker unavailable | gate | Plan B result, at least `warn`, exact Plan B lines, no claim |
+| Docker unavailable (daemon error, missing binary, or a check that timed out twice) | gate | Plan B result, at least `warn`, exact Plan B lines, no claim; a first timeout is retried once with `DOCKER_WAKE_RETRY_MS` and a daemon error or missing binary is not retried (Requirement 25) |
 | Semaphore wait over 5 s | gate | `deny`, `GHOST RUN GATE BUSY: ...` |
 | Watchdog at 50 s | gate | cleanup by run id, exit 2, timeout line |
 | Missing build or load failure | bootstrap | `GHOST RUN GATE UNAVAILABLE: ...`, exit 2 |
@@ -772,7 +817,8 @@ Testing without a live Kiro host: `decide(input, deps)` takes injected `runPlan`
 | Test group | Kind | Covers |
 |---|---|---|
 | Properties 1 to 21 | PBT | pure logic as listed |
-| Hook file format, `exp-b` retirement, probe-disabled check | example | Requirements 2, 21, 24.6 |
+| Hook file format, `exp-b` retirement, probe-disabled check, `docker-warmup.json` disabled check | example | Requirements 2, 21, 24.6, 25 |
+| `gate-wake.test.mjs`, `docker-warmup.test.mjs`, `worlds-config.test.mjs` (see Docker wake retry and warm-up) | example, one `[docker]` test | Requirement 25 |
 | Bootstrap: missing build (rename `dist`), syntax error in `main.mjs`, uncaught throw, watchdog with fake timers and a hanging runner | example | Requirement 8 |
 | End-to-end gate run of the five Ghost Shell scenarios as a process with the event on STDIN | integration, Docker-bound, `skipped (docker unavailable)` | Requirement 23 criterion 4 |
 | No leftover container after a finished or killed gate process (label `ghost-run.run-id`) | integration, Docker-bound | Requirement 8 criterion 9 |
@@ -826,6 +872,7 @@ Unit tests stay few because the properties cover input space; unit tests pin fix
 | 22 Hygiene | Testing Strategy | possession scan test, fixtures |
 | 23 Tests | Testing Strategy, Correctness Properties | all |
 | 24 Probe | Probe hook | probe-disabled test, measurements table |
+| 25 Docker wake retry and warm-up | Docker wake retry and warm-up, Hook file format | `gate-wake`, `docker-warmup`, `worlds-config` tests |
 
 ---
 
@@ -852,3 +899,4 @@ Unit tests stay few because the properties cover input space; unit tests pin fix
 | O17 | Requirement 23 property table lists KI-P1 to KI-P9 only | extend the table with Properties 10 to 21 of this design, or keep them as design-level tests Resolved (2026-11-18, task 18.5): the Requirement 23 property table now lists Properties 10 to 21 (rows `Property 10` to `Property 21`; they carry no KI-P label). |
 | O18 | Whether `ask` forces a prompt for a trusted tool and works in the IDE | manual `ask` task (Approval channel); decides `WARN_MODE` |
 | O19 | Timeout placement honored by the host (entry level or `action.timeout`) | probe (f); the documented entry-level placement is used meanwhile. Resolved (CLI 3.4.0, 2026-11-18): entry-level `timeout` is honored and `action.timeout` is ignored, so D8 is confirmed. Resolved (IDE 1.4.215, 2026-11-19): the same in the IDE, three runs for each placement. |
+| O20 | Whether a prompt-submit trigger exists in a host release and fires before the first tool call, so that the warm-up can run earlier than the Pre Tool Use of the shell call | later probe. Not settled: the probe (CLI 3.4.0, IDE 1.4.215) registered none, so the warm-up uses `PreToolUse` with the matcher `shell` (Requirement 25). |

@@ -11,10 +11,17 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOX_ENV } from './hardening.js';
-import type { DeadlineClock, DockerClient } from './cli.js';
+import type { DeadlineClock, DockerClient, DockerResult } from './cli.js';
 
 /** Absolute limit of the availability check (Req 3.1). */
 export const AVAILABILITY_LIMIT_MS = 2_000;
+
+/**
+ * Longer deadline of the one wake retry (Req 3.8). Docker Desktop's Resource Saver stops its VM
+ * after five idle minutes, and the first engine call then takes about two seconds while the VM
+ * starts. A caller opts in with `wakeRetryLimitMs`; this is the value the Kiro gate passes.
+ */
+export const AVAILABILITY_WAKE_LIMIT_MS = 10_000;
 
 export const BOX_IMAGE_REPO = 'ghost-run/box';
 export const BOX_HASH_LABEL = 'ghost-run.box.hash';
@@ -31,8 +38,16 @@ export type DockerAvailability =
       readonly tag: string;
       /** Environment baked into the image, minus the variables the runner sets itself. */
       readonly imageEnv: readonly string[];
+      /** True when the first check timed out and the wake retry answered. */
+      readonly wakeRetried: boolean;
     }
-  | { readonly available: false; readonly reason: AvailabilityReason; readonly detail?: string };
+  | {
+      readonly available: false;
+      readonly reason: AvailabilityReason;
+      readonly detail?: string;
+      /** True when the first check timed out and a wake retry was made. */
+      readonly wakeRetried: boolean;
+    };
 
 function listFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -142,6 +157,13 @@ export interface AvailabilityOptions extends BoxDirSources {
   readonly image?: string;
   /** Default 2000 ms. */
   readonly limitMs?: number;
+  /**
+   * When set, a first check that times out is repeated once with this deadline (Req 3.8).
+   * Unset means no retry. A spawn error or a daemon error is never retried.
+   */
+  readonly wakeRetryLimitMs?: number;
+  /** Time left until the pipeline deadline; the retry never runs past it. */
+  readonly deadlineAt?: number;
   readonly clock?: DeadlineClock;
 }
 
@@ -168,40 +190,50 @@ export async function checkDockerAvailability(
       if (found === undefined) throw new Error('box/ directory not found');
       expectedHash = computeBoxHash(found);
     } catch (e) {
-      return { available: false, reason: 'box-image-missing', detail: `box sources unreadable: ${(e as Error).message}` };
+      return { available: false, reason: 'box-image-missing', detail: `box sources unreadable: ${(e as Error).message}`, wakeRetried: false };
     }
     tag = boxImageTag(expectedHash);
   }
 
-  const startedAt = (opts.clock ?? { now: () => Date.now() }).now();
-  const res = await client.run(['image', 'inspect', tag], {
-    timeoutMs: limitMs,
-    deadlineAt: startedAt + limitMs,
-  });
-  if (res.spawnError !== undefined) return { available: false, reason: 'docker-unavailable', detail: res.spawnError };
-  if (res.timedOut) return { available: false, reason: 'docker-unavailable', detail: 'availability check timed out' };
+  const clock = opts.clock ?? { now: () => Date.now() };
+  const inspect = (ms: number): Promise<DockerResult> => {
+    const startedAt = clock.now();
+    return client.run(['image', 'inspect', tag], { timeoutMs: ms, deadlineAt: startedAt + ms });
+  };
+  let res = await inspect(limitMs);
+  let wakeRetried = false;
+  if (res.timedOut && res.spawnError === undefined && opts.wakeRetryLimitMs !== undefined) {
+    const left = opts.deadlineAt === undefined ? Infinity : opts.deadlineAt - clock.now();
+    const retryMs = Math.min(opts.wakeRetryLimitMs, left);
+    if (retryMs > 0) {
+      wakeRetried = true;
+      res = await inspect(retryMs);
+    }
+  }
+  if (res.spawnError !== undefined) return { available: false, reason: 'docker-unavailable', detail: res.spawnError, wakeRetried };
+  if (res.timedOut) return { available: false, reason: 'docker-unavailable', detail: 'availability check timed out', wakeRetried };
   if (res.code !== 0) {
     const err = res.stderr.toString('utf8');
-    if (NO_SUCH.test(err)) return { available: false, reason: 'box-image-missing', detail: 'box image not found' };
-    return { available: false, reason: 'docker-unavailable', detail: err.trim().slice(0, 200) };
+    if (NO_SUCH.test(err)) return { available: false, reason: 'box-image-missing', detail: 'box image not found', wakeRetried };
+    return { available: false, reason: 'docker-unavailable', detail: err.trim().slice(0, 200), wakeRetried };
   }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(res.stdout.toString('utf8'));
   } catch {
-    return { available: false, reason: 'box-image-missing', detail: 'image inspect output unreadable' };
+    return { available: false, reason: 'box-image-missing', detail: 'image inspect output unreadable', wakeRetried };
   }
   const image = asObj(Array.isArray(parsed) ? parsed[0] : parsed);
   const id = image['Id'];
   if (typeof id !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(id)) {
-    return { available: false, reason: 'box-image-missing', detail: 'image id missing' };
+    return { available: false, reason: 'box-image-missing', detail: 'image id missing', wakeRetried };
   }
   const config = asObj(image['Config']);
   if (expectedHash !== undefined) {
     const labels = asObj(config['Labels']);
     if (labels[BOX_HASH_LABEL] !== expectedHash) {
-      return { available: false, reason: 'box-image-missing', detail: 'box image label does not match the box sources' };
+      return { available: false, reason: 'box-image-missing', detail: 'box image label does not match the box sources', wakeRetried };
     }
   }
   const env = Array.isArray(config['Env']) ? (config['Env'] as unknown[]).filter((e): e is string => typeof e === 'string') : [];
@@ -212,5 +244,6 @@ export async function checkDockerAvailability(
     imageId: id,
     tag,
     imageEnv,
+    wakeRetried,
   };
 }

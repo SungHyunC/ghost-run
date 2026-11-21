@@ -66,6 +66,12 @@ export interface RunnerOptions {
    * and the container name suffix, so a watchdog can remove the box by label. Default: random UUID.
    */
   readonly runId?: string;
+  /**
+   * Opt-in wake retry of the Docker availability check, in milliseconds (Req 3.8). When the first
+   * check (2 s) times out, it is repeated once with this deadline, capped by the pipeline
+   * deadline. Integer 1..30000. Default: no retry.
+   */
+  readonly dockerWakeRetryMs?: number;
 }
 
 export interface ResolvedRunnerOptions {
@@ -84,6 +90,8 @@ export interface ResolvedRunnerOptions {
   readonly boxDir?: string;
   /** Validated caller-chosen run id; undefined means the runner makes a random UUID. */
   readonly runId?: string;
+  /** Validated wake retry deadline; undefined means no retry. */
+  readonly dockerWakeRetryMs?: number;
 }
 
 export const DEFAULT_LIMITS: ResourceLimits = Object.freeze({
@@ -207,6 +215,12 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
   if (opts.runId !== undefined && (typeof opts.runId !== 'string' || !RUN_ID_RE.test(opts.runId))) {
     throw new ConfigError('runId', 'string matching ^[A-Za-z0-9_-]{1,64}$', opts.runId);
   }
+  if (
+    opts.dockerWakeRetryMs !== undefined &&
+    (!Number.isInteger(opts.dockerWakeRetryMs) || opts.dockerWakeRetryMs < 1 || opts.dockerWakeRetryMs > 30_000)
+  ) {
+    throw new ConfigError('dockerWakeRetryMs', 'integer 1..30000', opts.dockerWakeRetryMs);
+  }
   return {
     original: opts.original,
     excludeDirs: [...excludeDirs],
@@ -221,5 +235,6 @@ export function resolveRunnerOptions(opts: RunnerOptions): ResolvedRunnerOptions
     image,
     ...(opts.boxDir !== undefined ? { boxDir: opts.boxDir } : {}),
     ...(opts.runId !== undefined ? { runId: opts.runId } : {}),
+    ...(opts.dockerWakeRetryMs !== undefined ? { dockerWakeRetryMs: opts.dockerWakeRetryMs } : {}),
   };
 }

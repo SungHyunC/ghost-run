@@ -17,6 +17,7 @@ const EXP_B = `${HOOK}exp-b-gate.mjs`;
 const PBT_RUN = `${HOOK}lib/pbt/run.mjs`;
 const GATE_MAIN = `${HOOK}lib/gate/main.mjs`;
 const WATCHDOG = `${HOOK}lib/gate/watchdog.mjs`;
+const WARMUP = `${HOOK}lib/warmup.mjs`;
 const GATE_ENTRY = `${HOOK}ghost-gate.mjs`;
 const GHOST_STORE = `${HOOK}lib/store/ghost-store.mjs`;
 const STORE_DIR = `${HOOK}lib/store/`;
@@ -31,7 +32,7 @@ const ALLOWED_ENV = new Set(['GHOST_RUN_WARDS_FILE', 'GHOST_RUN_SEANCE_BASE']);
  *  it legitimately writes its events under .ghost-run/probe. exp-b-gate.mjs
  *  is retired and only the "nobody imports it" rule applies to it. */
 const EXEMPT = {
-  child_process: (/** @type {string} */ p) => p === PBT_RUN || p === PROBE || p === WATCHDOG,
+  child_process: (/** @type {string} */ p) => p === PBT_RUN || p === PROBE || p === WATCHDOG || p === WARMUP,
   date: (/** @type {string} */ p) => p.startsWith(STORE_DIR) || p === GATE_MAIN || p === PROBE || p === MCP_GHOST_RUN,
   bareEnv: (/** @type {string} */ p) => p === PBT_RUN || p === MCP_SERVER,
   ghostRunWrite: (/** @type {string} */ p) => p === GHOST_STORE || p === PROBE || p === MCP_POWER_LINK,
@@ -254,6 +255,7 @@ describe('scanner rules fire on violating snippets', () => {
     expect(at('lib/pbt/run.mjs', text)).not.toContain('child_process');
     expect(at('probe-host-facts.mjs', text)).not.toContain('child_process');
     expect(at('lib/gate/watchdog.mjs', text)).not.toContain('child_process');
+    expect(at('lib/warmup.mjs', text)).not.toContain('child_process');
   });
 
   it('flags process.env reads except the two allowed names', () => {

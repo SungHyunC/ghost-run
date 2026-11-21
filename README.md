@@ -8,6 +8,14 @@ Let your agent's ghost try it first.
 
 Ghost Run+ lets an AI agent rehearse an irreversible action in a copy of the world before it runs for real. A "ghost" plays the agent's plan against a mirror world (a copy of the files, the database, or the physics scene). Declared guard rules, called wards and written in `wards.yaml`, judge the result, and the real action proceeds only if every ward passes. It addresses two failures: a plain mistake, such as an agent deleting a production database during a code freeze (reported publicly for a Replit agent in July 2025), and possession, where hidden instructions in a document the agent reads steer it. A blocked agent gets the ward id, the numbers, and a seance link, so it can fix the plan and try again.
 
+## Use it in your Kiro
+
+- Advisory tools: in the Kiro Powers panel choose Add Custom Power, then Import from folder, and select `integrations/power`. This adds the `ghost-run` MCP tools and skill.
+- Enforcement: copy `integrations/kiro-hook/` and the entries of `.kiro/hooks/ghost-gate.json` (and `docker-warmup.json`) into your project, then set `enabled` to `true`. Run `corepack pnpm -r build` once first. The hooks are committed disabled.
+- Full rehearsal needs Docker and the box image (`corepack pnpm --filter @ghost-run/ghost-runner box:build`).
+- Without Docker the gate falls back to static analysis (Plan B) and asks for human approval. It does not claim P1 isolation in that mode.
+- Docker Desktop's Resource Saver can stop its VM when idle. The gate retries once with a longer deadline, so a sleeping Docker is not mistaken for a missing one. See [integrations/kiro-hook/README.md](integrations/kiro-hook/README.md).
+
 ## One skeleton, two apps
 
 This repository is a Kiroween 2026 entry in the Skeleton Crew category: one reusable skeleton and two apps built on it.

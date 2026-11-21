@@ -2,14 +2,15 @@
 // Run from the repository root:
 //   corepack pnpm --filter @ghost-run/kiro-hook exec vitest --run --config ../../vitest.worlds.config.ts
 // The root has no node_modules of its own, so `fast-check` is resolved through the kiro-hook package.
+// This file imports only `node:` modules. A plain object is a valid Vitest config, and `vitest/config`
+// does not resolve from the root of a clean checkout (tests/worlds-config.test.mjs guards this).
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vitest/config';
 
 const here = (rel: string): string => fileURLToPath(new URL(rel, import.meta.url));
 const requireFromHook = createRequire(here('integrations/kiro-hook/package.json'));
 
-export default defineConfig({
+export default {
   root: here('.'),
   resolve: {
     alias: [
@@ -26,4 +27,4 @@ export default defineConfig({
     exclude: ['**/node_modules/**'],
     passWithNoTests: true,
   },
-});
+};

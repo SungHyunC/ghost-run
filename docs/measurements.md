@@ -1198,3 +1198,21 @@ The plan followed the repository where it differed from the brief and the mockup
 - Chrome load of `/` and `/kit/` under the root `_headers`, with every control used and no policy violation in the console: not yet measured.
 - Keyboard and screen-reader pass: not yet measured.
 - Browser load times of `/` and `/kit/`: not yet measured.
+
+## Docker Resource Saver wake-up (kiro-integration, 2026-11-21)
+
+Measured by Claude Code on the Reference_Machine, before the fix, with the VM stopped by Resource Saver.
+
+| Fact | Value |
+|---|---|
+| Kiro IDE gate, `AVAILABILITY_LIMIT_MS` | 2000 ms |
+| `dockerCheckMs` in 4 IDE runs | 2010 to 2021 ms (timed out; static analysis; `NEEDS HUMAN APPROVAL`) |
+| The same check replayed from a shell | 55 to 158 ms |
+| Cause | Docker Desktop backend log: "timer expired (5m0s) ... system idle for 5m0s -> reducing ... stopping VM ... VM stopped" |
+| First `docker info` with the VM stopped | 1.88 s |
+| Next calls | 0.03 to 0.13 s |
+| Gaps between hook runs in the IDE checks | more than 5 minutes |
+
+Warm-up call (measured by Claude Code on the Reference_Machine, 2026-11-21): a detached `docker version` does not wake the VM. After a `docker version` at 07:49:50 UTC the Docker Desktop idle log showed no VM start and no "VM stopped" event for 30 minutes, and a `docker info` at 08:20 still took 1.88 s (cold start; the next calls took 0.03 to 0.13 s). The proxy answers the version query without starting the engine. The warm-up therefore runs `docker info --format '{{.ServerVersion}}'`, which is an engine call.
+
+Fix: one wake retry of 10 s after a timed-out 2 s check (`DOCKER_WAKE_RETRY_MS`), `dockerWakeRetried` in the run record, and the `docker-warmup` hook (disabled until task 19.1). The measurement with the fix in the IDE is part of the manual task 19.1 and is not recorded here yet.

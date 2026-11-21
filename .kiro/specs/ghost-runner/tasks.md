@@ -476,6 +476,13 @@ Decisions reflected in this plan:
     - The real check with the rebuilt MCP bundle is recorded in `docs/measurements.md` (section "Box folder lookup and bundled ghost_run").
     - _Requirements: 3.7, 3.8, 3.9, 3.10, 7.9_
 
+  - [x] 18.8 Docker wake retry (Resource Saver) [no-docker]
+    - Spec text: Req 3.1, 3.2, and 3.11 in `requirements.md`; the sequence diagram, the section "Docker wake retry", the timing table, the error table, and the fake-clock test list in `design.md`.
+    - Implemented in `ghost-runner/src/docker/availability.ts` (`AVAILABILITY_WAKE_LIMIT_MS` = 10,000, options `wakeRetryLimitMs` and `deadlineAt`, `wakeRetried` on both result variants), `ghost-runner/src/config.ts` (`RunnerOptions.dockerWakeRetryMs`, integer 1 to 30000, opt-in), `ghost-runner/src/pipeline.ts` (passes the option with the pipeline deadline, sets `RunResult.dockerWakeRetried`), `ghost-runner/src/result.ts`, and `ghost-runner/src/index.ts` (exports both limit constants).
+    - Reason: Docker Desktop's Resource Saver stops its VM after 5 idle minutes and the first engine call takes about 1.9 s (measured 2026-11-21, `docs/measurements.md`, section "Docker Resource Saver wake-up").
+    - Tests: `ghost-runner/tests/docker-availability.test.ts` (7 wake-retry tests) and `ghost-runner/tests/pipeline.test.ts` (6 tests in 'runPlan wake retry').
+    - _Requirements: 3.1, 3.2, 3.11_
+
 - [x] 17. Final checkpoint - Ensure all tests pass
   - Run `pnpm lint`, `pnpm -r build`, the `[no-docker]` tests in `save` and explicit profiles, and, where Docker is available, the `[docker]` tests. Confirm the summary shows `skipped (docker unavailable)` for any skipped Docker suite and that no private-key file is present in the repository. Ask the user if questions arise.
 

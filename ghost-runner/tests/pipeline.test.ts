@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WardSet } from '@ghost-run/core';
+import type { DockerClient } from '../src/docker/cli.js';
 import { ConfigError, PlanBoundsError } from '../src/errors.js';
 import { BOX_BUILD_HINT, PLAN_B_NOTICE, runPlan } from '../src/pipeline.js';
 import { parseRunResult, serializeRunResult } from '../src/result.js';
@@ -253,5 +254,73 @@ describe('runPlan Plan B', () => {
     const { result } = await runPlan([{ command: 'true' }], { original: repo(), client: fake({ image: 'unreachable' }) });
     expect(result.staticFindings).toEqual([]);
     expect(result.verdict).toBe('warn');
+  });
+});
+
+describe('runPlan wake retry (Req 3.8)', () => {
+  /** The first `image inspect` times out after 2 s of fake time; later calls reach the fake. */
+  function sleepingFirstCheck(f: FakeDocker, times = 1): DockerClient & { inspects: number[] } {
+    const inspects: number[] = [];
+    let slept = 0;
+    return {
+      inspects,
+      async run(args, o) {
+        if (args[0] === 'image' && args[1] === 'inspect') {
+          inspects.push(o?.timeoutMs ?? -1);
+          if (slept < times) {
+            slept += 1;
+            f.clock.advance(o?.timeoutMs ?? 0);
+            return { code: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0), timedOut: true };
+          }
+        }
+        return f.run(args, o);
+      },
+    };
+  }
+
+  it('without the option a sleeping first check is Plan B', async () => {
+    const f = fake();
+    const client = sleepingFirstCheck(f);
+    const { result } = await runPlan([{ command: 'true' }], { original: repo(), client, clock: f.clock });
+    expect(result.isolation.mode).toBe('static-analysis');
+    expect(result.dockerWakeRetried).toBe(false);
+  });
+
+  it('with the option the retry answers and the run is a full docker-box run', async () => {
+    const f = fake();
+    const client = sleepingFirstCheck(f);
+    const { result } = await runPlan([{ command: 'true' }], { original: repo(), client, clock: f.clock, dockerWakeRetryMs: 10_000 });
+    expect(client.inspects).toEqual([2000, 10_000]);
+    expect(result.isolation.mode).toBe('docker-box');
+    expect(result.rehearsed).toBe(true);
+    expect(result.dockerWakeRetried).toBe(true);
+  });
+
+  it('records no retry when the first check answers', async () => {
+    const f = fake();
+    const client = sleepingFirstCheck(f, 0);
+    const { result } = await runPlan([{ command: 'true' }], { original: repo(), client, clock: f.clock, dockerWakeRetryMs: 10_000 });
+    expect(client.inspects).toEqual([2000]);
+    expect(result.dockerWakeRetried).toBe(false);
+  });
+
+  it('falls back to Plan B when both deadlines pass, and records the retry', async () => {
+    const f = fake();
+    const client = sleepingFirstCheck(f, 2);
+    const { result } = await runPlan([{ command: 'true' }], { original: repo(), client, clock: f.clock, dockerWakeRetryMs: 10_000 });
+    expect(result.isolation).toMatchObject({ mode: 'static-analysis', reason: 'docker-unavailable' });
+    expect(result.dockerWakeRetried).toBe(true);
+  });
+
+  it('survives a serialize and parse round trip', async () => {
+    const f = fake();
+    const { result } = await runPlan([{ command: 'true' }], { original: repo(), client: sleepingFirstCheck(f), clock: f.clock, dockerWakeRetryMs: 10_000 });
+    expect(parseRunResult(serializeRunResult(result)).dockerWakeRetried).toBe(true);
+  });
+
+  it('rejects an out-of-range dockerWakeRetryMs', async () => {
+    for (const v of [0, -1, 1.5, 30_001]) {
+      await expect(runPlan([{ command: 'true' }], { original: repo(), client: fake(), dockerWakeRetryMs: v })).rejects.toBeInstanceOf(ConfigError);
+    }
   });
 });

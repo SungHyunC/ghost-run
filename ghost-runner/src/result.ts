@@ -91,6 +91,8 @@ export interface RunResult {
   staticFindings: Effect[];
   notices: string[];
   phases: PhaseDurations;
+  /** True when the first Docker availability check timed out and the wake retry ran (Req 3.8). */
+  dockerWakeRetried?: boolean;
 }
 
 export interface RunOutput {

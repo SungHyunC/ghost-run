@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
-import { AVAILABILITY_LIMIT_MS, boxImageTag, checkDockerAvailability, computeBoxHash } from '../src/docker/availability.js';
+import { AVAILABILITY_LIMIT_MS, AVAILABILITY_WAKE_LIMIT_MS, boxImageTag, checkDockerAvailability, computeBoxHash } from '../src/docker/availability.js';
 import type { DockerCallOptions, DockerClient, DockerResult } from '../src/docker/cli.js';
 import { FakeClock } from './fixtures/fake-docker.js';
 
@@ -73,7 +73,7 @@ describe('checkDockerAvailability', () => {
     const hash = computeBoxHash(dir);
     const client = scripted(res({ stdout: Buffer.from(inspectJson(hash, ['PATH=/x', 'NODE_VERSION=20', 'CI=true'])) }));
     const r = await checkDockerAvailability(client, { boxDir: dir });
-    expect(r).toEqual({ available: true, imageRef: ID, imageId: ID, tag: boxImageTag(hash), imageEnv: ['NODE_VERSION=20'] });
+    expect(r).toEqual({ available: true, imageRef: ID, imageId: ID, tag: boxImageTag(hash), imageEnv: ['NODE_VERSION=20'], wakeRetried: false });
     expect(client.calls[0]).toEqual(['image', 'inspect', boxImageTag(hash)]);
     expect(client.opts[0]?.timeoutMs).toBe(AVAILABILITY_LIMIT_MS);
   });
@@ -124,5 +124,76 @@ describe('checkDockerAvailability', () => {
     const r = await checkDockerAvailability(client, { image: ref });
     expect(r).toMatchObject({ available: true, imageRef: ref, imageId: ID });
     expect(client.calls[0]).toEqual(['image', 'inspect', ref]);
+  });
+
+  describe('wake retry (Req 3.8)', () => {
+    const timeout = res({ code: null, timedOut: true });
+    const good = (hash: string): DockerResult => res({ stdout: Buffer.from(inspectJson(hash)) });
+
+    it('uses 2 s and 10 s as the two deadlines', () => {
+      expect(AVAILABILITY_LIMIT_MS).toBe(2000);
+      expect(AVAILABILITY_WAKE_LIMIT_MS).toBe(10_000);
+    });
+
+    it('does not retry unless asked to', async () => {
+      const client = scripted(timeout);
+      const r = await checkDockerAvailability(client, { boxDir: makeBoxDir({}) });
+      expect(r).toMatchObject({ available: false, wakeRetried: false });
+      expect(client.calls).toHaveLength(1);
+    });
+
+    it('a fast first check never retries', async () => {
+      const dir = makeBoxDir({});
+      const client = scripted(good(computeBoxHash(dir)));
+      const r = await checkDockerAvailability(client, { boxDir: dir, wakeRetryLimitMs: AVAILABILITY_WAKE_LIMIT_MS });
+      expect(r).toMatchObject({ available: true, wakeRetried: false });
+      expect(client.calls).toHaveLength(1);
+    });
+
+    it('a slow first check and a fast retry succeed, with the retry on the long deadline', async () => {
+      const dir = makeBoxDir({});
+      const clock = new FakeClock();
+      let n = 0;
+      const client = scripted(() => (n++ === 0 ? timeout : good(computeBoxHash(dir))));
+      const r = await checkDockerAvailability(client, { boxDir: dir, clock, wakeRetryLimitMs: AVAILABILITY_WAKE_LIMIT_MS });
+      expect(r).toMatchObject({ available: true, wakeRetried: true });
+      expect(client.opts.map((o) => o?.timeoutMs)).toEqual([2000, 10_000]);
+    });
+
+    it('a timeout past both deadlines is unavailable', async () => {
+      const client = scripted(timeout);
+      const r = await checkDockerAvailability(client, { boxDir: makeBoxDir({}), wakeRetryLimitMs: AVAILABILITY_WAKE_LIMIT_MS });
+      expect(r).toMatchObject({ available: false, reason: 'docker-unavailable', wakeRetried: true });
+      expect(client.calls).toHaveLength(2);
+    });
+
+    it('an unreachable daemon or a missing binary is not retried', async () => {
+      for (const c of [res({ code: 1, stderr: Buffer.from('Cannot connect to the Docker daemon') }), res({ code: null, spawnError: 'spawn docker ENOENT' })]) {
+        const client = scripted(c);
+        const r = await checkDockerAvailability(client, { boxDir: makeBoxDir({}), wakeRetryLimitMs: AVAILABILITY_WAKE_LIMIT_MS });
+        expect(r).toMatchObject({ available: false, reason: 'docker-unavailable', wakeRetried: false });
+        expect(client.calls).toHaveLength(1);
+      }
+    });
+
+    it('caps the retry by the pipeline deadline', async () => {
+      const clock = new FakeClock();
+      const client = scripted(timeout);
+      await checkDockerAvailability(client, {
+        boxDir: makeBoxDir({}),
+        clock,
+        wakeRetryLimitMs: AVAILABILITY_WAKE_LIMIT_MS,
+        deadlineAt: clock.now() + 5000,
+      });
+      expect(client.opts.map((o) => o?.timeoutMs)).toEqual([2000, 5000]);
+    });
+
+    it('skips the retry when no pipeline time is left', async () => {
+      const clock = new FakeClock();
+      const client = scripted(timeout);
+      const r = await checkDockerAvailability(client, { boxDir: makeBoxDir({}), clock, wakeRetryLimitMs: 10_000, deadlineAt: clock.now() });
+      expect(r).toMatchObject({ available: false, wakeRetried: false });
+      expect(client.calls).toHaveLength(1);
+    });
   });
 });

@@ -273,6 +273,7 @@ async function planB(
     staticFindings,
     notices,
     phases,
+    dockerWakeRetried: avail.wakeRetried,
   };
   return { result, payloads: new Map() };
 }
@@ -798,6 +799,7 @@ function assemble(c: PipelineCtx, run: Run): RunOutput {
     staticFindings: [],
     notices: [],
     phases: c.phases,
+    dockerWakeRetried: c.avail.wakeRetried,
   };
   return { result, payloads: run.payloads };
 }
@@ -829,6 +831,9 @@ export async function runPlan(plan: Plan, opts: RunPlanOptions): Promise<RunOutp
     env: process.env,
     workspace: original,
     clock,
+    ...(resolved.dockerWakeRetryMs !== undefined
+      ? { wakeRetryLimitMs: resolved.dockerWakeRetryMs, deadlineAt }
+      : {}),
   });
   phases.dockerCheckMs = perf() - checkStart;
   if (!avail.available) return planB(plan, resolved, original, avail, runId, phases, opts.onNotice);

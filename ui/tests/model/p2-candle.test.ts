@@ -83,6 +83,15 @@ const verdictCase: fc.Arbitrary<VerdictCase> = fc
     return { cls, input: base, violations, notices };
   });
 
+/**
+ * One explicit example per type of an unknown verdict value, so the coverage counter always sees
+ * string, number, boolean and null, however the seed falls. fast-check runs examples first and
+ * passes them through the same property, so the property itself is unchanged.
+ */
+const unknownTypeExamples: [VerdictCase][] = ['not-a-verdict', 42, true, false, null].map((value) => [
+  { cls: 'unknown', value, input: { verdict: value, violations: [], notices: [] }, violations: [], notices: [] } as VerdictCase,
+]);
+
 // ---- oracle ---------------------------------------------------------------
 
 const esc = (v: unknown): string =>
@@ -176,7 +185,7 @@ describe('UI-P2 model leg: candle mapping', () => {
         if (m.state === 'out' && c.violations.length === 0) counter.add('blockNoViolations');
         if (c.cls === 'unknown') counter.add(`unknownType:${c.value === null ? 'null' : typeof c.value}`);
       }),
-      params('full'),
+      { ...params('full'), examples: unknownTypeExamples },
     );
     counter.print();
     assertBucketsHit(counter, [

@@ -122,7 +122,7 @@ sequenceDiagram
     participant R as Runner (host)
     participant D as Docker CLI (argv, no shell)
     participant B as Box (/work, /ghost-rec)
-    R->>D: image inspect (2.0 s absolute limit)
+    R->>D: image inspect (2.0 s absolute limit; one optional wake retry, up to 10 s, capped by the pipeline deadline)
     R->>R: fingerprint(Original) -> hashes H0 (overlaps box create)
     R->>D: run -d (hardened) with empty Copy dir bound at /work
     R->>R: copier fills Copy; sentinel ctime = copiedAt
@@ -252,6 +252,8 @@ Named constants in `config.ts` (fixed, not options; a change needs a spec change
 | `MAX_SECRET_FILE_BYTES` | 65,536 (64 KiB) | Most bytes kept per secret file | Req 9.15 |
 
 Both are compatible with the `wards` design: its per-file limits (at most 256 candidates of 8 to 16,384 bytes each) and its sizing example (256 canaries of 4 KiB) fit inside one 64 KiB file, and the worst case is 16 x 64 KiB = 1 MiB of `secretValues`, which closes the "runner cap" open item of the `wards` design.
+
+Docker wake retry (Req 3.11). `AvailabilityOptions` of `checkDockerAvailability` gains `wakeRetryLimitMs` (opt-in, unset means no retry) and `deadlineAt` (the pipeline deadline). `AVAILABILITY_LIMIT_MS` stays 2,000; the new exported constant `AVAILABILITY_WAKE_LIMIT_MS` is 10,000. When the first `docker image inspect` times out with no spawn error and `wakeRetryLimitMs` is set, the check runs once more with the timeout `min(wakeRetryLimitMs, time left until deadlineAt)`; with no time left there is no retry. A daemon error, a spawn error, and an image-missing answer are never retried. Both `DockerAvailability` variants carry `wakeRetried: boolean`. `RunnerOptions.dockerWakeRetryMs` (integer 1 to 30000, default unset, else `ConfigError('dockerWakeRetryMs', ...)`) is passed by `runPlan` together with the pipeline deadline, and the check time including the retry counts in `phases.dockerCheckMs`. `RunResult` gains the optional `dockerWakeRetried?: boolean` (true only when the retry ran; set in docker-box and Plan B results; kept by `serializeRunResult` and `parseRunResult`). The retry never weakens fail-closed behavior: when both attempts time out, the result is Plan B with `docker-unavailable`, as without the retry.
 
 ### Repo_World
 
@@ -438,7 +440,7 @@ When the evaluated `WardSet` contains an `egress` ward, `runPlan` reads, after t
 
 `effectsOutside(a)` returns one `Effect { kind: "external-path" | "url" | "db-connection", destination }` per distinct finding. Plan B adds a scan of Original for symbolic links pointing outside it (a read-only walk, done in `runPlan`, not in the pure analyzer).
 
-Plan B flow (Docker daemon unreachable within 2.0 s, image missing, or Box_Dir not found or unreadable, see "Box_Dir lookup"): no action is executed on the host. The result has `isolation.mode: "static-analysis"`, `isolation.reason: "docker-unavailable" | "box-image-missing"`, `p1Claimed = p5Claimed = p6Claimed = false`, `rehearsed: false`, empty `changes` arrays, `observedEvents: []`, and `staticFindings`. The runner verdict is at least `warn`, even without findings. The exact text `P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only.` is placed in `result.notices` and delivered through the optional `onNotice` callback so the hook and UI show it to the user at once. For `box-image-missing` the notice adds the fix: run `pnpm --filter @ghost-run/ghost-runner box:build`.
+Plan B flow (Docker daemon unreachable within 2.0 s, or within the wake retry when the caller opted in with `dockerWakeRetryMs`, image missing, or Box_Dir not found or unreadable, see "Box_Dir lookup"): no action is executed on the host. The result has `isolation.mode: "static-analysis"`, `isolation.reason: "docker-unavailable" | "box-image-missing"`, `p1Claimed = p5Claimed = p6Claimed = false`, `rehearsed: false`, empty `changes` arrays, `observedEvents: []`, and `staticFindings`. The runner verdict is at least `warn`, even without findings. The exact text `P1 isolation is NOT guaranteed: Docker box unavailable, static analysis only.` is placed in `result.notices` and delivered through the optional `onNotice` callback so the hook and UI show it to the user at once. For `box-image-missing` the notice adds the fix: run `pnpm --filter @ghost-run/ghost-runner box:build`.
 
 ---
 
@@ -664,7 +666,7 @@ Median_Of_5 targets, except rows marked absolute limit, which apply to every run
 
 | Phase | Name | Budget |
 |---|---|---|
-| Docker availability check | `dockerCheckMs` | 2.0 s absolute limit |
+| Docker availability check | `dockerCheckMs` | 2.0 s absolute limit; with the opt-in wake retry, the retry limit (suggested 10 s, `AVAILABILITY_WAKE_LIMIT_MS`) capped by the pipeline deadline |
 | Fingerprint before | `fingerprintBeforeMs` | 1.0 s |
 | Copy | `copyMs` | 1.0 s; 20 s absolute limit |
 | Manifest and SQLite baseline | `baselineMs` | 0.8 s |
@@ -832,7 +834,7 @@ Reflection on merged criteria: criteria that share one generator and one asserti
 
 | Scenario | Behavior |
 |---|---|
-| Docker daemon unreachable, check takes over 2.0 s, or image missing | Plan B (`docker-unavailable` or `box-image-missing`), notice, verdict at least `warn`, no host execution |
+| Docker daemon unreachable, check takes over 2.0 s (and over the wake retry, when opted in), or image missing | Plan B (`docker-unavailable` or `box-image-missing`), notice, verdict at least `warn`, no host execution |
 | Box_Dir not found by any source, or the selected folder has no readable `Dockerfile` or `BASE_DIGEST` | Plan B with `box-image-missing` and a `detail` text, no Docker call, same notice and verdict as above |
 | `boxDir` option empty or not a string | `ConfigError('boxDir', 'non-empty directory path', value)` before any container is created |
 | Plan outside 1 to 50 actions, or `execLimitSec` outside 1 to 30, or `pipelineDeadlineSec` outside 1 to 55 | `PlanBoundsError` / `ConfigError` naming the bound, before any container is created |
@@ -893,7 +895,7 @@ Fixture repository (at most 50 files, canary `sk-CANARY-abc123` in `.env`, SQLit
 - Compile-time test that `repoWorld` is assignable to `World<RepoState, ShellAction>`; `metadata.deterministic === false`.
 - `verifyWorld(repoWorld, { id: "repo", deterministic: false, wardSet })` from `@ghost-run/core/verify` passes before registration (Req 17.9). With `deterministic: false`, P2 is skipped by core.
 - Port-binding test under the full hardening options (`--cap-drop ALL` and the rest): the recorder binds 53, 80, and 443 (Req 8.13).
-- Timeouts with a fake clock: Docker check 2.0 s, copy 20 s, execution 30 s, pipeline 55 s and return within 60 s.
+- Timeouts with a fake clock: Docker check 2.0 s (plus the optional wake retry: it runs once after a timeout, is capped by the pipeline deadline, and never runs after a daemon error, spawn error, or image-missing answer), copy 20 s, execution 30 s, pipeline 55 s and return within 60 s.
 - `pipelineDeadlineSec` (`tests/pipeline-deadline-option.test.ts`): default 55, bounds with `ConfigError` before any Docker call, a smaller deadline gives the same `pipeline-deadline` result and cleanup, and `LABEL_RUN_ID` equals the label written by `buildRunArgs`.
 - Box_Dir lookup (`tests/box-dir-lookup.test.ts`, no Docker): the source order (option, then `GHOST_RUN_BOX_DIR`, then module search, then workspace search), explicit sources used as given without fallback, an empty env value ignored, the workspace search with `ghost-runner/box` before `box` and its stop at the file system root, a missing `Dockerfile` or `BASE_DIGEST` giving `box-image-missing` without a Docker call, and `ConfigError` for an empty `boxDir`.
 - Pool lifecycle model test (one use per slot, replacement, label sweep with owner liveness).

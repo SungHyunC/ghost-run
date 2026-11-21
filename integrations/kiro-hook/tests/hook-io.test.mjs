@@ -46,6 +46,8 @@ describe('gate-config', () => {
       recordBytes: 1_048_576,
     });
     expect(config.RUNNER_SUPPORTS_RUN_ID).toBe(true);
+    expect(config.DOCKER_WAKE_RETRY_MS).toBe(10_000);
+    expect(config.WARMUP_BUDGET_MS).toBe(1_000);
   });
 });
 
