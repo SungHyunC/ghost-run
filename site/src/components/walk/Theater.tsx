@@ -14,6 +14,11 @@ export interface TheaterProps {
   copy: ReactNode;
   /** The ward ids that the shown plan violated; the ward card is named after them. Empty: the headline ward. */
   violatedWardIds?: readonly string[];
+  /**
+   * False while the page that holds the Theater is not the current one: no placement runs and no layout is read.
+   * Defaults to true. When it turns true the next placement is instant.
+   */
+  active?: boolean;
 }
 
 /** A rectangle relative to the Theater's top left corner. */
@@ -49,7 +54,7 @@ export function placeActor(at: ActorAt, boxes: Record<ActorAt, Box>): { x: numbe
   }
 }
 
-export function Theater({ view, goText, reality, copy, violatedWardIds = [] }: TheaterProps) {
+export function Theater({ view, goText, reality, copy, violatedWardIds = [], active = true }: TheaterProps) {
   const theater = useRef<HTMLDivElement>(null);
   const gutter = useRef<HTMLDivElement>(null);
   const copyPane = useRef<HTMLDivElement>(null);
@@ -59,11 +64,14 @@ export function Theater({ view, goText, reality, copy, violatedWardIds = [] }: T
   const [pos, setPos] = useState<ActorPos>({ x: 0, y: 0, instant: true });
   const [resizeTick, setResizeTick] = useState(0);
   const resized = useRef(true);
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const wasActive = useRef(active);
 
   useEffect(() => {
     const onResize = () => {
       resized.current = true;
-      setResizeTick((t) => t + 1);
+      if (activeRef.current) setResizeTick((t) => t + 1);
     };
     window.addEventListener('resize', onResize);
     return () => {
@@ -71,7 +79,17 @@ export function Theater({ view, goText, reality, copy, violatedWardIds = [] }: T
     };
   }, []);
 
+  // Turning active: the next placement is instant and the tick is bumped so the placement effect runs.
   useLayoutEffect(() => {
+    if (active && !wasActive.current) {
+      resized.current = true;
+      setResizeTick((t) => t + 1);
+    }
+    wasActive.current = active;
+  }, [active]);
+
+  useLayoutEffect(() => {
+    if (!activeRef.current) return;
     const t = theater.current;
     if (t === null) return;
     const p = placeActor(view.actorAt, {

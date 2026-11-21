@@ -2,22 +2,23 @@ import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Costumes } from '../../src/components/Costumes';
 import { PARTS_MATRIX } from '../../src/data/parts-matrix';
+import { visibility } from '../lib/page-visibility';
 
 afterEach(cleanup);
 
 function setup() {
-  const { container } = render(<Costumes lineCount={800} />);
+  const { container } = render(<Costumes visibility={visibility('costumes')} />);
   return [...container.querySelectorAll('article.cc')];
 }
 
 describe('Costumes section', () => {
   it('shows the sub-heading, the note, and three cards in order', () => {
-    const { container } = render(<Costumes lineCount={800} />);
+    const { container } = render(<Costumes visibility={visibility('costumes')} />);
     expect(container.querySelector('.sec-sub')?.textContent).toBe(
-      'Each app is the same skeleton in a different costume. Turn on X-ray to see the bones.',
+      'Same skeleton, new costume. Flip on X-ray.',
     );
     expect(container.querySelector('.cards-note')?.textContent).toBe(
-      "Crossed-out parts are not on that app's screen. The costume is what each app adds: its world and its own screens.",
+      "Crossed out = not on that app's screen.",
     );
     expect([...container.querySelectorAll('.cc h3')].map((h) => h.textContent)).toEqual([
       'Ghost Shell',
@@ -26,42 +27,31 @@ describe('Costumes section', () => {
     ]);
   });
 
-  it('shows tag, costume, world line, folder, provenance, and link per card', () => {
-    const cards = setup().map((c) => ({
-      tag: c.querySelector('.cc-tag')?.textContent,
-      cos: c.querySelector('.cos')?.textContent,
-      world: c.querySelector('.wl div')?.firstChild?.textContent,
-      folder: c.querySelector('.wl small')?.textContent,
-      used: c.querySelector('.used-t')?.textContent,
-      kiro: c.querySelector('.kiro')?.textContent,
-      link: [c.querySelector('a')?.textContent, c.querySelector('a')?.getAttribute('href')],
-    }));
-    expect(cards).toEqual([
+  it('shows costume tag, world line, chips, Kiro line, and button per card in order', () => {
+    const cards = setup();
+    for (const c of cards) {
+      expect([...c.children].map((e) => e.className)).toEqual(['cc-art', '', 'cos', 'wl', 'used', 'kiro', 'btn small']);
+      expect(c.querySelector('.cc-tag, .used-t, .wl small')).toBeNull();
+    }
+    expect(
+      cards.map((c) => ({
+        cos: c.querySelector('.cos')?.textContent,
+        world: c.querySelector('.wl div')?.textContent,
+        kiro: c.querySelector('.kiro')?.textContent,
+        link: [c.querySelector('a')?.textContent, c.querySelector('a')?.getAttribute('href')],
+      })),
+    ).toEqual([
+      { cos: 'Hacker hoodie', world: 'Files + SQLite', kiro: 'Kiro spec: ghost-shell', link: ['Open Ghost Shell →', 'shell/'] },
       {
-        tag: 'App 1',
-        cos: 'Costume: hacker hoodie',
-        world: 'World: files + SQLite in the browser',
-        folder: 'worlds/playground-shell',
-        used: 'Skeleton parts on its screen',
-        kiro: 'Built with the Kiro spec ghost-shell',
-        link: ['Open Ghost Shell →', 'shell/'],
-      },
-      {
-        tag: 'App 2',
-        cos: 'Costume: robot suit',
-        world: 'World: a MuJoCo robot arm, 8 haunted copies',
-        folder: 'worlds/drawer-arm',
-        used: 'Skeleton parts on its screen',
-        kiro: 'Built with the Kiro spec ghost-hand',
+        cos: 'Robot suit',
+        world: 'Robot arm, 8 haunted copies',
+        kiro: 'Kiro spec: ghost-hand',
         link: ['Open Ghost Hand →', 'hand/'],
       },
       {
-        tag: '3rd world',
-        cos: 'Costume: a cloud and a bucket hat',
-        world: 'World: S3 buckets in memory, about 800 lines',
-        folder: 'worlds/ghost-cloud',
-        used: 'Skeleton parts it uses (no screen yet)',
-        kiro: 'Built by the Kiro agent world-smith',
+        cos: 'Cloud + bucket hat',
+        world: 'S3 buckets in memory',
+        kiro: 'Kiro agent: world-smith',
         link: ['How it was made →', '#make'],
       },
     ]);

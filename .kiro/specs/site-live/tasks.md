@@ -194,7 +194,7 @@ The plan follows this order:
 
   - [x] 10.5 Write the loading tests
     - **Property L5: Nothing heavy loads before the section is near** and **Property L6: The Hand engine loads only after Ghost Hand is picked**
-    - In `tests/dom/live-loading.property.test.tsx`: with a fake IntersectionObserver, loader spies, a Worker spy, and a fetch spy, for any sequence of renders, not-near reports, resizes, hovers, and slider moves, no spy is called before `near`; after `near`, `light()` is called once and `hand()` never; for any sequence that never selects the Ghost Hand tab and never runs a Hand input, `hand()` is never called; after the first Ghost Hand action it is called once. A second test without IntersectionObserver: no loader is called before the first action, and the recorded final state shows.
+    - In `tests/dom/page-loading.property.test.tsx`: with a fake IntersectionObserver, loader spies, a Worker spy, and a fetch spy, for any sequence of renders, not-near reports, resizes, hovers, and slider moves, no spy is called before `near`; after `near`, `light()` is called once and `hand()` never; for any sequence that never selects the Ghost Hand tab and never runs a Hand input, `hand()` is never called; after the first Ghost Hand action it is called once. A second test without IntersectionObserver: no loader is called before the first action, and the recorded final state shows.
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.6, 10.5**
 
 - [x] 11. The v5 section

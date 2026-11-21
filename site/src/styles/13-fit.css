@@ -1,0 +1,30 @@
+/* Review fixes for site-pages: page 4 fits a 1280x800 window, the kit rows align to the top, phones keep one nav row. */
+
+/* Page 4 (the Run page): tighter vertical rhythm so header, control card, stepper, theater, and speech bar fit 800 px. */
+.page>#run.sec{padding-top:6px;padding-bottom:4px}
+#run .sec-head{margin-bottom:2px}
+#run .sec-head h2{font-size:24px}
+#run .sec-sub{margin-bottom:8px;font-size:14px}
+#run .ctl{padding:10px 14px 8px;margin-bottom:8px}
+#run .ctl-top{margin-bottom:4px}
+#run .presets{margin-top:6px}
+#run .stepper{margin-bottom:6px}
+#run .theater{padding:8px 12px}
+#run .panes{min-height:170px}
+#run .tree{gap:1px}
+#run .judge{margin-top:8px}
+#run .ward{min-height:46px;padding:6px 12px}
+#run .say{margin-top:8px;min-height:52px;padding:8px 14px}
+/* When the page scrolls, the speech bar stays just above the page bar. */
+#run .say{position:sticky;bottom:calc(var(--bar-h) + 8px);z-index:6;box-shadow:0 -6px 18px rgba(0,0,0,.35)}
+
+/* Phones. */
+@media (max-width:560px){
+  .page>#run.sec{padding-left:14px;padding-right:14px}
+  #run .ctl{padding-left:10px;padding-right:10px}
+  #run .ctl-top{gap:4px}
+  #run .tabs{flex-wrap:nowrap;gap:2px;padding:3px;min-width:0}
+  #run .tab{padding:6px 7px;font-size:12px;gap:0;white-space:nowrap}
+  #run .tab svg{display:none}
+  #run .ghostbtn{flex:none;padding:6px 6px}
+}

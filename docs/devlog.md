@@ -531,3 +531,37 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - Cloud: a typed `aws s3 rm s3://prod-logs --recursive` is blocked; 2 objects are deleted in the copy only.
   - Hand: fast pull is blocked, then the revised plan passes. Strong grip is blocked live: 4 of 8 succeed, 43.1 N, and a joint limit is exceeded in 2 variants.
   - No console error, and no request left the page.
+
+### Paged landing, kit showcase and shorter copy: drafts by Claude Code, built by Kiro
+
+- **Why.** The owner asked for three things:
+  - a prettier UI kit page
+  - the landing sections kept apart and read like turning pages
+  - much less text
+
+  Claude Code drew two drafts, which the owner approved: `docs/design/paged-landing-mockup.html` (v6) and `docs/design/kit-showcase-mockup.html`. It also wrote a word-for-word copy deck in `docs/design/pages-brief.md`. In the deck, each sub-heading is one line, the part lines are about five words, and folder paths and long explanations are dropped.
+- **What changed.**
+  - **Paged landing.** The landing page is now five pages: cover, skeleton, costumes, ghost at work, your own.
+    - A sticky page bar has Back, dots and a counter, and Next shows the next page's title.
+    - The arrow keys, a swipe or the browser Back button turn pages. Each page has its own hash.
+    - Pages turn like a book, and under reduced motion they switch at once.
+    - Hidden pages are inert, and a live region announces each turn.
+    - The X-ray peek and the walkthrough autoplay start when their page first opens.
+  - **Kit showcase.** `/kit/` is now a showcase built by the site. It renders the real kit components in device frames, with the gallery's sample data and a drift test. The candle has state tabs, and the kit's own Lights switch is the theme control. The developer gallery moved to `/kit/gallery/`. `ui/` is unchanged.
+  - **Copy.** The copy deck is pinned by tests, which also fail if a dropped text comes back.
+- **Kiro runs** (agent `spec`, model Auto):
+  - spec: 47.9 credits
+  - implementation: one run was paused at the owner's request and then cut off by an Orca restart (16 of 42 tasks, usage not recorded); the resumed run cost 97.9
+  - review fixes: 9.8
+
+  The resumed run also re-recorded `runs.json`. The committed copy lacked the joint-limit chip that the live walkthrough shows.
+- **Review by Claude Code**, in Chrome under the real headers at 390, 800 and 900 px heights and 1280 px width. The paging, hash, deep links and live region work, nothing leaves the page, and there is no console error. The fix run fixed four issues:
+  - The page 4 narration hid behind the page bar at 1280×900. Page 4 now fits 1280×800, and the speech bar stays sticky above the bar when a page scrolls.
+  - The showcase text floated beside tall frames. It is now top-aligned and sticky.
+  - On phones the nav took two rows and the world tabs stacked. Both are one row now.
+  - The size figures in `docs/measurements.md` were stale.
+- **Checks.**
+  - Site: 108 test files, 990 tests. The other 11 packages pass.
+  - Build: `build:site` passes, and the site check reports 43 files with no findings.
+  - Sizes: the landing closure is 346,648 B (limit 360,000 B), and the showcase closure is 285,426 B (limit 330,000 B).
+- **Not ours.** `.kiro/specs/kiro-integration/tasks.md` was changed on disk by the open Kiro IDE: some `[~]` marks were reset to `[ ]`. It is left uncommitted for the owner.

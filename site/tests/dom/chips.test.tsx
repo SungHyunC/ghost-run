@@ -3,22 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Walkthrough } from '../../src/components/Walkthrough';
 import runsJson from '../../src/data/runs.json';
 import { toWalkRuns } from '../../src/data/walk-records';
-import { drain, failingLoaders } from '../lib/live-fakes';
+import { drain, failingLoaders, visibility } from '../lib/live-fakes';
+
 import type { RunsFile } from '../../src/data/types';
 
+/** Not opened: no engine loads and nothing autoplays; tests drive the box themselves. */
+const idle = visibility('cover');
 const runsFile = runsJson as unknown as RunsFile;
 const runs = toWalkRuns(runsFile);
 
-/** An IntersectionObserver that never reports: the section is never "in view". */
-class IdleObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
-
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', IdleObserver);
 });
 
 afterEach(() => {
@@ -32,10 +27,10 @@ const railButtons = () => screen.getAllByRole('listitem').map((li) => li.querySe
 
 describe('Walkthrough frame', () => {
   it('has section #run with the sub-heading, three tabs, Replay, and an ordered stepper of five', () => {
-    const { container } = render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    const { container } = render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     expect(container.querySelector('section#run')).not.toBeNull();
     expect(container.querySelector('.sec-sub')?.textContent).toBe(
-      "Give the ghost a plan. It tries it on a copy first, and only a lit candle lets reality change.",
+      "Give the ghost a plan. It tries it on a copy first.",
     );
     expect(container.querySelectorAll('.tab')).toHaveLength(3);
     expect(screen.getByRole('button', { name: '↻ Replay' })).toBeTruthy();
@@ -51,7 +46,7 @@ describe('Walkthrough frame', () => {
   });
 
   it('has an empty polite live region before step 1 and an aria-hidden actor', () => {
-    const { container } = render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    const { container } = render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     const say = container.querySelector('p#sayt');
     expect(say?.getAttribute('aria-live')).toBe('polite');
     expect(say?.textContent).toBe('');
@@ -60,7 +55,7 @@ describe('Walkthrough frame', () => {
   });
 
   it('tabs set aria-selected on the chosen tab only and reset the theater', async () => {
-    const { container } = render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    const { container } = render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     expect(tab('Ghost Shell').getAttribute('aria-selected')).toBe('true');
     fireEvent.click(tab('Ghost Hand'));
     await drain();
@@ -72,7 +67,7 @@ describe('Walkthrough frame', () => {
   });
 
   it('shows the Presets of the chosen world with the first one on', async () => {
-    const { container } = render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    const { container } = render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     await drain();
     expect([...container.querySelectorAll('#presets button')].map((b) => b.textContent)).toEqual([
       'DROP TABLE users',
@@ -86,7 +81,7 @@ describe('Walkthrough frame', () => {
   });
 
   it('replay restarts the current world', async () => {
-    const { container } = render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    const { container } = render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     fireEvent.click(tab('Ghost Cloud'));
     await drain();
     act(() => {
@@ -99,7 +94,7 @@ describe('Walkthrough frame', () => {
   });
 
   it('a step button marks that step now and earlier steps done, with aria-current following', async () => {
-    render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     fireEvent.click(tab('Ghost Shell'));
     await drain();
     fireEvent.click(railButtons()[2] as HTMLButtonElement);
@@ -118,7 +113,7 @@ describe('Walkthrough frame', () => {
   });
 
   it('shows ward rows with check marks as text, then BLOCKED, then PASS with the fixed plan tag', async () => {
-    const { container } = render(<Walkthrough runs={runsFile} loaders={failingLoaders} />);
+    const { container } = render(<Walkthrough visibility={idle} runs={runsFile} loaders={failingLoaders} />);
     fireEvent.click(tab('Ghost Shell'));
     await drain();
     act(() => {

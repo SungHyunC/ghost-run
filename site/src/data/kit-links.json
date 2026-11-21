@@ -1,0 +1,25 @@
+{
+  "from": "kit/index.html",
+  "links": [
+    "../",
+    "../shell/",
+    "../hand/",
+    "./",
+    "#p-mirror",
+    "#p-candle",
+    "#p-blacklight",
+    "#p-thread",
+    "#p-grave",
+    "#p-lights",
+    "./gallery/"
+  ],
+  "rowIds": [
+    "p-mirror",
+    "p-candle",
+    "p-blacklight",
+    "p-thread",
+    "p-grave",
+    "p-lights",
+    "p-controls"
+  ]
+}

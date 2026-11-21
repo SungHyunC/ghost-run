@@ -98,7 +98,13 @@ describe('runs.json shape', () => {
     const fixed = fixedOf('hand-fast-pull');
     expect(plan.facts).toMatchObject({ succeeded: 7, total: 8, maxForceN: 27.53, vaseTouched: 0, drawerOpeningM: 0.1216 });
     expect(fixed.facts).toMatchObject({ succeeded: 8, total: 8, maxForceN: 29.24, vaseTouched: 0 });
-    expect(plan.checks.map((c) => c.measured)).toEqual(['7 of 8 = 88%', '27.5 N', 'untouched']);
+    // The joint-limit report of variant-6 adds the fourth chip (site-live Requirement 12).
+    expect(plan.checks.map((c) => c.measured)).toEqual([
+      '7 of 8 = 88%',
+      '27.5 N',
+      'untouched',
+      'joint limit exceeded in 1 of 8 variants',
+    ]);
     expect(fixed.checks.map((c) => c.measured)).toEqual(['8 of 8 = 100%', '29.2 N', 'untouched']);
     expect(plan.message).toContain('joint limit exceeded in variant variant-6');
     expect(plan.facts['jointLimitVariants']).toBe('variant-6');

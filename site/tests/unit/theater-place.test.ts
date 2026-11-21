@@ -1,7 +1,15 @@
+// @vitest-environment jsdom
+import { act, cleanup, render } from '@testing-library/react';
+import { createElement } from 'react';
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
-import { placeActor, type Box } from '../../src/components/walk/Theater';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Theater, placeActor, type Box } from '../../src/components/walk/Theater';
 import type { ActorAt } from '../../src/engine/types';
+import { effectsText } from '../../src/engine/useWalk';
+import { initialState } from '../../src/engine/reducer';
+import runsJson from '../../src/data/runs.json';
+import { toWalkRuns } from '../../src/data/walk-records';
+import type { RunsFile } from '../../src/data/types';
 
 const AT: ActorAt[] = ['gutter', 'copy', 'ward', 'verdict'];
 
@@ -67,5 +75,36 @@ describe('placeActor', () => {
       ),
       { numRuns: 100 },
     );
+  });
+});
+
+describe('Theater active prop', () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  const shell = toWalkRuns(runsJson as unknown as RunsFile).worlds.shell;
+  const view = { ...initialState(shell), ward: { id: shell.ward.id, effectsOutside: effectsText(shell, initialState(shell)) } };
+  const el = (active: boolean) =>
+    createElement(Theater, { view, goText: 'go', reality: null, copy: null, active });
+
+  it('reads no layout while inactive and places once when it turns active', () => {
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+    const { rerender } = render(el(false));
+    expect(rect).not.toHaveBeenCalled();
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(rect).not.toHaveBeenCalled();
+    rerender(el(true));
+    // One placement runs `rel` for four boxes, two reads each.
+    expect(rect.mock.calls.length).toBe(8);
+  });
+
+  it('places on mount when active is not passed', () => {
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+    render(createElement(Theater, { view, goText: 'go', reality: null, copy: null }));
+    expect(rect).toHaveBeenCalled();
   });
 });

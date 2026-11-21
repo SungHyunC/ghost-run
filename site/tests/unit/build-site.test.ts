@@ -31,6 +31,7 @@ function put(rel: string, content: string | Buffer): void {
 
 function makeFixture(): void {
   put('site/build/dist/index.html', '<html>landing</html>');
+  put('site/build/dist/kit/index.html', '<html>showcase</html>');
   put('site/build/dist/favicon.svg', '<svg/>');
   put('site/build/dist/favicon.ico', Buffer.from([0, 0, 1, 0]));
   put('site/build/dist/assets/app.js', 'landing js');
@@ -99,7 +100,7 @@ describe('buildSite', () => {
     expect(r.errors).toEqual([]);
     expect(r.exitCode).toBe(0);
     const dist = join(root, 'site', 'dist');
-    for (const p of ['index.html', 'favicon.svg', 'favicon.ico', 'assets/app.js', 'shell/index.html', 'shell/ko.html', 'hand/index.html', 'hand/assets/mujoco.wasm', 'kit/index.html', '_headers']) {
+    for (const p of ['index.html', 'favicon.svg', 'favicon.ico', 'assets/app.js', 'shell/index.html', 'shell/ko.html', 'hand/index.html', 'hand/assets/mujoco.wasm', 'kit/index.html', 'kit/gallery/index.html', '_headers']) {
       expect(existsSync(join(dist, p)), p).toBe(true);
     }
     expect(existsSync(join(dist, 'shell', '_headers'))).toBe(false);
@@ -107,7 +108,10 @@ describe('buildSite', () => {
     expect(listAll(dist).some((f) => f.endsWith('.DS_Store'))).toBe(false);
     const headers = readFileSync(join(dist, '_headers'), 'utf8');
     expect(headers).toContain('/shell/*');
-    expect(headers).not.toMatch(/^\/(\*|hand\/\*|kit\/\*)$/m);
+    expect(headers).not.toMatch(/^\/(\*|hand\/\*|kit\/\*|kit\/gallery\/\*)$/m);
+    for (const block of ['/kit/', '/kit/index.html']) expect(headers, block).toMatch(new RegExp(`^${block.replace(/[./]/g, '\\$&')}$`, 'm'));
+    expect(readFileSync(join(dist, 'kit/index.html'), 'utf8')).toBe('<html>showcase</html>');
+    expect(r.lines.join('\n')).toMatch(/\/kit\/gallery\/ 2 files/);
     expect(r.lines.join('\n')).toMatch(/\/shell\/ 2 files/);
     expect(r.lines).toHaveLength(6);
   });
@@ -118,7 +122,11 @@ describe('buildSite', () => {
     expect(readFileSync(join(dist, 'hand/assets/mujoco.wasm')).equals(readFileSync(join(root, 'apps/ghost-hand/dist/assets/mujoco.wasm')))).toBe(true);
     expect(readFileSync(join(dist, 'hand/index.html'), 'utf8')).toBe('<html base="./">hand</html>');
     expect(readFileSync(join(dist, 'shell/ko.html'), 'utf8')).toBe('<html>ko</html>');
-    expect(readFileSync(join(dist, 'kit/assets/kit.css'), 'utf8')).toBe('css');
+    expect(readFileSync(join(dist, 'kit/gallery/assets/kit.css'), 'utf8')).toBe('css');
+    expect(existsSync(join(dist, 'kit/assets'))).toBe(false);
+    const galleryFiles = listAll(join(root, 'ui/dist'));
+    for (const f of galleryFiles) expect(readFileSync(join(dist, 'kit/gallery', f)).equals(readFileSync(join(root, 'ui/dist', f))), f).toBe(true);
+    expect(listAll(join(dist, 'kit/gallery'))).toEqual(galleryFiles);
   });
 
   it('writes the site notice from the bundled packages, keeps the MuJoCo components, and keeps the app copy', async () => {
@@ -156,7 +164,7 @@ describe('buildSite', () => {
     put('outside/secret.txt', 'x');
     symlinkSync(join(root, 'outside'), join(root, 'ui/dist/link'));
     await buildSite({ root, deps });
-    expect(lstatSync(join(root, 'site/dist/kit/link')).isSymbolicLink()).toBe(true);
+    expect(lstatSync(join(root, 'site/dist/kit/gallery/link')).isSymbolicLink()).toBe(true);
   });
 
   it('replaces a previous site/dist/', async () => {
@@ -195,6 +203,14 @@ describe('buildSite', () => {
     const r = await buildSite({ root, deps });
     expect(r.exitCode).toBe(1);
     expect(r.errors[0]).toBe(`missing build output: ${dir} (build it with: corepack pnpm --filter ${pkg} build)`);
+    expect(existsSync(join(root, 'site/dist'))).toBe(false);
+  });
+
+  it('fails naming kit/index.html when the landing build has no Showcase', async () => {
+    rmSync(join(root, 'site/build/dist/kit/index.html'));
+    const r = await buildSite({ root, deps });
+    expect(r.exitCode).toBe(1);
+    expect(r.errors[0]).toBe('missing build output: site/build/dist/kit/index.html (build it with: corepack pnpm --filter @ghost-run/site build)');
     expect(existsSync(join(root, 'site/dist'))).toBe(false);
   });
 

@@ -65,7 +65,7 @@ describe('Property L10: failure keeps the page working', () => {
         fc.nat(2),
         async (world, kind, index) => {
           const { result } = renderHook(() =>
-            useLiveWalkthrough({ runs, loaders: loadersFor(kind), scheduler: idleScheduler, visibility: { near: 'pending', seen: 'pending' } }),
+            useLiveWalkthrough({ runs, loaders: loadersFor(kind), scheduler: idleScheduler, visibility: { near: false, started: false, active: false } }),
           );
           const list = PRESETS[world];
           const preset = list[index % list.length];
@@ -106,7 +106,7 @@ describe('Property L10: failure keeps the page working', () => {
         }),
         async (world, kind, word, values) => {
           const { result } = renderHook(() =>
-            useLiveWalkthrough({ runs, loaders: loadersFor(kind), scheduler: idleScheduler, visibility: { near: 'pending', seen: 'pending' } }),
+            useLiveWalkthrough({ runs, loaders: loadersFor(kind), scheduler: idleScheduler, visibility: { near: false, started: false, active: false } }),
           );
           act(() => {
             result.current.pickWorld(world);
@@ -148,7 +148,7 @@ describe('Property L10: failure keeps the page working', () => {
 
   it('"live" is never displayed when every engine fails', async () => {
     const { result } = renderHook(() =>
-      useLiveWalkthrough({ runs, loaders: loadersFor('throw'), scheduler: idleScheduler, visibility: { near: 'pending', seen: 'pending' } }),
+      useLiveWalkthrough({ runs, loaders: loadersFor('throw'), scheduler: idleScheduler, visibility: { near: false, started: false, active: false } }),
     );
     for (const world of WORLDS) {
       act(() => {

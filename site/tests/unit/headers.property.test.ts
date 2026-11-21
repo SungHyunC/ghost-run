@@ -69,8 +69,13 @@ describe('Property 11: Headers rewrite', () => {
         expect(paths).not.toContain('/*');
         expect(paths).not.toContain('/hand/*');
         expect(paths).not.toContain('/kit/*');
+        expect(paths).not.toContain('/kit/gallery/*');
         expect(new Set(paths).size).toBe(paths.length);
-        expect(paths.slice(0, 2)).toEqual(['/', '/index.html']);
+        expect(paths.slice(0, 4)).toEqual(['/', '/index.html', '/kit/', '/kit/index.html']);
+        const slashHeaders = root.find((b) => b.path === '/')?.headers;
+        for (const scope of ['/index.html', '/kit/', '/kit/index.html']) {
+          expect(root.find((b) => b.path === scope)?.headers).toEqual(slashHeaders);
+        }
 
         const slash = root.find((b) => b.path === '/');
         const policy = slash?.headers.find((h) => h.startsWith('Content-Security-Policy:')) ?? '';

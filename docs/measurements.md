@@ -1148,3 +1148,53 @@ browser load times: measured by the owner's agent in Chrome. Not yet measured.
 ### Mockup comparison (Requirement 2, criterion 9)
 
 Comparison of the built Live_Section with Mockup_V5 at 920 px and 1280 px, each world at each of the five steps: not yet done. It is made by the owner's agent, not by a Kiro task.
+
+## Sample-data spike (site-pages task 1.2)
+
+Result: works. `site/tests/dom/spike-gallery-import.test.tsx` imports `ui/gallery/main.tsx` in the jsdom `dom` project, a `main` element appears in `#root`, and the page holds at least one `section.gk-candle` and one `table.gk-table`.
+
+Config change: none. `site/vitest.config.ts` needed no alias, CSS stub, or `server.deps` entry; Vite handles the CSS import.
+
+Time of the import plus first render: 335 ms (single run, Apple M1, vitest 3.2.7). Task 7.2 can use the DOM drift test; the text-comparison fallback is not needed.
+
+## Paged landing and showcase measurements (site-pages task 9.1)
+
+### Closure sizes (task 8.3)
+
+JavaScript reached by static imports to any depth from each page entry, production build.
+
+| Page | Entry | vendor-react | Shared `escape-*` chunk | Closure | Limit |
+|---|---|---|---|---|---|
+| Landing_Page (`/`) | 115,491 B (index) | 11,880 B | 219,277 B | 346,648 B | 360,000 B |
+| Showcase (`/kit/`) | 54,269 B (showcase) | 11,880 B | 219,277 B | 285,426 B | `SHOWCASE_MAX_BYTES` 330,000 B |
+
+`SHOWCASE_MAX_BYTES` is the measured closure times 1.15, rounded up to the next 10 kB. `react-dom` lands in the shared chunk, not in `vendor-react`.
+
+### Contrast changes (task 8.4)
+
+| Selector | Property | Before | After | Ratio before | Ratio after | Limit |
+|---|---|---|---|---|---|---|
+| `.pg-dot i` | background | `rgba(255,255,255,.25)` | `rgba(255,255,255,.34)` | 2.15 against `#100722` | 3.02 | 3 |
+| `.frame` | border | `rgba(180,140,255,.35)` | `rgba(180,140,255,.58)` | 1.79 against `#1c0e3b` | 3.01 against `#1c0e3b`, 3.22 against `#0f0f17` | 3 |
+
+### Owner decisions
+
+Q1, Q2, Q4, Q5, and Q6 keep the design defaults. Q3 changed: the Mirror row has no separate Dark or Lights on control. The kit's own Lights switch inside each frame is the theme control (Difference D10).
+
+### Differences D1 to D14 and open questions O1 to O22
+
+The plan followed the repository where it differed from the brief and the mockups, as recorded in `requirements.md` (D1 to D14) and the design's "Open questions" (D1 to D14, O1 to O22). Examples applied: the old `div.page` wrapper was renamed (D1), the paging keys ignore range inputs, tabs, and switches (D2), focus moves to the arriving heading (D3), a walk is parked when its page is left (D4), the shell engine preloads when page 3 opens (D5), the Showcase keeps a site-owned copy of the gallery data with a drift test (D9), the Showcase has no Dark or Lights on control (D10), and `/kit/` keeps the policy of `/` (O17). Turns push a history entry and the two hash repairs replace it (O15). The arriving page is scrolled to its top at the start of a Turn (O16).
+
+### Repairs made during the run
+
+- Paging model: the end of an effect writes `replace` for a held request of the current page.
+- Paging model: a `bad-hash` event clears a held request. Both repairs were found by property Pg2.
+- The brief's chip "Built from 6 Kiro specs" replaced "Built with" in the requirement.
+- The Vite worker build needs `worker.rollupOptions.output = { manualChunks: undefined, inlineDynamicImports: true }`.
+
+### Not yet measured (owner's agent, not a Kiro task)
+
+- Comparison of the built Landing_Page and Showcase with Mockup_V6 and Mockup_Kit at 390 px, 920 px, and 1280 px: not yet measured.
+- Chrome load of `/` and `/kit/` under the root `_headers`, with every control used and no policy violation in the console: not yet measured.
+- Keyboard and screen-reader pass: not yet measured.
+- Browser load times of `/` and `/kit/`: not yet measured.

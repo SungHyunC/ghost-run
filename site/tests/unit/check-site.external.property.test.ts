@@ -143,7 +143,7 @@ describe('checkSite external URLs (property)', () => {
     'gives no finding for a URL-looking string inside a copied app bundle, and none for allowlisted namespaces',
     () => {
       fc.assert(
-        fc.property(externalArb, fc.constantFrom('shell', 'hand', 'kit'), (value, app) => {
+        fc.property(externalArb, fc.constantFrom('shell', 'hand', 'kit/gallery'), (value, app) => {
           const files = {
             [`${app}/assets/app.js`]: `const u="${value}";// ${value}\nconst n="${NAMESPACE}";`,
             'assets/landing.js': `const n="${NAMESPACE}";const e="https://react.dev/errors/";`,

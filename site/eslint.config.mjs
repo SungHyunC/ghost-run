@@ -101,6 +101,36 @@ export default tseslint.config(
     },
   },
   {
+    // src/showcase/ is the only folder besides src/live/ that imports the kit. It may import @ghost-run/ui
+    // through its public entry (and its stylesheet) and @ghost-run/core as type-only imports. The syntax,
+    // network, and storage bans of src/ stay.
+    files: ['src/showcase/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: '@ghost-run/core', allowTypeImports: true, message: 'src/showcase/ may import @ghost-run/core as type-only imports.' }],
+          patterns: [
+            {
+              group: ['@ghost-run/ui/*', '!@ghost-run/ui/styles.css'],
+              message: 'src/showcase/ may import @ghost-run/ui through its public entry point and its styles.css only.',
+            },
+            {
+              group: ['@ghost-run/core/*', '@ghost-run/wards-config', '@ghost-run/wards-config/*', '@ghost-run/ghost-runner', '@ghost-run/ghost-runner/*', '@ghost-run/kiro-hook', '@ghost-run/mcp'],
+              message: 'Not allowed in src/showcase/.',
+            },
+            {
+              // Relative paths only, so that the package name @ghost-run/ui is not caught.
+              regex: String.raw`^\.{1,2}/(.*/)?(apps|worlds|core|ui)(/|$)`,
+              message: 'src/showcase/ must not reach apps/, worlds/, core/, or ui/ by path.',
+            },
+            { group: ['three', 'three/*', '@mujoco/mujoco', 'sql.js'], message: 'Not allowed in the page runtime.' },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/engine/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-syntax': ['error', ...SYNTAX_BAN, ...NETWORK_BAN, ...ENGINE_BAN],

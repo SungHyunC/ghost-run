@@ -151,7 +151,7 @@ describe('Property L9: a superseded run never reaches the page', () => {
         const vs = virtualScheduler();
         const f = controllableEngines();
         const { result, unmount } = renderHook(() =>
-          useLiveWalkthrough({ runs, loaders: f.loaders, scheduler: vs.scheduler, visibility: { near: 'pending', seen: 'pending' } }),
+          useLiveWalkthrough({ runs, loaders: f.loaders, scheduler: vs.scheduler, visibility: { near: false, started: false, active: false } }),
         );
         let latest: string | null = null; // marker of the latest accepted run
         let shown: WorldRecord = result.current.walk.record;
@@ -272,7 +272,7 @@ describe('Property L9: a superseded run never reaches the page', () => {
     const vs = virtualScheduler();
     const f = controllableEngines();
     const { result } = renderHook(() =>
-      useLiveWalkthrough({ runs, loaders: f.loaders, scheduler: vs.scheduler, visibility: { near: 'pending', seen: 'pending' } }),
+      useLiveWalkthrough({ runs, loaders: f.loaders, scheduler: vs.scheduler, visibility: { near: false, started: false, active: false } }),
     );
     act(() => {
       result.current.pickWorld('shell');

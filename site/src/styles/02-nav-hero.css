@@ -1,12 +1,4 @@
-/* nav + hero */
-.nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;position:relative;z-index:3}
-.logo{display:flex;flex:none;white-space:nowrap;align-items:center;gap:8px;font-weight:700;font-size:19px}
-.logo svg{width:30px;height:32px;filter:drop-shadow(0 0 8px rgba(144,70,255,.8))}
-.logo span{color:var(--pump)}
-.nav-links{display:flex;flex-wrap:wrap;gap:6px}
-.nav-links a{text-decoration:none;font-size:13px;padding:5px 11px;border-radius:999px;color:var(--dim);background:rgba(255,255,255,.05)}
-.nav-links a.on{background:var(--bone);color:var(--ink);font-weight:600}
-.nav-links a:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+/* hero */
 .hero{position:relative;display:grid;grid-template-columns:1.25fr 1fr;gap:10px;padding:18px 26px 70px;min-height:340px}
 .hero::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);pointer-events:none;opacity:.9;
   background:radial-gradient(1.5px 1.5px at 8% 18%,#fff 60%,transparent 61%),radial-gradient(1.5px 1.5px at 22% 64%,#fff 60%,transparent 61%),radial-gradient(1px 1px at 35% 12%,#fff 60%,transparent 61%),radial-gradient(1.5px 1.5px at 47% 40%,#fff 60%,transparent 61%),radial-gradient(1px 1px at 58% 8%,#fff 60%,transparent 61%),radial-gradient(1.5px 1.5px at 66% 70%,#fff 60%,transparent 61%),radial-gradient(1px 1px at 78% 30%,#fff 60%,transparent 61%),radial-gradient(1.5px 1.5px at 90% 56%,#fff 60%,transparent 61%),radial-gradient(1px 1px at 96% 14%,#fff 60%,transparent 61%)}

@@ -2,6 +2,7 @@ import { cleanup, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
+import { PAGES } from '../../src/data/pages';
 
 class FakeObserver {
   observe() {}
@@ -69,9 +70,10 @@ describe('page accessibility', () => {
   it('reaches every link, button, and the switch with the Tab key', async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
-    // Inputs that are `hidden` are not focusable; the tabs that are not selected are reached with the arrow keys (roving tabindex).
+    // Only the current page and the page bar are reachable (the other pages are inert; Back is disabled on page 1). Inputs that are `hidden` are not focusable; the tabs that are not selected are reached with the arrow keys (roving tabindex).
     const expected = [...container.querySelectorAll<HTMLElement>('a[href], button, input')].filter(
-      (el) => !el.closest('[hidden]') && !el.hidden && !(el.getAttribute('role') === 'tab' && el.tabIndex === -1),
+      (el) =>
+        !el.closest('[hidden]') && !el.hidden && !el.closest('[inert]') && !el.hasAttribute('disabled') && !(el.getAttribute('role') === 'tab' && el.tabIndex === -1),
     );
     expect(expected.length).toBeGreaterThan(10);
     expect(container.querySelector('#xray')).not.toBeNull();
@@ -80,7 +82,9 @@ describe('page accessibility', () => {
       expect(Number(el.getAttribute('tabindex') ?? 0), describe_(el)).toBeGreaterThanOrEqual(0);
     }
     const reached = new Set<Element>();
-    for (let i = 0; i < expected.length + 5; i++) {
+    // user-event does not skip `inert` subtrees, so the loop also walks the inert pages.
+    const all = container.querySelectorAll('a[href], button, input, textarea, select, [tabindex]').length;
+    for (let i = 0; i < all + 5; i++) {
       await user.tab();
       if (document.activeElement !== null) reached.add(document.activeElement);
     }
@@ -105,5 +109,18 @@ describe('page accessibility', () => {
     const { container } = render(<App />);
     expect(container.querySelector('#actor')?.getAttribute('aria-hidden')).toBe('true');
     expect(container.querySelector('#sayt')?.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('has a polite page live region, a named page bar, and inert hidden pages', () => {
+    const { container } = render(<App />);
+    const live = container.querySelectorAll('[aria-live="polite"]');
+    expect([...live].map((l) => l.id).sort()).toEqual(['pgLive', 'sayt']);
+    expect(container.querySelector('#pgLive')?.classList.contains('sr-only')).toBe(true);
+    expect(container.querySelector('nav[aria-label="Pages"]')).not.toBeNull();
+    const dots = [...container.querySelectorAll('#pgDots .pg-dot')];
+    expect(dots.map((d) => d.getAttribute('aria-label'))).toEqual(PAGES.map((p, i) => `Page ${String(i + 1)}: ${p.title}`));
+    const pages = [...container.querySelectorAll('#pages > .page')];
+    expect(pages).toHaveLength(5);
+    for (const pg of pages) expect(pg.hasAttribute('inert'), pg.getAttribute('data-page') ?? '').toBe(pg.getAttribute('data-page') !== 'cover');
   });
 });

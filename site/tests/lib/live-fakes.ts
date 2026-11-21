@@ -47,3 +47,4 @@ export function recordedLoaders(runs: RunsFile): { loaders: LiveLoaders; calls: 
     },
   };
 }
+export { visibility } from './page-visibility';

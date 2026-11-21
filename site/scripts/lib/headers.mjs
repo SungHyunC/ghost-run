@@ -73,6 +73,8 @@ export function buildRootHeaders(shellHeadersText) {
   return printHeaders([
     { path: '/', headers: [...LANDING_HEADERS] },
     { path: '/index.html', headers: [...LANDING_HEADERS] },
+    { path: '/kit/', headers: [...LANDING_HEADERS] },
+    { path: '/kit/index.html', headers: [...LANDING_HEADERS] },
     ...shell,
   ]);
 }

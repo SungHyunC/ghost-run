@@ -8,6 +8,8 @@ import { toWalkRuns } from '../../src/data/walk-records';
 import type { WalkRuns, RunsFile } from '../../src/data/types';
 import type { Scheduler } from '../../src/engine/scheduler';
 import { buildScript, STEP_START } from '../../src/engine/script';
+import { PAGE_IDS, type PageId } from '../../src/data/pages';
+import { usePaging } from '../../src/engine/usePaging';
 import { useWalk } from '../../src/engine/useWalk';
 
 /**
@@ -106,6 +108,53 @@ function runDueTimes(world: WorldId, from: number, to: number, startAt: number):
   }
   return out;
 }
+
+describe('Property 7: timer hygiene (usePaging)', () => {
+  it('unmount at any point of a request sequence leaves no timer and no listener', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.constantFrom<PageId>(...PAGE_IDS), { minLength: 1, maxLength: 10 }),
+        fc.integer({ min: 0, max: 3 }),
+        (targets, fires) => {
+          const vs = virtualScheduler();
+          const target = new EventTarget();
+          let listeners = 0;
+          const win = {
+            addEventListener(t: string, fn: EventListener) {
+              listeners++;
+              target.addEventListener(t, fn);
+            },
+            removeEventListener(t: string, fn: EventListener) {
+              listeners--;
+              target.removeEventListener(t, fn);
+            },
+            location: { hash: '#cover' },
+            history: { pushState: () => undefined, replaceState: () => undefined },
+            scrollTo: () => undefined,
+            document,
+          } as unknown as Window;
+          const { result, unmount } = renderHook(() => usePaging({ scheduler: vs.scheduler, win }));
+          for (const to of targets) {
+            act(() => {
+              result.current.go(to, 'bar');
+            });
+            expect(vs.pending.size).toBeLessThanOrEqual(1);
+          }
+          for (let i = 0; i < fires; i++) {
+            act(() => {
+              vs.advance(780);
+            });
+          }
+          unmount();
+          expect(vs.pending.size).toBe(0);
+          expect(listeners).toBe(0);
+          cleanup();
+        },
+      ),
+      { numRuns: 40 },
+    );
+  });
+});
 
 describe('Property 7: timer hygiene', () => {
   it('pending timers match the events still to fire; stale runs never fire; zero after drain or unmount', () => {

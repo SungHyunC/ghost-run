@@ -2,6 +2,8 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Costumes } from '../../src/components/Costumes';
 import type { Scheduler } from '../../src/engine/scheduler';
+import type { PageId } from '../../src/data/pages';
+import { visibility } from '../lib/page-visibility';
 
 interface Timer {
   id: number;
@@ -60,13 +62,24 @@ afterEach(() => {
   Reflect.deleteProperty(window, 'matchMedia');
 });
 
-function setup() {
+function setup(current: PageId = 'costumes', opened: readonly PageId[] = []) {
   const clock = fakeScheduler();
-  const view = render(<Costumes lineCount={800} scheduler={clock.scheduler} />);
+  const ui = (cur: PageId, open: readonly PageId[]) => (
+    <Costumes scheduler={clock.scheduler} visibility={visibility(cur, open)} />
+  );
+  const view = render(ui(current, opened));
   const sw = view.container.querySelector<HTMLInputElement>('input#xray');
   const sec = view.container.querySelector('section#costumes');
   if (!sw || !sec) throw new Error('missing switch or section');
-  return { clock, view, sw, sec };
+  return {
+    clock,
+    view,
+    sw,
+    sec,
+    go(cur: PageId, open: readonly PageId[] = []) {
+      view.rerender(ui(cur, open));
+    },
+  };
 }
 
 describe('X-ray switch', () => {
@@ -121,6 +134,53 @@ describe('X-ray demo', () => {
     expect(clock.pending()).toBe(0);
   });
 
+  it('sets no timer on load with another page open, and starts on the first open', () => {
+    setReduced(false);
+    const { clock, sw, go } = setup('cover');
+    expect(clock.pending()).toBe(0);
+    clock.advance(10000);
+    expect(sw.checked).toBe(false);
+    go('costumes', []);
+    expect(clock.pending()).toBe(2);
+    clock.advance(1600);
+    expect(sw.checked).toBe(true);
+  });
+
+  it('does not play again on return', () => {
+    setReduced(false);
+    const { clock, sw, go } = setup();
+    clock.advance(5000);
+    expect(sw.checked).toBe(false);
+    go('recipe', ['costumes']);
+    go('costumes', ['costumes']);
+    expect(clock.pending()).toBe(0);
+    clock.advance(10000);
+    expect(sw.checked).toBe(false);
+  });
+
+  it('is cancelled with the switch off when the page is left during the peek', () => {
+    setReduced(false);
+    const { clock, sw, go } = setup();
+    clock.advance(2000);
+    expect(sw.checked).toBe(true);
+    go('recipe', ['costumes']);
+    expect(sw.checked).toBe(false);
+    expect(clock.pending()).toBe(0);
+    go('costumes', ['costumes']);
+    clock.advance(10000);
+    expect(sw.checked).toBe(false);
+  });
+
+  it('leaves a switch the visitor set alone when the page is left', () => {
+    setReduced(false);
+    const { clock, sw, go } = setup();
+    clock.advance(5000);
+    fireEvent.click(sw);
+    expect(sw.checked).toBe(true);
+    go('recipe', ['costumes']);
+    expect(sw.checked).toBe(true);
+  });
+
   it('is cancelled by operating the switch before 4400 ms', () => {
     setReduced(false);
     const { clock, sw } = setup();
@@ -133,13 +193,16 @@ describe('X-ray demo', () => {
     expect(sw.checked).toBe(false);
   });
 
-  it('is cancelled by the first user input anywhere', () => {
+  it('is cancelled by the first user input anywhere and stays ended', () => {
     setReduced(false);
-    const { clock, sw } = setup();
+    const { clock, sw, go } = setup();
     fireEvent.pointerDown(document.body);
     expect(clock.pending()).toBe(0);
     clock.advance(10000);
     expect(sw.checked).toBe(false);
+    go('recipe', ['costumes']);
+    go('costumes', ['costumes']);
+    expect(clock.pending()).toBe(0);
   });
 
   it('leaves the switch alone under Reduced_Motion', () => {

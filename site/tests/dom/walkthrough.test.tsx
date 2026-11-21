@@ -7,25 +7,15 @@ import { RealityPane } from '../../src/components/walk/RealityPane';
 import runsJson from '../../src/data/runs.json';
 import { toWalkRuns } from '../../src/data/walk-records';
 import { drain, failingLoaders } from '../lib/live-fakes';
+import { visibility } from '../lib/page-visibility';
+import type { PageId } from '../../src/data/pages';
 import type { RunsFile } from '../../src/data/types';
 
 const runsFile = runsJson as unknown as RunsFile;
 const runs = toWalkRuns(runsFile);
 
-const observers: { cb: IntersectionObserverCallback }[] = [];
-class FakeObserver {
-  constructor(cb: IntersectionObserverCallback) {
-    observers.push({ cb });
-  }
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
-
 beforeEach(() => {
-  observers.length = 0;
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', FakeObserver);
 });
 
 afterEach(() => {
@@ -34,12 +24,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function Page() {
+function Page({ current = 'cover' }: { current?: PageId }) {
   return (
     <>
       <Sprite />
       <Walkthrough
         runs={runsFile}
+        visibility={visibility(current)}
         loaders={failingLoaders}
         renderReality={(record) => <RealityPane scene={record.reality} />}
         renderCopy={(record, view) => <CopyPane record={record} copy={view.copy} fixed={view.plan.rev} />}
@@ -60,14 +51,12 @@ const boxText = (c: Element) => (c.querySelector('#cmd') as HTMLInputElement).va
 const isFixed = (c: Element) => c.querySelector('.ctl')?.classList.contains('rev') === true;
 
 describe('Walkthrough end to end', () => {
-  it('starts autoplay only after the section is in view', async () => {
-    const { container } = render(<Page />);
+  it('starts autoplay only after the Run page is opened', async () => {
+    const { container, rerender } = render(<Page current="cover" />);
     advance(60000);
     expect(q(container, '#stamp')).toBe('');
     expect(q(container, '#sayt')).toBe('');
-    act(() => {
-      observers[0]?.cb([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
-    });
+    rerender(<Page current="run" />);
     await drain();
     advance(60000);
     expect(q(container, '#stamp')).toBe('PASS');

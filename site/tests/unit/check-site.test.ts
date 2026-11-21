@@ -8,7 +8,7 @@ type Finding = { file: string; reference: string; rule: string };
 // Loaded by variable path so that the plain .mjs script needs no type declaration file.
 const modulePath = '../../scripts/check-site.mjs';
 const { checkSite } = (await import(/* @vite-ignore */ modulePath)) as {
-  checkSite: (distRoot: string, options?: { structure?: boolean }) => Finding[];
+  checkSite: (distRoot: string, options?: { structure?: boolean; kitLinks?: { links: string[]; rowIds: string[] } }) => Finding[];
 };
 
 const roots: string[] = [];
@@ -96,7 +96,7 @@ const LANDING_POLICY =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const SHELL_POLICY =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-const HEADERS = `/\n  Content-Security-Policy: ${LANDING_POLICY}\n/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/shell/*\n  Content-Security-Policy: ${SHELL_POLICY}\n`;
+const HEADERS = `/\n  Content-Security-Policy: ${LANDING_POLICY}\n/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/kit/\n  Content-Security-Policy: ${LANDING_POLICY}\n/kit/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/shell/*\n  Content-Security-Policy: ${SHELL_POLICY}\n`;
 
 function validSite(): Record<string, string> {
   return {
@@ -110,6 +110,7 @@ function validSite(): Record<string, string> {
     'shell/ko.html': '',
     'hand/index.html': '',
     'kit/index.html': '',
+    'kit/gallery/index.html': '',
     'THIRD_PARTY_NOTICES.txt': 'notices',
     _headers: HEADERS,
   };
@@ -316,5 +317,110 @@ describe('checkSite engine bundles, first paint, entry size, and policy of /', (
     const files = validSite();
     files['_headers'] = HEADERS.replace("'wasm-unsafe-eval'", "'wasm-unsafe-eval' 'unsafe-eval'");
     expect(checkSite(makeDist(files)).map((f) => f.reference).join(' ')).toContain("'unsafe-eval'");
+  });
+});
+
+describe('checkSite Showcase rules', () => {
+  const KIT_HTML = (policy = LANDING_POLICY.replace(/; frame-ancestors 'none'/, '')) =>
+    `<!doctype html><meta http-equiv="Content-Security-Policy" content="${policy}"><script type="module" src="../assets/showcase-AAA.js"></script>`;
+  const showcaseSite = (): Record<string, string> => ({
+    ...validSite(),
+    'kit/index.html': KIT_HTML(),
+    'assets/showcase-AAA.js': 'import"./vendor-react-VVV.js";const a=1;',
+    'assets/vendor-react-VVV.js': 'export const r=1;',
+  });
+  const links = { links: ['../', '../shell/', './', '#p-mirror', './gallery/'], rowIds: ['p-mirror', 'p-candle'] };
+  const run = (files: Record<string, string>, kitLinks = links) => checkSite(makeDist(files), { kitLinks });
+
+  it('accepts a valid Showcase', async () => {
+    const { SHOWCASE_MAX_BYTES } = (await import(/* @vite-ignore */ modulePath)) as { SHOWCASE_MAX_BYTES: number };
+    expect(SHOWCASE_MAX_BYTES).toBe(330_000);
+    expect(run(showcaseSite())).toEqual([]);
+  });
+
+  it('treats kit/index.html as a Landing_Page file but kit/gallery/ as an app folder', () => {
+    const page = showcaseSite();
+    page['kit/index.html'] += '<script>var a=1</script><div style="color:red"></div>';
+    expect(run(page).map((f) => f.rule)).toEqual(expect.arrayContaining([expect.stringMatching(/inline <script>/), expect.stringMatching(/style attribute/)]));
+    const gallery = showcaseSite();
+    gallery['kit/gallery/index.html'] = '<script>var a=1</script><div style="color:red"></div>';
+    expect(run(gallery)).toEqual([]);
+    const url = showcaseSite();
+    url['assets/showcase-AAA.js'] += 'const u="https://evil.example/p";';
+    expect(run(url).map((f) => f.reference)).toEqual(['https://evil.example/p']);
+  });
+
+  it('requires kit/gallery/index.html', () => {
+    const files = showcaseSite();
+    delete files['kit/gallery/index.html'];
+    expect(run(files).map((f) => f.reference)).toEqual(expect.arrayContaining(['(kit/gallery/index.html)']));
+  });
+
+  it('flags an engine, worker, or wasm reference in the Showcase', () => {
+    for (const extra of [
+      'import"./engine-light-EEE.js";',
+      'import("./engine-hand-HHH.js");',
+      'new Worker(new URL("sim-worker-SSS.js",import.meta.url));',
+      'new URL("mujoco-MMM.wasm",import.meta.url);',
+    ]) {
+      const files = showcaseSite();
+      files['assets/vendor-react-VVV.js'] += extra;
+      files['assets/engine-light-EEE.js'] = 'export{}';
+      files['assets/engine-hand-HHH.js'] = 'export{}';
+      files['assets/sim-worker-SSS.js'] = 'export{}';
+      files['assets/mujoco-MMM.wasm'] = 'w';
+      expect(run(files).some((f) => /Showcase names an Engine_Bundle/.test(f.rule)), extra).toBe(true);
+    }
+    const tag = showcaseSite();
+    tag['kit/index.html'] += '<link rel="modulepreload" href="../assets/engine-hand-HHH.js">';
+    tag['assets/engine-hand-HHH.js'] = 'export{}';
+    expect(run(tag).some((f) => /Showcase names an Engine_Bundle/.test(f.rule))).toBe(true);
+  });
+
+  it('flags a showcase- asset named by index.html or in its closure', () => {
+    const named = showcaseSite();
+    named['index.html'] += '<link rel="modulepreload" href="assets/showcase-AAA.js">';
+    expect(run(named).some((f) => f.file === 'index.html' && /prefix showcase-/.test(f.rule))).toBe(true);
+    const closure = showcaseSite();
+    closure['assets/app.js'] = 'import"./showcase-AAA.js";';
+    expect(run(closure).some((f) => /prefix showcase-/.test(f.rule))).toBe(true);
+  });
+
+  it('measures the closure of static imports for both pages', async () => {
+    const { ENTRY_MAX_BYTES, SHOWCASE_MAX_BYTES } = (await import(/* @vite-ignore */ modulePath)) as { ENTRY_MAX_BYTES: number; SHOWCASE_MAX_BYTES: number };
+    const showcase = showcaseSite();
+    showcase['assets/vendor-react-VVV.js'] = 'export const r=1;'.padEnd(SHOWCASE_MAX_BYTES, ' ');
+    expect(run(showcase).map((f) => f.rule)).toEqual([expect.stringMatching(/closure of the Showcase entry is larger/)]);
+    const landing = showcaseSite();
+    landing['assets/app.js'] = 'import"./shared-SSS.js";';
+    landing['assets/shared-SSS.js'] = 'import"./deep-DDD.js";';
+    landing['assets/deep-DDD.js'] = 'export const d=1;'.padEnd(ENTRY_MAX_BYTES, ' ');
+    expect(run(landing).map((f) => f.rule)).toEqual([expect.stringMatching(/larger than the limit/)]);
+  });
+
+  it('flags a /kit/ block that differs from the block of /, or one that lacks a required directive', () => {
+    const differs = showcaseSite();
+    differs['_headers'] = HEADERS.replace('/kit/\n  Content-Security-Policy: ' + LANDING_POLICY, '/kit/\n  Content-Security-Policy: ' + LANDING_POLICY.replace("form-action 'none'", "form-action 'self'"));
+    expect(run(differs).some((f) => f.reference === '/kit/' && /\/kit\/ block differs/.test(f.rule))).toBe(true);
+    const extra = showcaseSite();
+    extra['_headers'] = HEADERS.replace('/kit/index.html\n', '/kit/index.html\n  X-Extra: 1\n');
+    expect(run(extra).some((f) => f.reference === '/kit/index.html' && /\/kit\/ block differs/.test(f.rule))).toBe(true);
+    const narrow = showcaseSite();
+    narrow['_headers'] = HEADERS.replaceAll("worker-src 'self'; ", '');
+    expect(run(narrow).some((f) => f.reference.startsWith('/kit/') && /required directive/.test(f.rule))).toBe(true);
+  });
+
+  it('checks the meta policy of kit/index.html', () => {
+    const files = showcaseSite();
+    files['kit/index.html'] = KIT_HTML("default-src 'none'; script-src 'self' 'unsafe-eval'");
+    expect(run(files).filter((f) => f.file === 'kit/index.html').map((f) => f.rule.split(':')[0])).toContain('headers-policy');
+  });
+
+  it('flags a declared link that does not resolve and a fragment that names no row', () => {
+    const files = showcaseSite();
+    const found = run(files, { links: ['../nowhere/', '#p-missing', '#p-candle', './gallery/#x'], rowIds: ['p-candle'] });
+    expect(found.map((f) => `${f.reference} | ${f.rule.split(':')[0]}`)).toEqual(['../nowhere/ | every-local-link-resolves', '#p-missing | every-local-link-resolves']);
+    expect(found[0]?.rule).toMatch(/does not exist/);
+    expect(found[1]?.rule).toMatch(/fragment id/);
   });
 });

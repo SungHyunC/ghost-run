@@ -5,11 +5,13 @@ import { describe, expect, it } from 'vitest';
 
 const siteRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const stylesDir = join(siteRoot, 'src', 'styles');
-const css = readdirSync(stylesDir)
+const landingCss = readdirSync(stylesDir)
   .filter((f) => f.endsWith('.css'))
   .sort()
   .map((f) => readFileSync(join(stylesDir, f), 'utf8'))
   .join('\n');
+const showcaseCss = readFileSync(join(siteRoot, 'src', 'showcase', 'styles', 'showcase.css'), 'utf8');
+const css = landingCss;
 
 // ---- stylesheet lookup ------------------------------------------------------
 
@@ -18,10 +20,10 @@ type Decl = { prop: string; value: string };
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** All declarations of every rule whose selector is exactly `sel`. */
-function declsOf(sel: string): Decl[] {
+function declsOf(sel: string, source: string = css): Decl[] {
   const re = new RegExp(`(?:^|[}{]|\\*/)\\s*${escapeRe(sel)}\\s*\\{([^}]*)\\}`, 'g');
   const out: Decl[] = [];
-  for (const m of css.matchAll(re)) {
+  for (const m of source.matchAll(re)) {
     for (const part of (m[1] ?? '').split(';')) {
       const i = part.indexOf(':');
       if (i > 0) out.push({ prop: part.slice(0, i).trim(), value: part.slice(i + 1).trim() });
@@ -30,8 +32,8 @@ function declsOf(sel: string): Decl[] {
   return out;
 }
 
-const hasDecl = (sel: string, prop: string, token: string): boolean =>
-  declsOf(sel).some((d) => (d.prop === prop || d.prop.startsWith(`${prop}-`)) && d.value.includes(token));
+const hasDecl = (sel: string, prop: string, token: string, source: string = css): boolean =>
+  declsOf(sel, source).some((d) => (d.prop === prop || d.prop.startsWith(`${prop}-`)) && d.value.includes(token));
 
 const vars = new Map<string, string>();
 for (const d of declsOf('.site')) {
@@ -109,6 +111,8 @@ type Pair = {
   colorSel?: string;
   /** Text color token as written in the rule. */
   fg: string;
+  /** The stylesheet that holds the rule. Defaults to the landing stylesheets. */
+  src?: 'showcase';
   bg: Bg;
   /** Element opacity that blends the text into the background. */
   opacity?: number;
@@ -126,6 +130,11 @@ const card = 'rgba(255,255,255,.065)';
 const witch = 'rgba(180,140,255,.12)';
 const ctl = 'rgba(255,255,255,.05)';
 const mint08 = 'rgba(174,245,223,.08)';
+const bar = 'rgba(15,7,32,.94)';
+
+const hex2 = (n: number): string => Math.round(n).toString(16).padStart(2, '0');
+/** The page bar background, composited over the page background (it is 94% opaque). */
+const PAGEBAR = ((c: Rgba): string => `#${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}`)(composite(['rgba(15,7,32,.94)']));
 
 const TEXT: Pair[] = [
   { sel: '.site', fg: 'var(--text)', bg: page },
@@ -150,7 +159,7 @@ const TEXT: Pair[] = [
   { sel: '.part span', fg: 'var(--dim)', bg: glass(bone13, 'rgba(0,0,0,.2)') },
   { sel: '.part i', fg: 'var(--bone)', opacity: 0.8, bg: glass(bone13, 'rgba(0,0,0,.2)') },
   { sel: '.built', fg: 'var(--dim)', bg: glass(bone13) },
-  { sel: '.built code', fg: 'var(--bone)', bg: glass(bone13, 'rgba(255,255,255,.07)') },
+  { sel: '.built .chip', fg: 'var(--bone)', bg: glass(bone13, 'rgba(255,255,255,.07)') },
   { sel: '.result h3', fg: 'var(--mint)', bg: glass('rgba(174,245,223,.07)') },
   { sel: '.result p', fg: 'var(--dim)', bg: glass('rgba(174,245,223,.07)') },
   { sel: '.xsw', fg: 'var(--bone)', bg: page },
@@ -218,6 +227,28 @@ const TEXT: Pair[] = [
   { sel: '.agent .proof', fg: 'var(--bone)', bg: glass(witch) },
   { sel: '.foot', fg: 'var(--dim)', bg: page },
   { sel: '.foot span', fg: 'var(--slime)', bg: glass('rgba(155,229,100,.1)') },
+  // Task 8.4: the pairs that the paged landing mockup (Mockup_V6) adds. Requirement 18.6.
+  { sel: '.pg-btn', fg: 'var(--text)', bg: glass(bar, 'rgba(255,255,255,.08)') },
+  { sel: '.pg-next', fg: '#08372a', bg: glass('#aef5df') },
+  { sel: '.pg-dot', fg: 'var(--dim)', bg: glass(bar) },
+  { sel: '.pg-dot.on', fg: 'var(--text)', bg: glass(bar) },
+  { sel: '.pg-count', fg: 'var(--dim)', bg: glass(bar) },
+  // The small label of the Next button is drawn at opacity .7.
+  { sel: '.pg-next', colorSel: '.pg-next', fg: '#08372a', opacity: 0.7, bg: glass('#aef5df') },
+  // Task 8.4: the pairs that the Showcase mockup (Mockup_Kit) adds. The colors inside the Frames belong to the kit.
+  { sel: '.kicker', src: 'showcase', fg: 'var(--ink)', bg: glass('#f7f0e1') },
+  { sel: '.khero h1', colorSel: '.site', fg: 'var(--text)', bg: page, large: true },
+  { sel: '.khero h1 em', src: 'showcase', fg: 'var(--mint)', bg: page, large: true },
+  { sel: '.khero p', src: 'showcase', fg: 'var(--dim)', bg: page },
+  { sel: '.kchips span', src: 'showcase', fg: 'var(--slime)', bg: glass('rgba(155,229,100,.1)') },
+  { sel: '.kcard', src: 'showcase', fg: 'var(--text)', bg: glass('rgba(255,255,255,.06)') },
+  { sel: '.kcard span', src: 'showcase', fg: 'var(--dim)', bg: glass('rgba(255,255,255,.06)') },
+  { sel: '.kp-n', src: 'showcase', fg: 'var(--pump2)', bg: page },
+  { sel: '.kpart h2', colorSel: '.site', fg: 'var(--text)', bg: page, large: true },
+  { sel: '.kp-lead', src: 'showcase', fg: 'var(--bone)', bg: page },
+  { sel: '.kpart ul', src: 'showcase', fg: 'var(--dim)', bg: page },
+  { sel: '.foot', src: 'showcase', fg: 'var(--dim)', bg: page },
+  { sel: '.foot a', src: 'showcase', fg: 'var(--mint)', bg: page },
 ];
 
 type Border = {
@@ -225,11 +256,25 @@ type Border = {
   prop: string;
   /** The border color token as written in the rule. */
   value: string;
+  src?: 'showcase';
+  /** What the border or graphic is painted over, bottom first. Defaults to the page background. */
+  bg?: Bg;
+  /** Opaque colors on the far side of the border; the border must reach 3:1 against each. Defaults to the page background. */
+  against?: readonly string[];
 };
 const BORDERS: Border[] = [
   { sel: '.btn', prop: 'border', value: 'rgba(255,255,255,.34)' },
   { sel: '.xsw input', prop: 'border', value: 'rgba(255,255,255,.34)' },
+  // Task 8.4. Graphics and borders of the page bar, the part cards, and the Frame. Requirement 18.6.
+  { sel: '.pg-dot i', prop: 'background', value: 'rgba(255,255,255,.34)', bg: glass(bar), against: [PAGEBAR] },
+  { sel: '.pg-dot.on i', prop: 'background', value: 'var(--pump)', bg: glass(bar), against: [PAGEBAR] },
+  { sel: '.pg-btn:focus-visible,.pg-dot:focus-visible', prop: 'outline', value: 'var(--mint)', bg: glass(bar), against: [PAGEBAR] },
+  { sel: '.kcard:hover', src: 'showcase', prop: 'border-color', value: 'var(--witch)' },
+  { sel: '.kcard:focus-visible,.foot a:focus-visible', src: 'showcase', prop: 'outline', value: 'var(--mint)' },
+  { sel: '.frame', src: 'showcase', prop: 'border', value: 'rgba(180,140,255,.58)', bg: { layers: [], root: '#0f0f17' }, against: [BASE, '#0f0f17'] },
 ];
+
+const srcOf = (src: 'showcase' | undefined): string => (src === 'showcase' ? showcaseCss : landingCss);
 
 const effective = (fg: Rgba, bg: Rgba, opacity = 1): Rgba => over({ ...fg, a: fg.a * opacity }, bg);
 
@@ -242,7 +287,7 @@ describe('contrast of text and borders (Requirement 15.7)', () => {
   for (const p of TEXT) {
     const limit = p.large === true ? 3 : 4.5;
     it(`${p.sel}: ${p.fg} on ${[...p.bg.layers, p.bg.root ?? BASE].join(' / ')} is at least ${limit}`, () => {
-      expect(hasDecl(p.colorSel ?? p.sel, 'color', p.fg), `color ${p.fg} in rule ${p.colorSel ?? p.sel}`).toBe(true);
+      expect(hasDecl(p.colorSel ?? p.sel, 'color', p.fg, srcOf(p.src)), `color ${p.fg} in rule ${p.colorSel ?? p.sel}`).toBe(true);
       const bg = composite(p.bg.layers, p.bg.root);
       const fg = effective(parseColor(p.fg), bg, p.opacity);
       expect(ratio(fg, bg)).toBeGreaterThanOrEqual(limit);
@@ -250,11 +295,13 @@ describe('contrast of text and borders (Requirement 15.7)', () => {
   }
 
   for (const b of BORDERS) {
-    it(`${b.sel}: ${b.prop} ${b.value} against the page is at least 3`, () => {
-      expect(hasDecl(b.sel, b.prop, b.value), `${b.prop} ${b.value} in rule ${b.sel}`).toBe(true);
-      const page = parseColor(BASE);
-      const border = over(parseColor(b.value), page);
-      expect(ratio(border, page)).toBeGreaterThanOrEqual(3);
+    it(`${b.sel}: ${b.prop} ${b.value} is at least 3`, () => {
+      expect(hasDecl(b.sel, b.prop, b.value, srcOf(b.src)), `${b.prop} ${b.value} in rule ${b.sel}`).toBe(true);
+      const under = composite(b.bg?.layers ?? [], b.bg?.root);
+      const border = over(parseColor(b.value), under);
+      for (const other of b.against ?? [BASE]) {
+        expect(ratio(border, parseColor(other)), `against ${other}`).toBeGreaterThanOrEqual(3);
+      }
     });
   }
 

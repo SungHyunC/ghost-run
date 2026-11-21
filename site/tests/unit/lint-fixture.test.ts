@@ -58,6 +58,41 @@ describe('lint rules', () => {
     expect(bad).toContain('no-restricted-imports');
   });
 
+  it('accepts @ghost-run/ui and its styles in src/showcase', async () => {
+    const rules = await lintFixture(
+      'src/showcase/__lint_fixture_ui.ts',
+      "import { Candle } from '@ghost-run/ui';\nimport '@ghost-run/ui/styles.css';\nexport const C = Candle;\n",
+    );
+    expect(rules).not.toContain('no-restricted-imports');
+  });
+
+  it('accepts a type-only @ghost-run/core import and rejects a value import in src/showcase', async () => {
+    const ok = await lintFixture('src/showcase/__lint_fixture_core_ok.ts', "import type { Scene } from '@ghost-run/core';\nexport type S = Scene;\n");
+    expect(ok).not.toContain('no-restricted-imports');
+    const bad = await lintFixture('src/showcase/__lint_fixture_core_bad.ts', "import { snapshotOf } from '@ghost-run/core';\nexport const s = snapshotOf;\n");
+    expect(bad).toContain('no-restricted-imports');
+  });
+
+  it('rejects @ghost-run/ui in src/components', async () => {
+    const rules = await lintFixture('src/components/__lint_fixture_ui.ts', "import { Candle } from '@ghost-run/ui';\nexport const C = Candle;\n");
+    expect(rules).toContain('no-restricted-imports');
+  });
+
+  it('rejects a deep @ghost-run/ui import in src/showcase', async () => {
+    const rules = await lintFixture('src/showcase/__lint_fixture_ui_deep.ts', "import { escapeForDisplay } from '@ghost-run/ui/src/model/escape';\nexport const e = escapeForDisplay;\n");
+    expect(rules).toContain('no-restricted-imports');
+  });
+
+  it('rejects fetch in src/showcase', async () => {
+    const rules = await lintFixture('src/showcase/__lint_fixture_fetch.ts', "export const f = () => fetch('https://a.example/');\n");
+    expect(rules).toContain('no-restricted-syntax');
+  });
+
+  it('rejects Date.now in a new src/engine paging file', async () => {
+    const rules = await lintFixture('src/engine/paging-fixture.ts', 'export const t = () => Date.now();\n');
+    expect(rules).toContain('no-restricted-syntax');
+  });
+
   it('rejects Date.now in src/engine', async () => {
     const rules = await lintFixture('src/engine/__lint_fixture_clock.ts', 'export const t = () => Date.now();\n');
     expect(rules).toContain('no-restricted-syntax');

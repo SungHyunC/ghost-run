@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { COSTUME_CARDS, LINES_TOKEN, type CostumeCardData } from '../data/skeleton';
+import { COSTUMES_HEADS } from '../data/copy';
+import { COSTUME_CARDS, type CostumeCardData } from '../data/skeleton';
 import { PARTS_MATRIX, PART_NAMES, type CostumeId } from '../data/parts-matrix';
 import { defaultScheduler, type Scheduler } from '../engine/scheduler';
 import { useReducedMotion } from '../engine/useReducedMotion';
@@ -7,6 +8,7 @@ import { useXrayDemo } from '../engine/useXrayDemo';
 import { CloudFigure, HandFigure, ShellFigure } from './art/Figures';
 import { Icon, type SymbolId } from './art/Icon';
 import type { AppPart } from '../data/types';
+import type { PageVisibility } from '../engine/paging';
 
 interface ChipIcon {
   label: string;
@@ -67,12 +69,10 @@ export function PartChips({ costume }: { costume: CostumeId }) {
   );
 }
 
-export function CostumeCard({ card, lineCount }: { card: CostumeCardData; lineCount: number }) {
-  const worldLine = card.world.replace(LINES_TOKEN, String(lineCount));
+export function CostumeCard({ card }: { card: CostumeCardData }) {
   return (
     <article className="cc">
       <div className="cc-art">
-        <span className="cc-tag">{card.tag}</span>
         <span className="same">same skeleton ✓</span>
         {FIGURES[card.id]()}
       </div>
@@ -80,12 +80,8 @@ export function CostumeCard({ card, lineCount }: { card: CostumeCardData; lineCo
       <p className="cos">{card.costume}</p>
       <div className="wl">
         <Icon id="pumpkin" viewBox="0 0 64 58" />
-        <div>
-          {worldLine}
-          <small>{card.folder}</small>
-        </div>
+        <div>{card.world}</div>
       </div>
-      <div className="used-t">{card.usedTitle}</div>
       <PartChips costume={card.id} />
       <p className="kiro">
         {card.provenance.prefix} <code>{card.provenance.code}</code>
@@ -97,16 +93,25 @@ export function CostumeCard({ card, lineCount }: { card: CostumeCardData; lineCo
   );
 }
 
-export function Costumes({ lineCount, scheduler = defaultScheduler }: { lineCount: number; scheduler?: Scheduler }) {
+export interface CostumesProps {
+  scheduler?: Scheduler;
+  /** The page visibility value; the X-ray peek starts when this page is first opened. */
+  visibility: PageVisibility;
+}
+
+export function Costumes({ scheduler = defaultScheduler, visibility }: CostumesProps) {
   const [on, setOn] = useState(false);
   const reduced = useReducedMotion();
-  const cancel = useXrayDemo(scheduler, reduced, setOn);
+  const cancel = useXrayDemo(scheduler, reduced, setOn, {
+    started: visibility.opened.costumes,
+    active: visibility.current === 'costumes',
+  });
 
   return (
     <section className={on ? 'sec xray' : 'sec'} id="costumes">
       <div className="sec-head">
         <span className="nbadge">2</span>
-        <h2>One skeleton, three costumes</h2>
+        <h2 tabIndex={-1}>{COSTUMES_HEADS.heading}</h2>
         <XraySwitch
           checked={on}
           onChange={(v) => {
@@ -115,16 +120,13 @@ export function Costumes({ lineCount, scheduler = defaultScheduler }: { lineCoun
           }}
         />
       </div>
-      <p className="sec-sub">Each app is the same skeleton in a different costume. Turn on X-ray to see the bones.</p>
+      <p className="sec-sub">{COSTUMES_HEADS.sub}</p>
       <div className="cards">
         {COSTUME_CARDS.map((card) => (
-          <CostumeCard key={card.id} card={card} lineCount={lineCount} />
+          <CostumeCard key={card.id} card={card} />
         ))}
       </div>
-      <p className="cards-note">
-        Crossed-out parts are not on that app's screen. The costume is what each app adds: its world and its own
-        screens.
-      </p>
+      <p className="cards-note">{COSTUMES_HEADS.legend}</p>
     </section>
   );
 }

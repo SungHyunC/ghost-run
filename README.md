@@ -116,9 +116,11 @@ Build it from the repository root:
 corepack pnpm build:site
 ```
 
-The command builds the three apps and the kit, assembles the result into `site/dist/`, and runs the site check. `site/dist/` holds the landing page at `/`, Ghost Shell at `/shell/`, Ghost Hand at `/hand/`, and the kit gallery at `/kit/`.
+The command builds the three apps and the kit, assembles the result into `site/dist/`, and runs the site check. `site/dist/` holds the landing page at `/`, Ghost Shell at `/shell/`, Ghost Hand at `/hand/`, the kit showcase at `/kit/` and the kit gallery at `/kit/gallery/`.
 
 The walkthrough in section 3 runs live in the browser with the same engines as the apps: Ghost Shell and Ghost Cloud run in the page (SQLite through `sql.js` in a Web Worker), and Ghost Hand runs the MuJoCo simulation in a worker. The Ghost Hand engine (about 11 MB of WebAssembly) loads only when Ghost Hand is picked, and a browser that cannot run the engines shows the recorded runs. Reality is a drawn copy that no run changes, and nothing leaves the page. Details and sizes: `docs/measurements.md`, section "Live walkthrough measurements".
+
+The landing page at `/` has five pages with the hashes `#cover`, `#recipe`, `#costumes`, `#run`, and `#make`. `/kit/` is a showcase of the real UI kit, rendered with the gallery's sample data. The developer gallery is at `/kit/gallery/`.
 
 ## Ghost Shell
 
@@ -403,7 +405,7 @@ The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json`
 
 **Plan revision recorded with the Kiro CLI**: the revised Ghost Hand plan `apps/ghost-hand/plans/revised.plan.json` was decided by a Kiro CLI 3.4.0 session (model Auto, 2026-11-18). It ran the first plan, read the block message, and chose the grasp force and pull values over several attempts. The attempts and messages are in `docs/measurements.md`, section "Plan revision recording".
 
-**Not written by Kiro**: the Ghost Shell page design was written with Claude Code on 2026-11-20 at the owner's request: the hero, the animated ghost flow (`apps/ghost-shell/src/flow/`), the mirror stage picture of reality and the ghost copy (`apps/ghost-shell/src/stage/`), the Korean page (`apps/ghost-shell/ko.html`, `apps/ghost-shell/src/i18n/`), the scenario cards, the page texts in `apps/ghost-shell/src/page-texts.ts`, the stylesheet `apps/ghost-shell/src/page.css`, and their tests. The judging pipeline, the playground world, the ui kit components, and every spec, hook, and steering file stay as Kiro wrote them. The Ghost Hand page design was also written with Claude Code on 2026-11-20 at the owner's request: the layout, the scenario rail, the ghost lineup (`apps/ghost-hand/src/components/GhostLineup.tsx`), the angled camera preset, and the stylesheet `apps/ghost-hand/src/page.css`; the drawer-arm world, the pipeline, and the claim texts stay as Kiro wrote them. The landing page design draft (mockup) was made by Claude Code, and Kiro built the page from it. The live-walkthrough mockup (v5) was made by Claude Code; Kiro built it.
+**Not written by Kiro**: the Ghost Shell page design was written with Claude Code on 2026-11-20 at the owner's request: the hero, the animated ghost flow (`apps/ghost-shell/src/flow/`), the mirror stage picture of reality and the ghost copy (`apps/ghost-shell/src/stage/`), the Korean page (`apps/ghost-shell/ko.html`, `apps/ghost-shell/src/i18n/`), the scenario cards, the page texts in `apps/ghost-shell/src/page-texts.ts`, the stylesheet `apps/ghost-shell/src/page.css`, and their tests. The judging pipeline, the playground world, the ui kit components, and every spec, hook, and steering file stay as Kiro wrote them. The Ghost Hand page design was also written with Claude Code on 2026-11-20 at the owner's request: the layout, the scenario rail, the ghost lineup (`apps/ghost-hand/src/components/GhostLineup.tsx`), the angled camera preset, and the stylesheet `apps/ghost-hand/src/page.css`; the drawer-arm world, the pipeline, and the claim texts stay as Kiro wrote them. The landing page design draft (mockup) was made by Claude Code, and Kiro built the page from it. The live-walkthrough mockup (v5) was made by Claude Code; Kiro built it. The paged landing mockup (v6) and the kit showcase mockup were made by Claude Code; Kiro built them.
 
 ## Dependencies and data
 

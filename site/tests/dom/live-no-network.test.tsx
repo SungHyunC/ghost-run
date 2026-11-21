@@ -17,6 +17,7 @@ import { FIXED, PRESETS } from '../../src/live/presets';
 import { createShellEngine } from '../../src/live/shell';
 import type { LiveAnswer, LiveEngine, LiveInput, LiveLoaders } from '../../src/live/types';
 import { drain, recordedLoaders } from '../lib/live-fakes';
+import { visibility } from '../lib/page-visibility';
 
 const runs = runsJson as unknown as RunsFile;
 const ROOT = resolve(__dirname, '../../..');
@@ -45,12 +46,6 @@ function guard(api: string, url: unknown): void {
   }
 }
 
-class FakeObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
-
 class RecXhr {
   open(_method: string, url: string): void {
     guard('XMLHttpRequest', url);
@@ -73,7 +68,6 @@ beforeEach(() => {
   violations.length = 0;
   storageWrites.length = 0;
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', FakeObserver);
   vi.stubGlobal('fetch', (url: unknown) => {
     guard('fetch', url);
     return Promise.resolve(new Response(''));
@@ -194,6 +188,7 @@ describe('Property L4: no request leaves the page', () => {
       <>
         <Sprite />
         <Walkthrough
+          visibility={visibility('cover')}
           runs={runs}
           loaders={loaders()}
           renderReality={(record) => <RealityPane scene={record.reality} />}

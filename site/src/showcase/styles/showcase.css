@@ -1,0 +1,52 @@
+/* Page rules around the Frames only. */
+.site h1,.site h2{margin:0;font-weight:700}
+.khero{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;align-items:center;padding:20px 28px 26px}
+.kicker{display:inline-flex;font-size:12.5px;font-weight:600;color:var(--ink);background:var(--bone);padding:4px 11px;border-radius:999px;transform:rotate(-1.5deg)}
+.khero h1{font-size:36px;line-height:1.1;margin:14px 0 10px}
+.khero h1 em{font-style:normal;color:var(--mint);text-shadow:0 0 18px rgba(174,245,223,.5)}
+.khero p{margin:0 0 14px;color:var(--dim);font-size:15.5px;max-width:42ch}
+.kchips{display:flex;flex-wrap:wrap;gap:6px}
+.kchips span{font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(155,229,100,.1);color:var(--slime)}
+.khero-art{position:relative;height:230px}
+.kh-boo{position:absolute;left:50%;top:50%;width:96px;height:104px;transform:translate(-50%,-50%);filter:drop-shadow(0 0 18px rgba(144,70,255,.85));animation:kbob 3s ease-in-out infinite}
+.kh-orbit span{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:14px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;transform:rotate(var(--a)) translate(98px) rotate(calc(-1 * var(--a)))}
+.kh-orbit svg{width:30px;height:30px}
+.kh-orbit .o0{--a:0deg}.kh-orbit .o1{--a:60deg}.kh-orbit .o2{--a:120deg}.kh-orbit .o3{--a:180deg}.kh-orbit .o4{--a:240deg}.kh-orbit .o5{--a:300deg}
+@keyframes kbob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 7px))}}
+@keyframes korbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.kh-orbit{position:absolute;inset:0;animation:korbit 40s linear infinite}
+.kh-orbit span svg{animation:korbit 40s linear infinite reverse}
+.kindex{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 28px 26px}
+.kcard{display:grid;grid-template-columns:40px 1fr;gap:2px 10px;align-items:center;min-height:24px;padding:12px;border-radius:18px;background:rgba(255,255,255,.06);border:2px solid transparent;color:var(--text);text-decoration:none;transition:border-color .2s,transform .2s}
+.kcard:hover{border-color:var(--witch);transform:translateY(-2px)}
+.kcard svg{width:38px;height:38px;grid-row:span 2}
+.kcard b{font-size:15.5px}
+.kcard span{font-size:12.5px;color:var(--dim);line-height:1.3}
+.kcard:focus-visible,.foot a:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+.kpart{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:24px;align-items:center;padding:30px 28px;border-top:1px dashed rgba(255,255,255,.1)}
+.kpart.flip{grid-template-columns:minmax(0,1.3fr) minmax(0,.9fr)}
+.kpart.flip .kp-text{order:2}
+.kp-n{display:inline-block;font-size:12px;font-weight:700;color:var(--pump2);letter-spacing:.1em;margin-bottom:4px}
+.kpart h2{font-size:26px;margin-bottom:6px}
+.kp-lead{margin:0 0 10px;font-size:16px;color:var(--bone)}
+.kpart ul{margin:0 0 12px;padding-left:18px;color:var(--dim);font-size:14px}
+.kpart li{margin:3px 0}
+.frame{margin:0;border-radius:18px;overflow:hidden;background:#0f0f17;border:2px solid rgba(180,140,255,.58);box-shadow:0 18px 40px -18px rgba(0,0,0,.6)}
+.frame-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(255,255,255,.05)}
+.frame-bar i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18)}
+.frame-body{min-height:24px;padding:14px;overflow:auto}
+.foot{padding:16px 28px 22px;font-size:13px;color:var(--dim);border-top:1px dashed rgba(255,255,255,.12);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.foot a{display:inline-flex;align-items:center;min-height:24px;color:var(--mint)}
+@media (max-width:760px){.khero,.kpart,.kpart.flip{grid-template-columns:1fr}.kpart.flip .kp-text{order:0}.kindex{grid-template-columns:1fr 1fr}.khero-art{height:200px}}
+@media (prefers-reduced-motion:reduce){.kh-boo,.kh-orbit,.kh-orbit span svg{animation:none}.kcard{transition:none}}
+.ktabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.ktab{min-width:24px;min-height:32px;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.ktab.on{border-color:var(--mint);color:var(--mint)}
+.ktab:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+.klights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.klights{grid-template-columns:minmax(0,1fr)}}
+/* Contrast change for task 9.1 (Requirement 18.6): .frame border alpha .35 -> .58 (1.79:1 -> 3.01:1 against the page, limit 3:1). */
+/* Rows: the text column sits at the top and stays while a tall frame scrolls by. */
+.kpart{align-items:start}
+.kp-text{position:sticky;top:12px;align-self:start}
+@media (max-width:760px){.kp-text{position:static}}

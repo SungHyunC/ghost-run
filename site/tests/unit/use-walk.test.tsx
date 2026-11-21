@@ -271,4 +271,68 @@ describe('useWalk', () => {
     expect(rec.pending.size).toBe(0);
     expect(mm.listeners.size).toBe(0);
   });
+
+  it('park at step -1 shows the initial state; at a middle and the last step it settles with no timer', () => {
+    const rec = recording();
+    const { result } = mount(rec);
+    act(() => {
+      result.current.controls.park();
+    });
+    expect(rec.pending.size).toBe(0);
+    expect(result.current.step).toBe(-1);
+    for (const step of [0, 2, 4]) {
+      act(() => {
+        result.current.controls.show(shell);
+      });
+      act(() => {
+        for (const p of [...rec.pending.values()].filter((q) => q.ms <= (STEP_START[step] ?? 0))) {
+          rec.pending.delete(p.id);
+          p.fn();
+        }
+      });
+      const reached = result.current.step;
+      expect(reached).toBeGreaterThanOrEqual(0);
+      act(() => {
+        result.current.controls.park();
+      });
+      expect(rec.pending.size).toBe(0);
+      expect(result.current.animating).toBe(false);
+      expect(result.current.view).toMatchObject({ ...settle(shell, reached) });
+    }
+  });
+
+  it('replay and jump still work after park, and cancel still resets', () => {
+    const rec = recording();
+    const { result } = mount(rec);
+    act(() => {
+      result.current.controls.show(shell);
+    });
+    act(() => {
+      rec.runAll();
+    });
+    act(() => {
+      result.current.controls.park();
+    });
+    expect(result.current.step).toBe(4);
+    act(() => {
+      result.current.controls.replay();
+    });
+    expect(result.current.step).toBe(-1);
+    expect(rec.pending.size).toBeGreaterThan(0);
+    act(() => {
+      result.current.controls.park();
+    });
+    act(() => {
+      result.current.controls.jump(2);
+    });
+    expect(rec.pending.size).toBeGreaterThan(0);
+    act(() => {
+      rec.runAll();
+    });
+    expect(result.current.step).toBe(2);
+    act(() => {
+      result.current.controls.cancel();
+    });
+    expect(result.current.step).toBe(-1);
+  });
 });

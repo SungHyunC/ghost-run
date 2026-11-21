@@ -36,6 +36,10 @@ export const RULE_FIRST_PAINT = 'first-paint: index.html names an Engine_Bundle 
 export const RULE_ENTRY_STATIC = 'first-paint: the Entry_Bundle has a static import of an Engine_Bundle';
 export const RULE_ENTRY_SIZE = 'entry-size: the Entry_Bundle is larger than the limit';
 export const RULE_POLICY_REQUIRED = 'headers-policy: a required directive is missing or has the wrong value in the policy of /';
+export const RULE_SHOWCASE_ENGINE = 'showcase: the Showcase names an Engine_Bundle, a worker file, or a wasm file';
+export const RULE_LANDING_SHOWCASE = 'showcase: the Landing_Page names an asset with the prefix showcase-';
+export const RULE_SHOWCASE_SIZE = 'showcase: the closure of the Showcase entry is larger than the limit';
+export const RULE_KIT_BLOCK = 'headers-policy: a /kit/ block differs from the block of /';
 export const RULE_NOTICE_LINK = 'structure: index.html has no link to THIRD_PARTY_NOTICES.txt';
 export const RULE_NOTICE_PACKAGE = 'notices: a bundled package has no license section in THIRD_PARTY_NOTICES.txt';
 export const RULE_NOTICE_LIST = 'notices: the list of bundled packages is missing or unreadable (build the landing page first)';
@@ -45,6 +49,19 @@ export const RULE_NOTICE_LIST = 'notices: the list of bundled packages is missin
  * Decimal kilobytes: 360 kB is 360,000 bytes.
  */
 export const ENTRY_MAX_BYTES = 360 * 1000;
+
+/**
+ * Size limit of the Showcase entry closure in bytes (site-pages Requirement 16, criterion 7).
+ * Measured on 2026-11-21: 285,426 B (showcase entry 54,269 + vendor-react 11,880 + shared chunk 219,277).
+ * 285,426 x 1.15 = 328,240, rounded up to the next 10 kB: 330,000. Decimal kilobytes.
+ */
+export const SHOWCASE_MAX_BYTES = 330 * 1000;
+
+/** The two HTML pages that carry the full Landing_Page rules (inline script, style attribute, meta policy). */
+export const PAGE_FILES = ['index.html', 'kit/index.html'];
+
+/** Declared links of the Showcase (site-pages Requirement 13, criterion 3 and 6). */
+const KIT_LINKS_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'data', 'kit-links.json');
 
 /** The third-party notice at the root of the assembled site (site-live Requirement 18, criterion 3). */
 export const NOTICE_FILE = 'THIRD_PARTY_NOTICES.txt';
@@ -65,12 +82,13 @@ export const REQUIRED_PATHS = [
   'shell/ko.html',
   'hand/index.html',
   'kit/index.html',
+  'kit/gallery/index.html',
   '_headers',
   NOTICE_FILE,
 ];
 
-/** Folders whose files are copied from the apps; every other file belongs to the Landing_Page. */
-const APP_FOLDERS = ['shell', 'hand', 'kit'];
+/** Folders whose files are copied from the apps; every other file (including `kit/index.html`) belongs to the Landing_Page. */
+const APP_FOLDERS = ['shell/', 'hand/', 'kit/gallery/'];
 
 /** URL-looking strings in Landing_Page JS, JSON, and SVG text (bare `http://` without a host does not match). */
 const URL_STRING = /\b(?:https?|wss?|ftp):\/\/[^\s"'`<>()\\]+|\bdata:[a-z]+\/[a-z0-9.+-]+[;,]/gi;
@@ -150,8 +168,7 @@ function collectIds(html) {
  * @returns {boolean}
  */
 function isLandingFile(file) {
-  const first = file.split('/')[0] ?? '';
-  return !file.includes('/') || !APP_FOLDERS.includes(first);
+  return !APP_FOLDERS.some((folder) => file.startsWith(folder));
 }
 
 /**
@@ -262,8 +279,9 @@ function scopeExists(scope, files) {
 /**
  * Check a built site directory.
  * @param {string} distRoot
- * @param {{ structure?: boolean, bundledPackages?: string | readonly { name: string, version: string }[] }} [options]
+ * @param {{ structure?: boolean, bundledPackages?: string | readonly { name: string, version: string }[], kitLinks?: { links: string[], rowIds: string[] } }} [options]
  *   `structure: false` skips the structure and headers rules (criteria 6 and 7 and the `_headers` policy), for partial fixture trees.
+ *   `kitLinks` replaces `src/data/kit-links.json` (for fixtures).
  *   `bundledPackages` (a manifest path or the list itself) turns on the notices rule: every bundled package needs a section in the notices file.
  * @returns {Finding[]}
  */
@@ -318,7 +336,7 @@ export function checkSite(distRoot, options = {}) {
   }
 
   checkExternal(distRoot, files, allowlist, findings);
-  if (withStructure) checkStructure(distRoot, files, repoUrl, findings);
+  if (withStructure) checkStructure(distRoot, files, repoUrl, findings, options.kitLinks);
   return findings;
 }
 
@@ -362,8 +380,9 @@ function checkExternal(distRoot, files, allowlist, findings) {
  * @param {string[]} files
  * @param {string | undefined} repoUrl
  * @param {Finding[]} findings
+ * @param {{ links: string[], rowIds: string[] } | undefined} [kitLinks]
  */
-function checkStructure(distRoot, files, repoUrl, findings) {
+function checkStructure(distRoot, files, repoUrl, findings, kitLinks) {
   const fileSet = new Set(files);
   for (const required of REQUIRED_PATHS) {
     if (!fileSet.has(required)) findings.push({ file: required, reference: `(${required})`, rule: RULE_PATH_MISSING });
@@ -380,7 +399,8 @@ function checkStructure(distRoot, files, repoUrl, findings) {
       findings.push({ file: '_headers', reference: repoUrl, rule: RULE_REPO_CSP });
     }
     try {
-      for (const block of parseHeaders(text)) {
+      const blocks = parseHeaders(text);
+      for (const block of blocks) {
         if (block.path === '/*') findings.push({ file: '_headers', reference: block.path, rule: RULE_SCOPE_ALL });
         else if (!scopeExists(block.path, files)) findings.push({ file: '_headers', reference: block.path, rule: RULE_SCOPE_MISSING });
         const shellScope = block.path.startsWith('/shell/') || block.path === '/shell';
@@ -390,10 +410,16 @@ function checkStructure(distRoot, files, repoUrl, findings) {
           for (const token of policyViolations(policy, shellScope)) {
             findings.push({ file: '_headers', reference: `${block.path}  ${token}`, rule: RULE_POLICY });
           }
-          if (block.path === '/' || block.path === '/index.html') {
+          if (block.path === '/' || block.path === '/index.html' || block.path.startsWith('/kit/')) {
             for (const problem of policyRequirements(policy)) {
               findings.push({ file: '_headers', reference: `${block.path}  ${problem}`, rule: RULE_POLICY_REQUIRED });
             }
+          }
+        }
+        if (block.path.startsWith('/kit/')) {
+          const root = blocks.find((candidate) => candidate.path === '/');
+          if (root === undefined || JSON.stringify(root.headers) !== JSON.stringify(block.headers)) {
+            findings.push({ file: '_headers', reference: block.path, rule: RULE_KIT_BLOCK });
           }
         }
       }
@@ -413,40 +439,172 @@ function checkStructure(distRoot, files, repoUrl, findings) {
     }
   }
 
-  if (fileSet.has('index.html')) {
-    const html = readFileSync(path.join(distRoot, 'index.html'), 'utf8');
+  for (const page of PAGE_FILES) {
+    if (!fileSet.has(page)) continue;
+    const html = readFileSync(path.join(distRoot, page), 'utf8');
     const dom = new JSDOM(html);
     const document = dom.window.document;
     for (const script of document.querySelectorAll('script:not([src])')) {
-      findings.push({ file: 'index.html', reference: (script.textContent ?? '').trim().slice(0, 40) || '<script>', rule: RULE_INLINE_SCRIPT });
+      findings.push({ file: page, reference: (script.textContent ?? '').trim().slice(0, 40) || '<script>', rule: RULE_INLINE_SCRIPT });
     }
     for (const element of document.querySelectorAll('[style]')) {
-      findings.push({ file: 'index.html', reference: `<${element.tagName.toLowerCase()} style>`, rule: RULE_STYLE_ATTR });
+      findings.push({ file: page, reference: `<${element.tagName.toLowerCase()} style>`, rule: RULE_STYLE_ATTR });
     }
     for (const meta of document.querySelectorAll('meta[http-equiv]')) {
       if ((meta.getAttribute('http-equiv') ?? '').toLowerCase() !== 'content-security-policy') continue;
       const policy = meta.getAttribute('content') ?? '';
       if (repoUrl !== undefined && policy.includes(repoUrl)) {
-        findings.push({ file: 'index.html', reference: repoUrl, rule: RULE_REPO_CSP });
+        findings.push({ file: page, reference: repoUrl, rule: RULE_REPO_CSP });
       }
       for (const token of policyViolations(policy, false)) {
-        findings.push({ file: 'index.html', reference: `<meta CSP>  ${token}`, rule: RULE_POLICY });
+        findings.push({ file: page, reference: `<meta CSP>  ${token}`, rule: RULE_POLICY });
       }
       for (const problem of policyRequirements(policy)) {
-        findings.push({ file: 'index.html', reference: `<meta CSP>  ${problem}`, rule: RULE_POLICY_REQUIRED });
+        findings.push({ file: page, reference: `<meta CSP>  ${problem}`, rule: RULE_POLICY_REQUIRED });
       }
     }
-    const entries = checkFirstPaint(distRoot, files, document, findings);
-    // The footer is rendered by the Entry_Bundle, so the link is a string literal there; a static anchor in index.html counts too.
-    const noticeLiteral = new RegExp(`(["'\`])(?:\\./)?${NOTICE_FILE.replace('.', '\\.')}\\1`);
-    const noticeLink =
-      [...document.querySelectorAll('a[href]')].some((anchor) => {
-        const classified = classifyRef(anchor.getAttribute('href') ?? '');
-        return classified.kind === 'local' && resolveTarget('index.html', classified.path) === NOTICE_FILE;
-      }) || entries.some((entry) => noticeLiteral.test(readFileSync(path.join(distRoot, entry), 'utf8')));
-    if (!noticeLink) findings.push({ file: 'index.html', reference: `(${NOTICE_FILE})`, rule: RULE_NOTICE_LINK });
+    const entries = checkFirstPaint(distRoot, files, page, document, findings);
+    if (page === 'index.html') {
+      // The footer is rendered by the Entry_Bundle, so the link is a string literal there; a static anchor in index.html counts too.
+      const noticeLiteral = new RegExp(`(["'\`])(?:\\./)?${NOTICE_FILE.replace('.', '\\.')}\\1`);
+      const noticeLink =
+        [...document.querySelectorAll('a[href]')].some((anchor) => {
+          const classified = classifyRef(anchor.getAttribute('href') ?? '');
+          return classified.kind === 'local' && resolveTarget('index.html', classified.path) === NOTICE_FILE;
+        }) || entries.some((entry) => noticeLiteral.test(readFileSync(path.join(distRoot, entry), 'utf8')));
+      if (!noticeLink) findings.push({ file: 'index.html', reference: `(${NOTICE_FILE})`, rule: RULE_NOTICE_LINK });
+    }
     dom.window.close();
   }
+  if (fileSet.has('kit/index.html')) checkKitLinks(fileSet, kitLinks, findings);
+}
+
+/**
+ * The declared links of the Showcase must resolve from `kit/index.html` to a file of the dist,
+ * and each fragment must name a row id (the Showcase is rendered by React, so its ids are not in the HTML).
+ * @param {Set<string>} fileSet
+ * @param {{ links: string[], rowIds: string[] } | undefined} declared
+ * @param {Finding[]} findings
+ */
+function checkKitLinks(fileSet, declared, findings) {
+  const source = declared ?? JSON.parse(readFileSync(KIT_LINKS_PATH, 'utf8'));
+  const rowIds = new Set(source.rowIds);
+  for (const link of source.links) {
+    const classified = classifyRef(link);
+    if (classified.kind !== 'local' && classified.kind !== 'fragment') continue;
+    const fragment = safeDecode(classified.fragment ?? '');
+    const pathPart = classified.kind === 'fragment' ? '' : classified.path;
+    if (pathPart !== '') {
+      const target = resolveTarget('kit/index.html', pathPart);
+      if (target === null || !fileSet.has(target)) {
+        findings.push({ file: 'kit/index.html', reference: link, rule: RULE_LOCAL_LINK });
+        continue;
+      }
+    }
+    if (fragment !== '' && fragment.toLowerCase() !== 'top' && pathPart === '' && !rowIds.has(fragment)) {
+      findings.push({ file: 'kit/index.html', reference: link, rule: RULE_FRAGMENT });
+    }
+  }
+}
+
+/**
+ * Follow the static imports of `entries` to any depth. Engine_Bundles are not entered; they are reported.
+ * @param {string} distRoot
+ * @param {Set<string>} fileSet
+ * @param {string[]} entries posix paths of the entry scripts
+ * @returns {{ files: string[], size: number, engineImports: Array<{ file: string, value: string }> }}
+ */
+function staticClosure(distRoot, fileSet, entries) {
+  const seen = new Set();
+  const engineImports = [];
+  const queue = [...entries];
+  let size = 0;
+  while (queue.length > 0) {
+    const file = /** @type {string} */ (queue.shift());
+    if (seen.has(file) || !fileSet.has(file)) continue;
+    seen.add(file);
+    const full = path.join(distRoot, file);
+    size += statSync(full).size;
+    for (const value of extractStaticImports(readFileSync(full, 'utf8'))) {
+      const classified = classifyRef(value);
+      if (classified.kind !== 'local' || !/^(?:\.{1,2}\/|\/)/.test(classified.path)) continue;
+      const target = resolveTarget(file, classified.path);
+      if (target === null) continue;
+      if (ENGINE_BUNDLE.test(target)) engineImports.push({ file, value });
+      else queue.push(target);
+    }
+  }
+  return { files: [...seen], size, engineImports };
+}
+
+/** Does a reference name an Engine_Bundle, a worker file, or a wasm file? @param {string} target */
+function isEngineTarget(target) {
+  return ENGINE_BUNDLE.test(target) || /\.wasm$/i.test(target) || /(?:^|\/)[^/]*worker[^/]*\.js$/i.test(target);
+}
+
+/**
+ * First-paint rules and the closure size of one page (site-live Requirement 15, criteria 3 and 4;
+ * site-pages Requirement 16, criteria 6 and 7, and Requirement 10, criterion 7).
+ * `index.html` is held to the Entry_Bundle rules and must not name the Showcase; `kit/index.html` must name no engine.
+ * @param {string} distRoot
+ * @param {string[]} files
+ * @param {string} page `index.html` or `kit/index.html`
+ * @param {Document} document the parsed page
+ * @param {Finding[]} findings
+ * @returns {string[]} the entry script files that the page loads
+ */
+function checkFirstPaint(distRoot, files, page, document, findings) {
+  const fileSet = new Set(files);
+  const isShowcase = page === 'kit/index.html';
+  const named = (value) => {
+    const classified = classifyRef(value);
+    if (classified.kind !== 'local') return null;
+    return resolveTarget(page, classified.path);
+  };
+  const entries = [];
+  for (const element of document.querySelectorAll('script[src], link[href]')) {
+    const tag = element.tagName.toLowerCase();
+    const rel = (element.getAttribute('rel') ?? '').toLowerCase().split(/\s+/);
+    if (tag === 'link' && !rel.includes('modulepreload') && !rel.includes('preload')) continue;
+    const value = element.getAttribute(tag === 'script' ? 'src' : 'href') ?? '';
+    const target = named(value);
+    if (target === null) continue;
+    if (isShowcase) {
+      if (isEngineTarget(target)) findings.push({ file: page, reference: value, rule: RULE_SHOWCASE_ENGINE });
+    } else {
+      if (ENGINE_BUNDLE.test(target) || target.toLowerCase().endsWith('.wasm')) {
+        findings.push({ file: page, reference: value, rule: RULE_FIRST_PAINT });
+      }
+      if (path.posix.basename(target).startsWith('showcase-')) {
+        findings.push({ file: page, reference: value, rule: RULE_LANDING_SHOWCASE });
+      }
+    }
+    if (tag === 'script' && fileSet.has(target) && !ENGINE_BUNDLE.test(target)) entries.push(target);
+  }
+  const closure = staticClosure(distRoot, fileSet, entries);
+  if (isShowcase) {
+    for (const hit of closure.engineImports) findings.push({ file: hit.file, reference: hit.value, rule: RULE_SHOWCASE_ENGINE });
+    for (const file of closure.files) {
+      for (const ref of extractJsRefs(readFileSync(path.join(distRoot, file), 'utf8'))) {
+        const classified = classifyRef(ref.value);
+        if (classified.kind !== 'local') continue;
+        const target = resolveTarget(file, classified.path);
+        if (target !== null && isEngineTarget(target)) findings.push({ file, reference: ref.value, rule: RULE_SHOWCASE_ENGINE });
+      }
+    }
+    if (closure.size > SHOWCASE_MAX_BYTES) {
+      findings.push({ file: page, reference: `${String(closure.size)} bytes > ${String(SHOWCASE_MAX_BYTES)}`, rule: RULE_SHOWCASE_SIZE });
+    }
+  } else {
+    if (closure.size > ENTRY_MAX_BYTES) {
+      findings.push({ file: page, reference: `${String(closure.size)} bytes > ${String(ENTRY_MAX_BYTES)}`, rule: RULE_ENTRY_SIZE });
+    }
+    for (const hit of closure.engineImports) findings.push({ file: hit.file, reference: hit.value, rule: RULE_ENTRY_STATIC });
+    for (const file of closure.files) {
+      if (path.posix.basename(file).startsWith('showcase-')) findings.push({ file: page, reference: file, rule: RULE_LANDING_SHOWCASE });
+    }
+  }
+  return entries;
 }
 
 /**
@@ -474,52 +632,6 @@ function checkNotices(distRoot, files, source, findings) {
   for (const pkg of missingFromNotices(text, packages)) {
     findings.push({ file: NOTICE_FILE, reference: `${pkg.name} ${pkg.version}`, rule: RULE_NOTICE_PACKAGE });
   }
-}
-
-/**
- * First-paint rules and the entry size (site-live Requirement 15, criteria 3 and 4).
- * @param {string} distRoot
- * @param {string[]} files
- * @param {Document} document the parsed index.html
- * @param {Finding[]} findings
- * @returns {string[]} the Entry_Bundle files that index.html loads
- */
-function checkFirstPaint(distRoot, files, document, findings) {
-  const fileSet = new Set(files);
-  const named = (value) => {
-    const classified = classifyRef(value);
-    if (classified.kind !== 'local') return null;
-    return resolveTarget('index.html', classified.path);
-  };
-  const entries = [];
-  for (const element of document.querySelectorAll('script[src], link[href]')) {
-    const tag = element.tagName.toLowerCase();
-    const rel = (element.getAttribute('rel') ?? '').toLowerCase().split(/\s+/);
-    if (tag === 'link' && !rel.includes('modulepreload') && !rel.includes('preload')) continue;
-    const value = element.getAttribute(tag === 'script' ? 'src' : 'href') ?? '';
-    const target = named(value);
-    if (target === null) continue;
-    if (ENGINE_BUNDLE.test(target) || target.toLowerCase().endsWith('.wasm')) {
-      findings.push({ file: 'index.html', reference: value, rule: RULE_FIRST_PAINT });
-    } else if (tag === 'script' && fileSet.has(target)) {
-      entries.push(target);
-    }
-  }
-  for (const entry of entries) {
-    const full = path.join(distRoot, entry);
-    if (statSync(full).size > ENTRY_MAX_BYTES) {
-      findings.push({ file: entry, reference: `${String(statSync(full).size)} bytes > ${String(ENTRY_MAX_BYTES)}`, rule: RULE_ENTRY_SIZE });
-    }
-    for (const value of extractStaticImports(readFileSync(full, 'utf8'))) {
-      const classified = classifyRef(value);
-      if (classified.kind !== 'local') continue;
-      const target = resolveTarget(entry, classified.path);
-      if (target !== null && ENGINE_BUNDLE.test(target)) {
-        findings.push({ file: entry, reference: value, rule: RULE_ENTRY_STATIC });
-      }
-    }
-  }
-  return entries;
 }
 
 /**

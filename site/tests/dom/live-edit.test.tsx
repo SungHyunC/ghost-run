@@ -10,20 +10,15 @@ import runsJson from '../../src/data/runs.json';
 import type { RunsFile } from '../../src/data/types';
 import { createCloudEngine } from '../../src/live/cloud';
 import type { LiveLoaders } from '../../src/live/types';
-import { drain, recordedLoaders } from '../lib/live-fakes';
+import { drain, recordedLoaders, visibility } from '../lib/live-fakes';
 
+/** Not opened: no engine loads and nothing autoplays; tests drive the box themselves. */
+const idle = visibility('cover');
 const runs = runsJson as unknown as RunsFile;
-
-class IdleObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
 
 beforeEach(() => {
   // Only the page's timers are faked; the real Cloud world needs a few real turns of the event loop.
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-  vi.stubGlobal('IntersectionObserver', IdleObserver);
 });
 afterEach(() => {
   cleanup();
@@ -42,6 +37,7 @@ function page(loaders: LiveLoaders) {
     <>
       <Sprite />
       <Walkthrough
+        visibility={idle}
         runs={runs}
         loaders={loaders}
         renderReality={(record) => <RealityPane scene={record.reality} />}

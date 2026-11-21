@@ -1,7 +1,8 @@
+import type { MouseEvent } from 'react';
 import { REPO_URL } from '../config';
 import { Icon } from './art/Icon';
 
-export type NavCurrent = 'home';
+export type NavCurrent = 'home' | 'kit';
 
 interface NavLink {
   readonly key: string;
@@ -10,15 +11,25 @@ interface NavLink {
   readonly external?: boolean;
 }
 
-const LINKS: readonly NavLink[] = [
-  { key: 'home', label: 'Home', href: './' },
-  { key: 'shell', label: 'Ghost Shell', href: 'shell/' },
-  { key: 'hand', label: 'Ghost Hand', href: 'hand/' },
-  { key: 'kit', label: 'UI Kit', href: 'kit/' },
-  { key: 'github', label: 'GitHub', href: REPO_URL, external: true },
-];
+function links(root: './' | '../'): readonly NavLink[] {
+  return [
+    { key: 'home', label: 'Home', href: root },
+    { key: 'shell', label: 'Ghost Shell', href: root === './' ? 'shell/' : '../shell/' },
+    { key: 'hand', label: 'Ghost Hand', href: root === './' ? 'hand/' : '../hand/' },
+    { key: 'kit', label: 'UI Kit', href: root === './' ? 'kit/' : './' },
+    { key: 'github', label: 'GitHub', href: REPO_URL, external: true },
+  ];
+}
 
-export function Nav({ current }: { current: NavCurrent }) {
+export interface NavProps {
+  current: NavCurrent;
+  /** `'./'` on `/`, `'../'` on `/kit/`. */
+  root?: './' | '../';
+  /** Turns to the cover instead of following the Home link (landing page only). */
+  onHome?: (e: MouseEvent) => void;
+}
+
+export function Nav({ current, root = './', onHome }: NavProps) {
   return (
     <nav className="nav">
       <div className="logo">
@@ -26,7 +37,7 @@ export function Nav({ current }: { current: NavCurrent }) {
         Ghost Run<span>+</span>
       </div>
       <div className="nav-links">
-        {LINKS.map((l) => {
+        {links(root).map((l) => {
           const isCurrent = l.key === current;
           return (
             <a
@@ -34,6 +45,7 @@ export function Nav({ current }: { current: NavCurrent }) {
               href={l.href}
               className={isCurrent ? 'on' : undefined}
               aria-current={isCurrent ? 'page' : undefined}
+              {...(l.key === 'home' && onHome !== undefined ? { onClick: onHome } : {})}
               {...(l.external ? { rel: 'noopener noreferrer' } : {})}
             >
               {l.label}

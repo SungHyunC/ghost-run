@@ -16,6 +16,7 @@ afterEach(cleanup);
 const STRUCTURAL = [
   'site', 'nav', 'hero', 'sec', 'recipe', 'ing', 'parts', 'part', 'cards', 'cc', 'costume', 'theater', 'panes',
   'pane', 'ward', 'verdict', 'actor', 'say', 'xsw', 'ctl', 'tabs', 'tab', 'stepper', 'planbox', 'presets', 'judge', 'live',
+  'pagebar', 'pg-btn', 'pg-dot', 'page', 'pg-count', 'wrap',
 ];
 
 describe('DUR', () => {
@@ -40,11 +41,13 @@ describe('structural classes', () => {
 });
 
 describe('page order and headings', () => {
-  it('renders the seven blocks in the order of Requirement 4', () => {
+  it('renders the nav, then the five Book_Pages with the blocks of Requirement 4 in order', () => {
     const { container } = render(<App />);
-    const blocks = [...(container.querySelector('.site > .page')?.children ?? [])];
+    const wrap = container.querySelector('.site > .wrap');
+    expect([...(wrap?.children ?? [])].map((b) => b.className)).toEqual(['nav', 'pages']);
+    const pages = [...container.querySelectorAll('#pages > .page')];
+    const blocks = pages.flatMap((p) => [...p.children]);
     expect(blocks.map((b) => b.tagName.toLowerCase() + (b.id === '' ? '' : `#${b.id}`))).toEqual([
-      'nav',
       'header',
       'section#recipe',
       'section#costumes',
@@ -52,9 +55,8 @@ describe('page order and headings', () => {
       'section#make',
       'footer',
     ]);
-    expect(blocks[0]?.classList.contains('nav')).toBe(true);
-    expect(blocks[1]?.classList.contains('hero')).toBe(true);
-    expect(blocks[6]?.classList.contains('foot')).toBe(true);
+    expect(blocks[0]?.classList.contains('hero')).toBe(true);
+    expect(blocks[5]?.classList.contains('foot')).toBe(true);
   });
 
   it('has one h1 and one h2 per numbered section', () => {

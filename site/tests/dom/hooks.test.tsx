@@ -1,9 +1,8 @@
-import { act, cleanup, render, renderHook } from '@testing-library/react';
-import { useRef } from 'react';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defaultScheduler } from '../../src/engine/scheduler';
-import { useInView } from '../../src/engine/useInView';
 import { useReducedMotion } from '../../src/engine/useReducedMotion';
+import { useXrayDemo } from '../../src/engine/useXrayDemo';
 
 afterEach(() => {
   cleanup();
@@ -80,78 +79,6 @@ describe('useReducedMotion', () => {
   });
 });
 
-class FakeObserver {
-  static instances: FakeObserver[] = [];
-  disconnect = vi.fn();
-  observe = vi.fn();
-  constructor(
-    private readonly cb: (entries: { isIntersecting: boolean }[]) => void,
-    readonly options: { threshold: number; rootMargin?: string },
-  ) {
-    FakeObserver.instances.push(this);
-  }
-  fire(isIntersecting: boolean) {
-    this.cb([{ isIntersecting }]);
-  }
-}
-
-function Probe({ margin }: { margin?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const state = useInView(ref, margin === undefined ? {} : { rootMargin: margin, threshold: 0 });
-  return <div ref={ref} data-state={state} />;
-}
-
-describe('useInView', () => {
-  it('fires once with threshold 0.25 and disconnects', () => {
-    FakeObserver.instances = [];
-    vi.stubGlobal('IntersectionObserver', FakeObserver);
-    const { container } = render(<Probe />);
-    const state = () => container.firstElementChild?.getAttribute('data-state');
-    expect(state()).toBe('pending');
-    const obs = FakeObserver.instances[0]!;
-    expect(obs.options.threshold).toBe(0.25);
-    expect(obs.observe).toHaveBeenCalledTimes(1);
-    act(() => {
-      obs.fire(false);
-    });
-    expect(state()).toBe('pending');
-    expect(obs.disconnect).not.toHaveBeenCalled();
-    act(() => {
-      obs.fire(true);
-    });
-    expect(state()).toBe('seen');
-    expect(obs.disconnect).toHaveBeenCalled();
-    expect(FakeObserver.instances).toHaveLength(1);
-  });
-
-  it('passes rootMargin and threshold to the observer and reports once', () => {
-    FakeObserver.instances = [];
-    vi.stubGlobal('IntersectionObserver', FakeObserver);
-    const { container } = render(<Probe margin="600px 0px" />);
-    const obs = FakeObserver.instances[0]!;
-    expect(obs.options).toEqual({ threshold: 0, rootMargin: '600px 0px' });
-    act(() => {
-      obs.fire(true);
-    });
-    expect(container.firstElementChild?.getAttribute('data-state')).toBe('seen');
-    expect(obs.disconnect).toHaveBeenCalledTimes(1);
-    expect(obs.options.rootMargin).toBe('600px 0px');
-  });
-
-  it('keeps the default options when none are given', () => {
-    FakeObserver.instances = [];
-    vi.stubGlobal('IntersectionObserver', FakeObserver);
-    render(<Probe />);
-    expect(FakeObserver.instances[0]!.options).toEqual({ threshold: 0.25 });
-  });
-
-  it('reports unsupported without IntersectionObserver', () => {
-    vi.stubGlobal('IntersectionObserver', undefined);
-    const { container } = render(<Probe />);
-    expect(container.firstElementChild?.getAttribute('data-state')).toBe('unsupported');
-  });
-});
-
 describe('defaultScheduler', () => {
   it('schedules and clears through the global timers', () => {
     vi.useFakeTimers();
@@ -163,6 +90,58 @@ describe('defaultScheduler', () => {
     defaultScheduler.setTimeout(fn, 10);
     vi.advanceTimersByTime(20);
     expect(fn).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+});
+
+describe('useXrayDemo', () => {
+  function harness(reduced: boolean) {
+    vi.useFakeTimers();
+    const set = vi.fn();
+    const hook = renderHook(
+      (p: { started: boolean; active: boolean }) => useXrayDemo(defaultScheduler, reduced, set, p),
+      { initialProps: { started: false, active: true } },
+    );
+    return { set, hook };
+  }
+
+  it('takes { started, active }: no timer before started, then on at 1600 and off at 4400', () => {
+    const { set, hook } = harness(false);
+    vi.advanceTimersByTime(10000);
+    expect(set).not.toHaveBeenCalled();
+    hook.rerender({ started: true, active: true });
+    vi.advanceTimersByTime(1600);
+    expect(set).toHaveBeenLastCalledWith(true);
+    vi.advanceTimersByTime(2800);
+    expect(set).toHaveBeenLastCalledWith(false);
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
+
+  it('cancels with the switch off when active turns false mid-peek, and does not replay', () => {
+    const { set, hook } = harness(false);
+    hook.rerender({ started: true, active: true });
+    vi.advanceTimersByTime(2000);
+    hook.rerender({ started: true, active: false });
+    expect(set).toHaveBeenLastCalledWith(false);
+    expect(vi.getTimerCount()).toBe(0);
+    hook.rerender({ started: true, active: true });
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
+
+  it('stops on the returned cancel and sets no timer under reduced motion', () => {
+    const a = harness(false);
+    a.hook.rerender({ started: true, active: true });
+    act(() => {
+      a.hook.result.current();
+    });
+    expect(vi.getTimerCount()).toBe(0);
+    a.hook.unmount();
+    vi.useRealTimers();
+    const b = harness(true);
+    b.hook.rerender({ started: true, active: true });
+    expect(vi.getTimerCount()).toBe(0);
     vi.useRealTimers();
   });
 });

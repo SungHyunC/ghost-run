@@ -28,7 +28,11 @@ export default defineConfig({
   base: './',
   // The page build writes the list of bundled third-party packages; the worker bundles add to it.
   plugins: [react(), csp(), bundledPackages({ root: REPO_ROOT, out: MANIFEST }) as Plugin],
-  worker: { plugins: () => [bundledPackages({ root: REPO_ROOT }) as Plugin] },
+  worker: {
+    plugins: () => [bundledPackages({ root: REPO_ROOT }) as Plugin],
+    // The iife worker bundles must stay single-chunk, so they take no manualChunks.
+    rollupOptions: { output: { manualChunks: undefined, inlineDynamicImports: true } },
+  },
   build: {
     outDir: 'build/dist',
     emptyOutDir: true,
@@ -36,6 +40,17 @@ export default defineConfig({
     sourcemap: false,
     assetsInlineLimit: 0,
     modulePreload: { polyfill: false },
-    cssCodeSplit: false,
+    cssCodeSplit: true,
+    rollupOptions: {
+      input: {
+        index: fileURLToPath(new URL('./index.html', import.meta.url)),
+        'kit/index': fileURLToPath(new URL('./kit/index.html', import.meta.url)),
+      },
+      output: {
+        // The Showcase entry is the chunk of kit/index.html; every other entry keeps the default name.
+        entryFileNames: (chunk) => (chunk.name === 'kit/index' ? 'assets/showcase-[hash].js' : 'assets/[name]-[hash].js'),
+        manualChunks: { 'vendor-react': ['react', 'react-dom'] },
+      },
+    },
   },
 });

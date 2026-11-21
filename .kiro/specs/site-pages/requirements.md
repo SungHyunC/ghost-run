@@ -79,10 +79,11 @@ This spec covers these parts:
 
 1. THE Landing_Page SHALL reproduce, from Mockup_V6, these items without a change of value: the page bar markup, class names, and ids (`pagebar`, `pg-btn`, `pg-prev`, `pg-next`, `pg-mid`, `pg-dots`, `pg-dot`, `pg-count`, `pgPrev`, `pgNext`, `pgNextTitle`, `pgCount`, `pgDots`, `pgLive`), the paging CSS, the keyframes `turnOut`, `turnIn`, and `pageIn`, the Turn_Effect timing, sizes, colors, and the mint Next button.
 2. THE Showcase SHALL reproduce, from Mockup_Kit, these items without a change of value: layout, class names, sizes, spacing, radii, colors, the hero art (the ghost and the six part icons around it), the card grid, the alternating rows, the Frame look, and the keyframes. THE Showcase SHALL reuse the palette, the font Fredoka, the symbols, and the motion rules of the Landing_Page and SHALL NOT copy a second time the rules of the nav, the logo, or the section heads that the Landing_Page already has.
-3. THE page SHALL apply only these changes to the mockups, and no others: (a) the mockup scripts become React code and tests; (b) the Copy_Deck replaces the texts of the mockups wherever the two differ (Requirement 12); (c) the Frame holds the real Kit_Components in place of pictures (Requirement 15); (d) the rules of Requirements 3 to 9 and 19 to 21; (e) the renames and repairs of the section "Differences Between the Brief and the Repository".
+3. THE page SHALL apply only these changes to the mockups, and no others: (a) the mockup scripts become React code and tests; (b) the Copy_Deck replaces the texts of the mockups wherever the two differ (Requirement 12); (c) the Frame holds the real Kit_Components in place of pictures (Requirement 15); (d) the rules of Requirements 3 to 9 and 19 to 21; (e) the renames and repairs of the section "Differences Between the Brief and the Repository"; (f) the deliberate deviations of criterion 7.
 4. THE Showcase SHALL contain no picture of a kit part, no `<img>` element, and no `data:` URL. THE 440 kB of embedded pictures of Mockup_Kit SHALL NOT be copied.
 5. THE static HTML of both pages SHALL contain no inline `<style>`, no inline `<script>`, and no `style` attribute. Styles that React sets through the CSSOM (for example the custom property `--a` of the orbit icons) are allowed.
 6. THE owner's agent SHALL compare the built Landing_Page and Showcase with the two mockups at widths of 390 px, 920 px, and 1280 px in Chrome, and SHALL record the result and every difference in `docs/measurements.md`. This comparison is not a Kiro task and not an automated test.
+7. THE pages SHALL keep these deliberate deviations from the mockups, found in the Chrome review at 390 px, 920 px, and 1280 px, and `docs/measurements.md` SHALL list them: (a) the spacing of the Book_Page `run` is tighter than Mockup_V6 (Requirement 8, criteria 7 and 8); (b) the Showcase text column is top-aligned and sticky (Requirement 13, criterion 10); (c) on windows of 560 px or less the nav stays on one row and the world tabs of the Live_Section stay on one row with Replay (Requirement 4, criterion 9, and Requirement 8, criterion 9).
 
 ### Requirement 3: Five Pages, One Active
 
@@ -122,6 +123,7 @@ This spec covers these parts:
 6. THE counter and the Next title SHALL change with every Turn and SHALL always agree with the Current_Page.
 7. EVERY button of the Page_Bar SHALL have a hit area of at least 24 by 24 CSS pixels, SHALL be reachable with the Tab key, and SHALL show the visible focus ring of the page.
 8. THE Page_Bar SHALL follow Mockup_V6 on a window of 390 px: no horizontal overflow, with the dot labels hidden only where Mockup_V6 hides them.
+9. WHILE the window is 560 px wide or less, THE nav SHALL stay on one row (no wrapping, smaller pills, the pills row scrolls horizontally), on the Landing_Page and on the Showcase, with the rules in the shared `01-nav.css`.
 
 ### Requirement 5: Keyboard, Swipe, and the Turn Effect
 
@@ -175,6 +177,9 @@ This spec covers these parts:
 4. EACH Book_Page SHALL be at least as tall as the visible window minus the nav and the Page_Bar, using the unit `svh`.
 5. WHEN the content of the Current_Page is taller than that height (the Live_Section on a window of 390 px), THE Book_Page SHALL scroll inside the window and THE Page_Bar SHALL stay visible.
 6. THE Landing_Page SHALL show no page-level horizontal scrollbar at 390 px, 920 px, and 1280 px.
+7. THE spacing of the Live_Section (section header, control card, stepper, theater, panes minimum height, judge row) SHALL be tightened by rules scoped to `#run` in `site/src/styles/13-fit.css`, so that the whole section fits a 1280 by 800 window where possible. The look of Mockup_V6 is otherwise kept.
+8. WHILE the Live_Section is taller than the visible window, THE speech bar (`.say`) SHALL be `position: sticky` just above the Page_Bar (`bottom: calc(var(--bar-h) + 8px)`), so that the Page_Bar never covers the narration.
+9. WHILE the window is 560 px wide or less, THE world tabs of the Live_Section SHALL stay on one horizontal row with the Replay button (no wrapping, smaller tabs, icons hidden). This replaces the wrapping rule of Mockup_V6 at 760 px for phones.
 
 ### Requirement 9: Per-Page Start
 
@@ -217,7 +222,7 @@ This spec covers these parts:
 2. THE Book_Page `recipe` SHALL show the heading "What's in the skeleton?", the sub-heading "Your world + the skeleton = a ghost-run app.", and three blocks:
    - THE block "Your world" with the title "Your world", the sub-line "Six functions.", and six rows (function name, then hint): `snapshot` "copy reality"; `step` "try one action"; `diff` "what changed"; `render` "draw it"; `fingerprint` "prove reality is untouched"; `effectsOutside` "what leaves the box"; and the sticker "That's all. Ghost Cloud is about N lines." where N is the rounded line count of the existing world-size data (the same number as today).
    - THE block "The skeleton" with the title "The skeleton", the sub-line "Ready-made and wired.", and eight parts (name, then line): Mirror "Copy and compare"; Ghost "Try the plan on the copy"; Wards "Rules that say no"; Candle "Go, ask, or stop"; Blacklight "Find hidden instructions"; Graveyard "Remember stopped plans"; Kiro hook "Stop risky commands in Kiro"; world-smith "A Kiro agent that builds worlds". THE parts SHALL show no folder line.
-   - THE bottom chip of that block "Built with 6 Kiro specs", whose `title` attribute lists the six spec names `core-contract`, `ghost-runner`, `wards`, `possession`, `ui-kit`, and `kiro-integration`, in this order. THE chip SHALL be the only element in the block's bottom row.
+   - THE bottom chip of that block "Built from 6 Kiro specs", whose `title` attribute lists the six spec names `core-contract`, `ghost-runner`, `wards`, `possession`, `ui-kit`, and `kiro-integration`, in this order. THE chip SHALL be the only element in the block's bottom row.
    - THE result card with the title "Your ghost-run app" and the text "Copy → try → judge → candle."
 3. THE Book_Page `costumes` SHALL show the heading "One skeleton, three costumes", the X-ray switch as today, the sub-heading "Same skeleton, new costume. Flip on X-ray.", and three cards. EACH card SHALL show: the name; the costume tag; the world line; the part chips; the Kiro line; and the button, in this order:
 
@@ -283,6 +288,7 @@ This spec covers these parts:
 
 8. THE footer SHALL read "The kit lives in `ui/`." (with `ui/` in a `code` element) and SHALL hold the link "Developer gallery →" whose `href` is the relative path `./gallery/`.
 9. THE Frame bar SHALL carry the three dots of Mockup_Kit and no text (Difference D7).
+10. THE text column of a Showcase_Row (`.kp-text`) SHALL be aligned to the top of the row (`align-items: start`) and SHALL be `position: sticky` (`top: 12px`) while the Frame scrolls by. WHILE the window is 760 px wide or less, THE column SHALL be static. THE lead line SHALL be 16 px.
 
 ### Requirement 14: Real Kit Components and the Gallery's Sample Data
 
@@ -296,7 +302,7 @@ This spec covers these parts:
 4. THE sample data SHALL build every hidden character from code points (`String.fromCodePoint` or `\u` escapes) and SHALL contain no literal hidden character. THE secrets SHALL be canary values (`sk-CANARY-abc123`) and the hosts SHALL be reserved (`collector.example`, `unrelated.test`).
 5. THE Candle row SHALL offer the state tabs "Pass", "Warn", "Block", "Unknown", and "No verdict" as a `tablist`. WHEN the visitor selects a tab, THE Frame SHALL show the real `Candle` with the inputs of the Gallery for that state: Pass with the Docker claims, Warn with the playground claims, Block with the static-analysis claims, Unknown with an unknown verdict and no claims, and No verdict with no props. THE selected tab SHALL carry `aria-selected="true"` and no other tab SHALL. THE first tab SHALL be selected at load.
 6. THE Blacklight row SHALL show the real `BlacklightView` with its own switch (off at load). WHEN the visitor turns the switch on, THE real component SHALL reveal the hidden letters. THE Showcase SHALL NOT add a second blacklight switch.
-7. THE Mirror world row SHALL show the real `MirrorWorld` with the Gallery's changes, scenes, and step labels, and a Dark / Lights on control (Requirement 15).
+7. THE Mirror world row SHALL show the real `MirrorWorld` with the Gallery's changes, scenes, and step labels, and no theme control of its own (Requirement 15).
 8. THE Red thread row SHALL show the real `RedThreadView` with the Gallery's needles, links, and action labels.
 9. THE Graveyard row SHALL show the real `Graveyard` with the two Gallery entries. WHEN the visitor opens a tombstone, THE Frame SHALL show the real `SeanceView` for that entry, and its back control SHALL return to the list.
 10. THE Lights on row SHALL show the dark candle and the light candle side by side, each a real `Candle` inside its own `KitRoot` with `initialTheme` `dark` and `light` and the same inputs (the Pass state).
@@ -311,10 +317,10 @@ This spec covers these parts:
 #### Acceptance Criteria
 
 1. EACH Frame that holds Kit_Components SHALL sit inside its own `KitRoot`, so that the theme of one Frame never changes another Frame. THE Frame_Theme SHALL be the `data-theme` attribute that `KitRoot` renders on its `.gk-root` element, and THE Showcase SHALL NOT set `data-theme` on `.gk-root` itself or override the theme tokens.
-2. THE Mirror world row SHALL carry a control with the two choices "Dark" and "Lights on" (a group of two buttons or a switch with these labels), with "Dark" selected at load. WHEN the visitor chooses "Lights on", THE Frame_Theme of that Frame SHALL become `light`. WHEN the visitor chooses "Dark", THE Frame_Theme SHALL become `dark`.
-3. THE control SHALL reach the theme through `KitRoot` only: by driving the real Lights switch of `KitRoot`, or by giving `KitRoot` a new `initialTheme`. THE design chooses the mechanism, and records it as its answer to Difference D10 (`KitRoot` has no controlled theme prop and always renders its own header with its Lights switch).
-4. THE state of the control SHALL always agree with the Frame_Theme, including after the visitor uses the Lights switch that `KitRoot` renders inside the Frame, or the design SHALL hide that switch for the row with the Showcase stylesheet and say so.
-5. A change of the Frame_Theme SHALL NOT lose the state of the other rows, and SHALL NOT change the Frame_Theme of any other Frame. A DOM test SHALL assert the three: the attribute value after each choice, the state of the control after the kit's own switch, and that a second Frame keeps its theme.
+2. THE Mirror world row SHALL carry no Dark / Lights on control, and no other row SHALL carry one. THE theme control of a Frame SHALL be the kit's own Lights switch that `KitRoot` renders inside that Frame. EVERY Frame SHALL start in the theme that its `KitRoot` is given (`dark`, except the light candle of the Lights on row, which starts `light`).
+3. THE Frame_Theme of a Frame SHALL follow only the kit's own Lights switch of that Frame. THE Showcase SHALL NOT drive that switch from code, SHALL NOT remount a `KitRoot` to change its theme, and SHALL NOT hide the switch.
+4. WHEN the visitor uses the Lights switch of a Frame, THE `data-theme` of that Frame's `.gk-root` SHALL change between `dark` and `light`, and the Frame SHALL show the kit's own tokens for that theme.
+5. A change of the Frame_Theme SHALL NOT lose the state of the other rows, and SHALL NOT change the Frame_Theme of any other Frame. A DOM test SHALL assert two things with the real `KitRoot`: the `data-theme` of a Frame after each use of its own Lights switch, and that a second Frame keeps its theme. THE same test SHALL assert that the Showcase code never writes `data-theme` (a spy on `setAttribute` and a check of the source files of `site/src/showcase/`).
 6. THE page around the Frames (nav, hero, cards, row text) SHALL keep the dark palette of the Landing_Page when a Frame is light.
 7. THE Frame in the light theme SHALL show the kit's own light tokens unchanged, so that the colors keep their meaning. THE Showcase SHALL NOT claim a contrast value of its own for the kit parts.
 
@@ -357,7 +363,7 @@ This spec covers these parts:
 
 1. THE Showcase SHALL have one `h1`, one `h2` per Showcase_Row, and landmark elements for the nav, the main content, and the footer. THE part cards SHALL be one `section` with the accessible name "Parts".
 2. THE tabs of the Candle row SHALL use the roles `tablist` and `tab` with `aria-selected`, with the arrow keys moving between tabs (roving `tabindex`) and the Tab key and the Enter key as well, and SHALL control the Frame (`aria-controls`).
-3. EVERY interactive element of the Showcase (the part cards, the tabs, the Dark / Lights on control, and the links) SHALL be reachable with the Tab key, SHALL show the visible focus ring, and SHALL have a hit area of at least 24 by 24 CSS pixels. THE kit's own controls inside a Frame keep their own rules.
+3. EVERY interactive element of the Showcase (the part cards, the tabs, and the links) SHALL be reachable with the Tab key, SHALL show the visible focus ring, and SHALL have a hit area of at least 24 by 24 CSS pixels. THE kit's own controls inside a Frame keep their own rules.
 4. THE decorative SVG of the Showcase (the hero art, the card icons) SHALL carry `aria-hidden="true"`.
 5. WHILE Reduced_Motion is set, THE ghost bob and the orbit of the hero art SHALL stop, and THE reduced-motion block of the stylesheet SHALL cover every animation of the Showcase.
 6. THE contrast of every text and border pair that Mockup_V6 and Mockup_Kit add (the page bar, the dots, the mint Next button, the part cards, the Frame, and the chips) SHALL be at least 4.5:1 for text and 3:1 for component borders, and THE contrast test of the `site` spec SHALL gain these pairs. WHERE a mockup value fails, THE page SHALL raise it only as far as the limit and SHALL list it in `docs/measurements.md`.
@@ -388,6 +394,7 @@ This spec covers these parts:
 3. THE README "Not written by Kiro" paragraph SHALL gain one line: "The paged landing mockup (v6) and the kit showcase mockup were made by Claude Code; Kiro built them."
 4. THE file `docs/measurements.md` SHALL gain a section "Paged landing and showcase measurements" with: the sizes of the Landing_Page Entry_Bundle and the Showcase entry (read from the build output); the list of the repairs of the section "Differences Between the Brief and the Repository"; the contrast changes; the result of the owner's comparison (Requirement 2, criterion 6); the result of the browser policy check (Requirement 17, criterion 3); and the line "browser load times: measured by the owner's agent in Chrome" with the values filled in by that agent, or marked not yet measured.
 5. THE tasks of this spec SHALL NOT edit `docs/devlog.md`.
+6. THE section of criterion 4 SHALL record the final Landing_Page sizes (index entry 115,491 B, closure 346,648 B, limit 360,000 B) and the Showcase closure (285,426 B), and `tests/unit/measurements.test.ts` SHALL check them.
 
 ### Requirement 21: Quality Gates and Final Build
 
@@ -414,7 +421,7 @@ This spec covers these parts:
 | 2.7 (structural classes) | The class list gains `pagebar`, `pg-btn`, `pg-dot`, `page`, and `pg-count`; the wrapper class `page` of `App.tsx` is renamed (Requirement 3, criterion 6). |
 | 3.x (window fill and content column) | Replaced for the Landing_Page by Requirement 8 of this spec: each Book_Page fills the window minus the nav and the Page_Bar. |
 | 4.x (page structure, block order) | The blocks nav, hero, recipe, costumes, run, make, and footer become the five Book_Pages of Requirement 3; the nav stays above them. The nav link "Home" turns to `cover`. |
-| 5.x, 6.x, 13.x (section texts) | Replaced by the Copy_Deck (Requirements 11 and 12): the recipe, costumes, and make texts, the skeleton parts without folder lines, the chip "Built with 6 Kiro specs", the costume card lines, the legend, and the agent card. |
+| 5.x, 6.x, 13.x (section texts) | Replaced by the Copy_Deck (Requirements 11 and 12): the recipe, costumes, and make texts, the skeleton parts without folder lines, the chip "Built from 6 Kiro specs", the costume card lines, the legend, and the agent card. |
 | 6.x (X-ray demo trigger) | The Xray_Peek starts when the Book_Page `costumes` first opens (Requirement 9), not when the section mounts or scrolls into view. |
 | 11.5, 16.3, 16.5 (autoplay and reduced motion) | The Autoplay starts when the Book_Page `run` first opens (Requirement 9). The Reduced_Motion behavior is unchanged. |
 | 15.x (live region rule) | One new polite region `#pgLive` for Turns (Requirement 8). |
@@ -437,7 +444,7 @@ This spec covers these parts:
 | 16.3 | One polite region (`#sayt`) for the Live_Section remains; the Page_Live_Region is a second, separate region for Turns (Requirement 8, criterion 3). |
 | 18.3 | The footer link "Third-party notices" stays as it is (Requirement 11, criterion 7). |
 
-3. THE tests that change are at least these (the design and tasks list the full set): `render.test.tsx`, `costumes.test.tsx`, `chips.test.tsx`, `classes.test.tsx`, `a11y.test.tsx`, `hooks.test.tsx`, `xray.test.tsx`, `live-badge.test.tsx`, `live-loading.property.test.tsx`, `live-controller.test.tsx`, `reduced-motion-live.test.tsx`, `walkthrough.test.tsx`, `skeleton-data.test.ts`, `styles.test.ts`, `contrast.test.ts`, `index-html.test.ts`, `landing-build.test.ts`, `build-site.test.ts`, `check-site.test.ts`, `headers.test.ts`, `headers.property.test.ts`, `lint-fixture.test.ts`, and `site-dist.test.ts`.
+3. THE tests that change are at least these (the design and tasks list the full set): `render.test.tsx`, `costumes.test.tsx`, `chips.test.tsx`, `classes.test.tsx`, `a11y.test.tsx`, `hooks.test.tsx`, `xray.test.tsx`, `live-badge.test.tsx`, `page-loading.property.test.tsx`, `live-controller.test.tsx`, `reduced-motion-live.test.tsx`, `walkthrough.test.tsx`, `skeleton-data.test.ts`, `styles.test.ts`, `contrast.test.ts`, `index-html.test.ts`, `landing-build.test.ts`, `build-site.test.ts`, `check-site.test.ts`, `headers.test.ts`, `headers.property.test.ts`, `lint-fixture.test.ts`, and `site-dist.test.ts`.
 4. THE criteria of `site` and `site-live` that are not listed in criteria 1 and 2 SHALL stay in force.
 
 ### Requirement 23: Out of Scope
@@ -465,7 +472,7 @@ These differences were found on 2026-11-21. This spec follows the repository. `d
 - **D7. Mockup texts that the deck does not contain.** The Frame bar captions ("as it appears in Ghost Shell") and the app tags on the Showcase part cards ("Shell", "Shell · Hand") are not in the Copy_Deck and are dropped. The Landing_Page costume art badges ("App 1", "App 2", "3rd world") and the badge "same skeleton ✓" are not named by the deck as dropped or kept; this spec keeps them because the brief says the card keeps "the button, as today" and names no removal of the art. The numbers "01" to "06" and "+" of the Showcase rows are decoration and stay, hidden from assistive technology.
 - **D8. "The end".** The Next button text on page 5 comes from Mockup_V6, because the brief says only that Next is disabled there.
 - **D9. The gallery's sample data is private.** `ui/gallery/main.tsx` keeps its fixtures in module-level constants that it does not export, and the module renders into `#root` when it loads. "Reuse the gallery's sample data without changing `ui/`" therefore means a site-owned copy of the values plus a drift test (Requirement 14, criteria 2 and 3).
-- **D10. `KitRoot` owns the theme.** `KitRoot` accepts `initialTheme` only, renders its own header with a Lights switch, and has no controlled theme prop. The Dark / Lights on control of a Frame must go through `KitRoot` (Requirement 15).
+- **D10. `KitRoot` owns the theme.** `KitRoot` accepts `initialTheme` only, renders its own header with a Lights switch, and has no controlled theme prop. The owner chose that the kit's own Lights switch inside each Frame is the only theme control, so the Showcase adds no Dark / Lights on control (Requirement 15).
 - **D11. The policy of `/` is wider than the showcase needs.** The Landing_Policy allows `'wasm-unsafe-eval'`, `worker-src 'self'`, and `connect-src 'self'` for the live engines. The Showcase needs none of them. The brief asks for "the same strict policy as `/`", and this spec follows the brief with the option of Requirement 17, criterion 6.
 - **D12. The footer notice link already exists.** The brief asks for "a small Third-party notices link". `site-live` Requirement 18 already added it (`Footer.tsx`). Requirement 11, criterion 7 keeps it and adds no second link.
 - **D13. The old sub-headings in the mockup.** Mockup_V6 keeps the long sub-headings of the old page for pages 3 and 4. The brief's deck replaces them (Requirement 11, criteria 3 and 5), and the brief wins.

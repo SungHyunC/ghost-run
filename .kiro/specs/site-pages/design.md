@@ -77,12 +77,12 @@ site/
       copy.ts sample-data.ts       deck strings; site-owned copy of the gallery fixtures
       Hero.tsx PartCards.tsx PartRow.tsx Frame.tsx
       rows/MirrorRow.tsx CandleRow.tsx BlacklightRow.tsx ThreadRow.tsx GraveRow.tsx LightsRow.tsx ControlsRow.tsx
-      useFrameTheme.ts            observes data-theme, drives the kit's own Lights switch
       art/                        hero art and part icons (original SVG, from Mockup_Kit)
       styles/showcase.css         page around the Frames only
     styles/
       01-base.css                 CHANGED: gains html/body, .site, .sprite, .sr-only (moved from 99-page.css)
-      01-nav.css                  NEW: nav and logo rules (moved from 02-nav-hero.css)
+      01-nav.css                  NEW: nav and logo rules (moved from 02-nav-hero.css); phone rules at 560 px
+      13-fit.css                  NEW: tighter spacing and sticky speech bar, scoped to #run
       12-book.css                 NEW: pages, page bar, turn keyframes, reduced-motion block
       99-page.css                 CHANGED: `.page` becomes `.wrap`; moved rules leave
   scripts/
@@ -166,8 +166,8 @@ Rules of `transition`, which the property tests check:
 | `request` while an effect runs (`leaving !== null`) | `held = { to, source }` replaces the earlier held request; nothing else changes (Requirement 5, criterion 6) |
 | `request`, no effect, `reduced` | `current = to`, `leaving = null`, `opened[to] = true`; effects: announce, scrollTop, and a hash write unless the source is `hash` |
 | `request`, no effect, motion allowed | `leaving = current`, `current = to`, `direction` from the order, `opened[to] = true`; effects: startTimer, announce, scrollTop, hash write unless the source is `hash` |
-| `effect-end` | `leaving = null`, `direction = null`. A held request for another page then runs as a `request` with its own source. A held request for the current page changes nothing. |
-| `bad-hash` | no change to the page; effect `hash: 'replace'` (the hook writes the hash of `current`) |
+| `effect-end` | `leaving = null`, `direction = null`. A held request for another page then runs as a `request` with its own source. A held request for the current page changes no page state; its effect is `hash: 'replace'` (whatever its source) so the hash agrees with the page. |
+| `bad-hash` | no change to the page; clears `held`; effect `hash: 'replace'` (the hook writes the hash of `current`). No stale held request can end with a different hash. |
 
 Because `current` is already the target while the effect runs, the Page_Bar, the counter, the live text, and `opened` agree with the new page from the first frame. The hash is written at the start of an accepted Turn, not at its end. At rest it always equals `formatHash(current)`.
 
@@ -293,7 +293,7 @@ No section reads the address hash (Requirement 9, criterion 9).
 | `Make.tsx` | deck texts; the code block and the command as today |
 | `Footer.tsx` | unchanged (Difference D12) |
 
-The chip text "Built with 6 Kiro specs" has a `title` that lists the six spec names in order (`core-contract`, `ghost-runner`, `wards`, `possession`, `ui-kit`, `kiro-integration`). The array lives in `data/skeleton.ts` as today, and the text is built from its length.
+The chip text "Built from 6 Kiro specs" has a `title` that lists the six spec names in order (`core-contract`, `ghost-runner`, `wards`, `possession`, `ui-kit`, `kiro-integration`). The array lives in `data/skeleton.ts` as today, and the text is built from its length.
 
 ### Component 8: The Showcase page (`site/kit/index.html`, `site/src/showcase/`)
 
@@ -309,7 +309,7 @@ The chip text "Built with 6 Kiro specs" has a `title` that lists the six spec na
 
 | Row | Frame content | Kit components |
 |---|---|---|
-| Mirror world | the real mirror and a Dark / Lights on control | `KitRoot` > `MirrorWorld` |
+| Mirror world | the real mirror (the kit's own Lights switch is the theme control) | `KitRoot` > `MirrorWorld` |
 | Candle | five tabs and the selected state | `KitRoot` > `Candle` |
 | Blacklight | the kit's own switch, off at load | `KitRoot` > `BlacklightView` |
 | Red thread | the thread of two needles | `KitRoot` > `RedThreadView` |
@@ -319,19 +319,11 @@ The chip text "Built with 6 Kiro specs" has a `title` that lists the six spec na
 
 **The Candle tabs.** A `tablist` of five `button role="tab"` elements with roving `tabindex`, `aria-selected`, and `aria-controls` that names the panel. The arrow keys move between tabs, Home and End go to the first and last, and Enter or Space selects. The first tab is selected at load. Each tab picks one entry of `CANDLE_STATES` in `sample-data.ts` and the panel renders `<Candle verdict={…} claims={…} />` with exactly those props: Pass with the Docker claims, Warn with the playground claims, Block with the static-analysis claims, Unknown with an unknown verdict and no claims, No verdict with no props.
 
-**The Mirror row's Dark / Lights on control** (my answer to Difference D10). `KitRoot` has no controlled theme prop and always renders its own Lights switch. The design uses `showcase/useFrameTheme.ts`:
+**Theme of a Frame** (my answer to Difference D10). The owner chose that the kit's own Lights switch, which `KitRoot` renders inside every Frame, is the only theme control. The Showcase adds no Dark / Lights on control, no `useFrameTheme` hook, and no `aria-pressed` group. Each Frame holds its own `KitRoot`, so each `data-theme` follows only that Frame's own switch. Three properties follow without extra code:
 
-```ts
-function useFrameTheme(frame: RefObject<HTMLElement | null>): { theme: 'dark' | 'light'; choose(next: 'dark' | 'light'): void };
-```
-
-The hook finds the `.gk-root` element inside the Frame and observes its `data-theme` attribute with a `MutationObserver`, through `useSyncExternalStore`. `theme` is that attribute's value. `choose(next)` returns at once when `next === theme`. Otherwise it clicks the kit's own switch (`button[role="switch"]` inside `.gk-header` of that root), which is the action a visitor would take. The control is two buttons in a group named "Theme" with `aria-pressed`, and "Dark" is pressed at load. Three properties follow without extra code:
-
-1. The Showcase never writes `data-theme` and never overrides a kit token (Requirement 15, criterion 1).
-2. The control agrees with the Frame after the visitor uses the kit's switch, because both read one attribute (criterion 4). The kit's switch stays visible.
+1. The Showcase never writes `data-theme`, never drives the kit's switch, never remounts a `KitRoot` to change its theme, and never overrides a kit token (Requirement 15, criteria 1 to 3).
+2. Frames stay independent, because no code reads or writes the theme of a Frame.
 3. No remount happens, so the state of the real `MirrorWorld` and of the other rows is kept (criterion 5).
-
-The cost is a coupling to the kit's switch markup (`role="switch"` in `.gk-header`). The DOM test runs the real `KitRoot`, so a change in the kit breaks the test and not the page silently. `choose` does nothing if the switch is missing, and the test fails then. The two alternatives were rejected: a remount through `key` and `initialTheme` loses the kit's own switch state and the Frame's state, and hiding the kit's switch needs a rule against `.gk-header`, which Requirement 14, criterion 12 forbids.
 
 **The Blacklight, Red thread, and Graveyard rows** render the real components with the sample data and no wrapper logic, except the Graveyard row, which holds `openId` state as the gallery does: `Graveyard` with `onOpenSeance={setOpenId}`, and `SeanceView` with `onBack` for the open entry.
 
@@ -509,9 +501,9 @@ Reflection on the prework: the prework found several criteria that the same gene
 
 **Validates: Requirements 5.1, 5.2, 5.3, 5.4**
 
-### Property 10: A frame's theme agrees with its control and with no other frame (frame-theme-agrees)
+### Property 10: A frame's theme follows its own kit Lights switch and no other frame (frame-theme-agrees)
 
-*For any* sequence of choices on the Dark / Lights on control of the Mirror row and of clicks on the real Lights switch of any frame, the `data-theme` of each frame equals the theme that its own actions set (`dark` at load, except the light candle of the Lights row, which starts `light`), the pressed state of the Mirror control equals the `data-theme` of the Mirror frame, and every other frame keeps its attribute and the state of its kit components (the selected Candle tab, the Blacklight switch, the open tombstone). The page around the frames keeps its dark palette. The Showcase never writes `data-theme`.
+*For any* sequence of clicks on the real Lights switch of any frame, the `data-theme` of each frame follows its own kit Lights switch (`dark` at load, except the light candle of the Lights row, which starts `light`), the frames stay independent, and every other frame keeps its attribute and the state of its kit components (the selected Candle tab, the Blacklight switch, the open tombstone). The page around the frames keeps its dark palette. The Showcase never writes `data-theme`.
 
 **Validates: Requirements 15.1, 15.2, 15.3, 15.4, 15.5, 15.6**
 
@@ -530,7 +522,6 @@ Reflection on the prework: the prework found several criteria that the same gene
 | Unmount during an effect | the timer, the three window listeners, and the touch listeners are removed |
 | Engine chunk import rejects, worker cannot start, wasm blocked | as in `site-live` (recorded run); paging does not change those paths |
 | Leave page 4 while an engine answer is pending | the token is bumped and the answer is dropped; no console warning and no message |
-| Theme switch of the kit not found by `useFrameTheme` | `choose` does nothing; the DOM test fails, so a change of the kit's markup is caught at test time |
 | `ui/dist` missing at assembly | `missing build output: ui/dist (build it with: corepack pnpm --filter @ghost-run/ui build)`, as today |
 | `site/build/dist/kit/index.html` missing at assembly | the existing `checkSources` message for `site/build/dist/index.html` is extended to name `kit/index.html` |
 | `kit/gallery/index.html` missing from `site/dist/` | `RULE_PATH_MISSING` of the Site_Check |
@@ -555,7 +546,7 @@ The suite uses Vitest with Testing Library and jsdom, plus `fast-check`, in the 
 | `tests/dom/dropped-texts.property.test.tsx` and `tests/unit/dropped-texts.test.ts` | Pg4: rendered pages, source text, `site/dist/` text when it exists, and the failing fixture |
 | `tests/dom/showcase.test.tsx` | Pg3 for the Showcase and the structure of Requirement 13 (nav links, cards, rows, footer, frame bar without text, one `h1`, landmarks, the number 11 against the `ui-kit` spec) |
 | `tests/dom/showcase-kit.property.test.tsx` | Pg5: real components in each row, candle tabs, blacklight switch, graveyard open and back, base controls, no `img` |
-| `tests/dom/showcase-theme.property.test.tsx` | Pg10 with the real `KitRoot`; the page palette; the kit switch coupling |
+| `tests/dom/showcase-theme.property.test.tsx` | Pg10 with the real `KitRoot`; frames follow their own kit switch; the page palette; no `data-theme` write |
 | `tests/dom/showcase-a11y.test.tsx` | tab roles, roving `tabindex`, arrow keys, hit-area rules in the stylesheet, decorative `aria-hidden`, reduced-motion block |
 | `tests/dom/sample-data-drift.test.tsx` | the drift test of Component 9 |
 | `tests/unit/sample-data-text.test.ts` | the two shared constants of the gallery, no literal hidden character, canary and reserved hosts in the sample data |
@@ -626,6 +617,15 @@ Requirement 22 names the criteria. This section says what each one becomes in th
 
 The criteria of `site` and `site-live` that are not in the table stay in force (Requirement 22, criterion 4).
 
+## Review fixes (deliberate deviations from the mockups)
+
+The Chrome review at 390 px, 920 px, and 1280 px led to four fixes, already in code. They differ from the mockups on purpose and are listed in `docs/measurements.md`.
+
+- **Page 4 fit** (Requirement 8, criteria 7 and 8). `styles/13-fit.css`, scoped to `#run`, tightens the section header, control card, stepper, theater, panes minimum height, and judge row so that the section fits 1280 by 800 where possible. When the page still scrolls, `.say` is `position: sticky; bottom: calc(var(--bar-h) + 8px)`, so the sticky Page_Bar does not hide the narration.
+- **Showcase text column** (Requirement 13, criterion 10). `.kp-text` uses `align-items: start` and `position: sticky; top: 12px`, and is static at max-width 760 px. The lead stays at 16 px, as in Mockup_Kit.
+- **Phones, max-width 560 px** (Requirement 4, criterion 9, and Requirement 8, criterion 9). The nav rules live in `01-nav.css`, so both pages get them: one row, smaller pills, horizontal scroll. The world tabs and Replay stay on one row with icons hidden, in place of the mockup's wrapping rule at 760 px.
+- **Measured sizes** (Requirement 20, criterion 6). Landing index entry 115,491 B, closure 346,648 B against the 360,000 B limit (the 338,154 B in O2 was the pre-paging entry file); Showcase closure 285,426 B.
+
 ## Requirement Traceability
 
 | Requirement | Design section |
@@ -644,7 +644,7 @@ The criteria of `site` and `site-live` that are not in the table stay in force (
 | 12 Dropped texts and pinned strings | Component 7; Properties Pg3, Pg4 |
 | 13 The Showcase page | Component 8; Property Pg3 |
 | 14 Real kit and sample data | Components 8, 9; Property Pg5; Open question O14 |
-| 15 Lights on in a frame | Component 8 (`useFrameTheme`); Property Pg10; Difference D10 |
+| 15 Lights on in a frame | Component 8 (theme of a Frame); Property Pg10; Difference D10 |
 | 16 Assembly | Components 10, 11; Open questions O1 to O5 |
 | 17 Policy and headers | Component 11; Property Pg6; Open question O17 |
 | 18 Showcase accessibility | Component 8; `showcase-a11y.test.tsx` |
@@ -671,7 +671,7 @@ Checked on 2026-11-21 against the repository. The design follows the repository.
 | D7 | the deck is silent on mockup tags, art badges, row numbers | Mockup_Kit has Frame captions and app tags; Mockup_V6 cards keep "App 1", "App 2", "3rd world", "same skeleton ✓" | captions and app tags dropped; the card art badges stay; row numbers stay with `aria-hidden` (Component 8) |
 | D8 | Next is disabled on page 5 | Mockup_V6 shows "The end" | `PageBar` shows "The end" |
 | D9 | reuse the gallery's sample data | the fixtures are module constants that are not exported, and the module renders into `#root` on load | site-owned copy plus a drift test (Component 9; O14) |
-| D10 | a Dark / Lights on toggle for the frame | `KitRoot` accepts `initialTheme` only and renders its own switch | the control drives the kit's own switch and reads `data-theme` through a `MutationObserver` (Component 8) |
+| D10 | a Dark / Lights on toggle for the frame (dropped by the owner) | `KitRoot` accepts `initialTheme` only and renders its own switch | no Dark / Lights on control; the kit's own Lights switch in each Frame is the theme control (Component 8; owner decision) |
 | D11 | the same policy as `/` | the Landing_Policy allows `'wasm-unsafe-eval'`, `worker-src 'self'`, `connect-src 'self'` | kept; the Site_Check forbids engine references in the Showcase (O17) |
 | D12 | add a small third-party notices link | `Footer.tsx` already has it | unchanged |
 | D13 | the mockup's long sub-headings for pages 3 and 4 | the brief's deck replaces them | the deck wins (Component 7) |

@@ -13,19 +13,13 @@ import type { PlanRecord, RunsFile, WorldRecord } from '../../src/data/types';
 import type { LiveAnswer, LiveEngine, LiveLoaders } from '../../src/live/types';
 import type { WalkView } from '../../src/engine/types';
 import { NUM_RUNS, PBT_TIMEOUT } from '../pbt-config';
+import { visibility } from '../lib/page-visibility';
 
 const runsFile = runsJson as unknown as RunsFile;
 const runs = toWalkRuns(runsFile);
 
-class FakeObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
-
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', FakeObserver);
 });
 
 afterEach(() => {
@@ -121,6 +115,7 @@ async function checkSequence(
     <>
       <Sprite />
       <Walkthrough
+        visibility={visibility('cover')}
         runs={runsFile}
         loaders={mode === 'live' ? spyLoaders(answers) : failingLoaders}
         renderReality={(record) => <RealityPane scene={record.reality} />}

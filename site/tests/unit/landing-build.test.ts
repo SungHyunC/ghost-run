@@ -99,3 +99,61 @@ describe.skipIf(!hasBuild)('landing build output', () => {
     expect(read(entry as string)).toContain(find(PATTERNS.sqlWasm) as string);
   });
 });
+
+// Task 8.4: build-level assertions for the paged landing page. The Showcase chunk checks (no eval, no
+// Function constructor) are in landing-build-kit.test.ts (task 8.1, Property Pg6); this file does not repeat them.
+// Requirements 10.7, 16.1.
+describe.skipIf(!hasBuild)('landing closure and Showcase separation', () => {
+  const html = (): string => readFileSync(path.join(dist, 'index.html'), 'utf8');
+  const refsOf = (h: string): string[] => [...h.matchAll(/\s(?:src|href)="\.\/([^"]+)"/g)].map((m) => m[1] ?? '');
+
+  /** Entry script, modulepreload links, and every chunk they import statically, at any depth. */
+  function staticClosure(): string[] {
+    const queue = refsOf(html()).filter((r) => r.endsWith('.js'));
+    const seen = new Set<string>();
+    while (queue.length > 0) {
+      const file = queue.pop() as string;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      const js = readFileSync(path.join(dist, file), 'utf8');
+      for (const m of js.matchAll(/(?:\bfrom\s*|(?<![\w$.])import\s*)["']\.\/([^"']+\.js)["']/g)) {
+        queue.push(path.posix.join('assets', m[1] ?? ''));
+      }
+    }
+    return [...seen];
+  }
+
+  it('keeps the entry closure of index.html within the Entry_Bundle limit', () => {
+    const files = staticClosure();
+    expect(files.length).toBeGreaterThan(1);
+    const total = files.reduce((sum, f) => sum + statSync(path.join(dist, f)).size, 0);
+    expect(total).toBeLessThanOrEqual(ENTRY_MAX_BYTES);
+  });
+
+  it('reaches no showcase- asset from index.html, by link, static import, dynamic import, or preload list', () => {
+    const queue = refsOf(html());
+    const seen = new Set<string>();
+    while (queue.length > 0) {
+      const file = queue.pop() as string;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      expect(file, 'reachable asset').not.toMatch(/showcase-/);
+      if (!file.endsWith('.js')) continue;
+      const js = readFileSync(path.join(dist, file), 'utf8');
+      expect(js, `${file} names a showcase asset`).not.toMatch(/showcase-[\w-]+\.(?:js|css)/);
+      for (const m of js.matchAll(/["']\.\/([\w.-]+\.(?:js|css))["']/g)) queue.push(path.posix.join('assets', m[1] ?? ''));
+    }
+    expect(seen.size).toBeGreaterThan(3);
+  });
+
+  it('links no kit stylesheet from index.html', () => {
+    const cssFiles = refsOf(html()).filter((r) => r.endsWith('.css'));
+    expect(cssFiles.length).toBeGreaterThan(0);
+    for (const f of cssFiles) {
+      const css = readFileSync(path.join(dist, f), 'utf8');
+      expect(css, f).not.toMatch(/\.gk-/);
+      expect(css, f).not.toMatch(/\.(?:kcard|khero|kpart|kindex|frame-body)\b/);
+    }
+  });
+});
+

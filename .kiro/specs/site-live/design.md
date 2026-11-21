@@ -514,7 +514,7 @@ The suite uses Vitest with Testing Library and jsdom, plus `fast-check`. It runs
 | `tests/unit/check-site*.test.ts`, `site-dist.test.ts` | the new Site_Check rules with fixtures (including `RULE_NOTICE_PACKAGE` and `RULE_NOTICE_LIST`); the real dist when it exists, with the found Hand_Worker, simulation worker, SQL worker, and wasm references |
 | `tests/unit/build-site.test.ts` | the generated notice file in the assembled directory; failure when the manifest is missing or a package has no license text |
 | `tests/unit/lint-fixture.test.ts` | `site/src/live/` may import an engine; `site/src/components/` may not |
-| `tests/dom/live-loading.test.tsx` | Properties L5 and L6 with fake IntersectionObserver, loader spies, a Worker spy, and a fetch spy |
+| `tests/dom/page-loading.property.test.tsx` | Properties L5 and L6 with fake IntersectionObserver, loader spies, a Worker spy, and a fetch spy |
 | `tests/dom/live-controller.property.test.tsx` | Properties L9 and L10 with fake engines and a fake clock; L9 models "typing while a run animates cancels its timers" |
 | `tests/dom/live-edit.test.tsx` | edit during animation cancels; edit while the engine call is pending cancels; the input stays editable after "Fix and go"; the tag and fixed values clear on edit |
 | `tests/dom/live-warn.test.tsx` | one `console.warn` per failed load, failed run, and failed Fixed_Plan run, with world, cause, and detail; none on the page |

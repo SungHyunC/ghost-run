@@ -1,3 +1,4 @@
+import { MAKE_HEADS } from '../data/copy';
 import { Icon } from './art/Icon';
 
 export function Make() {
@@ -5,12 +6,12 @@ export function Make() {
     <section className="sec" id="make">
       <div className="sec-head">
         <span className="nbadge">4</span>
-        <h2>Make your own costume</h2>
+        <h2 tabIndex={-1}>{MAKE_HEADS.heading}</h2>
       </div>
-      <p className="sec-sub">Write six functions, or let a Kiro agent write them with you.</p>
+      <p className="sec-sub">{MAKE_HEADS.sub}</p>
       <div className="make">
         <div className="book">
-          <div className="book-t">📖 The spell: a world in six functions</div>
+          <div className="book-t">{MAKE_HEADS.spellbookTitle}</div>
           <pre>
             <span className="k">const</span>
             {' myWorld: World<MyState, MyAction> = {\n  snapshot,       '}
@@ -31,14 +32,11 @@ export function Make() {
         <div className="agent">
           <div className="ah">
             <Icon id="i-hat" viewBox="0 0 40 40" />
-            <h3>Ask world-smith</h3>
+            <h3>{MAKE_HEADS.agentTitle}</h3>
           </div>
-          <p>
-            A Kiro custom agent. It copies the spec template, writes the world with you one file at a time, and runs the
-            registration gate and the wards.
-          </p>
-          <code className="cmd">kiro-cli chat --agent world-smith</code>
-          <div className="proof">🎃 Ghost Cloud was made this way.</div>
+          <p>{MAKE_HEADS.agentText}</p>
+          <code className="cmd">{MAKE_HEADS.command}</code>
+          <div className="proof">{MAKE_HEADS.closing}</div>
         </div>
       </div>
     </section>

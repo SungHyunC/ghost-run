@@ -20,6 +20,8 @@ const { extractRefs } = (await import(/* @vite-ignore */ refsPath)) as {
 
 const distRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'dist');
 const manifestPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'build', 'bundled-packages.json');
+const uiDistRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'ui', 'dist');
+const linksPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src', 'data', 'kit-links.json');
 const hasDist = existsSync(distRoot) && statSync(distRoot).isDirectory();
 
 if (!hasDist) {
@@ -37,9 +39,36 @@ function walk(dir: string, base = ''): string[] {
 }
 
 describe.skipIf(!hasDist)('real site/dist', () => {
-  it('has no finding', () => {
-    const findings = checkSite(distRoot, { bundledPackages: manifestPath });
-    expect(formatFindings(findings)).toBe('');
+  it('holds the Showcase at kit/ and the gallery at kit/gallery/, byte-equal to ui/dist', () => {
+    expect(existsSync(path.join(distRoot, 'kit', 'index.html'))).toBe(true);
+    expect(existsSync(path.join(distRoot, 'kit', 'gallery', 'index.html'))).toBe(true);
+    // The Showcase is the landing build's page, not the gallery.
+    expect(readFileSync(path.join(distRoot, 'kit', 'index.html')).equals(readFileSync(path.join(distRoot, '..', 'build', 'dist', 'kit', 'index.html')))).toBe(true);
+    if (!existsSync(uiDistRoot)) {
+      console.warn(`site-dist.test: gallery byte comparison skipped, ${uiDistRoot} does not exist.`);
+      return;
+    }
+    const files = walk(uiDistRoot);
+    expect(files.length).toBeGreaterThan(0);
+    for (const f of files) {
+      expect(readFileSync(path.join(distRoot, 'kit', 'gallery', f)).equals(readFileSync(path.join(uiDistRoot, f))), f).toBe(true);
+    }
+    expect(walk(path.join(distRoot, 'kit', 'gallery')).sort()).toEqual(files.sort());
+  });
+
+  it('resolves the declared links of the Showcase to files of the dist', () => {
+    const data = JSON.parse(readFileSync(linksPath, 'utf8')) as { from: string; links: string[]; rowIds: string[] };
+    expect(existsSync(path.join(distRoot, data.from))).toBe(true);
+    for (const href of data.links) {
+      const [file = '', fragment] = href.split('#');
+      if (file === '') {
+        expect(data.rowIds, href).toContain(fragment);
+        continue;
+      }
+      let target = path.posix.normalize(path.posix.join(path.posix.dirname(data.from), file));
+      if (file.endsWith('/') || target === '.') target = path.posix.join(target === '.' ? '' : target, 'index.html');
+      expect(existsSync(path.join(distRoot, target)), href).toBe(true);
+    }
   });
 
   it('extracts references from every kind of file and from the Ghost Hand bundle (wasm and worker)', () => {

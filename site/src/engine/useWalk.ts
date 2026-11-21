@@ -22,6 +22,8 @@ export interface WalkControls {
   jump: (n: number) => void;
   /** Stops the run that is animating and shows the displayed record at its reset state. */
   cancel: () => void;
+  /** Cancels every timer and shows the displayed record settled at the step reached (the initial state if none). */
+  park: () => void;
 }
 
 export interface Walk {
@@ -147,6 +149,12 @@ export function useWalk({ initial, scheduler = defaultScheduler, settled = false
     setState(initialState(recordRef.current));
   }, [cancelAll]);
 
+  const park = useCallback(() => {
+    cancelAll();
+    const rec = recordRef.current;
+    setState((s) => (s.step >= 0 ? settle(rec, Math.max(s.step, 0)) : initialState(rec)));
+  }, [cancelAll]);
+
   // Reduced_Motion turning on mid-walk: cancel the timers and show the final state.
   useEffect(() => {
     if (!reduced) return;
@@ -165,5 +173,5 @@ export function useWalk({ initial, scheduler = defaultScheduler, settled = false
     [state, record],
   );
 
-  return { view, record, world: state.world, step: state.step, animating, controls: { show, replay, jump, cancel } };
+  return { view, record, world: state.world, step: state.step, animating, controls: { show, replay, jump, cancel, park } };
 }

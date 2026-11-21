@@ -70,12 +70,12 @@ const forbiddenAddition = fc.oneof(
 );
 
 describe('Property L11: Policy of the landing page', () => {
-  it('gives the blocks / and /index.html the landing policy and never a /* scope', () => {
+  it('gives the blocks /, /index.html, /kit/, and /kit/index.html the landing policy and never a /* scope', () => {
     fc.assert(
       fc.property(blocksArb, (blocks) => {
         const root = parseHeaders(buildRootHeaders(printHeaders(blocks)));
         const expected = `Content-Security-Policy: ${landingHeaderPolicy()}`;
-        for (const scope of ['/', '/index.html']) {
+        for (const scope of ['/', '/index.html', '/kit/', '/kit/index.html']) {
           const matching = root.filter((b) => b.path === scope);
           expect(matching).toHaveLength(1);
           expect(matching[0]?.headers).toContain(expected);

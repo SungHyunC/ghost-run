@@ -1,3 +1,4 @@
+import { LINES_TOKEN, RECIPE_HEADS } from '../data/copy';
 import { SKELETON_PARTS, SPEC_NAMES, WORLD_FUNCTIONS } from '../data/skeleton';
 import { Cauldron } from './art/Cauldron';
 import { Icon, type SymbolId } from './art/Icon';
@@ -24,8 +25,8 @@ export function WorldIngredient({ lineCount }: { lineCount: number }) {
       <div className="ing-head">
         <Icon id="pumpkin" viewBox="0 0 64 58" />
         <div>
-          <h3>Your world</h3>
-          <p className="sub">You write six functions.</p>
+          <h3>{RECIPE_HEADS.worldTitle}</h3>
+          <p className="sub">{RECIPE_HEADS.worldSub}</p>
         </div>
       </div>
       <ul className="fnl">
@@ -36,7 +37,7 @@ export function WorldIngredient({ lineCount }: { lineCount: number }) {
           </li>
         ))}
       </ul>
-      <p className="lean">🎃 That's all. Ghost Cloud's whole world is about {lineCount} lines.</p>
+      <p className="lean">{RECIPE_HEADS.sticker.replace(LINES_TOKEN, String(lineCount))}</p>
     </div>
   );
 }
@@ -47,8 +48,8 @@ export function SkeletonIngredient() {
       <div className="ing-head">
         <Icon id="bones" viewBox="0 -10 120 182" className="fig" />
         <div>
-          <h3>The skeleton</h3>
-          <p className="sub">You get all of this, already wired together.</p>
+          <h3>{RECIPE_HEADS.skeletonTitle}</h3>
+          <p className="sub">{RECIPE_HEADS.skeletonSub}</p>
         </div>
       </div>
       <div className="parts">
@@ -59,16 +60,14 @@ export function SkeletonIngredient() {
               {icon ? <Icon id={icon.id} viewBox={icon.viewBox} /> : null}
               <b>{p.name}</b>
               <span>{p.line}</span>
-              <i>{p.folders.join(' · ')}</i>
             </div>
           );
         })}
       </div>
       <div className="built">
-        Built with Kiro specs:{' '}
-        {SPEC_NAMES.map((n) => (
-          <code key={n}>{n}</code>
-        ))}
+        <span className="chip" title={SPEC_NAMES.join(', ')}>
+          {RECIPE_HEADS.chipText}
+        </span>
       </div>
     </div>
   );
@@ -79,9 +78,9 @@ export function Recipe({ lineCount }: { lineCount: number }) {
     <section className="sec" id="recipe">
       <div className="sec-head">
         <span className="nbadge">1</span>
-        <h2>What's in the skeleton?</h2>
+        <h2 tabIndex={-1}>{RECIPE_HEADS.heading}</h2>
       </div>
-      <p className="sec-sub">Every ghost-run app is a recipe with two ingredients.</p>
+      <p className="sec-sub">{RECIPE_HEADS.sub}</p>
       <div className="recipe">
         <WorldIngredient lineCount={lineCount} />
         <div className="op" aria-hidden="true">
@@ -96,11 +95,8 @@ export function Recipe({ lineCount }: { lineCount: number }) {
         <div className="result">
           <Cauldron />
           <div>
-            <h3>Your ghost-run app</h3>
-            <p>
-              It copies the world, lets a ghost try the plan, judges it with your wards, and shows the verdict as a
-              candle.
-            </p>
+            <h3>{RECIPE_HEADS.resultTitle}</h3>
+            <p>{RECIPE_HEADS.resultText}</p>
           </div>
         </div>
       </div>

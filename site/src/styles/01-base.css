@@ -11,3 +11,8 @@
 .btn-main{background:var(--mint);color:#08372a;border-color:var(--mint);box-shadow:0 6px 0 #6fc9ae}
 .btn.small{padding:7px 12px;font-size:13px;border-radius:12px}
 .btn:focus-visible,button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+html,body{margin:0}
+body{background:#110824}
+.site{min-height:100vh;overflow-x:clip}
+.sprite{position:absolute}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

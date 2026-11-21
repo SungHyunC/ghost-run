@@ -4,19 +4,14 @@ import { Sprite } from '../../src/components/art/Sprite';
 import { Walkthrough } from '../../src/components/Walkthrough';
 import runsJson from '../../src/data/runs.json';
 import type { RunsFile } from '../../src/data/types';
-import { drain, failingLoaders, recordedLoaders } from '../lib/live-fakes';
+import { drain, failingLoaders, recordedLoaders, visibility } from '../lib/live-fakes';
 
+/** Not opened: no engine loads and nothing autoplays; tests drive the box themselves. */
+const idle = visibility('cover');
 const runs = runsJson as unknown as RunsFile;
-
-class IdleObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
 
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', IdleObserver);
 });
 afterEach(() => {
   cleanup();
@@ -29,7 +24,7 @@ const page = (loaders = failingLoaders) =>
   render(
     <>
       <Sprite />
-      <Walkthrough runs={runs} loaders={loaders} />
+      <Walkthrough visibility={idle} runs={runs} loaders={loaders} />
     </>,
   );
 
@@ -72,7 +67,7 @@ describe('Live_Badge', () => {
   it('has the sub-heading of the mockup and no second line under it: the badge carries "in your browser"', () => {
     const { container } = page();
     const subs = [...container.querySelectorAll('.sec-sub')].map((e) => e.textContent);
-    expect(subs).toEqual(['Give the ghost a plan. It tries it on a copy first, and only a lit candle lets reality change.']);
+    expect(subs).toEqual(['Give the ghost a plan. It tries it on a copy first.']);
     expect(container.querySelector('#sealnote')).toBeNull();
     expect(container.textContent).not.toContain('sends nothing out');
   });

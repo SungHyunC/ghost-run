@@ -13,7 +13,6 @@ import { isKnown, PRESETS } from '../live/presets';
 import type { Preset } from '../live/presets';
 import type { LightEngines, LiveAnswer, LiveEngine, LiveInput, LiveLoaders } from '../live/types';
 import { defaultScheduler, type Scheduler } from './scheduler';
-import type { InViewState } from './useInView';
 import { useReducedMotion } from './useReducedMotion';
 import { useWalk, type Walk } from './useWalk';
 
@@ -26,10 +25,12 @@ export interface ControllerMessage {
 }
 
 export interface LiveVisibility {
-  /** The section is within the near margin (engines may load). */
-  near: InViewState;
-  /** The section is at least 25% in view (the first Preset autoplays). */
-  seen: InViewState;
+  /** The Costumes or Run page was opened (engines may load). */
+  near: boolean;
+  /** The Run page was opened (the first Preset autoplays). */
+  started: boolean;
+  /** The Run page is the current page. */
+  active: boolean;
 }
 
 export interface UseLiveWalkthroughOptions {
@@ -127,8 +128,8 @@ export function useLiveWalkthrough({
     return toRecordedWalkRecord(runs.worlds.shell, rec);
   }, [runs, first.id]);
 
-  // No signal and no motion both show the recorded final state of the first Preset.
-  const settledAtStart = reduced || visibility.near === 'unsupported';
+  // No motion shows the recorded final state of the first Preset.
+  const settledAtStart = reduced;
   const walk = useWalk({ initial, scheduler, settled: settledAtStart });
   const { show } = walk.controls;
 
@@ -394,9 +395,9 @@ export function useLiveWalkthrough({
   );
 
   // Near: load the light chunk and warm the SQL worker. Under Reduced_Motion the first Preset then runs once, settled.
-  const { near, seen } = visibility;
+  const { near, started, active } = visibility;
   useEffect(() => {
-    if (near !== 'seen') return;
+    if (!near) return;
     void engineFor('shell').then((engine) => {
       if (engine === null) return;
       if (!warmed.current) {
@@ -407,11 +408,24 @@ export function useLiveWalkthrough({
     });
   }, [near, reduced, engineFor, runPreset]);
 
-  // Seen: the first Shell Preset plays once, unless the visitor already acted. Not under Reduced_Motion.
+  // Started: the first Shell Preset plays once, unless the visitor already acted. Not under Reduced_Motion.
   useEffect(() => {
-    if (seen !== 'seen' || reduced || autoplayed.current) return;
+    if (!started || !active || reduced || autoplayed.current) return;
     runPreset('shell', firstPreset('shell'));
-  }, [seen, reduced, runPreset]);
+  }, [started, active, reduced, runPreset]);
+
+  // Leaving the Run page after it started: drop any pending answer, stop the timers, keep the step.
+  const { park } = walk.controls;
+  const displayedRef = useRef(displayed);
+  displayedRef.current = displayed;
+  useEffect(() => {
+    if (active || !started) return;
+    token.current++;
+    setBusy(false);
+    setMessage(null);
+    park();
+    if (displayedRef.current === 'none') autoplayed.current = false;
+  }, [active, started, park]);
 
   // Mount and unmount: bump the token so late results are dropped, dispose every engine.
   useEffect(() => {

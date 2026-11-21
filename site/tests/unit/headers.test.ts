@@ -34,6 +34,14 @@ const EXPECTED_ROOT = `/
   Content-Security-Policy: ${ROOT_CSP}
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
+/kit/
+  Content-Security-Policy: ${ROOT_CSP}
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+/kit/index.html
+  Content-Security-Policy: ${ROOT_CSP}
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
 /shell/*
   Content-Security-Policy: ${SHELL_CSP}
   X-Content-Type-Options: nosniff
@@ -68,9 +76,13 @@ describe('headers library', () => {
     expect(buildRootHeaders(SHELL_FILE)).toBe(EXPECTED_ROOT);
   });
 
-  it('has no block for /*, /hand/*, or /kit/*', () => {
-    const paths = parseHeaders(buildRootHeaders(SHELL_FILE)).map((b) => b.path);
-    expect(paths).toEqual(['/', '/index.html', '/shell/*']);
+  it('has the /kit/ blocks equal to the / block apart from the path; no /*, /hand/*, /kit/*, or /kit/gallery/*', () => {
+    const blocks = parseHeaders(buildRootHeaders(SHELL_FILE));
+    expect(blocks.map((b) => b.path)).toEqual(['/', '/index.html', '/kit/', '/kit/index.html', '/shell/*']);
+    const root = blocks.find((b) => b.path === '/');
+    for (const scope of ['/index.html', '/kit/', '/kit/index.html']) {
+      expect(blocks.find((b) => b.path === scope)?.headers).toEqual(root?.headers);
+    }
   });
 
   it('refuses an input without blocks', () => {

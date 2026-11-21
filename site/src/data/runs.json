@@ -470,6 +470,11 @@
                 "label": "never touch the vase",
                 "measured": "untouched",
                 "ok": true
+              },
+              {
+                "label": "gentle-hands",
+                "measured": "joint limit exceeded in 1 of 8 variants",
+                "ok": false
               }
             ],
             "commands": [
@@ -842,6 +847,11 @@
                 "label": "never touch the vase",
                 "measured": "untouched",
                 "ok": true
+              },
+              {
+                "label": "gentle-hands",
+                "measured": "joint limit exceeded in 2 of 8 variants",
+                "ok": false
               }
             ],
             "commands": [

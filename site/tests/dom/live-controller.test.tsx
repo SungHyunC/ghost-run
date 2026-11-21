@@ -9,18 +9,12 @@ import { KNOWN_HAND, KNOWN_SHELL } from '../../src/live/input';
 import { PRESETS } from '../../src/live/presets';
 import type { LightEngines, LiveAnswer, LiveEngine, LiveInput, LiveLoaders } from '../../src/live/types';
 import { drain } from '../lib/live-fakes';
+import { visibility as pageVisibility } from '../lib/page-visibility';
 
 const runs = runsJson as unknown as RunsFile;
 
-class IdleObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
-
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', IdleObserver);
 });
 
 afterEach(() => {
@@ -91,7 +85,9 @@ function fakeLoaders(opts: { handFailures?: number } = {}) {
   return { loaders, shell, cloud, hand, dispose };
 }
 
-const visibility = { near: 'pending', seen: 'pending' } as const;
+/** No page opened: nothing loads and nothing autoplays. */
+const visibility: LiveVisibility = { near: false, started: false, active: false };
+const RUN: LiveVisibility = { near: true, started: true, active: true };
 const advance = (ms: number) =>
   act(() => {
     vi.advanceTimersByTime(ms);
@@ -105,7 +101,7 @@ function Page({ loaders }: { loaders: LiveLoaders }) {
   return (
     <>
       <Sprite />
-      <Walkthrough runs={runs} loaders={loaders} />
+      <Walkthrough runs={runs} loaders={loaders} visibility={pageVisibility('cover')} />
     </>
   );
 }
@@ -359,23 +355,116 @@ describe('useLiveWalkthrough', () => {
     expect(f.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('near loads the light chunk once and warms it; seen plays the first Shell Preset', async () => {
+  it('near loads the light chunk once and warms it; started plays the first Shell Preset', async () => {
     const f = fakeLoaders();
     const warm = vi.spyOn(f.shell, 'warm');
     const { result, rerender } = renderHook((v: LiveVisibility) => useLiveWalkthrough({ runs, loaders: f.loaders, visibility: v }), {
-      initialProps: { near: 'pending', seen: 'pending' } as LiveVisibility,
+      initialProps: visibility,
     });
     await drain();
     expect(f.loaders.light).not.toHaveBeenCalled();
-    rerender({ near: 'seen', seen: 'pending' });
+    rerender({ near: true, started: false, active: false });
     await drain();
     expect(f.loaders.light).toHaveBeenCalledTimes(1);
     expect(warm).toHaveBeenCalledTimes(1);
     expect(f.shell.calls).toHaveLength(0);
-    rerender({ near: 'seen', seen: 'seen' });
+    rerender(RUN);
     await drain();
     expect(f.shell.calls.length).toBeGreaterThan(0);
     expect(result.current.displayed).toBe('live');
     expect(f.loaders.light).toHaveBeenCalledTimes(1);
+  });
+
+  describe('leaving and returning to the Run page', () => {
+    const LEFT: LiveVisibility = { near: true, started: true, active: false };
+    const mountRun = (f: ReturnType<typeof fakeLoaders>, initial: LiveVisibility = RUN) =>
+      renderHook((v: LiveVisibility) => useLiveWalkthrough({ runs, loaders: f.loaders, visibility: v }), { initialProps: initial });
+
+    it('a load on #run starts the autoplay once', async () => {
+      const f = fakeLoaders();
+      mountRun(f);
+      await drain();
+      expect(f.shell.calls.length).toBeGreaterThan(0);
+      expect(f.shell.calls[0]).toBe(PRESETS.shell[0]?.input);
+    });
+
+    it('leaving during a walk parks it, and returning does not autoplay again', async () => {
+      const f = fakeLoaders();
+      const { result, rerender } = mountRun(f);
+      await drain();
+      advance(2500);
+      const step = result.current.walk.step;
+      const calls = f.shell.calls.length;
+      expect(result.current.walk.animating).toBe(true);
+      rerender(LEFT);
+      expect(result.current.walk.animating).toBe(false);
+      expect(result.current.busy).toBe(false);
+      advance(60000);
+      expect(result.current.walk.step).toBe(step);
+      expect(vi.getTimerCount()).toBe(0);
+      rerender(RUN);
+      await drain();
+      expect(result.current.walk.step).toBe(step);
+      expect(f.shell.calls).toHaveLength(calls);
+    });
+
+    it('leaving drops a pending answer', async () => {
+      const f = fakeLoaders();
+      let release!: () => void;
+      f.shell.gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const { result, rerender } = mountRun(f);
+      await drain();
+      expect(result.current.busy).toBe(true);
+      rerender(LEFT);
+      expect(result.current.busy).toBe(false);
+      expect(result.current.message).toBeNull();
+      release();
+      await drain();
+      expect(result.current.displayed).toBe('none');
+      expect(result.current.walk.animating).toBe(false);
+    });
+
+    it('leaving before the first answer resets the autoplay, so it runs on return', async () => {
+      const f = fakeLoaders();
+      let release!: () => void;
+      f.shell.gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const { result, rerender } = mountRun(f);
+      await drain();
+      rerender(LEFT);
+      f.shell.gate = null;
+      release();
+      await drain();
+      expect(f.shell.calls).toHaveLength(1);
+      rerender(RUN);
+      await drain();
+      expect(f.shell.calls.length).toBeGreaterThan(1);
+      expect(result.current.displayed).toBe('live');
+    });
+
+    it('Replay works after returning', async () => {
+      const f = fakeLoaders();
+      const { result, rerender } = mountRun(f);
+      await drain();
+      advance(2500);
+      const calls = f.shell.calls.length;
+      rerender(LEFT);
+      rerender(RUN);
+      act(() => {
+        result.current.replay();
+      });
+      expect(result.current.walk.animating).toBe(true);
+      expect(f.shell.calls).toHaveLength(calls);
+    });
+
+    it('the Live_Section creates no IntersectionObserver', () => {
+      const ctor = vi.fn();
+      vi.stubGlobal('IntersectionObserver', ctor);
+      render(<Page loaders={fakeLoaders().loaders} />);
+      expect(ctor).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,7 +1,2 @@
-html,body{margin:0}
-body{background:#110824}
-.site{min-height:100vh;overflow-x:clip}
-.page{max-width:1040px;margin:0 auto}
-.sprite{position:absolute}
-.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.wrap{max-width:1040px;margin:0 auto}
 .jl{display:block;font-size:9.5px;color:var(--flame)}

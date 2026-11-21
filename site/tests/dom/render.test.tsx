@@ -11,14 +11,32 @@ const here = dirname(fileURLToPath(import.meta.url));
 afterEach(cleanup);
 
 describe('App shell and nav', () => {
-  it('has the .site and .page wrappers with the sprite first', () => {
+  it('has the .site and .wrap wrappers with the sprite first and the nav above the pages', () => {
     const { container } = render(<App />);
     const site = container.querySelector('.site');
     expect(site).not.toBeNull();
     expect(site?.firstElementChild?.classList.contains('sprite')).toBe(true);
-    const page = container.querySelector('.site > .page');
-    expect(page).not.toBeNull();
-    expect(page?.firstElementChild?.classList.contains('nav')).toBe(true);
+    const wrap = container.querySelector('.site > .wrap');
+    expect(wrap).not.toBeNull();
+    expect(wrap?.firstElementChild?.classList.contains('nav')).toBe(true);
+    expect(wrap?.children[1]?.id).toBe('pages');
+  });
+
+  it('renders the five Book_Pages in order with data-page and data-title', () => {
+    const { container } = render(<App />);
+    const pages = [...container.querySelectorAll('#pages > .page')];
+    expect(pages.map((p) => [p.getAttribute('data-page'), p.getAttribute('data-title'), p.id])).toEqual([
+      ['cover', "Let your agent's ghost try it first", ''],
+      ['recipe', "What's in the skeleton?", ''],
+      ['costumes', 'One skeleton, three costumes', ''],
+      ['run', 'Watch the ghost work', ''],
+      ['make', 'Make your own costume', ''],
+    ]);
+    expect(pages[0]?.querySelector('header.hero')).not.toBeNull();
+    expect(pages[1]?.querySelector('section#recipe')).not.toBeNull();
+    expect(pages[4]?.lastElementChild?.classList.contains('foot')).toBe(true);
+    expect(container.querySelectorAll('#pages > .page[inert]')).toHaveLength(4);
+    expect(pages[0]?.hasAttribute('inert')).toBe(false);
   });
 
   it('renders the five nav links with their targets', () => {
@@ -59,12 +77,9 @@ describe('Hero', () => {
     expect(container.querySelector('h1')?.textContent).toBe("Let your agent's ghost try it first.");
     const p = hero?.querySelector('p');
     expect(p?.textContent).toBe(
-      'A Kiro template for apps that rehearse risky plans on a ghost copy of the world. One skeleton, three costumes.',
+      'A Kiro template where a ghost tries risky plans on a copy first. One skeleton, three costumes.',
     );
-    expect([...(p?.querySelectorAll('b') ?? [])].map((b) => b.textContent)).toEqual([
-      'ghost copy',
-      'One skeleton, three costumes.',
-    ]);
+    expect([...(p?.querySelectorAll('b') ?? [])].map((b) => b.textContent)).toEqual(['One skeleton, three costumes.']);
   });
 
   it('has the two buttons with their targets', () => {
@@ -76,9 +91,9 @@ describe('Hero', () => {
     ]);
   });
 
-  it('follows the nav and hides every decorative svg', () => {
+  it('is the first block of the cover page and hides every decorative svg', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.page')?.children[1]?.classList.contains('hero')).toBe(true);
+    expect(container.querySelector('.page')?.children[0]?.classList.contains('hero')).toBe(true);
     const svgs = [...container.querySelectorAll('header.hero svg')];
     expect(svgs.length).toBeGreaterThan(0);
     for (const s of svgs) {
@@ -103,7 +118,7 @@ describe('Recipe', () => {
     expect(sec).not.toBeNull();
     expect(sec?.querySelectorAll('h2')).toHaveLength(1);
     expect(sec?.querySelector('h2')?.textContent).toBe("What's in the skeleton?");
-    expect(sec?.querySelector('.sec-sub')?.textContent).toBe('Every ghost-run app is a recipe with two ingredients.');
+    expect(sec?.querySelector('.sec-sub')?.textContent).toBe('Your world + the skeleton = a ghost-run app.');
     expect([...(sec?.querySelectorAll('h3') ?? [])].map((h) => h.textContent)).toEqual([
       'Your world',
       'The skeleton',
@@ -124,15 +139,15 @@ describe('Recipe', () => {
     const rows = [...container.querySelectorAll('#recipe .fnl li')];
     expect(rows.map((r) => [r.querySelector('code')?.textContent, r.textContent])).toEqual([
       ['snapshot', 'snapshotcopy reality'],
-      ['step', 'steptry one action on the copy'],
+      ['step', 'steptry one action'],
       ['diff', 'diffwhat changed'],
-      ['render', 'renderdraw it for the screens'],
-      ['fingerprint', 'fingerprintprove reality stayed the same'],
-      ['effectsOutside', 'effectsOutsidewhat would leave the box'],
+      ['render', 'renderdraw it'],
+      ['fingerprint', 'fingerprintprove reality is untouched'],
+      ['effectsOutside', 'effectsOutsidewhat leaves the box'],
     ]);
   });
 
-  it('shows eight parts in order with lines and folders', () => {
+  it('shows eight parts in order with deck lines and no folder line', () => {
     const { container } = render(<App />);
     const parts = [...container.querySelectorAll('#recipe .part')];
     expect(parts.map((p) => p.querySelector('b')?.textContent)).toEqual([
@@ -145,26 +160,22 @@ describe('Recipe', () => {
       'Kiro hook',
       'world-smith',
     ]);
-    expect(parts[1]?.querySelector('span')?.textContent).toBe('Runs the plan on the copy, in a Docker box for real files.');
-    expect(parts[1]?.querySelector('i')?.textContent).toBe('core/ · ghost-runner/');
-    expect(parts[7]?.querySelector('i')?.textContent).toBe('.kiro/agents/');
+    expect(parts[1]?.querySelector('span')?.textContent).toBe('Try the plan on the copy');
+    expect(parts[7]?.querySelector('span')?.textContent).toBe('A Kiro agent that builds worlds');
+    expect(container.querySelector('#recipe .part i')).toBeNull();
     for (const p of parts) expect(p.querySelector('svg use')).not.toBeNull();
   });
 
   it('names the six specs and the cauldron text', () => {
     const { container } = render(<App />);
     const built = container.querySelector('#recipe .built');
-    expect(built?.textContent?.startsWith('Built with Kiro specs:')).toBe(true);
-    expect([...(built?.querySelectorAll('code') ?? [])].map((c) => c.textContent)).toEqual([
-      'core-contract',
-      'ghost-runner',
-      'wards',
-      'possession',
-      'ui-kit',
-      'kiro-integration',
-    ]);
+    expect(built?.children).toHaveLength(1);
+    expect(built?.textContent).toBe('Built from 6 Kiro specs');
+    expect(built?.firstElementChild?.getAttribute('title')).toBe(
+      'core-contract, ghost-runner, wards, possession, ui-kit, kiro-integration',
+    );
     expect(container.querySelector('#recipe .result p')?.textContent).toBe(
-      'It copies the world, lets a ghost try the plan, judges it with your wards, and shows the verdict as a candle.',
+      'Copy → try → judge → candle.',
     );
   });
 
@@ -175,7 +186,7 @@ describe('Recipe', () => {
     };
     const n = Math.round((size.worlds['ghost-cloud'] ?? 0) / 100) * 100;
     expect(container.querySelector('#recipe .lean')?.textContent).toBe(
-      `🎃 That's all. Ghost Cloud's whole world is about ${n} lines.`,
+      `That's all. Ghost Cloud is about ${n} lines.`,
     );
     const src = readFileSync(resolve(here, '../../src/components/Recipe.tsx'), 'utf8');
     expect(/about\s+\d/.test(src)).toBe(false);
@@ -190,8 +201,8 @@ describe('Make and Footer', () => {
     const sec = container.querySelector('section#make');
     expect(sec?.querySelectorAll('h2')).toHaveLength(1);
     expect(sec?.querySelector('h2')?.textContent).toBe('Make your own costume');
-    expect(sec?.querySelector('.sec-sub')?.textContent).toBe('Write six functions, or let a Kiro agent write them with you.');
-    expect(sec?.querySelector('.book-t')?.textContent).toBe('📖 The spell: a world in six functions');
+    expect(sec?.querySelector('.sec-sub')?.textContent).toBe('Write six functions, or let a Kiro agent help.');
+    expect(sec?.querySelector('.book-t')?.textContent).toBe('📖 A world in six functions');
     expect(sec?.querySelector('.book pre')?.textContent).toBe(
       [
         'const myWorld: World<MyState, MyAction> = {',
@@ -212,7 +223,7 @@ describe('Make and Footer', () => {
     const sec = container.querySelector('section#make');
     expect(sec?.querySelector('.agent h3')?.textContent).toBe('Ask world-smith');
     expect(sec?.querySelector('.agent p')?.textContent).toBe(
-      'A Kiro custom agent. It copies the spec template, writes the world with you one file at a time, and runs the registration gate and the wards.',
+      'A Kiro agent that writes the world with you and runs the checks.',
     );
     expect(sec?.querySelector('.agent code.cmd')?.textContent).toBe('kiro-cli chat --agent world-smith');
     expect(sec?.querySelector('.agent .proof')?.textContent).toBe('🎃 Ghost Cloud was made this way.');
@@ -221,7 +232,7 @@ describe('Make and Footer', () => {
 
   it('puts the footer last with the seven items in order', () => {
     const { container } = render(<App />);
-    const page = container.querySelector('.page');
+    const page = container.querySelector('[data-page="make"]');
     const foot = page?.lastElementChild;
     expect(foot?.tagName).toBe('FOOTER');
     expect(foot?.classList.contains('foot')).toBe(true);
@@ -240,7 +251,7 @@ describe('Make and Footer', () => {
 
   it('ends the footer with a relative link to the third-party notices', () => {
     const { container } = render(<App />);
-    const foot = container.querySelector('.page')?.lastElementChild;
+    const foot = container.querySelector('[data-page="make"]')?.lastElementChild;
     const anchors = [...(foot?.querySelectorAll('a') ?? [])];
     expect(anchors).toHaveLength(1);
     const link = anchors[0];

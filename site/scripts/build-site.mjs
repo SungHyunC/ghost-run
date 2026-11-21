@@ -30,12 +30,16 @@ const SOURCES = [
   { dir: 'site/build/dist', pkg: '@ghost-run/site' },
 ];
 
-/** The five targets: source folder, target folder in site/dist/ (posix, '' is the root). */
+/**
+ * The four targets: source folder, target folder in site/dist/ (posix, '' is the root).
+ * The landing build comes first: it already holds kit/index.html (the Showcase) and the page assets.
+ * The gallery of ui/dist goes to kit/gallery/, unchanged (site-pages Requirement 16, criterion 2).
+ */
 const COPIES = [
   { from: 'site/build/dist', to: '', label: '/' },
   { from: 'apps/ghost-shell/dist', to: 'shell', label: '/shell/' },
   { from: 'apps/ghost-hand/dist', to: 'hand', label: '/hand/' },
-  { from: 'ui/dist', to: 'kit', label: '/kit/' },
+  { from: 'ui/dist', to: 'kit/gallery', label: '/kit/gallery/' },
 ];
 
 /**
@@ -111,6 +115,8 @@ function checkSources(root) {
     if (!isDir(abs) || readdirSync(abs).length === 0) throw missing(dir, pkg);
     if (!isFile(join(abs, 'index.html'))) throw missing(`${dir}/index.html`, pkg);
   }
+  const landing = SOURCES[3];
+  if (!isFile(join(root, landing.dir, 'kit', 'index.html'))) throw missing(`${landing.dir}/kit/index.html`, landing.pkg);
   const shell = SOURCES[0];
   for (const name of ['ko.html', '_headers']) {
     if (!isFile(join(root, shell.dir, name))) throw missing(`${shell.dir}/${name}`, shell.pkg);

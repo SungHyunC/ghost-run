@@ -1,0 +1,18 @@
+/* nav + logo */
+.nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;position:relative;z-index:3}
+.logo{display:flex;flex:none;white-space:nowrap;align-items:center;gap:8px;font-weight:700;font-size:19px}
+.logo svg{width:30px;height:32px;filter:drop-shadow(0 0 8px rgba(144,70,255,.8))}
+.logo span{color:var(--pump)}
+.nav-links{display:flex;flex-wrap:wrap;gap:6px}
+.nav-links a{text-decoration:none;font-size:13px;padding:5px 11px;border-radius:999px;color:var(--dim);background:rgba(255,255,255,.05)}
+.nav-links a.on{background:var(--bone);color:var(--ink);font-weight:600}
+.nav-links a:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+/* phones: one nav row, pills scroll sideways when they do not fit */
+@media (max-width:560px){
+  .nav{flex-wrap:nowrap;gap:8px;padding:10px 12px}
+  .logo{font-size:16px;gap:6px}
+  .logo svg{width:24px;height:26px}
+  .nav-links{flex:1 1 auto;min-width:0;flex-wrap:nowrap;justify-content:flex-start;gap:4px;overflow-x:auto;padding:3px;scrollbar-width:none}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-links a{flex:none;font-size:12px;padding:4px 8px;white-space:nowrap}
+}

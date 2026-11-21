@@ -5,18 +5,14 @@ import { Sprite } from '../../src/components/art/Sprite';
 import { Walkthrough } from '../../src/components/Walkthrough';
 import runsJson from '../../src/data/runs.json';
 import type { RunsFile } from '../../src/data/types';
-import { drain, recordedLoaders } from '../lib/live-fakes';
+import { drain, recordedLoaders, visibility } from '../lib/live-fakes';
 
+/** Not opened: no engine loads and nothing autoplays; tests drive the box themselves. */
+const idle = visibility('cover');
 const runs = runsJson as unknown as RunsFile;
 
-class IdleObserver {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-}
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal('IntersectionObserver', IdleObserver);
 });
 afterEach(() => {
   cleanup();
@@ -28,7 +24,7 @@ function mount() {
   return render(
     <>
       <Sprite />
-      <Walkthrough runs={runs} loaders={recordedLoaders(runs).loaders} />
+      <Walkthrough visibility={idle} runs={runs} loaders={recordedLoaders(runs).loaders} />
     </>,
   );
 }
