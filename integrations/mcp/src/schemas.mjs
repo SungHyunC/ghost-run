@@ -21,7 +21,12 @@ const action = z.object({
 
 export const planSchema = z.array(action).min(1).max(MAX_PLAN_ACTIONS);
 /** Optional absolute path of the agent's project root; the server validates it (workspace.mjs). */
-export const workspaceSchema = z.string().min(1).max(4096).optional();
+export const workspaceSchema = z
+  .string()
+  .min(1)
+  .max(4096)
+  .optional()
+  .describe('Absolute path of your project root. Pass it on every call: a server started from an installed power cannot see your project otherwise.');
 export const idSchema = z.string().regex(ID_PATTERN);
 
 /** Raw zod shapes, as `registerTool` takes them. */

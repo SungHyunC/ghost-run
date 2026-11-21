@@ -738,6 +738,25 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Depends on tasks 22.1, 22.2, 22.3, 22.4, and 22.5.**
     - _Requirements: 19.15, 22.5, 23.3_
 
+- [x] 23. Fix round 3 2026-11-21
+  - [x] 23.1 Document the headless trust-all limit of `ask`
+    - Write the limit (a non-interactive Kiro CLI run with `--trust-all-tools` answers an `ask` itself; a block stays blocked; use `--trust-tools=@builtin` or narrower for unattended runs) in the Requirement 10 notes, in `integrations/kiro-hook/README.md`, and in the section "Use it in your Kiro" of the root `README.md`. `WARN_MODE` stays `'ask'` (decided by the human).
+    - _Requirements: 10.3, 10.4, 11.1_
+
+  - [x] 23.2 Make the `workspace` input hard to miss
+    - The `workspace` field of all five tools carries the zod `.describe(...)` text "Absolute path of your project root. Pass it on every call: a server started from an installed power cannot see your project otherwise."
+    - The root-unknown error starts with what to do: "Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: ...". Requirement 18.11, the design, the READMEs, and a new exact-text pin test in `integrations/mcp/tests/workspace-root.test.mjs` are updated. The committed bundle is rebuilt; requirement 19.15 holds.
+    - _Requirements: 18.11, 18.15, 19.15_
+
+  - [x] 23.3 Corrections and new results in `docs/measurements.md`
+    - Entry "Host checks before enabling the gate": correct the statement of who answered the IDE prompts; add "Check C with WARN_MODE 'ask' (62bb374)", "IDE update", and "Power after fix rounds 1 and 2 (62bb374)". Every earlier line stays. The manual tasks stay unticked.
+    - _Requirements: 20.6, 20.10_
+
+  - [x] 23.4 Gates for fix round 3
+    - Run `pnpm -r build`; rebuild the bundle and check that it equals the committed file; tests, typecheck, and lint of `@ghost-run/mcp` and `@ghost-run/kiro-hook`; the possession scan tests; `validate_spec_format` on this file.
+    - **Depends on tasks 23.1, 23.2, and 23.3.**
+    - _Requirements: 19.15, 22.5_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.

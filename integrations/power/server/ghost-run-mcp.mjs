@@ -44475,7 +44475,7 @@ var action = external_exports.object({
   cwd: external_exports.string().optional()
 });
 var planSchema = external_exports.array(action).min(1).max(MAX_PLAN_ACTIONS);
-var workspaceSchema = external_exports.string().min(1).max(4096).optional();
+var workspaceSchema = external_exports.string().min(1).max(4096).optional().describe("Absolute path of your project root. Pass it on every call: a server started from an installed power cannot see your project otherwise.");
 var idSchema = external_exports.string().regex(ID_PATTERN);
 var INPUT_SHAPES = {
   ghost_run: { plan: planSchema, workspace: workspaceSchema },
@@ -44509,7 +44509,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 var WORKSPACE_ENV = "GHOST_RUN_WORKSPACE";
-var ROOT_UNKNOWN_MESSAGE = "workspace root unknown: pass `workspace` (the absolute path of your project root) or set GHOST_RUN_WORKSPACE";
+var ROOT_UNKNOWN_MESSAGE = "Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)";
 var WORKSPACE_MISMATCH_MESSAGE = "workspace does not match this server's workspace root";
 var WORKSPACE_REFUSALS = {
   notAbsolute: "workspace must be an absolute path",

@@ -565,3 +565,78 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - Build: `build:site` passes, and the site check reports 43 files with no findings.
   - Sizes: the landing closure is 346,648 B (limit 360,000 B), and the showcase closure is 285,426 B (limit 330,000 B).
 - **Not ours.** `.kiro/specs/kiro-integration/tasks.md` was changed on disk by the open Kiro IDE: some `[~]` marks were reset to `[ ]`. It is left uncommitted for the owner.
+
+### The gate in a real Kiro: sleeping Docker, host checks, `ask`, and the power in another project
+
+- **Why.** The owner asked for an honest score against the judging criteria. The weakest point was the story of the product guarding Kiro itself: the gate had never run in our own Kiro. The plan:
+  - fix the gate
+  - check it in both hosts
+  - switch it on for our own work
+  - count the approvals for at least three days
+
+  A video script and the Devpost text come after that.
+
+- **Sleeping Docker (root cause).**
+  - In Kiro IDE the gate fell back to static analysis.
+  - Docker Desktop's Resource Saver stops its VM after 5 idle minutes, and the first engine call then takes about 1.9 s. The gate's 2 s check timed out. `docker version` does not wake the VM; `docker info` does.
+  - Kiro added one wake retry (10 s) and a `docker-warmup` hook (commit 0372934).
+  - Runs: 27.9, 1.1 and 0.4 credits.
+
+- **Host checks before switching the gate on.** Claude Code ran them in scratch clones, in Kiro CLI 3.5.0 and Kiro IDE 1.4.236:
+  - CLI: non-interactive runs, and an interactive chat in a pseudo-terminal.
+  - IDE: driven through Orca computer use. With the owner's consent, the window was brought forward in two sittings of about half an hour each.
+  - Claude Code answered every approval prompt.
+
+  | Check | CLI | IDE |
+  |---|---|---|
+  | `ls` | allowed (safe list) | allowed (safe list), then the IDE's own approval |
+  | `rm -rf data` | blocked by protect-data | blocked by protect-data, before the IDE's approval prompt |
+  | overwrite `data/a.csv` | blocked | blocked |
+  | build missing | GATE UNAVAILABLE | GATE UNAVAILABLE |
+  | sleeping Docker | dockerCheckMs 1656, no retry, box rehearsal | dockerCheckMs 2589, wake retry used, box rehearsal with P1 |
+
+  - **The `ask` probe:** a host prompt with the reason text appeared in all three trust settings in both hosts, and Deny blocked the call every time. The IDE settings were:
+    - Supervised with no trusted commands
+    - `echo *` trusted
+    - everything trusted with "Approve for me"
+  - **Fail-closed cases (CLI):** a crash, a syntax error, a missing wards file, a missing build and an over-long command each blocked.
+  - **Safe list:** five built-in commands were skipped, and four look-alikes were ghosted.
+  - **Possession scan:** all 1,321 tracked text files were clean.
+
+- **Decision (owner): `WARN_MODE` is `ask`.**
+  - A warn now opens Kiro's approval prompt with the gate's message, for example "GHOST RUN NEEDS HUMAN APPROVAL … url to example.com". This was shown in the interactive CLI and in the IDE.
+  - A block stays a hard block.
+  - A later check found one limit. A non-interactive CLI run with `--trust-all-tools` answers the ask itself, so the warned command runs. With `--trust-tools=@builtin` (our own setting) or narrower, the ask gets no answer and the call is refused.
+  - The owner chose to keep `ask` and document the limit.
+
+- **The power did not work in another project.**
+  - Installed with `kiro-cli powers install`, `wards_check` failed in both hosts. The server took its working directory, the power's install folder, as the user's project.
+  - A throwaway probe power showed, in both hosts:
+    - the working directory is the install folder
+    - `${workspaceFolder}` is not substituted
+    - the client declares no MCP roots
+    - in the IDE, `PWD` is the folder Kiro was launched from, not the window's project
+  - Kiro fixed it:
+    - The root comes from MCP roots, `GHOST_RUN_WORKSPACE`, the working directory (never the server's own folder), or a `workspace` input. The skill and the tool schema tell the agent to pass `workspace`, and a mismatch is refused.
+    - A project without `wards.yaml` gets the template's default wards, with a notice.
+    - The box sources ship inside the power.
+  - Re-checked after reinstalling:
+    - In a second project in the CLI, `ghost_run` blocked `rm -rf data` after a real box rehearsal.
+    - In the IDE, `wards_check` worked once the agent passed `workspace`. Two earlier calls failed with a host error ("tool … does not exist on server") while a second, untrusted window was open.
+    - A plain "I want to run rm -rf …" still does not make the agent use the power. The power is advisory, and only the gate enforces.
+
+- **Test races found by a full run in a fresh clone.**
+  - Two ghost-shell build tests rebuilt the same `dist` in parallel.
+  - Three Docker tests counted every ghost container on the machine, including those of gate checks running at the same time.
+  - They now build into their own folder or count only their own run ids.
+
+- **Interruptions.**
+  - The Mac went to sleep during a test run, which stalled it. Long runs now run under `caffeinate -i`.
+  - Kiro IDE updated itself to 1.5.11 and restarted during the IDE fail-closed checks. Those two cases have no IDE result. `rm -rf data` was blocked again on 1.5.11.
+
+- **Kiro runs** (agent `spec`, model Auto): fix round 1 37.5, fix round 2 18.6 (spec) and 33.9 (implementation; the task executor needs the IDE, so the run was resumed with direct edits), fix round 3 3.8. The host-check chats cost about 6 credits.
+
+- **Not done yet:**
+  - a full suite run on the final commit
+  - switching the gate on in this repository, which needs the owner's confirmation
+  - the three days of approval counts

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 export const WORKSPACE_ENV = 'GHOST_RUN_WORKSPACE';
 export const ROOT_UNKNOWN_MESSAGE =
-  'workspace root unknown: pass `workspace` (the absolute path of your project root) or set GHOST_RUN_WORKSPACE';
+  'Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)';
 export const WORKSPACE_MISMATCH_MESSAGE = "workspace does not match this server's workspace root";
 export const WORKSPACE_REFUSALS = {
   notAbsolute: 'workspace must be an absolute path',

@@ -54,6 +54,11 @@ describe('resolution order', () => {
     await symlink(ownDir, link);
     expect(await resolver({ cwd: () => link }).resolve()).toEqual({ ok: false, error: ROOT_UNKNOWN_MESSAGE });
   });
+  it('starts the unknown-root message with what to do, in exact words', () => {
+    expect(ROOT_UNKNOWN_MESSAGE).toBe(
+      'Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)',
+    );
+  });
   it('has no PWD source: whatever PWD holds, only the own folder gives no root', async () => {
     for (const PWD of [ownDir, projectA, 'rel', path.join(base, 'missing'), undefined]) {
       expect(await resolver({ env: { PWD } }).resolve()).toEqual({ ok: false, error: ROOT_UNKNOWN_MESSAGE });

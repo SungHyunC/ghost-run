@@ -21,7 +21,7 @@ An installed power's server starts in the power's install folder, so the working
 2. The environment variable `GHOST_RUN_WORKSPACE`, when it is an absolute path of an existing folder.
 3. The working directory, unless it is the server's own folder (the power folder).
 4. The optional input `workspace` of every tool: the absolute path of your project root. It is used only when 1 to 3 give no root. It must be the absolute path of an existing folder (checked after links are resolved), and not `/`, not the home folder itself, and not the server's own folder. Each refusal names its reason.
-5. Otherwise there is no root. Every tool then returns the error `workspace root unknown: pass `workspace` (the absolute path of your project root) or set GHOST_RUN_WORKSPACE` and does nothing else. The server never works on its own folder.
+5. Otherwise there is no root. Every tool then returns the error `Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)` and does nothing else. The server never works on its own folder.
 
 When a root exists from 1 to 3 and `workspace` is also given, but its real path differs, the tool returns `workspace does not match this server's workspace root` and does nothing. The input never moves a server that has its own root.
 

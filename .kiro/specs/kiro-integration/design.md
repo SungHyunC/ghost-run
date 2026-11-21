@@ -24,7 +24,7 @@ The gate decides from what a ghost run changed, not from the command shape (expe
 | D8 | `timeout` placement | Entry level (`hooks[].timeout`), as kiro.dev/docs/hooks documents. The two exp-b files put it inside `action`. See "Hook file format". |
 | D9 | Concurrent ghost runs | A lock-file semaphore of 2 slots in the Ghost_Store, wait at most 5 s, then `deny` ("gate busy"). Bounds Docker load (O5). |
 | D10 | Where the Grave_Entry is written | By the gate, before it exits (blocked calls are assumed to fire no Post Tool Use; the probe confirms). |
-| D11 | Workspace root of the MCP server | Resolved per tool call by `src/workspace.mjs`, in this order: MCP `roots/list` (only when the client declared the `roots` capability), `GHOST_RUN_WORKSPACE`, the working directory unless it is the Own_Folder, then the optional `workspace` input of each tool call (used only when no root exists; absolute, realpath of an existing folder, not `/`, not the home folder, not the Own_Folder). `PWD` is not a source (it names the launch folder of the host, not the window's project). With no root every tool returns ``workspace root unknown: pass `workspace` (the absolute path of your project root) or set GHOST_RUN_WORKSPACE`` and does nothing else. The Ghost_Gate is unchanged (it takes `cwd` from the Hook_Event). See "Workspace root resolution". |
+| D11 | Workspace root of the MCP server | Resolved per tool call by `src/workspace.mjs`, in this order: MCP `roots/list` (only when the client declared the `roots` capability), `GHOST_RUN_WORKSPACE`, the working directory unless it is the Own_Folder, then the optional `workspace` input of each tool call (used only when no root exists; absolute, realpath of an existing folder, not `/`, not the home folder, not the Own_Folder). `PWD` is not a source (it names the launch folder of the host, not the window's project). With no root every tool returns ``Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)`` and does nothing else. The Ghost_Gate is unchanged (it takes `cwd` from the Hook_Event). See "Workspace root resolution". |
 
 ### Research summary
 
@@ -580,7 +580,7 @@ Module `workspace.mjs` (pure apart from two thin default adapters):
 
 ```js
 export const WORKSPACE_ENV = 'GHOST_RUN_WORKSPACE';
-export const ROOT_UNKNOWN_MESSAGE = 'workspace root unknown: pass `workspace` (the absolute path of your project root) or set GHOST_RUN_WORKSPACE';
+export const ROOT_UNKNOWN_MESSAGE = 'Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)';
 export const WORKSPACE_MISMATCH_MESSAGE = "workspace does not match this server's workspace root";
 export function createWorkspaceResolver({ env, cwd, home, ownDir, getRoots, isFolder, real }) {}   // -> { resolve(workspaceInput?): Promise<RootResult>, invalidate(): void }
 export function ownFolderOf(moduleUrl) {}     // string
@@ -872,7 +872,7 @@ For all values of `workspace` that resolve (by real path, through links, trailin
 | Test deadline at 55 s | contract-pbt | `incomplete: deadline reached`, unfinished names, never `passed` |
 | Docker absent in a Docker-bound test | contract-pbt, tests | `skipped (docker unavailable)` |
 | Invalid world name or unsafe path | world-scaffold | message naming the rule, no file created |
-| No root and no valid `workspace` | MCP, every tool | ``workspace root unknown: pass `workspace` (the absolute path of your project root) or set GHOST_RUN_WORKSPACE``, nothing else happens |
+| No root and no valid `workspace` | MCP, every tool | ``Pass `workspace` (the absolute path of your project root) and call again. Workspace root unknown: the server has no project root of its own (set GHOST_RUN_WORKSPACE to give it one)``, nothing else happens |
 | Bad `workspace` (`not an absolute path`, `not an existing folder`, `is the filesystem root`, `is the home directory`, `is the server's own folder`) | MCP, every tool | error result naming the reason, nothing else happens |
 | `workspace` differs from the existing root | MCP, every tool | `workspace does not match this server's workspace root`, nothing else happens |
 | Path outside the workspace | MCP `blacklight` | per-path error, other paths scanned |

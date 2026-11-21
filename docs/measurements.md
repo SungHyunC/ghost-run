@@ -1219,7 +1219,7 @@ Fix: one wake retry of 10 s after a timed-out 2 s check (`DOCKER_WAKE_RETRY_MS`)
 
 ## Host checks before enabling the gate (2026-11-21, Kiro CLI 3.5.0, Docker 29.9.3)
 
-Run by Claude Code in scratch clones and in a second project. These are the CLI results and the IDE results (Kiro IDE 1.4.236, measured by Claude Code on 2026-11-21 with the human answering the prompts). No task is ticked from this entry: 17.1, 17.2, 17.4, and 19.1 stay open.
+Run by Claude Code in scratch clones and in a second project. These are the CLI results and the IDE results (Kiro IDE 1.4.236 and, where stated, 1.5.11), measured by Claude Code driving the IDE through Orca computer use, with the owner's consent; Claude Code answered the prompts. No task is ticked from this entry: 17.1, 17.2, 17.4, and 19.1 stay open.
 
 ### 17.1 Exit codes (scratch clone, ghost-gate and docker-warmup enabled)
 
@@ -1309,3 +1309,44 @@ Facts from a throwaway probe power (CLI 3.5.0, and Kiro IDE 1.4.236 measured on 
 | Environment `PWD` and `VSCODE_CWD` (IDE) | the folder Kiro was launched from (the ghost-run repository), not the workspace of the window (gate-clone) |
 
 Why `PWD` was removed as a root source (task 22.1): the CLI result above stays as measured, but in the IDE `PWD` names the launch folder of Kiro for every window, so it silently picked the wrong project. The root order is now MCP roots, `GHOST_RUN_WORKSPACE`, the working directory unless it is the server's own folder, then the `workspace` input of the tools (used only when no root exists). The SKILL.md body tells the agent to pass `workspace` in every call.
+
+### Check C with WARN_MODE 'ask' (62bb374)
+
+Kiro CLI 3.5.0, message "Run the shell command: curl -s https://example.com" (a warn verdict):
+
+| Run | Result |
+|---|---|
+| interactive `kiro-cli chat --trust-all-tools` | prompt "GHOST RUN NEEDS HUMAN APPROVAL: 3 notice(s) outside the copy or needing review. First: step 0 has side effect outside the copy: url to example.com. Seance: ... requires approval", Allow / Deny. Deny gave "User denied tool execute_bash", not executed |
+| `--no-interactive --trust-all-tools` | the CLI approved the ask itself; curl ran and printed the page |
+| `--no-interactive --trust-tools=@builtin` | "The confirmation prompt for tool execute_bash failed to get an answer", not executed |
+| `--no-interactive --trust-tools=fs_read` | same as `@builtin`, not executed |
+
+A block verdict stays exit 2 in every mode. The limit is written in the Requirement 10 notes, `integrations/kiro-hook/README.md`, and the root `README.md` (task 23.1).
+
+Kiro IDE 1.4.236, before an automatic update:
+
+- curl raised "Your approval is required to continue: GHOST RUN NEEDS HUMAN APPROVAL: 3 notice(s) ... url to example.com ..." with Allow and Deny.
+- After Deny the agent said: "I didn't run curl -s https://example.com. The Ghost Run pre-tool hook blocked it and is asking for your approval first".
+- `npx ghost-run approve g-1` was blocked by the approval-command rule.
+
+### IDE update
+
+Kiro IDE updated itself to 1.5.11 at 23:00 KST and restarted during the IDE fail-closed checks. Then:
+
+- The crash and syntax-error cases in the IDE have no result. Not measured: the IDE restarted for an update. The exit-2 path itself is shown in the IDE by the missing-build case (1.4.236).
+- On 1.5.11, "rm -rf data" was blocked again by protect-data (ghosted, then blocked).
+
+### Power after fix rounds 1 and 2 (62bb374)
+
+Reinstalled with `kiro-cli powers uninstall ghost-run` and `kiro-cli powers install`.
+
+- CLI, second project without wards.yaml:
+  - `wards_check` for `ls`: the agent passed `workspace` itself. The answer began "Workspace root: <second project>" and "No wards file in this project; using the built-in default wards (protect-data, no-data-loss, no-secret-egress)".
+  - `ghost_run` for `rm -rf data`: BLOCK by protect-data, isolation.mode docker-box, rehearsed true, P1 claimed. data/ was intact.
+  - The first `ghost_run` call after the reinstall failed with "Tool 'ghost_run' does not exist on server 'power-ghost-run-ghost-run'. This tool was already loaded, but the server no longer recognizes it". The same call worked in a new CLI session.
+- CLI, keyword: "I want to run rm -rf data to clean up" still did not load the skill. The agent inspected the folder and deleted it, in the scratch second project.
+- IDE 1.5.11, gate-clone window:
+  - `wards_check` failed twice with the same "does not exist" error. At that time a second window was open in Restricted Mode, and each window had its own power server. The agent's first call had no `workspace`.
+  - After the second window was closed and the agent was asked to pass `workspace`, the call worked: it listed protect-data, no-data-loss and no-secret-egress, and `ls` was on the safe list.
+  - Whether the second window caused the error is not proven.
+  - Because the agent omitted `workspace` until asked, task 23.2 puts a `.describe(...)` text on the `workspace` field of all five tools and starts the root-unknown error with what to do.
