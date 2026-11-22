@@ -234,7 +234,7 @@ function checkAtRest(container: HTMLElement, m: Model): void {
       expect(el.hasAttribute('inert'), id).toBe(true);
       expect(el.className, id).toBe('page');
     }
-    for (const c of ['leave-next', 'fade-in', 'enter-back']) expect(el.classList.contains(c)).toBe(false);
+    for (const c of ['leave-next', 'enter-next', 'leave-back', 'enter-back']) expect(el.classList.contains(c)).toBe(false);
   });
   checkBar(container, m.cur);
   checkLive(container, m.announced);

@@ -96,7 +96,7 @@ function open(hash: string) {
 
 const pageEl = (c: Element, id: PageId) => c.querySelector(`#pages [data-page="${id}"]`) as HTMLElement;
 const text = (c: Element, sel: string) => c.querySelector(sel)?.textContent;
-const effectClasses = (c: Element) => c.querySelectorAll('.fade-in, .leave-next, .enter-back').length;
+const effectClasses = (c: Element) => c.querySelectorAll('.enter-next, .enter-back, .leave-next, .leave-back').length;
 
 /** An anchor outside the Book_Pages; a document listener records the click and stops jsdom from navigating. */
 function addAnchor(c: Element, href: string): HTMLAnchorElement {
@@ -223,7 +223,7 @@ describe('turning', () => {
     const { container } = open('#cover');
     const next = container.querySelector<HTMLElement>('#pgNext') as HTMLElement;
     await user.click(next);
-    expect(container.querySelector('.page.on, .page.fade-in')).not.toBeNull();
+    expect(container.querySelector('.page.on')).not.toBeNull();
     expect(document.activeElement).toBe(next);
     const dot = container.querySelectorAll<HTMLElement>('#pgDots .pg-dot')[3] as HTMLElement;
     await user.click(dot);
@@ -235,7 +235,7 @@ describe('turning', () => {
     const { container } = open('#cover');
     expect(document.activeElement).toBe(document.body);
     await user.keyboard('{ArrowRight}');
-    expect(container.querySelector('.page.fade-in')).toBe(pageEl(container, 'recipe'));
+    expect(container.querySelector('.page.enter-next')).toBe(pageEl(container, 'recipe'));
     expect(document.activeElement).toBe(document.body);
   });
 
@@ -292,7 +292,7 @@ describe('effects', () => {
     const arriving = pageEl(container, 'recipe');
     expect(leaving.classList.contains('leave-next')).toBe(true);
     expect(leaving.hasAttribute('inert')).toBe(true);
-    expect(arriving.classList.contains('fade-in')).toBe(true);
+    expect(arriving.classList.contains('enter-next')).toBe(true);
     expect(arriving.hasAttribute('inert')).toBe(false);
     expect(timers.delays).toEqual([EFFECT_MS]);
     act(() => {

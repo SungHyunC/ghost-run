@@ -658,3 +658,23 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - Page 4 still fits 1280×800.
   - No overflow on the cover. The Skeleton page still scrolls 5 px at 1280×800, as before.
 - Redeployed.
+
+### Smoother page turn (owner's request)
+
+- **What was wrong.** The owner asked for smoother page turns. A frame-by-frame recording of the live landing showed no dropped frames, but the motion itself was poor:
+  - After Next, the page barely moved for about 0.25 s.
+  - The page layer, full width since the large-screens fix, rotated 100° around the column edge, swung toward the viewer and distorted the cover.
+  - The page vanished at once when it passed 90°.
+- **Prototype.** Claude Code made a prototype with three options: today's turn, a soft page turn and a slide (`docs/design/page-turn-prototype.html`). The owner chose the slide.
+- **Kiro's build** (site-pages group 13, 12.1 credits):
+  - The leaving page slides 9% and fades out in 360 ms. The entering page slides in and fades in over 480 ms, after a 60 ms delay.
+  - Only `transform` and `opacity` animate, and the sky is one static layer.
+  - When the window was scrolled, the leaving page keeps its place on screen.
+  - The X-ray, the autoplay and the engine preload start after the turn.
+  - Reduced motion is unchanged.
+- **Review in Chrome:**
+  - At 1920×1080, over four cold loads, every turn kept 16.7 ms frames, with at most one 33 ms frame.
+  - Motion shows about 80 ms after the key and settles by about 400 ms.
+  - No page edges.
+  - On a 390×844 phone scrolled 400 px down, the leaving page stayed in place while it slid out.
+- Redeployed.

@@ -5,13 +5,9 @@ import type { PagingState } from '../engine/paging';
 /** The classes of one Book_Page for the current state (design Component 5). */
 export function pageClass(state: PagingState, id: PageId): string {
   if (state.leaving === null) return id === state.current ? 'page on' : 'page';
-  if (state.direction === 'back') {
-    if (id === state.current) return 'page enter-back';
-    if (id === state.leaving) return 'page on';
-    return 'page';
-  }
-  if (id === state.current) return 'page on fade-in';
-  if (id === state.leaving) return 'page leave-next';
+  const dir = state.direction === 'back' ? 'back' : 'next';
+  if (id === state.current) return `page on enter-${dir}`;
+  if (id === state.leaving) return `page leave-${dir}`;
   return 'page';
 }
 

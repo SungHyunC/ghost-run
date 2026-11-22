@@ -34,7 +34,8 @@ This spec covers these parts:
 - **Page_Id**: One of `cover`, `recipe`, `costumes`, `run`, `make`.
 - **Current_Page**: The Book_Page that the visitor sees. Exactly one Book_Page is the Current_Page at rest.
 - **Turn**: The change of the Current_Page from one Book_Page to another, with or without the turn effect.
-- **Turn_Effect**: The animation of a Turn: the leaving page rotates away around its left edge in about 0.75 s (keyframes `turnOut`, `turnIn`, `pageIn` of Mockup_V6).
+- **Turn_Effect**: The animation of a Turn: a slide and fade (option B of Page_Turn_Prototype). The leaving and the arriving page overlap, move 9% sideways, and fade, in 360 ms and 480 ms (60 ms delay), with no rotation and no perspective. The sky stays still.
+- **Page_Turn_Prototype**: The file `docs/design/page-turn-prototype.html`, made by Claude Code at the owner's request; the owner chose its option B, "slide".
 - **Page_Bar**: The sticky element at the bottom of the Landing_Page with the Back button, five dots, the counter, and the Next button.
 - **Page_Live_Region**: The polite live region `#pgLive` of the Landing_Page that announces a Turn.
 - **Live_Section**: Section 3 of the Landing_Page, the element `section#run`, which is the content of the Book_Page `run`.
@@ -77,7 +78,7 @@ This spec covers these parts:
 
 #### Acceptance Criteria
 
-1. THE Landing_Page SHALL reproduce, from Mockup_V6, these items without a change of value: the page bar markup, class names, and ids (`pagebar`, `pg-btn`, `pg-prev`, `pg-next`, `pg-mid`, `pg-dots`, `pg-dot`, `pg-count`, `pgPrev`, `pgNext`, `pgNextTitle`, `pgCount`, `pgDots`, `pgLive`), the paging CSS, the keyframes `turnOut`, `turnIn`, and `pageIn`, the Turn_Effect timing, sizes, colors, and the mint Next button.
+1. THE Landing_Page SHALL reproduce, from Mockup_V6, these items without a change of value: the page bar markup, class names, and ids (`pagebar`, `pg-btn`, `pg-prev`, `pg-next`, `pg-mid`, `pg-dots`, `pg-dot`, `pg-count`, `pgPrev`, `pgNext`, `pgNextTitle`, `pgCount`, `pgDots`, `pgLive`), the paging CSS, the sizes and colors, and the mint Next button. The Turn_Effect is the one exception: it follows Page_Turn_Prototype (Requirement 5, criterion 5), not the rotating page of Mockup_V6.
 2. THE Showcase SHALL reproduce, from Mockup_Kit, these items without a change of value: layout, class names, sizes, spacing, radii, colors, the hero art (the ghost and the six part icons around it), the card grid, the alternating rows, the Frame look, and the keyframes. THE Showcase SHALL reuse the palette, the font Fredoka, the symbols, and the motion rules of the Landing_Page and SHALL NOT copy a second time the rules of the nav, the logo, or the section heads that the Landing_Page already has.
 3. THE page SHALL apply only these changes to the mockups, and no others: (a) the mockup scripts become React code and tests; (b) the Copy_Deck replaces the texts of the mockups wherever the two differ (Requirement 12); (c) the Frame holds the real Kit_Components in place of pictures (Requirement 15); (d) the rules of Requirements 3 to 9 and 19 to 21; (e) the renames and repairs of the section "Differences Between the Brief and the Repository"; (f) the deliberate deviations of criterion 7.
 4. THE Showcase SHALL contain no picture of a kit part, no `<img>` element, and no `data:` URL. THE 440 kB of embedded pictures of Mockup_Kit SHALL NOT be copied.
@@ -135,10 +136,17 @@ This spec covers these parts:
 2. THE Landing_Page SHALL ignore these keys WHEN the event target is an `input` (of any type, including `range`), a `textarea`, a `select`, or an element with `contenteditable`, or an element with the role `tab`, `slider`, `switch`, or `textbox`, WHEN the event was already handled (`defaultPrevented`), and WHEN `Alt`, `Ctrl`, `Meta`, or `Shift` is held. The reasons are that the plan field, the three sliders, the world tabs, and the X-ray switch of the Landing_Page use these keys themselves (Difference D2).
 3. WHEN a touch starts on the Book_Pages container and ends with a horizontal move of more than 60 px (the absolute horizontal distance is greater than 60 and greater than the absolute vertical distance), THE Landing_Page SHALL turn to the next page for a move to the left and to the previous page for a move to the right. A move of 60 px or less SHALL NOT turn a page.
 4. THE Landing_Page SHALL NOT treat as a swipe a touch that starts on an `input`, a `textarea`, a `select`, or an element with the role `slider` (the Ghost Hand sliders of the Live_Section).
-5. WHILE Reduced_Motion is not set, THE leaving page SHALL rotate away around its left edge in about 0.75 s with the keyframes `turnOut`, `turnIn`, and `pageIn` of Mockup_V6, and the arriving page SHALL come in under it, for a forward and for a backward Turn.
+5. WHILE Reduced_Motion is not set, THE Landing_Page SHALL turn pages with the slide of option B of Page_Turn_Prototype, for a forward and for a backward Turn, as follows:
+   - Forward: the leaving page goes from `translateX(0)` and opacity 1 to `translateX(-9%)` and opacity 0 in 360 ms with `cubic-bezier(.4,0,.2,1)`. The arriving page goes from `translateX(9%)` and opacity 0 to `translateX(0)` and opacity 1 in 480 ms, delayed 60 ms, with `cubic-bezier(.22,.61,.36,1)` and `animation-fill-mode: both`.
+   - Backward: mirrored. The leaving page goes to `translateX(9%)`; the arriving page comes from `translateX(-9%)`.
+   - Both pages animate at the same time, one over the other, and nothing is hidden at a midpoint. The Turn_Effect SHALL use no 3D, no rotation, no perspective, and no box-shadow, and SHALL animate only `transform` and `opacity`. `will-change: transform, opacity` SHALL be set only on the two pages of a running Turn.
+   - The sky SHALL stay still: the pages SHALL be transparent and the page gradient SHALL be painted once, on a static full-bleed layer behind all pages. No page edge SHALL show at rest or during a Turn at any window width from 320 px to 2560 px (Requirement 8, criterion 10). The stars and hills of the cover belong to the cover and move with it.
+   - WHEN the window is scrolled at the start of a Turn, THE leaving page SHALL stay where it was on screen while it slides out, and the window SHALL scroll to the top for the arriving page.
+   - The Turn_Effect SHALL end 560 ms after it starts (the end of the longest animation plus a margin), and the Turn state SHALL clear then.
 6. WHILE a Turn_Effect runs, THE Landing_Page SHALL hold every further Turn request and SHALL apply the last held request when the effect ends, so that no request is lost and the hash and the Current_Page agree at rest (Requirement 7, criterion 4). A held request for the page that is current by then SHALL change nothing.
-7. THE Turn_Effect SHALL NOT leave a class (`leave-next`, `fade-in`, `enter-back`) on a Book_Page after it ends, and SHALL NOT leave two Book_Pages in the layout.
+7. THE Turn_Effect SHALL NOT leave a class (`leave-next`, `enter-next`, `leave-back`, `enter-back`) on a Book_Page after it ends, and SHALL NOT leave two Book_Pages in the layout.
 8. THE timers of the Turn_Effect SHALL be cancelled when the Landing_Page unmounts.
+9. THE starts that a page entry causes (the Xray_Peek on the Book_Page `costumes`, the Autoplay on the Book_Page `run`, and the Light_Engine preload when the Book_Page `costumes` or `run` opens) SHALL begin when the Turn has finished, not when it starts. THE rules that each starts once and that nothing heavy loads before its page is near (Requirements 9 and 10) stay in force.
 
 ### Requirement 6: Reduced Motion
 
@@ -148,7 +156,7 @@ This spec covers these parts:
 
 1. WHILE Reduced_Motion is set, WHEN a Turn is requested, THE Landing_Page SHALL show the arriving page and hide the leaving page in the same update, with no Turn_Effect and no timer.
 2. THE Landing_Page SHALL follow a change of the Reduced_Motion setting without a reload: the next Turn after the change SHALL use the new setting.
-3. WHILE Reduced_Motion is set, THE keyframes `turnOut`, `turnIn`, and `pageIn` SHALL NOT run, and THE reduced-motion block of the stylesheet SHALL cover the classes of the page bar and of the Turn_Effect.
+3. WHILE Reduced_Motion is set, THE keyframes of the Turn_Effect (`leaveNext`, `enterNext`, `leaveBack`, `enterBack`) SHALL NOT run, and THE reduced-motion block of the stylesheet SHALL cover the classes of the page bar and of the Turn_Effect.
 4. THE rules of `site-live` for Reduced_Motion in the Live_Section and in the Costumes_Section stay in force, with the start rules of Requirement 9 of this spec.
 
 ### Requirement 7: Addresses, Links, and Focus

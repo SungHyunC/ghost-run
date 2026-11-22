@@ -22,7 +22,10 @@ describe('registry', () => {
   it('lists five pages in order', () => {
     expect(PAGE_IDS).toEqual(['cover', 'recipe', 'costumes', 'run', 'make']);
     expect(PAGES.map((p) => p.label)).toEqual(['Cover', 'Skeleton', 'Costumes', 'Ghost at work', 'Your own']);
-    expect(EFFECT_MS).toBe(780);
+    // The longest animation ends at 60 ms + 480 ms = 540 ms; the timer adds a small margin.
+    expect(EFFECT_MS).toBe(560);
+    expect(EFFECT_MS).toBeGreaterThan(540);
+    expect(EFFECT_MS).toBeLessThanOrEqual(600);
   });
 });
 

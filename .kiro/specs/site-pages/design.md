@@ -152,7 +152,7 @@ interface PagingEffects {
 }
 
 function transition(s: PagingState, e: PagingEvent): { state: PagingState; effects: PagingEffects };
-const EFFECT_MS = 780;                   // Mockup_V6 timer; the animation itself is 0.75 s
+const EFFECT_MS = 560;                   // end of the longest animation (60 + 480 ms) plus a small margin
 function parseHash(hash: string): PageId | null;   // '#recipe' -> 'recipe'; anything else -> null
 function formatHash(id: PageId): string;           // 'recipe' -> '#recipe'
 function initialState(hash: string): { state: PagingState; repairHash: boolean };
@@ -236,19 +236,39 @@ function linkPage(href: string | null): PageId | null;   // '#run' -> 'run'; 'sh
 <div className={classOf(state, id)} data-page={id} data-title={title} inert={id !== state.current}>…</div>
 ```
 
-`classOf` returns: `page on` for the current page at rest; for a forward Turn `page on fade-in` (arriving) and `page leave-next` (leaving); for a back Turn `page enter-back` (arriving) and `page on` (leaving). No other page has a class beyond `page`. When the effect ends, the classes fall back to `page on` and `page`, so no `leave-next`, `fade-in`, or `enter-back` stays (Requirement 5, criterion 7).
+`classOf` returns: `page on` for the current page at rest. For a forward Turn the arriving page is `page on enter-next` and the leaving page is `page leave-next`; for a back Turn the arriving page is `page on enter-back` and the leaving page is `page leave-back`. The arriving page is always the one in the layout (`on`), the leaving page is positioned absolutely over it. No other page has a class beyond `page`. When the effect ends, the classes fall back to `page on` and `page`, so no turn class stays (Requirement 5, criterion 7).
 
 `inert` is set on every page that is not `current`, including the leaving page during the effect. The CSS removes the non-current pages from the layout (Requirement 3, criterion 3):
 
 ```css
-.page { display: none; position: absolute; left: 0; right: 0; top: 0; transform-origin: left center; backface-visibility: hidden; background: …; }
-.page.on, .page.leave-next, .page.enter-back { display: block; }
+.page { display: none; position: absolute; left: 0; right: 0; top: 0; }   /* transparent */
+.page.on, .page.leave-next, .page.leave-back { display: flex; flex-direction: column; }
 .page.on { position: relative; }
 ```
 
-Large screens (Requirement 8, criteria 10 to 13). `.page` has no background of its own and sets `isolation: isolate`. `.page::before` is the full-bleed layer: `position:absolute; z-index:-1; top:0; bottom:0; left:calc(50% - 50vw); width:100vw` with the page gradient, so at rest no edge of the 1040 px column shows, and a turning page still hides the page under it. The shown page is a flex column (`display:flex; flex-direction:column`); `.page>:first-child{margin-top:auto}` and `.page>:last-child{margin-bottom:auto}` center short content and let tall content start at the top and scroll. The cover has the page's own min-height calc (with the `100vh` fallback) and `align-content:center`. Above 820 px the cover is sized in `em` from `font-size:clamp(16px,1.25vw,25.6px)` (H1 `2.5em`: 40 px at 1280 px, 64 px from 2048 px), with `align-items:center` and a bottom padding that keeps the content above the hills. Above 1280 px the cover is `65em` wide, centered on the column. Phones keep the px rules.
+The slide (Requirement 5, criterion 5; option B of Page_Turn_Prototype):
 
-The three keyframes, the shadows, the `.pages{perspective:1800px}` rule, and the page bar rules are copied from Mockup_V6 into `styles/12-book.css`, with its own `@media (prefers-reduced-motion: reduce)` block for `.page.leave-next`, `.page.enter-back`, `.page.fade-in` and the dot and button transitions. The minimum height of a page is `calc(100svh - var(--nav-h) - var(--bar-h))` with two custom properties whose values the owner comparison measures (Requirement 2, criterion 6). A page that is taller scrolls with the window, and the bar stays at the bottom because it is `position: sticky; bottom: 0` inside `.site`, which uses `overflow-x: clip` and so does not break sticky.
+```css
+.page.leave-next{will-change:transform,opacity;animation:leaveNext .36s cubic-bezier(.4,0,.2,1) both}
+.page.enter-next{will-change:transform,opacity;animation:enterNext .48s cubic-bezier(.22,.61,.36,1) .06s both}
+@keyframes leaveNext{from{transform:translateX(0);opacity:1}to{transform:translateX(-9%);opacity:0}}
+@keyframes enterNext{from{transform:translateX(9%);opacity:0}to{transform:translateX(0);opacity:1}}
+/* leave-back / enter-back mirror these with +9% and -9% */
+```
+
+Only `transform` and `opacity` animate. There is no rotation, perspective, `transform-origin`, `backface-visibility`, or turning shadow. `will-change` is set only by the four turn classes, so it exists only on the two pages of a running Turn. Reduced_Motion sets `animation: none` on the four classes (and the hook does not start a Turn then).
+
+*The sky stays still.* `.pages` is `position:relative; isolation:isolate`, and `.pages::before` is the one static sky layer (`position:absolute; z-index:-1; top:0; bottom:0; left:calc(50% - 50vw); width:100vw`, the page gradient). The pages have no background, so the gradient does not move with a page and no edge of the 1040 px column shows at any width. The stars and hills are part of the cover and move with it.
+
+*No jump.* When a Turn starts, the hook reads `window.scrollY` and writes `--turn-dy: -<scrollY>px` on `#pages` (through the CSSOM); `.page.leave-next, .page.leave-back` use `top: var(--turn-dy, 0px)`. The window scrolls to the top for the arriving page, and the leaving page keeps its place on screen. The property is removed when the Turn state clears.
+
+*Timing.* `EFFECT_MS` is 560: the end of the longest animation (60 ms delay + 480 ms = 540 ms) plus a margin of 20 ms. A request during the effect is held, as before.
+
+*Heavy work after the Turn (Requirement 5, criterion 9).* `usePaging().visibility` is the visibility of the last settled state: while `leaving !== null` it keeps the page and the `opened` map from before the Turn, and it moves to the new page when the Turn state clears. A held request starts the next Turn in the same update, so a page that is only passed through never becomes visible. The X-ray start, the Autoplay, and the Light_Engine preload read only this value (Component 6), so they begin after the Turn.
+
+Large screens (Requirement 8, criteria 10 to 13). `.page` has no background. The full-bleed sky layer is `.pages::before` (see above), so at rest and during a Turn no edge of the 1040 px column shows. The shown page is a flex column (`display:flex; flex-direction:column`); `.page>:first-child{margin-top:auto}` and `.page>:last-child{margin-bottom:auto}` center short content and let tall content start at the top and scroll. The cover has the page's own min-height calc (with the `100vh` fallback) and `align-content:center`. Above 820 px the cover is sized in `em` from `font-size:clamp(16px,1.25vw,25.6px)` (H1 `2.5em`: 40 px at 1280 px, 64 px from 2048 px), with `align-items:center` and a bottom padding that keeps the content above the hills. Above 1280 px the cover is `65em` wide, centered on the column. Phones keep the px rules.
+
+The page bar rules are copied from Mockup_V6 into `styles/12-book.css`, with the slide above in place of the rotating page, and with its own `@media (prefers-reduced-motion: reduce)` block for `.page.leave-next`, `.page.leave-back`, `.page.enter-next`, `.page.enter-back` and the dot and button transitions. The minimum height of a page is `calc(100svh - var(--nav-h) - var(--bar-h))` with two custom properties whose values the owner comparison measures (Requirement 2, criterion 6). A page that is taller scrolls with the window, and the bar stays at the bottom because it is `position: sticky; bottom: 0` inside `.site`, which uses `overflow-x: clip` and so does not break sticky.
 
 `components/PageBar.tsx` renders a `nav` with `aria-label="Pages"`, the buttons of Requirement 4, and the element `<div id="pgLive" className="sr-only" aria-live="polite">{liveText}</div>`. It reads `state.current`, never `leaving`. The ids and class names are those of Mockup_V6 (`pgPrev`, `pgNext`, `pgNextTitle`, `pgCount`, `pgDots`, `pg-btn`, `pg-dot`, `pg-count`). The dot names come from `PAGES` (`Page N: <title>`). The dot buttons and the two arrow buttons have a hit area of at least 24 by 24 CSS pixels.
 
@@ -437,7 +457,7 @@ The closure size is the size of the entry script plus the sizes of the local fil
 
 | Constant | Where | Value |
 |---|---|---|
-| `EFFECT_MS` | `engine/paging.ts` | 780 |
+| `EFFECT_MS` | `engine/paging.ts` | 560 |
 | `SWIPE_MIN_PX` | `engine/paging-input.ts` | 60 |
 | `ENTRY_MAX_BYTES` | `scripts/check-site.mjs` | 360,000 (closure size) |
 | `SHOWCASE_MAX_BYTES` | `scripts/check-site.mjs` | 340,000 provisional; set by measurement |
@@ -451,7 +471,7 @@ Reflection on the prework: the prework found several criteria that the same gene
 
 ### Property 1: Exactly one page is active and reachable (one-page-reachable)
 
-*For any* sequence of Turn requests (Back, Next, a dot, a key, a swipe, a hash change, an in-page link) over any starting page, with Reduced_Motion on or off, and with effect-end events at any points of the sequence, the state has these properties: (a) exactly one page is current, and at rest exactly one page is in the layout, has no `inert`, and carries the class `on`, while the other four have `inert` and no layout; (b) while an effect runs, the leaving page is the only other page in the layout and it is `inert`; (c) after the last effect-end, the current page is the page that the last request named (a held request for the then-current page changes nothing); (d) no page carries `leave-next`, `fade-in`, or `enter-back` at rest; (e) the Page_Bar shows the counter `N / 5`, the next-page title (or "The end"), the disabled state of Back and Next, and the single dot with `aria-current="page"` of the current page; (f) the live region text changed once per accepted Turn and equals `Page N of 5: <title>` of the current page; (g) with Reduced_Motion on, no timer is ever set and the leaving page is null right after each request; (h) after unmount no timer is pending. *For every* ordered pair of pages there is a dot press that turns from the first to the second (the five pages enumerate the pairs).
+*For any* sequence of Turn requests (Back, Next, a dot, a key, a swipe, a hash change, an in-page link) over any starting page, with Reduced_Motion on or off, and with effect-end events at any points of the sequence, the state has these properties: (a) exactly one page is current, and at rest exactly one page is in the layout, has no `inert`, and carries the class `on`, while the other four have `inert` and no layout; (b) while an effect runs, the leaving page is the only other page in the layout and it is `inert`; (c) after the last effect-end, the current page is the page that the last request named (a held request for the then-current page changes nothing); (d) no page carries `leave-next`, `enter-next`, `leave-back`, or `enter-back` at rest; (e) the Page_Bar shows the counter `N / 5`, the next-page title (or "The end"), the disabled state of Back and Next, and the single dot with `aria-current="page"` of the current page; (f) the live region text changed once per accepted Turn and equals `Page N of 5: <title>` of the current page; (g) with Reduced_Motion on, no timer is ever set and the leaving page is null right after each request; (h) after unmount no timer is pending. *For every* ordered pair of pages there is a dot press that turns from the first to the second (the five pages enumerate the pairs).
 
 **Validates: Requirements 3.3, 3.5, 4.2, 4.3, 4.4, 4.5, 4.6, 5.1, 5.5, 5.6, 5.7, 5.8, 6.1, 6.2, 8.1, 8.2, 8.3**
 

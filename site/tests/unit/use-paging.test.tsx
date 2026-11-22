@@ -381,4 +381,44 @@ describe('usePaging', () => {
     expect(rec.pending.size).toBe(0);
     expect(fake.listeners()).toBe(0);
   });
+
+  it('keeps the visibility of the old page until the turn has finished', () => {
+    const { rec, result } = setup('#recipe');
+    expect(result.current.visibility.current).toBe('recipe');
+    act(() => {
+      result.current.go('costumes', 'bar');
+    });
+    expect(result.current.state.current).toBe('costumes');
+    expect(result.current.visibility.current).toBe('recipe');
+    expect(result.current.visibility.opened.costumes).toBe(false);
+    act(() => {
+      rec.fire();
+    });
+    expect(result.current.visibility.current).toBe('costumes');
+    expect(result.current.visibility.opened.costumes).toBe(true);
+  });
+
+  it('leaves the visibility alone for a request for the current page', () => {
+    const { result } = setup('#recipe');
+    act(() => {
+      result.current.go('recipe', 'bar');
+    });
+    expect(result.current.visibility.current).toBe('recipe');
+  });
+
+  it('writes the scroll offset for the leaving page and clears it after the turn', () => {
+    const { fake, rec, result } = setup('#recipe');
+    const el = document.createElement('div');
+    (result.current.pagesProps.ref as { current: HTMLDivElement | null }).current = el;
+    Object.assign(fake.win, { scrollY: 240 });
+    act(() => {
+      result.current.go('costumes', 'bar');
+    });
+    expect(el.style.getPropertyValue('--turn-dy')).toBe('-240px');
+    expect(fake.scrollTo).toHaveBeenCalledTimes(1);
+    act(() => {
+      rec.fire();
+    });
+    expect(el.style.getPropertyValue('--turn-dy')).toBe('');
+  });
 });

@@ -1,7 +1,7 @@
 // The paging hook (design Component 3): runs the pure model of paging.ts and the input rules of
 // paging-input.ts against the browser. All timers go through the injected Scheduler.
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, RefObject, TouchEvent as ReactTouchEvent } from 'react';
 import { PAGE_IDS, PAGES, type PageId } from '../data/pages';
 import {
@@ -107,6 +107,10 @@ export function usePaging(options: UsePagingOptions = {}): Paging {
         const n = PAGE_IDS.indexOf(effects.announce);
         setLiveText(`Page ${String(n + 1)} of ${String(PAGE_IDS.length)}: ${PAGES[n]?.title ?? ''}`);
       }
+      // A leaving page stays where it was on screen while the window scrolls to the top for the arriving page.
+      const turnEl = pagesRef.current;
+      if (effects.startTimer) turnEl?.style.setProperty('--turn-dy', `${String(-Math.max(0, win.scrollY || 0))}px`);
+      else if (next.leaving === null) turnEl?.style.removeProperty('--turn-dy');
       if (effects.scrollTop) {
         try {
           win.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -280,10 +284,13 @@ export function usePaging(options: UsePagingOptions = {}): Paging {
     touchStartRef.current = null;
   }, []);
 
-  const visibility = useMemo<PageVisibility>(
-    () => ({ current: state.current, opened: state.opened }),
-    [state],
-  );
+  // Heavy work (the X-ray peek, the autoplay, the engine preload) starts when a turn has finished:
+  // while a turn runs, the visibility stays at the page that was current before it.
+  const settledRef = useRef<PageVisibility>({ current: state.current, opened: state.opened });
+  if (state.leaving === null && (settledRef.current.current !== state.current || settledRef.current.opened !== state.opened)) {
+    settledRef.current = { current: state.current, opened: state.opened };
+  }
+  const visibility = settledRef.current;
 
   return {
     state,

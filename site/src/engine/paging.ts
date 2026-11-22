@@ -38,8 +38,8 @@ export interface PageVisibility {
   readonly opened: Readonly<Record<PageId, boolean>>;
 }
 
-/** Mockup timer; the animation itself is 0.75 s. */
-export const EFFECT_MS = 780;
+/** The end of the longest turn animation (60 ms delay + 480 ms) plus a margin of 20 ms. */
+export const EFFECT_MS = 560;
 
 export const NO_EFFECTS: PagingEffects = {
   hash: null,

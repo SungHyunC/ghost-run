@@ -295,6 +295,39 @@ The plan follows this order:
     - `tests/unit/use-chrome-heights.test.tsx`: fake `ResizeObserver`; both properties are set on mount, updated on resize, and the observer disconnects on unmount.
     - _Requirements: 8.11, 8.13_
 
+- [x] 13. Smooth page turn
+  - [x] 13.1 Replace the rotating turn with the slide (option B)
+    - `12-book.css`: remove `turnOut`, `turnIn`, `pageIn`, the rotation, `transform-origin`, `backface-visibility`, `perspective`, and the turning box-shadow. Add `leaveNext`, `enterNext`, `leaveBack`, `enterBack` with the numbers of option B (360 ms and 480 ms with a 60 ms delay, the two easings, 9% sideways, opacity); `will-change` only on the four turn classes; the reduced-motion block covers them.
+    - _Requirements: 5.5, 6.3_
+
+  - [x] 13.2 Keep the sky still
+    - Make the pages transparent and paint the gradient once on `.pages::before` (static, 100vw, centered, `z-index:-1`, `isolation:isolate` on `.pages`). No page edge at 320 to 2560 px.
+    - _Requirements: 5.5, 8.10_
+
+  - [x] 13.3 Rename the classes and shorten the timer
+    - `Book.tsx`: `pageClass` returns `page on enter-next|enter-back` for the arriving page and `page leave-next|leave-back` for the leaving page. `EFFECT_MS` is 560.
+    - _Requirements: 5.5, 5.7_
+
+  - [x] 13.4 Avoid a jump when the window is scrolled
+    - `usePaging.ts`: at the start of a Turn write `--turn-dy` (minus `scrollY`) on `#pages`; the leaving page uses it as `top`; remove it when the Turn state clears.
+    - _Requirements: 5.5_
+
+  - [x] 13.5 Start the heavy work after the Turn
+    - `usePaging.ts`: `visibility` keeps the old page and `opened` map while a Turn runs, so the X-ray start, the Autoplay, and the engine preload begin when the Turn has finished.
+    - _Requirements: 5.9, 9, 10_
+
+  - [x] 13.6 Update and add tests
+    - Updated: `styles.test.ts`, `paging.test.ts`, `paging.test.tsx`, `paging.property.test.tsx`. Added: `page-class.test.ts` (the four classes for next and back), option B keyframes, durations, delays, easings, no `rotateY` or `perspective`, and the gradient on the static layer in `styles.test.ts`; `use-paging.test.tsx` (visibility waits, `--turn-dy`); `page-turn-start.test.tsx` (preload and X-ray wait for the end of the Turn). The reduced-motion test stays.
+    - _Requirements: 5.5, 5.7, 5.9, 6.1_
+
+  - [x] 13.7 Amend the docs
+    - README "Not written by Kiro": the page-turn prototype by Claude Code, option B chosen by the owner, built by Kiro. `docs/design/page-turn-prototype.html` is unchanged.
+    - _Requirements: 20_
+
+  - [x] 13.8 Run the gates
+    - `@ghost-run/site` test, typecheck, and lint; `corepack pnpm build:site`; the site check; the landing closure against 360,000 B. Claude Code then records the turn frame by frame at 1280x800, 1920x1080, and 390x844 (not a Kiro task).
+    - _Requirements: 21.1, 21.2_
+
 ## Notes
 
 - Every task is required. No task is marked optional.
@@ -334,7 +367,10 @@ The plan follows this order:
     { "id": 17, "tasks": ["12.1", "12.2", "12.3"] },
     { "id": 18, "tasks": ["12.4"] },
     { "id": 19, "tasks": ["12.5"] },
-    { "id": 20, "tasks": ["12.6"] }
+    { "id": 20, "tasks": ["12.6"] },
+    { "id": 21, "tasks": ["13.1", "13.2", "13.3", "13.4", "13.5"] },
+    { "id": 22, "tasks": ["13.6", "13.7"] },
+    { "id": 23, "tasks": ["13.8"] }
   ]
 }
 ```

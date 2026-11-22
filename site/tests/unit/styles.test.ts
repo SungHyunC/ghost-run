@@ -110,14 +110,13 @@ describe('stylesheets', () => {
     const book = read('12-book.css');
     expect(book).toMatch(/\.page\{display:none;/);
     expect(book).toContain('.page.on{position:relative}');
-    expect(book).toContain('.page.on,.page.leave-next,.page.enter-back{display:flex;flex-direction:column}');
+    expect(book).toContain('.page.on,.page.leave-next,.page.leave-back{display:flex;flex-direction:column}');
     expect(book).toContain('100svh');
     expect(book).toContain('--nav-h');
     expect(book).toContain('--bar-h');
     expect(book).toContain('.pagebar{position:sticky;bottom:0');
-    for (const k of ['turnOut', 'turnIn', 'pageIn']) expect(book).toContain(`@keyframes ${k}`);
     const reduced = book.slice(book.indexOf('@media (prefers-reduced-motion:reduce)'));
-    for (const c of ['.page.leave-next', '.page.enter-back', '.page.fade-in', '.pg-dot', '.pg-btn']) {
+    for (const c of ['.page.leave-next', '.page.leave-back', '.page.enter-next', '.page.enter-back', '.pg-dot', '.pg-btn']) {
       expect(reduced, c).toContain(c);
     }
     expect(reduced).toContain('animation:none');
@@ -134,10 +133,11 @@ describe('stylesheets', () => {
       expect(at, sel).toBeGreaterThanOrEqual(0);
       return book.slice(at, book.indexOf('}', at));
     };
-    // The page itself is transparent at rest; the gradient sits on a 100vw layer behind the content.
+    // The pages are transparent; the gradient sits once on a static 100vw layer behind all pages.
     expect(rule('.page')).not.toContain('background');
-    expect(rule('.page')).toContain('isolation:isolate');
-    const layer = rule('.page::before');
+    expect(book).not.toContain('.page::before');
+    expect(rule('.pages')).toContain('isolation:isolate');
+    const layer = rule('.pages::before');
     expect(layer).toContain('left:calc(50% - 50vw)');
     expect(layer).toContain('width:100vw');
     expect(layer).toContain('z-index:-1');
@@ -153,5 +153,48 @@ describe('stylesheets', () => {
     // H1: 40 px at 1280 px, at most 64 px.
     expect(book).toContain('clamp(16px,1.25vw,25.6px)');
     expect(book).toContain('.page>.hero h1{font-size:2.5em');
+  });
+
+  it('pins the slide page turn (option B): keyframes, durations, delays, easings', () => {
+    const book = read('12-book.css');
+    const decl = (sel: string): string => {
+      const at = book.indexOf(`\n${sel}{`);
+      expect(at, sel).toBeGreaterThanOrEqual(0);
+      return book.slice(at, book.indexOf('}', at));
+    };
+    expect(decl('.page.leave-next')).toContain('animation:leaveNext .36s cubic-bezier(.4,0,.2,1) both');
+    expect(decl('.page.leave-back')).toContain('animation:leaveBack .36s cubic-bezier(.4,0,.2,1) both');
+    expect(decl('.page.enter-next')).toContain('animation:enterNext .48s cubic-bezier(.22,.61,.36,1) .06s both');
+    expect(decl('.page.enter-back')).toContain('animation:enterBack .48s cubic-bezier(.22,.61,.36,1) .06s both');
+    expect(book).toContain('@keyframes leaveNext{from{transform:translateX(0);opacity:1}to{transform:translateX(-9%);opacity:0}}');
+    expect(book).toContain('@keyframes enterNext{from{transform:translateX(9%);opacity:0}to{transform:translateX(0);opacity:1}}');
+    expect(book).toContain('@keyframes leaveBack{from{transform:translateX(0);opacity:1}to{transform:translateX(9%);opacity:0}}');
+    expect(book).toContain('@keyframes enterBack{from{transform:translateX(-9%);opacity:0}to{transform:translateX(0);opacity:1}}');
+    // will-change only on the pages of a running turn
+    expect(book.match(/will-change/g)).toHaveLength(4);
+    for (const sel of ['.page.leave-next', '.page.leave-back', '.page.enter-next', '.page.enter-back']) {
+      expect(decl(sel), sel).toContain('will-change:transform,opacity');
+    }
+    expect(decl('.page')).not.toContain('will-change');
+    // the old turn is gone
+    for (const gone of ['rotateY', 'perspective', 'transform-origin', 'backface-visibility', 'box-shadow:30px', 'turnOut', 'turnIn', 'pageIn', 'fade-in']) {
+      expect(book, gone).not.toContain(gone);
+    }
+    // the sky is static: only transform and opacity animate, no keyframe touches the background
+    const keys = book.match(/@keyframes [A-Za-z]+\{[^@]*?\}\}/g) ?? [];
+    expect(keys).toHaveLength(4);
+    for (const k of keys) expect(k).not.toMatch(/background|top|left|width|height|box-shadow/);
+  });
+
+  it('keeps the page gradient on the static layer, not on .page', () => {
+    const book = read('12-book.css');
+    const at = (sel: string): string => {
+      const i = book.indexOf(`\n${sel}{`);
+      expect(i, sel).toBeGreaterThanOrEqual(0);
+      return book.slice(i, book.indexOf('}', i));
+    };
+    expect(at('.pages::before')).toContain('linear-gradient(180deg,#140a2b 0%,#1d0f3d 45%,#22114a 100%)');
+    expect(at('.page')).not.toMatch(/background|gradient/);
+    expect(book.match(/linear-gradient\(180deg,#140a2b/g)).toHaveLength(1);
   });
 });
