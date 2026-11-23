@@ -740,7 +740,7 @@ Requirement 24 asks the design to follow the repository where it differs from th
 | O-D6 | The Shell fixture root is `playground-demo` and holds `build/`, `.env`, and `README.md` besides the files the page shows. | The page shows a subset labeled `project/` and never reads or shows `.env` contents. |
 | O-D7 | The brief wants a GitHub nav link and forbids external URLs. | One allowlisted anchor, `REPO_URL`, with `rel="noopener noreferrer"` (O1). |
 | O-D8 | The mockup has one `style="position:absolute"` attribute and a Google Fonts link, both against the strict policy. | The class `.sprite` and self-hosted font files (Components 4 and 5). |
-| O-D9 | The mockup nav entries are `span` elements and the costume card links go to `#run`. | Real anchors to `./`, `shell/`, `hand/`, `kit/`, and `#make` (Component 3). |
+| O-D9 | The mockup nav entries are `span` elements and the costume card links go to `#run`. | Real anchors to `./`, `kit/`, and `#make` in the nav and the hero, and `shell/` and `hand/` in the costume cards (Component 3). |
 | O-D10 | The README has no Ghost Cloud row and no `@fontsource/fredoka` entry. | A task adds both (O8). |
 | O-D11 | `worlds/ghost-cloud/wards.yaml` has two wards, `no-bucket-delete` and `no-public-bucket`. | The page shows the first only and does not claim the second does not exist. |
 | O-D12 | `.kiro/steering/structure.md` has no `site/` entry. | Task 1 adds the text in Dependency direction. |

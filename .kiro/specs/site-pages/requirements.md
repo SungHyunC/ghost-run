@@ -108,7 +108,7 @@ This spec covers these parts:
 5. (Property `one-page-reachable`.) FOR ALL generated sequences of Turn requests (Back, Next, a dot, a key, a swipe, a hash change, an in-page link), THE Landing_Page SHALL end with exactly one Current_Page, and THAT page SHALL be the page that the last request named, after any running Turn_Effect has ended. EVERY Book_Page SHALL be reachable from every other Book_Page through the dots.
 6. THE wrapper element of the page content in `App.tsx` that has the class `page` today SHALL be renamed so that the class `page` of Mockup_V6 is used only by the Book_Pages (Difference D1).
 7. THE content of each Book_Page SHALL be the content of its section today, apart from the Copy_Deck (Requirement 11) and Requirement 9. THE hero SHALL stay in the Book_Page `cover` with its art. THE footer SHALL be the last element of the Book_Page `make`.
-8. THE nav SHALL stay above the Book_Pages on every page. THE nav link "Home" SHALL open the Book_Page `cover` (Requirement 7, criterion 5). THE other nav links SHALL go to the apps and the kit as today.
+8. THE nav SHALL stay above the Book_Pages on every page. THE nav link "Home" SHALL open the Book_Page `cover` (Requirement 7, criterion 5). THE nav links SHALL be Home, UI Kit, and GitHub, in that order. THE apps SHALL be reached from the costume cards ("Open Ghost Shell →" and "Open Ghost Hand →").
 
 ### Requirement 4: The Page Bar
 
@@ -273,7 +273,7 @@ This spec covers these parts:
 
 1. THE Showcase SHALL be an HTML entry of the Site_Package that the landing build emits as `kit/index.html`, rendered by React with the same fonts, palette, and symbols as the Landing_Page.
 2. THE Showcase SHALL show, in this order: the nav; the hero; the six part cards; the seven Showcase_Rows; and the footer.
-3. THE nav SHALL show the links "Home", "Ghost Shell", "Ghost Hand", "UI Kit", and "GitHub". THE link "UI Kit" SHALL carry the class `on` and `aria-current="page"`. THE links SHALL be relative so that the Showcase works at a domain root and under a path prefix: "Home" to `../`, "Ghost Shell" to `../shell/`, "Ghost Hand" to `../hand/`, and "UI Kit" to `./`. THE nav component SHALL be shared with the Landing_Page and SHALL NOT be copied.
+3. THE nav SHALL show the links "Home", "UI Kit", and "GitHub". THE link "UI Kit" SHALL carry the class `on` and `aria-current="page"`. THE links SHALL be relative so that the Showcase works at a domain root and under a path prefix: "Home" to `../` and "UI Kit" to `./`. THE nav component SHALL be shared with the Landing_Page and SHALL NOT be copied.
 4. THE hero SHALL show: the kicker "🦴 The skeleton's screen kit"; the heading "Every ghost-run app wears the same screens." with the words "the same screens" emphasised as in Mockup_Kit; the text "Worlds bring the data. The kit draws it, and never decides."; two chips "Used by Ghost Shell and Ghost Hand" and "11 render rules"; and the art (the ghost with the six part icons around it, `aria-hidden="true"`).
 5. THE number 11 of the chip SHALL equal the number of render properties UI-P1 to UI-P11 of `.kiro/specs/ui-kit/requirements.md`, and a test SHALL compare the two.
 6. THE six part cards SHALL be links to the rows below them (`#p-mirror`, `#p-candle`, `#p-blacklight`, `#p-thread`, `#p-grave`, `#p-lights`) and SHALL show the part name and one line:

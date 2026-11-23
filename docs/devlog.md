@@ -678,3 +678,26 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - No page edges.
   - On a 390×844 phone scrolled 400 px down, the leaving page stayed in place while it slid out.
 - Redeployed.
+
+## 2026-11-23 (Mon)
+
+### Demo video (Claude Code and HyperFrames, not in this repository)
+
+- At the owner's request, Claude Code made the 2:13 demo video with HyperFrames (HTML scenes rendered to MP4). It uses a recorded Kiro IDE session with the gate on in a scratch clone, and screen recordings of the live site.
+- Narration: Qwen3-TTS (1.7B CustomVoice, male voice `ryan`), run locally. Each line was transcribed back with a speech recognizer and compared with the script before it was used.
+- Sound: Kenney's CC0 sound effects, synthesized whooshes, and a synthesized music-box bed that ducks under the voice. Mixed to -15 LUFS.
+- Pitfall: the site recordings had non-square pixels (sample aspect ratio 270:241). The HyperFrames preview ignored it and the final render applied it, so the render was off by about 50 px around 1:39. Re-encoding the recordings with square pixels fixed it.
+
+### Repository made public
+
+- At the owner's request, Claude Code made github.com/SungHyunC/ghost-run public. Before that it scanned the whole history: every commit uses the GitHub noreply address, and no secret pattern, local path or personal email was found.
+
+### Nav without the app links (owner's request)
+
+- **Kiro's change** (site-pages task 14, 1.22 credits, about 2 minutes in the Kiro CLI):
+  - The top nav now shows Home, UI Kit and GitHub. The apps are reached from the costume cards ("Open Ghost Shell →", "Open Ghost Hand →").
+  - Kiro also updated `data/kit-links.json`, the two nav tests, and the nav criteria of the site and site-pages specs.
+- **Review:**
+  - Claude Code re-ran the site tests (111 files, 1,005 tests), typecheck, lint, `build:site`, and the site check (43 files, no findings).
+  - On the live site, the nav of `/` and `/kit/` has the three links, and the costume cards keep both app links.
+- Redeployed.

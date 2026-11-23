@@ -328,6 +328,10 @@ The plan follows this order:
     - `@ghost-run/site` test, typecheck, and lint; `corepack pnpm build:site`; the site check; the landing closure against 360,000 B. Claude Code then records the turn frame by frame at 1280x800, 1920x1080, and 390x844 (not a Kiro task).
     - _Requirements: 21.1, 21.2_
 
+- [x] 14. Remove the app links from the nav
+  - `components/Nav.tsx` drops "Ghost Shell" and "Ghost Hand"; the nav keeps Home, UI Kit, and GitHub. The costume cards keep the app links. Update `data/kit-links.json`, the nav tests, and the spec lines that list the nav links. Run the gates.
+  - _Requirements: 4.8, 13.3_
+
 ## Notes
 
 - Every task is required. No task is marked optional.
@@ -370,7 +374,8 @@ The plan follows this order:
     { "id": 20, "tasks": ["12.6"] },
     { "id": 21, "tasks": ["13.1", "13.2", "13.3", "13.4", "13.5"] },
     { "id": 22, "tasks": ["13.6", "13.7"] },
-    { "id": 23, "tasks": ["13.8"] }
+    { "id": 23, "tasks": ["13.8"] },
+    { "id": 24, "tasks": ["14"] }
   ]
 }
 ```

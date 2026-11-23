@@ -14,8 +14,6 @@ interface NavLink {
 function links(root: './' | '../'): readonly NavLink[] {
   return [
     { key: 'home', label: 'Home', href: root },
-    { key: 'shell', label: 'Ghost Shell', href: root === './' ? 'shell/' : '../shell/' },
-    { key: 'hand', label: 'Ghost Hand', href: root === './' ? 'hand/' : '../hand/' },
     { key: 'kit', label: 'UI Kit', href: root === './' ? 'kit/' : './' },
     { key: 'github', label: 'GitHub', href: REPO_URL, external: true },
   ];

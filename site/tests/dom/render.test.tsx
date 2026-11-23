@@ -39,17 +39,15 @@ describe('App shell and nav', () => {
     expect(pages[0]?.hasAttribute('inert')).toBe(false);
   });
 
-  it('renders the five nav links with their targets', () => {
+  it('renders the three nav links with their targets', () => {
     const { container } = render(<App />);
     const links = [...container.querySelectorAll('.nav-links a')];
     expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
       ['Home', './'],
-      ['Ghost Shell', 'shell/'],
-      ['Ghost Hand', 'hand/'],
       ['UI Kit', 'kit/'],
       ['GitHub', REPO_URL],
     ]);
-    expect(links[4]?.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(links[2]?.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
   it('marks only Home as current', () => {
