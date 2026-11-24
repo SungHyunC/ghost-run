@@ -701,3 +701,10 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - Claude Code re-ran the site tests (111 files, 1,005 tests), typecheck, lint, `build:site`, and the site check (43 files, no findings).
   - On the live site, the nav of `/` and `/kit/` has the three links, and the costume cards keep both app links.
 - Redeployed.
+
+## 2026-11-24 (Tue)
+
+### Demo video: new narration voice and captions (Claude Code, not in this repository)
+
+- The owner found the Qwen3-TTS voice odd, so Claude Code compared 11 local male voices on the same three lines: Kokoro, Orpheus, Kyutai Pocket TTS, and the Qwen voice. Since Claude Code cannot listen, it ranked them with the UTMOS naturalness predictor and a speech recognizer. Kokoro `am_fenrir` scored highest (4.51 of 5; the Qwen voice 4.36), and the narration was re-recorded with it. Voxtral TTS was left out because its weights are CC-BY-NC.
+- Burned-in captions: 53 cues, timed from word timestamps of the final narration. The same cues are saved as an SRT file for YouTube.
