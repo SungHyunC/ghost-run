@@ -733,3 +733,10 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 - **README:** a "Try it in one minute" section right after "What it is", both app entry points (folder, live page, local command) in "One skeleton, two apps", and a bullet on the package-manager limit measured below.
 - **Review:** Claude Code re-ran the install with the frozen lockfile, the demo, the package's tests (4 passed), typecheck and lint.
 - **Third gated session:** 12 asks in 34 shell calls. 7 came from `corepack pnpm …` network attempts in the box, 3 from rehearsals that did not finish while the demo video was rendering on the same machine, and 2 were a new false positive: in a `cat > file <<'EOF'` heredoc, the JavaScript comment marker `//` was read as a path. The gate stays conservative there, because `//` is the root folder to a shell.
+
+### Demo video v9 (Claude Code, not in this repository)
+
+- Both reviews asked to see the two apps early. The video now opens with them side by side (0:08 to 0:14): Ghost Shell blocks the `DROP TABLE` scenario and Ghost Hand reports 2 of 8 ghosts failed, each as its name is spoken. The video is 2:20.
+- The Kiro IDE scene was shot again in a scratch clone at `0b7115c`, with both gate fixes and the gate on: `DROP TABLE users` is blocked by `no-data-loss` (1,206 rows), the backup and soft delete pass, and the `curl` check asks, with the URL as the first notice instead of `/dev/null`. Global hooks of the recording machine that are not part of this project were switched off for the take.
+- Every frame used from the take was checked with OCR for the local user name and home path; none appears.
+- The spec card and the narration now say 14 specs.
