@@ -1,4 +1,5 @@
-import { renderMessage } from '@ghost-run/core';
+import { renderMessage, WardEngine } from '@ghost-run/core';
+import { analyze } from '@ghost-run/ghost-runner';
 import { describe, expect, it } from 'vitest';
 import {
   askJson,
@@ -276,5 +277,22 @@ describe('diffSummary', () => {
 
   it('is deterministic and handles empty input', () => {
     expect(diffSummary([])).toBe('Diff summary: 0 deleted, 0 overwritten, 0 created, 0 symlinks changed, 0 rows lost.');
+  });
+});
+
+describe('ask message for a command that redirects to /dev/null', () => {
+  it('names the request to the api host as the first notice', () => {
+    const effects = analyze({ command: 'curl -s https://api.example > /dev/null' });
+    const report = { snapshots: [], changes: [[]], effectsOutside: [effects], observedEvents: [], variantResults: [] };
+    const wardVerdict = WardEngine.evaluate(report, { wards: [] });
+    const d = decisionFromRunResult(
+      makeResult({ verdict: 'warn', wardVerdict, report }),
+      { wardCount: 0, warnMode: 'ask' },
+    );
+    expect(d.kind).toBe('ask');
+    const reason = JSON.parse(d.stdout).hookSpecificOutput.permissionDecisionReason;
+    expect(wardVerdict.notices).toHaveLength(1);
+    expect(reason).toMatch(/First: [^.]*: url to api\.example\./);
+    expect(reason).not.toContain('/dev/null');
   });
 });

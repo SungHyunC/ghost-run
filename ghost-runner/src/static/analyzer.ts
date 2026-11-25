@@ -1,6 +1,7 @@
 import { posix } from 'node:path';
 import { parse } from 'shell-quote';
 import type { Effect } from '@ghost-run/core';
+import { isHarmlessDevicePath } from './devices.js';
 
 /**
  * Static (Plan B / effectsOutside) analysis of one shell action.
@@ -88,7 +89,7 @@ export function analyze(action: AnalyzableAction): Effect[] {
 
     for (const cand of pathCandidates(entry)) {
       if (cand.startsWith('~')) add('external-path', cand);
-      else if (cand.startsWith('/') && !isUnderWork(cand)) add('external-path', cand);
+      else if (cand.startsWith('/') && !isUnderWork(cand) && !isHarmlessDevicePath(cand)) add('external-path', cand);
     }
   }
 

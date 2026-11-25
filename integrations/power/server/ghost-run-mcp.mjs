@@ -47125,7 +47125,29 @@ async function fingerprintOriginal(root, opts = {}) {
 
 // ghost-runner/dist/static/analyzer.js
 var import_shell_quote = __toESM(require_shell_quote(), 1);
+import { posix as posix2 } from "node:path";
+
+// ghost-runner/dist/static/devices.js
 import { posix } from "node:path";
+var HARMLESS_DEVICE_PATHS = [
+  "/dev/null",
+  "/dev/zero",
+  "/dev/random",
+  "/dev/urandom",
+  "/dev/stdin",
+  "/dev/stdout",
+  "/dev/stderr",
+  "/dev/tty"
+];
+var FD_RE = /^\/dev\/fd\/[0-9]+$/;
+function isHarmlessDevicePath(p) {
+  if (!p.startsWith("/dev/"))
+    return false;
+  const n = posix.normalize(p);
+  return HARMLESS_DEVICE_PATHS.includes(n) || FD_RE.test(n);
+}
+
+// ghost-runner/dist/static/analyzer.js
 var WORK_ROOT = "/work";
 var DB_SCHEMES = [
   "postgres",
@@ -47142,7 +47164,7 @@ var DB_SCHEMES = [
 var URL_RE = /\b([a-z][a-z0-9+.-]*):\/\/[^\s'"`<>|;&()\\]+/gi;
 var UNPARSEABLE_KIND = "unparseable-command";
 var isUnderWork = (p) => {
-  const n = posix.normalize(p);
+  const n = posix2.normalize(p);
   return n === WORK_ROOT || n.startsWith(`${WORK_ROOT}/`);
 };
 var pathCandidates = (token) => {
@@ -47188,7 +47210,7 @@ function analyze(action2) {
     for (const cand of pathCandidates(entry)) {
       if (cand.startsWith("~"))
         add("external-path", cand);
-      else if (cand.startsWith("/") && !isUnderWork(cand))
+      else if (cand.startsWith("/") && !isUnderWork(cand) && !isHarmlessDevicePath(cand))
         add("external-path", cand);
     }
   }

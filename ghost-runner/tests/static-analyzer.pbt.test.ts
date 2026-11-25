@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { analyze } from '../src/static/analyzer.js';
+import { HARMLESS_DEVICE_PATHS } from '../src/static/devices.js';
 import { NUM_RUNS, PBT_MODE, pbtParams, testTimeoutMs } from './pbt-config.js';
 
 // Feature: ghost-runner, Property 16: Static analysis is exact, pure, and I/O free
@@ -94,7 +95,57 @@ const commandArb = fc.integer({ min: 0, max: 6 }).chain((k) =>
     }),
 );
 
+const DEVICES: readonly string[] = [...HARMLESS_DEVICE_PATHS, '/dev/fd/0', '/dev/fd/12'];
+const deviceRedirect = fc
+  .tuple(fc.constantFrom('>', '>>', '2>', '2>>', '&>', '&>>'), fc.constantFrom(...DEVICES), fc.boolean())
+  .map(([op, dev, spaced]) => (spaced ? `${op} ${dev}` : `${op}${dev}`));
+
+const DEVICE_UNIT_CASES = DEVICES.flatMap((d) => [
+  `echo hi > ${d}`,
+  `echo hi 2>${d}`,
+  `echo hi &>${d}`,
+  `curl -o ${d} --output=${d} x`,
+]);
+
+describe('harmless device paths', () => {
+  it.each(DEVICE_UNIT_CASES)('no effect: %s', (command) => {
+    expect(analyze({ command })).toEqual([]);
+  });
+
+  it.each(['/dev/sda', '/dev/null/x', '/dev/fd/x', '/dev/fd/', '/dev/fd/../sda', '/dev/nullx'])(
+    'still an external-path: %s',
+    (dev) => {
+      for (const command of [`echo hi > ${dev}`, `echo hi 2>${dev}`, `curl -o ${dev} x`]) {
+        expect(analyze({ command })).toEqual([{ kind: 'external-path', destination: dev }]);
+      }
+    },
+  );
+
+  it('a URL next to > /dev/null is the only effect', () => {
+    expect(analyze({ command: 'curl -s https://example.com > /dev/null' })).toEqual([
+      { kind: 'url', destination: 'https://example.com' },
+    ]);
+  });
+});
+
 describe('Property 16: Static analysis is exact, pure, and I/O free', () => {
+  it(
+    'a redirect to a harmless device path adds no effect; planted destinations are still found',
+    () => {
+      fc.assert(
+        fc.property(commandArb, deviceRedirect, ({ command, planted }, redirect) => {
+          const base = analyze({ command });
+          const withRedirect = analyze({ command: `${command} ${redirect}` });
+          expect(withRedirect).toEqual(base);
+          const found = new Set(withRedirect.map((e) => `${e.kind}\u0000${e.destination}`));
+          for (const p of planted) expect(found.has(`${p.kind}\u0000${p.dest}`)).toBe(true);
+        }),
+        pbtParams(false),
+      );
+    },
+    testTimeoutMs(false),
+  );
+
   it(
     'returns exactly the planted destinations, is repeatable, and performs no I/O',
     () => {

@@ -483,6 +483,12 @@ Decisions reflected in this plan:
     - Tests: `ghost-runner/tests/docker-availability.test.ts` (7 wake-retry tests) and `ghost-runner/tests/pipeline.test.ts` (6 tests in 'runPlan wake retry').
     - _Requirements: 3.1, 3.2, 3.11_
 
+- [x] 19. Follow-up: harmless device paths
+  - [x] 19.1 Do not report `/dev/null` and similar device paths as external-path [no-docker]
+    - `src/static/devices.ts` holds the one list (`/dev/null`, `/dev/zero`, `/dev/random`, `/dev/urandom`, `/dev/stdin`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/<digits>`); `analyze` skips them, and the Repo_World's `effectsOutside` calls `analyze`. Other `/dev` paths (for example `/dev/sda`) stay external.
+    - Tests: `ghost-runner/tests/static-analyzer.pbt.test.ts` (unit cases and a property) and the gate message test in `integrations/kiro-hook/tests/gate-output.test.mjs`. Bundle `integrations/power/server/ghost-run-mcp.mjs` rebuilt with `pnpm --filter @ghost-run/mcp bundle`.
+    - _Requirements: 2.7, 2.8_
+
 - [x] 17. Final checkpoint - Ensure all tests pass
   - Run `pnpm lint`, `pnpm -r build`, the `[no-docker]` tests in `save` and explicit profiles, and, where Docker is available, the `[docker]` tests. Confirm the summary shows `skipped (docker unavailable)` for any skipped Docker suite and that no private-key file is present in the repository. Ask the user if questions arise.
 
