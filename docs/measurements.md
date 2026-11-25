@@ -1350,3 +1350,25 @@ Reinstalled with `kiro-cli powers uninstall ghost-run` and `kiro-cli powers inst
   - After the second window was closed and the agent was asked to pass `workspace`, the call worked: it listed protect-data, no-data-loss and no-secret-egress, and `ls` was on the safe list.
   - Whether the second window caused the error is not proven.
   - Because the agent omitted `workspace` until asked, task 23.2 puts a `.describe(...)` text on the `workspace` field of all five tools and starts the root-unknown error with what to do.
+
+## Check A at 7c6e39a (2026-11-25)
+
+Run by Claude Code in a fresh clone of commit `7c6e39a` on an Apple M1 Mac (macOS 27.2.1, Node.js 20.20.2, pnpm 12.21.0, Docker Desktop running). Commands, in order: `corepack pnpm install --frozen-lockfile`, `corepack pnpm build`, `corepack pnpm --filter @ghost-run/ghost-runner box:build`, `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test`. Every command exited 0. The test step took 798 s.
+
+| Package | Test files | Tests passed | Skipped |
+|---|---|---|---|
+| `core` | 75 (1 skipped) | 556 | 2 |
+| `ghost-runner` | 58 | 308 | 0 |
+| `ui` | 71 | 701 | 0 |
+| `wards-config` | 15 | 126 | 0 |
+| `worlds/drawer-arm` | 24 | 145 | 0 |
+| `integrations/kiro-hook` | 52 | 638 | 0 |
+| `worlds/ghost-cloud` | 16 | 108 | 0 |
+| `worlds/playground-shell` | 34 | 397 | 0 |
+| `apps/ghost-hand` | 37 | 273 | 0 |
+| `integrations/mcp` | 15 | 93 | 3 |
+| `apps/ghost-shell` | 42 | 236 | 0 |
+| `site` | 111 (1 skipped) | 999 | 6 |
+| **Total** | **550** | **4,580** | **11** |
+
+No test failed. This entry replaces the unconfirmed Check A of 0372934 above as the reference full run.
