@@ -61,8 +61,8 @@ The two apps side by side:
 
 | App | Folder | Live page | Run it locally |
 |---|---|---|---|
-| Ghost Shell | `apps/ghost-shell/` | https://ghost-run-plus.pages.dev/shell/ | `corepack pnpm --filter @ghost-run/ghost-shell build` then `corepack pnpm --filter @ghost-run/ghost-shell preview` (`http://localhost:4173/`) |
-| Ghost Hand | `apps/ghost-hand/` | https://ghost-run-plus.pages.dev/hand/ | `corepack pnpm --filter @ghost-run/ghost-hand dev` (`http://localhost:5173/`) |
+| Ghost Shell | `apps/ghost-shell/` | https://ghost-run-plus.pages.dev/shell/ | `corepack pnpm --filter "@ghost-run/ghost-shell..." build` then `corepack pnpm --filter @ghost-run/ghost-shell preview` (`http://localhost:4173/`) |
+| Ghost Hand | `apps/ghost-hand/` | https://ghost-run-plus.pages.dev/hand/ | `corepack pnpm --filter "@ghost-run/ghost-hand^..." build` then `corepack pnpm --filter @ghost-run/ghost-hand dev` (`http://localhost:5173/`) |
 
 A new world implements the six functions of `World<S, A>` (`core/src/types.ts`). Four are primary: `snapshot`, `step`, `diff`, and `render`. Two are auxiliary: `fingerprint` and `effectsOutside`. The world then inherits the ghost runner, the wards engine, the possession detector, and the UI kit. See "Build a world with the `world-smith` agent" and "Start a new world from the template" below.
 
@@ -105,17 +105,18 @@ corepack pnpm install --frozen-lockfile
 Open Ghost Shell (static page, no server logic; serves `http://localhost:4173/`, and the Korean page at `http://localhost:4173/ko.html`):
 
 ```
-corepack pnpm --filter @ghost-run/ghost-shell build
+corepack pnpm --filter "@ghost-run/ghost-shell..." build
 corepack pnpm --filter @ghost-run/ghost-shell preview
 ```
 
 Open Ghost Hand (Vite dev server, `http://localhost:5173/`):
 
 ```
+corepack pnpm --filter "@ghost-run/ghost-hand^..." build
 corepack pnpm --filter @ghost-run/ghost-hand dev
 ```
 
-Both addresses are the Vite defaults; Vite picks another port when one is busy. Both commands were started and answered with HTTP 200 on 2026-11-18.
+Both addresses are the Vite defaults; Vite picks another port when one is busy. The apps import `core`, `ui`, and `wards-config`, which export `dist` files that are not committed, so build them first. The suffix `...` makes the filter match the package and everything it depends on, and `^...` matches only the dependencies. Both pages answered HTTP 200 on 2026-11-26 in a fresh clone of commit 8c31d98 after `corepack pnpm install --frozen-lockfile`.
 
 Run every test, one package at a time:
 
@@ -136,6 +137,7 @@ The image tag carries a hash of the box files. With the image already built, the
 Run Ghost Hand from the terminal with `ghost-hand-run`:
 
 ```
+corepack pnpm --filter "@ghost-run/ghost-hand^..." build
 corepack pnpm --filter @ghost-run/ghost-hand build:node
 cd apps/ghost-hand
 node dist-node/cli.js plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml
@@ -213,7 +215,7 @@ The shipped revised plan `apps/ghost-hand/plans/revised.plan.json` has `origin: 
 
 How to record a revision (design decision D18):
 
-1. Run `ghost-hand-run plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml` (from `apps/ghost-hand`, after `corepack pnpm --filter @ghost-run/ghost-hand build:node`) and read the block message. The exit code is 2 for a blocked plan.
+1. Run `ghost-hand-run plans/first.plan.json --wards ../../worlds/drawer-arm/wards.yaml` (from `apps/ghost-hand`, after `corepack pnpm --filter "@ghost-run/ghost-hand^..." build` and `corepack pnpm --filter @ghost-run/ghost-hand build:node`) and read the block message. The exit code is 2 for a blocked plan.
 2. Write the revised Plan_File with `origin: "recorded"`, `revisionOf` (the name of the first plan), and `recordedWith` (the tool and version that decided the revision, at most 120 characters).
 3. Run `ghost-hand-run validate <revised plan>`. It exits 0 for a valid file and 65 for an invalid one.
 4. Run `ghost-hand-run <revised plan> --wards ...` again. Exit code 0 means pass.
