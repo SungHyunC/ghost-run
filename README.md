@@ -8,12 +8,34 @@ Let your agent's ghost try it first.
 
 Ghost Run+ lets an AI agent rehearse an irreversible action in a copy of the world before it runs for real. A "ghost" plays the agent's plan against a mirror world (a copy of the files, the database, or the physics scene). Declared guard rules, called wards and written in `wards.yaml`, judge the result, and the real action proceeds only if every ward passes. It addresses two failures: a plain mistake, such as an agent deleting a production database during a code freeze (reported publicly for a Replit agent in July 2025), and possession, where hidden instructions in a document the agent reads steer it. A blocked agent gets the ward id, the numbers, and a seance link, so it can fix the plan and try again.
 
+## Try it in one minute
+
+Needs Node.js 20 or later and `corepack`. No browser, no Docker, no network at run time.
+
+```
+corepack pnpm install --frozen-lockfile
+corepack pnpm --filter @ghost-run/world-starter demo
+```
+
+Expected output (exit code 0):
+
+```
+plan: clear
+  blocked by ward keep-todos: the copy lost 3 to-dos
+  real list unchanged: true (fingerprint ed34d2240ad1 before and after)
+plan: add "buy candles"
+  passed: 1 action, the copy lost 0 to-dos
+```
+
+The demo runs two plans on a to-do list through the same calls the apps use. `worlds/starter/src/world.ts` (about 70 lines) is the smallest world: read it to see the six functions of `World<S, A>`.
+
 ## Use it in your Kiro
 
 - **Start from this template** (enforcement): clone the repository, run `corepack pnpm install` and `corepack pnpm -r build`, build the box image (`corepack pnpm --filter @ghost-run/ghost-runner box:build`), open the folder in Kiro and trust it, set `enabled` to `true` in `.kiro/hooks/ghost-gate.json` and `.kiro/hooks/docker-warmup.json`, and start a new session. The hooks are committed disabled. The gate depends on the workspace packages (`core`, `ghost-runner`, `wards-config`), so copying `integrations/kiro-hook/` into another project does not build.
 - **In an existing project**: install the power for the advisory tools and the skill. In the Kiro Powers panel choose Add Custom Power and Import from folder, or run `kiro-cli powers install <repository>/integrations/power`. Nothing enforces a verdict there. See [integrations/power/README.md](integrations/power/README.md) for the workspace root rule, the default wards, and the box image.
 - Full rehearsal needs Docker and the box image (`corepack pnpm --filter @ghost-run/ghost-runner box:build`).
 - In a non-interactive Kiro CLI run with `--trust-all-tools`, Kiro answers an `ask` itself, so a warned command runs. A blocked command is still blocked. For unattended runs use `--trust-tools=@builtin` or narrower: there an `ask` gets no answer and the call is refused. See [integrations/kiro-hook/README.md](integrations/kiro-hook/README.md).
+- **Package-manager commands cannot be rehearsed faithfully.** The Copy excludes `node_modules` (`DEFAULT_EXCLUDE_DIRS` in `ghost-runner/src/config.ts`) and the box runs with `--network none`. In the box, `corepack` tries to download the pinned pnpm from registry.npmjs.org, the recorder sees a network attempt, and the gate asks. In the first gated Kiro CLI sessions, most of the asks left after the fixes of 2026-11-25 came from such commands, for example `corepack pnpm test`.
 - Without Docker the gate falls back to static analysis (Plan B) and asks for human approval. It does not claim P1 isolation in that mode.
 - Docker Desktop's Resource Saver can stop its VM when idle. The gate retries once with a longer deadline, so a sleeping Docker is not mistaken for a missing one. See [integrations/kiro-hook/README.md](integrations/kiro-hook/README.md).
 
@@ -32,7 +54,15 @@ This repository is a Kiroween 2026 entry in the Skeleton Crew category: one reus
 | Skeleton | `.kiro/agents/world-smith.json` | The `world-smith` agent, which builds a new world from that template |
 | App 1 | `apps/ghost-shell/` with `worlds/playground-shell/` | Shell and SQL plans run against an in-memory project and an in-browser SQLite database |
 | App 2 | `apps/ghost-hand/` with `worlds/drawer-arm/` | A browser MuJoCo robot arm tries a plan on 8 haunted variants before the "real" arm runs it |
+| Starter world | `worlds/starter/` | The smallest world (a to-do list, about 70 lines in `src/world.ts`) with one `path` ward and a one-command demo. Start reading here |
 | Third world (Ghost Cloud) | `worlds/ghost-cloud/` | The third world, built by the `world-smith` agent. It has no real mode and no screen of its own yet |
+
+The two apps side by side:
+
+| App | Folder | Live page | Run it locally |
+|---|---|---|---|
+| Ghost Shell | `apps/ghost-shell/` | https://ghost-run-plus.pages.dev/shell/ | `corepack pnpm --filter @ghost-run/ghost-shell build` then `corepack pnpm --filter @ghost-run/ghost-shell preview` (`http://localhost:4173/`) |
+| Ghost Hand | `apps/ghost-hand/` | https://ghost-run-plus.pages.dev/hand/ | `corepack pnpm --filter @ghost-run/ghost-hand dev` (`http://localhost:5173/`) |
 
 A new world implements the six functions of `World<S, A>` (`core/src/types.ts`). Four are primary: `snapshot`, `step`, `diff`, and `render`. Two are auxiliary: `fingerprint` and `effectsOutside`. The world then inherits the ghost runner, the wards engine, the possession detector, and the UI kit. See "Build a world with the `world-smith` agent" and "Start a new world from the template" below.
 
@@ -93,7 +123,7 @@ Run every test, one package at a time:
 corepack pnpm test
 ```
 
-The root `test`, `typecheck`, and `lint` scripts run the 12 packages one after another and keep going after a failure. Running them in parallel (`pnpm -r test`) made some time-limited tests fail under load. The full `corepack pnpm test` took 798 s (about 13 min 18 s) at commit `7c6e39a` on 2026-11-25 on an Apple M1 Mac with Docker running. All 12 packages passed: 4,580 tests passed, 11 were skipped, and none failed. Per-package numbers are in the section "Check A at 7c6e39a (2026-11-25)" at the end of `docs/measurements.md`. `corepack pnpm typecheck` took 21.9 s and `corepack pnpm lint` 8.3 s, both with exit code 0. One package alone: `corepack pnpm --filter @ghost-run/ui test`.
+The root `test`, `typecheck`, and `lint` scripts run the 13 packages one after another and keep going after a failure. Running them in parallel (`pnpm -r test`) made some time-limited tests fail under load. The full `corepack pnpm test` took 798 s (about 13 min 18 s) at commit `7c6e39a` on 2026-11-25 on an Apple M1 Mac with Docker running. All 12 packages passed: 4,580 tests passed, 11 were skipped, and none failed. Per-package numbers are in the section "Check A at 7c6e39a (2026-11-25)" at the end of `docs/measurements.md`. `corepack pnpm typecheck` took 21.9 s and `corepack pnpm lint` 8.3 s, both with exit code 0. One package alone: `corepack pnpm --filter @ghost-run/ui test`.
 
 Build the Docker box image for real-mode runs:
 
@@ -371,7 +401,7 @@ Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and on
 
 ## Built with Kiro
 
-Everything below is in this repository. Counts were taken from the files on 2026-11-25.
+Everything below is in this repository. Counts were taken from the files on 2026-11-25, except the `starter-world` row, which was added later.
 
 **Specs** (`.kiro/specs/<name>/` with `requirements.md`, `design.md`, and `tasks.md`). "Tasks" is the number of checked items out of all checklist items in `tasks.md`. "Properties" is the number of `### Property` headings in `design.md`; for `ghost-cloud` it is the number of property rows in the table of `design.md`.
 
@@ -387,6 +417,7 @@ Everything below is in this repository. Counts were taken from the files on 2026
 | `ghost-hand` | App 2: the MuJoCo arm page, the drawer-arm world, and the 8 haunted variants | 103 of 105 | 23 |
 | `world-smith` | The `world-smith` agent | 9 of 9 | none |
 | `ghost-cloud` | The third world: an S3-compatible object store driven by AWS CLI lines, with wards for protected and public buckets | 43 of 43 | 17 |
+| `starter-world` | The smallest world: a to-do list, one `path` ward, and a one-command demo | 16 of 16 | none |
 | `site` | The public landing page and the build that assembles `site/dist/` | 67 of 67 | 12 |
 | `site-live` | The live "Watch the ghost work" demo in the browser, in place of recorded replays | 45 of 56 | 12 |
 | `site-pages` | The paged landing page, the kit showcase at `/kit/`, and the shorter copy | 64 of 64 | 10 |
@@ -429,6 +460,7 @@ The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json`
 | Unicode `emoji-sequences.txt` (RGI_Emoji_Tag_Sequence) | 16.0.0 (Emoji 16.0) | Source for generated numeric tables. URL: https://www.unicode.org/Public/emoji/16.0/emoji-sequences.txt | Unicode License v3 (Unicode-3.0), https://www.unicode.org/license.txt |
 | fast-check | 4.10.2 | Dev dependency, property-based tests | MIT |
 | vitest | 3.2.7 | Dev dependency, test runner | MIT |
+| vite-node | 3.2.4 | Dev dependency of `worlds/starter`, runs the demo script | MIT |
 | typescript | 5.9.3 | Dev dependency, compiler | Apache-2.0 |
 | @types/node | 20.19.43 | Dev dependency, Node type definitions | MIT |
 | @mujoco/mujoco | 4.0.1 | Runtime dependency of `apps/ghost-hand` and `worlds/drawer-arm`, MuJoCo physics (WebAssembly) | Apache-2.0 (`package.json` license field; the tarball has no LICENSE file) |

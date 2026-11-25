@@ -1,0 +1,6 @@
+# One ward: no to-do may be lost. Paths are virtual: todos/<id>.
+wards:
+  - id: keep-todos
+    kind: path
+    deny: [delete]
+    paths: ["todos/*"]
