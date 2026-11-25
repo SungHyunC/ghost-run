@@ -708,3 +708,21 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 
 - The owner found the Qwen3-TTS voice odd, so Claude Code compared 11 local male voices on the same three lines: Kokoro, Orpheus, Kyutai Pocket TTS, and the Qwen voice. Since Claude Code cannot listen, it ranked them with the UTMOS naturalness predictor and a speech recognizer. Kokoro `am_fenrir` scored highest (4.51 of 5; the Qwen voice 4.36), and the narration was re-recorded with it. Voxtral TTS was left out because its weights are CC-BY-NC.
 - Burned-in captions: 53 cues, timed from word timestamps of the final narration. The same cues are saved as an SRT file for YouTube.
+
+## 2026-11-25 (Wed)
+
+### Reviews and the reference full run
+
+- Two AI review agents (Codex and Muse) judged the entry from the repository, the live site, the draft write-up and the video, and scored it 7.6 and 7.2 of 10. Both asked for a source for the test count, an end card that matches it, the gate on our own work, and fewer claims in the write-up than the evidence supports.
+- **Kiro's changes:** the README "Built with Kiro" table now counts all 13 specs and lists the hooks (1.08 credits); the README full-run line points to the run below (0.51 credits).
+- **Check A at `7c6e39a`:** in a fresh clone, 4,580 tests pass in 12 packages, none fail (798 s). Details in `docs/measurements.md`.
+
+### The gate on our own work (task 19.1)
+
+- At the owner's request, Claude Code switched `ghost-gate` and `docker-warmup` on in the working tree at 21:33 KST (the committed hook files stay disabled). Every Kiro shell and write call in this repository now goes through the gate.
+- **First gated session** (Kiro CLI, the `/dev/null` fix below): the gate asked for approval 21 times, and every first notice named the project's own folder or a path inside it. The Kiro CLI writes its commands as `cd <project root> && …`. The analyzer counted the root itself as a path outside the copy, and in the box the same `cd` failed, so the ghost did not run the real command either.
+- **Kiro's fixes**, each with spec, tests and a rebuilt MCP bundle:
+  - `/dev/null` and the other harmless device paths are no longer external paths (ghost-runner task 19.1, 4.36 credits). The ask for `curl -s https://example.com > /dev/null` now names the URL.
+  - The Original root maps to the copy (task 20.1, 8.52 credits): the root, as given and as its real path, becomes `/work` at a path boundary before the box run, and the analyzer treats paths at or under it as inside. `<root>/../x` and `<root>-demo` stay outside.
+- **Second gated session** (the root fix): 13 asks named the root until Kiro rebuilt ghost-runner in the middle of the session; after that, none did. 9 asks came from `corepack pnpm …` commands: the copy has no `node_modules` and the box has no network, so corepack's download of the pinned pnpm shows up as a network attempt. 2 asks were writes to the gate's own files, which always ask by design.
+- **Review:** Claude Code re-ran the changed tests (the analyzer property file and the new box test: 84 passed), the gate package (638 passed; the 2 failures are the hook-file checks that expect the committed, disabled hooks), lint and typecheck. In the demo clone, the four commands of the video now give: `DROP TABLE` blocked, the same with `cd <root> &&` blocked (rehearsed in the box), the soft delete passed, and the `curl` check asked with the URL as its first notice.
