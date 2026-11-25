@@ -740,3 +740,12 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 - The Kiro IDE scene was shot again in a scratch clone at `0b7115c`, with both gate fixes and the gate on: `DROP TABLE users` is blocked by `no-data-loss` (1,206 rows), the backup and soft delete pass, and the `curl` check asks, with the URL as the first notice instead of `/dev/null`. Global hooks of the recording machine that are not part of this project were switched off for the take.
 - Every frame used from the take was checked with OCR for the local user name and home path; none appears.
 - The spec card and the narration now say 14 specs.
+
+## 2026-11-26 (Thu)
+
+### Second review and what it changed
+
+- A second Codex review of `8c31d98` scored the entry 7.7 of 10 (7.6 before). Fixed since the first review: a source for the test count and an end card that matches it, the gate on our own work, and both apps early in the video. Partly fixed: the starter and app entry points, and the claims in the write-up. Open: the public video link.
+- **README app commands (Kiro, 0.44 credits):** in a fresh clone of `8c31d98`, `corepack pnpm --filter @ghost-run/ghost-shell build` failed, because `core`, `ui` and `wards-config` export `dist` files that are not committed. The README now builds the dependencies first (`--filter "@ghost-run/ghost-shell..."` and `--filter "@ghost-run/ghost-hand^..."`). Claude Code measured both pages at HTTP 200 and the Ghost Hand CLI block (exit 2) in that clone; the starter demo ran right after the install.
+- **Write-up:** the gate claims now state their limits next to the pitch (the hooks ship disabled, writes are judged by path, safe-list commands skip the rehearsal, and an ask can be approved), and the fail-closed result separates the four refused cases from the timeout, which became a request for approval.
+- **Demo video v10:** the closing line now states the measured run ("One full run: 4,580 tests passed, none failed.") instead of "back every claim".
