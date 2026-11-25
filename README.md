@@ -401,7 +401,7 @@ Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and on
 
 ## Built with Kiro
 
-Everything below is in this repository. Counts were taken from the files on 2026-11-25, except the `starter-world` row, which was added later.
+Everything below is in this repository. Counts were taken from the files on 2026-11-26.
 
 **Specs** (`.kiro/specs/<name>/` with `requirements.md`, `design.md`, and `tasks.md`). "Tasks" is the number of checked items out of all checklist items in `tasks.md`. "Properties" is the number of `### Property` headings in `design.md`; for `ghost-cloud` it is the number of property rows in the table of `design.md`.
 
@@ -410,7 +410,7 @@ Everything below is in this repository. Counts were taken from the files on 2026
 | `core-contract` | The `World<S, A>` contract with six functions and the safety contract | 15 of 15 | 8 |
 | `possession` | The blacklight scan for hidden Unicode, the red thread, and the P7 claim | 65 of 65 | 23 |
 | `wards` | The judging rules, the `wards.yaml` format, the parser in `wards-config`, and the block message | 64 of 64 | 17 |
-| `ghost-runner` | The Docker box (`--network none`, copy-only mount), Repo_World, and Plan B | 98 of 98 | 22 |
+| `ghost-runner` | The Docker box (`--network none`, copy-only mount), Repo_World, and Plan B | 102 of 102 | 22 |
 | `ui-kit` | The shared screens and their render properties | 87 of 87 | 12 |
 | `kiro-integration` | The five hooks, the MCP server, and the power | 122 of 133 | 23 |
 | `ghost-shell` | App 1: the playground page and the playground world | 79 of 80 | 26 |
