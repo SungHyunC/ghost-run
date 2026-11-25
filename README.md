@@ -371,21 +371,25 @@ Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and on
 
 ## Built with Kiro
 
-Everything below is in this repository. Counts were taken from the files on 2026-11-18.
+Everything below is in this repository. Counts were taken from the files on 2026-11-25.
 
-**Specs** (`.kiro/specs/<name>/` with `requirements.md`, `design.md`, and `tasks.md`). "Tasks" is the number of checked items out of all checklist items in `tasks.md`. "Properties" is the number of `### Property` headings in `design.md`.
+**Specs** (`.kiro/specs/<name>/` with `requirements.md`, `design.md`, and `tasks.md`). "Tasks" is the number of checked items out of all checklist items in `tasks.md`. "Properties" is the number of `### Property` headings in `design.md`; for `ghost-cloud` it is the number of property rows in the table of `design.md`.
 
 | Spec | What it decided | Tasks | Properties |
 |---|---|---|---|
 | `core-contract` | The `World<S, A>` contract with six functions and the safety contract | 15 of 15 | 8 |
-| `possession` | The blacklight scan for hidden Unicode, the red thread, and the P7 claim | 65 of 65 | 22 |
+| `possession` | The blacklight scan for hidden Unicode, the red thread, and the P7 claim | 65 of 65 | 23 |
 | `wards` | The judging rules, the `wards.yaml` format, the parser in `wards-config`, and the block message | 64 of 64 | 17 |
-| `ghost-runner` | The Docker box (`--network none`, copy-only mount), Repo_World, and Plan B | 97 of 97 | 22 |
-| `ui-kit` | The shared screens and their render properties | 87 of 87 | 11 |
-| `kiro-integration` | The five hooks, the MCP server, and the power | 94 of 98 | 21 |
+| `ghost-runner` | The Docker box (`--network none`, copy-only mount), Repo_World, and Plan B | 98 of 98 | 22 |
+| `ui-kit` | The shared screens and their render properties | 87 of 87 | 12 |
+| `kiro-integration` | The five hooks, the MCP server, and the power | 122 of 133 | 23 |
 | `ghost-shell` | App 1: the playground page and the playground world | 79 of 80 | 26 |
 | `ghost-hand` | App 2: the MuJoCo arm page, the drawer-arm world, and the 8 haunted variants | 103 of 105 | 23 |
 | `world-smith` | The `world-smith` agent | 9 of 9 | none |
+| `ghost-cloud` | The third world: an S3-compatible object store driven by AWS CLI lines, with wards for protected and public buckets | 43 of 43 | 17 |
+| `site` | The public landing page and the build that assembles `site/dist/` | 67 of 67 | 12 |
+| `site-live` | The live "Watch the ghost work" demo in the browser, in place of recorded replays | 45 of 56 | 12 |
+| `site-pages` | The paged landing page, the kit showcase at `/kit/`, and the shorter copy | 64 of 64 | 10 |
 
 `.kiro/specs/_new-world/` is the fill-in template for a new world, not a real spec, so it has no counts. The unchecked tasks are still open.
 
@@ -400,7 +404,8 @@ Everything below is in this repository. Counts were taken from the files on 2026
 | `contract-pbt` | File Save in `core/**` and `worlds/**` | disabled |
 | `world-scaffold` | File Create in `worlds/*/` | disabled |
 | `blacklight-steering` | File Save in `.kiro/**` | disabled |
-| Probe hooks (`probe-host-facts.json`) | Record host facts of tool events | enabled |
+| `docker-warmup` | Pre Tool Use (`shell`) | disabled |
+| Probe hooks (`probe-host-facts.json`) | Record host facts of tool events | disabled |
 
 The files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, and `probe-ask.json` are experiment hooks and are disabled. The scripts are in `integrations/kiro-hook/`. The gate is switched on by a human, as described under "Kiro integration".
 
