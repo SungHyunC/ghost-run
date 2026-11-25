@@ -93,7 +93,7 @@ Run every test, one package at a time:
 corepack pnpm test
 ```
 
-The root `test`, `typecheck`, and `lint` scripts run the 10 packages one after another and keep going after a failure. Running them in parallel (`pnpm -r test`) made some time-limited tests fail under load. The full `corepack pnpm test` took 816.97 s (about 13 min 37 s) on 2026-11-18 on an Apple M1 Mac with Docker running, and all 10 packages passed; the Docker tests of `ghost-runner` take 657 s of that. Per-package numbers are at the end of `docs/measurements.md`. `corepack pnpm typecheck` took 21.9 s and `corepack pnpm lint` 8.3 s, both with exit code 0. One package alone: `corepack pnpm --filter @ghost-run/ui test`.
+The root `test`, `typecheck`, and `lint` scripts run the 12 packages one after another and keep going after a failure. Running them in parallel (`pnpm -r test`) made some time-limited tests fail under load. The full `corepack pnpm test` took 798 s (about 13 min 18 s) at commit `7c6e39a` on 2026-11-25 on an Apple M1 Mac with Docker running. All 12 packages passed: 4,580 tests passed, 11 were skipped, and none failed. Per-package numbers are in the section "Check A at 7c6e39a (2026-11-25)" at the end of `docs/measurements.md`. `corepack pnpm typecheck` took 21.9 s and `corepack pnpm lint` 8.3 s, both with exit code 0. One package alone: `corepack pnpm --filter @ghost-run/ui test`.
 
 Build the Docker box image for real-mode runs:
 
