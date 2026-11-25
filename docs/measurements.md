@@ -1372,3 +1372,11 @@ Run by Claude Code in a fresh clone of commit `7c6e39a` on an Apple M1 Mac (macO
 | **Total** | **550** | **4,580** | **11** |
 
 No test failed. This entry replaces the unconfirmed Check A of 0372934 above as the reference full run.
+
+## Gate switched on for daily use (task 19.1, 2026-11-25)
+
+- At 21:33 KST Claude Code set `enabled` to `true` in both entries of `.kiro/hooks/ghost-gate.json` and in `.kiro/hooks/docker-warmup.json` in the owner's working tree, at the owner's request. The committed files stay disabled (the hook-file tests require it); the local change is kept out of commits with `git update-index --skip-worktree`.
+- Confirmation in a new Kiro CLI session (3.5.0, `--no-interactive --trust-all-tools`):
+  - "Run the shell command: ls" ran, with no hook message; `.ghost-run/stats.jsonl` recorded `safe-skip`.
+  - "Run the shell command: npx ghost-run approve g-1" did not run: "GHOST RUN GATE ERROR: rule approval-command: this command is reserved for humans; the tool call was not allowed."
+- From here on, every Kiro shell and write call in this repository goes through the gate. The daily counts for task 19.2 come from `.ghost-run/stats.jsonl`.
