@@ -5,6 +5,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { analyze } from '../src/static/analyzer.js';
 import { HARMLESS_DEVICE_PATHS } from '../src/static/devices.js';
+import { mapCwdToCopy, mapOriginalToCopy } from '../src/static/original-roots.js';
 import { NUM_RUNS, PBT_MODE, pbtParams, testTimeoutMs } from './pbt-config.js';
 
 // Feature: ghost-runner, Property 16: Static analysis is exact, pure, and I/O free
@@ -222,4 +223,96 @@ describe('Property 16: Static analysis is exact, pure, and I/O free', () => {
       pbtParams(false),
     );
   }, testTimeoutMs(false));
+});
+
+const ROOT = '/home/dev/project';
+const ROOTS = [ROOT, '/private/home/dev/project'];
+
+describe('Original root counts as inside (Requirement 2.7)', () => {
+  it.each([
+    `cd ${ROOT} && ls`,
+    `cat ${ROOT}/README.md`,
+    `cp ${ROOT}/a ${ROOT}/b`,
+    `cd '${ROOT}' && ls`,
+    `ls --dir=${ROOT}/src`,
+    `cd /private/home/dev/project/src && ls`,
+  ])('no effect: %s', (command) => {
+    expect(analyze({ command }, ROOTS)).toEqual([]);
+  });
+
+  it.each([`${ROOT}/../secret`, `${ROOT}-demo/x`, `${ROOT}2`, '/etc/passwd', '/home/dev'])(
+    'still an external-path: %s',
+    (dest) => {
+      expect(analyze({ command: `cat ${dest}` }, ROOTS)).toEqual([{ kind: 'external-path', destination: dest }]);
+    },
+  );
+
+  it('without roots the Original path is external (default)', () => {
+    expect(analyze({ command: `cd ${ROOT}` })).toEqual([{ kind: 'external-path', destination: ROOT }]);
+  });
+
+  it('~ paths, URLs, and connection strings stay external', () => {
+    const kinds = analyze({ command: `cat ~/x https://a.example postgres://u@d.example/db ${ROOT}/ok` }, ROOTS).map(
+      (e) => e.kind,
+    );
+    expect(kinds).toEqual(['external-path', 'url', 'db-connection']);
+  });
+
+  it(
+    'property: <root>/<rel> anywhere in a command adds no effect; planted external paths are still found',
+    () => {
+      const rootArb = fc
+        .array(fc.stringMatching(/^[a-z][a-z0-9]{0,6}$/), { minLength: 1, maxLength: 4 })
+        .map((segs) => `/${segs.join('/')}`);
+      const relArb = fc
+        .array(fc.stringMatching(/^[a-z0-9][a-z0-9]{0,6}$/), { minLength: 0, maxLength: 3 })
+        .map((segs) => segs.join('/'));
+      fc.assert(
+        fc.property(rootArb, relArb, commandArb, fc.nat(20), (root, rel, { command, planted }, pos) => {
+          // A generated external path must not itself fall under the generated root.
+          fc.pre(planted.every((p) => p.kind !== 'external-path' || !(p.dest === root || p.dest.startsWith(`${root}/`))));
+          const inside = rel === '' ? root : `${root}/${rel}`;
+          const tokens = command.split(' ');
+          tokens.splice(pos % (tokens.length + 1), 0, inside);
+          const withInside = tokens.join(' ');
+          const effects = analyze({ command: withInside }, [root]);
+          expect(effects).toEqual(analyze({ command }, [root]));
+          const found = new Set(effects.map((e) => `${e.kind}\u0000${e.destination}`));
+          for (const p of planted) expect(found.has(`${p.kind}\u0000${p.dest}`)).toBe(true);
+        }),
+        pbtParams(false),
+      );
+    },
+    testTimeoutMs(false),
+  );
+});
+
+describe('mapOriginalToCopy', () => {
+  it.each([
+    [`cd ${ROOT} && ls`, 'cd /work && ls'],
+    [`cat ${ROOT}/README.md`, 'cat /work/README.md'],
+    [`cp ${ROOT}/a ${ROOT}/b`, 'cp /work/a /work/b'],
+    [`cd "${ROOT}";ls`, 'cd "/work";ls'],
+    [`(cd ${ROOT})`, '(cd /work)'],
+    [`ls ${ROOT}|wc`, 'ls /work|wc'],
+    ['cd /private/home/dev/project/src', 'cd /work/src'],
+    [`cd ${ROOT}-demo`, `cd ${ROOT}-demo`],
+    [`cd ${ROOT}2`, `cd ${ROOT}2`],
+    [`cd /x${ROOT}`, `cd /x${ROOT}`],
+    [ROOT, '/work'],
+  ])('%s -> %s', (text, expected) => {
+    expect(mapOriginalToCopy(text, ROOTS)).toBe(expected);
+  });
+
+  it('maps an absolute cwd to a path relative to the Copy root', () => {
+    expect(mapCwdToCopy(ROOT, ROOTS)).toBeUndefined();
+    expect(mapCwdToCopy(`${ROOT}/src/a`, ROOTS)).toBe('src/a');
+    expect(mapCwdToCopy('src', ROOTS)).toBe('src');
+    expect(mapCwdToCopy(`${ROOT}-demo`, ROOTS)).toBe(`${ROOT}-demo`);
+  });
+
+  it('does nothing without roots or with the filesystem root', () => {
+    expect(mapOriginalToCopy('cd /etc', [])).toBe('cd /etc');
+    expect(mapOriginalToCopy('cd /etc', ['/'])).toBe('cd /etc');
+  });
 });

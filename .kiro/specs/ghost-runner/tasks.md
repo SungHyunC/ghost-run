@@ -489,6 +489,12 @@ Decisions reflected in this plan:
     - Tests: `ghost-runner/tests/static-analyzer.pbt.test.ts` (unit cases and a property) and the gate message test in `integrations/kiro-hook/tests/gate-output.test.mjs`. Bundle `integrations/power/server/ghost-run-mcp.mjs` rebuilt with `pnpm --filter @ghost-run/mcp bundle`.
     - _Requirements: 2.7, 2.8_
 
+- [x] 20. Follow-up: the Original root means the Copy
+  - [x] 20.1 Map the Original root to the Copy and treat it as inside [docker]
+    - `src/static/original-roots.ts`: `originalRootsOf` (root as given plus `realpath`), pure `mapOriginalToCopy` (path-boundary rule) and `mapCwdToCopy`. `stepInSession` maps `command` and an absolute `cwd` before the box run; `analyze(action, originalRoots)` treats paths at or under a root as inside after normalization; `effectsOutside`, `runPlan`, and Plan B pass the roots. `integrations/power/server/ghost-run-mcp.mjs` rebuilt with `pnpm --filter @ghost-run/mcp bundle`.
+    - Tests: `ghost-runner/tests/static-analyzer.pbt.test.ts` (unit cases, mapping cases, property), `ghost-runner/tests/original-root-map.docker.test.ts` (box), and `integrations/kiro-hook/tests/gate-shell-judgment.test.mjs` (gate).
+    - _Requirements: 2.7_
+
 - [x] 17. Final checkpoint - Ensure all tests pass
   - Run `pnpm lint`, `pnpm -r build`, the `[no-docker]` tests in `save` and explicit profiles, and, where Docker is available, the `[docker]` tests. Confirm the summary shows `skipped (docker unavailable)` for any skipped Docker suite and that no private-key file is present in the repository. Ask the user if questions arise.
 

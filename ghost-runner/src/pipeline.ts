@@ -60,6 +60,7 @@ import type {
 } from './result.js';
 import { SECRET_VALUES_CAPPED } from './result.js';
 import { analyze } from './static/analyzer.js';
+import { originalRootsOf } from './static/original-roots.js';
 import {
   classifyOriginalChange,
   detectProtectedPathExcluded,
@@ -227,7 +228,7 @@ async function planB(
   const diagnostics: Diagnostic[] = protectedPathExcludedDiagnostics(
     detectProtectedPathExcluded(resolved.wardSet, resolved.excludeDirs, resolved.excludedDirMode),
   );
-  const perAction = plan.map((a) => analyze(a));
+  const perAction = plan.map((a) => analyze(a, originalRootsOf(original)));
   const staticFindings: Effect[] = perAction.flat();
   try {
     staticFindings.push(...(await scanSymlinksOutside(original, resolved.excludeDirs)));
@@ -595,6 +596,7 @@ async function execute(c: PipelineCtx, run: Run): Promise<void> {
       eventBuilder: new EventBuilder(),
       payloads: new Map(),
       cwds: [],
+      originalRoots: originalRootsOf(original),
       timings,
       entries,
       sqlite: sqlite0,
@@ -633,7 +635,7 @@ async function execute(c: PipelineCtx, run: Run): Promise<void> {
       };
       run.snapshots.push(snap);
       run.changes.push(diffStates(prev.state, snap.state));
-      run.effects.push(analyze(action));
+      run.effects.push(analyze(action, session.originalRoots ?? []));
       run.exitCodes.push(r.outcome.kind === 'exited' ? r.outcome.exitCode : -1);
       run.diagnostics.push(...(snap.state.lastStep?.diagnostics ?? []), ...diffDiagnostics(prev.state, snap.state, i));
       phases.diffMs += perf() - diffStart;

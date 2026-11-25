@@ -32,9 +32,12 @@ const URL_RE = /\b([a-z][a-z0-9+.-]*):\/\/[^\s'"`<>|;&()\\]+/gi;
 /** Effect kind recorded when the command text cannot be parsed. */
 export const UNPARSEABLE_KIND = 'unparseable-command';
 
-const isUnderWork = (p: string): boolean => {
+const isUnder = (n: string, root: string): boolean => n === root || n.startsWith(`${root}/`);
+
+/** True when `p`, after normalization, is the Copy root, an Original root, or a path under one. */
+const isInside = (p: string, originalRoots: readonly string[]): boolean => {
   const n = posix.normalize(p);
-  return n === WORK_ROOT || n.startsWith(`${WORK_ROOT}/`);
+  return isUnder(n, WORK_ROOT) || originalRoots.some((r) => isUnder(n, posix.normalize(r)));
 };
 
 /** Candidate path strings in a token: the token itself and any `--opt=value` / `VAR=value` tail. */
@@ -49,7 +52,11 @@ export interface AnalyzableAction {
   readonly command: string;
 }
 
-export function analyze(action: AnalyzableAction): Effect[] {
+/**
+ * `originalRoots`: absolute paths of the Original (as given and real path). A path at or under one
+ * counts as inside, like the Copy root. Passed in because this function does no file I/O.
+ */
+export function analyze(action: AnalyzableAction, originalRoots: readonly string[] = []): Effect[] {
   const effects: Effect[] = [];
   const seen = new Set<string>();
   const add = (kind: 'external-path' | 'url' | 'db-connection' | typeof UNPARSEABLE_KIND, destination: string): void => {
@@ -89,7 +96,7 @@ export function analyze(action: AnalyzableAction): Effect[] {
 
     for (const cand of pathCandidates(entry)) {
       if (cand.startsWith('~')) add('external-path', cand);
-      else if (cand.startsWith('/') && !isUnderWork(cand) && !isHarmlessDevicePath(cand)) add('external-path', cand);
+      else if (cand.startsWith('/') && !isInside(cand, originalRoots) && !isHarmlessDevicePath(cand)) add('external-path', cand);
     }
   }
 

@@ -235,6 +235,16 @@ describe('O8: the real runPlan configuration accepts pipelineDeadlineSec 44 (no 
     /** @type {Map<string, Uint8Array>} */ (out.payloads).clear();
   });
 
+  it('cd <workspace root> && ls gives no external-path notice; other absolute paths still do', async () => {
+    const dockerless2 = { run: dockerless.run };
+    const opts = /** @type {any} */ ({ original: root, client: dockerless2 });
+    const ok = await realRunPlan([{ command: `cd ${root} && ls` }, { command: `cat ${root}/sub/x` }], opts);
+    expect(ok.result.report.effectsOutside).toEqual([[], []]);
+    expect(ok.result.wardVerdict?.notices).toEqual([]);
+    const out = await realRunPlan([{ command: `cd ${root}/.. && ls` }, { command: 'cat /etc/passwd' }], opts);
+    expect(out.result.report.effectsOutside.flat().map((/** @type {any} */ e) => e.kind)).toEqual(['external-path', 'external-path']);
+  });
+
   it('the runner honors the 44 s deadline', () => {
     expect(resolveRunnerOptions(/** @type {any} */ ({ original: root, pipelineDeadlineSec: 44 })).pipelineDeadlineSec).toBe(44);
   });

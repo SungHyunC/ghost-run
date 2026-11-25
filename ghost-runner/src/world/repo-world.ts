@@ -33,6 +33,7 @@ import { nextSqliteState, type SqliteState } from '../fs/sqlite.js';
 import { EventBuilder } from '../recorder/events.js';
 import type { Diagnostic } from '../result.js';
 import { analyze } from '../static/analyzer.js';
+import { mapCwdToCopy, mapOriginalToCopy, originalRootsOf } from '../static/original-roots.js';
 import { renderRepoTree } from './render.js';
 import type { RepoState, RepoWorld, ShellAction, StepRecord } from './types.js';
 
@@ -64,6 +65,8 @@ export interface BoxSession {
   readonly payloads: Map<string, Uint8Array>;
   /** Cwd of every action run so far, by step index (needed by the strace parser). */
   readonly cwds: (string | undefined)[];
+  /** Original root(s) (given and real path): mapped to the Copy root in command and cwd before the run. */
+  readonly originalRoots?: readonly string[];
   /** Optional sink: `stepInSession` adds the time spent counting SQLite files (ms). */
   readonly timings?: { sqliteMs: number };
   /** Cursor, advanced by `stepInSession`. */
@@ -105,10 +108,13 @@ export async function stepInSession(
   index: number,
   action: ShellAction,
 ): Promise<StepInSessionResult> {
-  session.cwds[index] = action.cwd;
+  const roots = session.originalRoots ?? [];
+  const command = mapOriginalToCopy(action.command, roots);
+  const cwd = action.cwd === undefined ? undefined : mapCwdToCopy(action.cwd, roots);
+  session.cwds[index] = cwd;
   if (session.sentinelPath !== undefined) session.baselineNs = await readFsClockNs(session.sentinelPath);
 
-  const outcome = await session.box.exec(index, action.command, action.cwd);
+  const outcome = await session.box.exec(index, command, cwd);
 
   // Walk in every case: after a timeout or a Docker error the Copy may still have changed.
   const adv = await advanceEntries({
@@ -242,6 +248,7 @@ export function createRepoWorld(opts: RepoWorldOptions): RepoWorld {
   const resolved = resolveRunnerOptions(opts);
   const client = opts.client ?? createDockerClient();
   const original = resolve(resolved.original);
+  const originalRoots = originalRootsOf(original);
   const excludeDirs = resolved.excludeDirs;
   const secretPatterns = effectiveSecretPatterns(resolved);
   const uid = process.getuid?.() ?? 1000;
@@ -418,6 +425,7 @@ export function createRepoWorld(opts: RepoWorldOptions): RepoWorld {
             eventBuilder: new EventBuilder(),
             payloads: new Map(),
             cwds: [],
+            originalRoots,
             entries: start.entries,
             sqlite: start.sqlite,
             baselineNs: c.copiedAtNs,
@@ -452,7 +460,7 @@ export function createRepoWorld(opts: RepoWorldOptions): RepoWorld {
     },
 
     effectsOutside(a: ShellAction): Effect[] {
-      return analyze(a);
+      return analyze(a, originalRoots);
     },
 
     async dispose(): Promise<void> {

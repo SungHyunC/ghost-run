@@ -2992,7 +2992,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve5.call(this, root, ref);
+      let _sch = resolve6.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a3 = root.localRefs) === null || _a3 === void 0 ? void 0 : _a3[ref];
         const { schemaId } = this.opts;
@@ -3019,7 +3019,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve5(root, ref) {
+    function resolve6(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -3883,7 +3883,7 @@ var require_fast_uri = __commonJS({
       }
       return uri;
     }
-    function resolve5(baseURI, relativeURI, options) {
+    function resolve6(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -4274,7 +4274,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize: normalize2,
-      resolve: resolve5,
+      resolve: resolve6,
       resolveComponent,
       equal,
       serialize: serialize2,
@@ -23762,7 +23762,7 @@ var recursive = /* @__PURE__ */ new WeakMap();
 var NONE = 0;
 var ASSUMED = 1;
 var PROVEN = 2;
-function isRecursive(inst, stack, resolve5) {
+function isRecursive(inst, stack, resolve6) {
   const cached3 = recursive.get(inst);
   if (cached3 !== void 0)
     return cached3 ? PROVEN : NONE;
@@ -23772,7 +23772,7 @@ function isRecursive(inst, stack, resolve5) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve5);
+      const answer = isRecursive(child, stack, resolve6);
       if (answer > result)
         result = answer;
     }
@@ -23783,7 +23783,7 @@ function isRecursive(inst, stack, resolve5) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve5) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve6) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -23847,7 +23847,7 @@ function isRecursive(inst, stack, resolve5) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve5 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve6 ? inst._zod.innerType : void 0);
       merge2(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -42285,7 +42285,7 @@ var Protocol = class {
           return;
         }
         const pollInterval = task2.pollInterval ?? this._options?.defaultTaskPollInterval ?? 1e3;
-        await new Promise((resolve5) => setTimeout(resolve5, pollInterval));
+        await new Promise((resolve6) => setTimeout(resolve6, pollInterval));
         options?.signal?.throwIfAborted();
       }
     } catch (error62) {
@@ -42302,7 +42302,7 @@ var Protocol = class {
    */
   request(request, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
-    return new Promise((resolve5, reject) => {
+    return new Promise((resolve6, reject) => {
       const earlyReject = (error62) => {
         reject(error62);
       };
@@ -42380,7 +42380,7 @@ var Protocol = class {
           if (!parseResult.success) {
             reject(parseResult.error);
           } else {
-            resolve5(parseResult.data);
+            resolve6(parseResult.data);
           }
         } catch (error62) {
           reject(error62);
@@ -42642,12 +42642,12 @@ var Protocol = class {
       }
     } catch {
     }
-    return new Promise((resolve5, reject) => {
+    return new Promise((resolve6, reject) => {
       if (signal.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
-      const timeoutId = setTimeout(resolve5, interval);
+      const timeoutId = setTimeout(resolve6, interval);
       signal.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
@@ -43787,7 +43787,7 @@ var McpServer = class {
     let task = createTaskResult.task;
     const pollInterval = task.pollInterval ?? 5e3;
     while (task.status !== "completed" && task.status !== "failed" && task.status !== "cancelled") {
-      await new Promise((resolve5) => setTimeout(resolve5, pollInterval));
+      await new Promise((resolve6) => setTimeout(resolve6, pollInterval));
       const updatedTask = await extra.taskStore.getTask(taskId);
       if (!updatedTask) {
         throw new McpError(ErrorCode.InternalError, `Task ${taskId} not found during polling`);
@@ -44451,12 +44451,12 @@ var StdioServerTransport = class {
     this.onclose?.();
   }
   send(message2) {
-    return new Promise((resolve5) => {
+    return new Promise((resolve6) => {
       const json2 = serializeMessage(message2);
       if (this._stdout.write(json2)) {
-        resolve5();
+        resolve6();
       } else {
-        this._stdout.once("drain", resolve5);
+        this._stdout.once("drain", resolve6);
       }
     });
   }
@@ -44859,7 +44859,7 @@ function parseRunResult(json2) {
 
 // ghost-runner/dist/world/repo-world.js
 import { lstat as lstat5, realpath, rm as rm2 } from "node:fs/promises";
-import { join as join7, resolve as resolve3 } from "node:path";
+import { join as join7, resolve as resolve4 } from "node:path";
 
 // ghost-runner/dist/copy/copier.js
 import { spawn } from "node:child_process";
@@ -46450,9 +46450,9 @@ function createDockerClient(file2 = "docker", clock = systemClock) {
     run(args, opts = {}) {
       const timeoutMs = effectiveTimeoutMs(opts, clock);
       const cap = opts.maxOutputBytes ?? DEFAULT_MAX_OUTPUT;
-      return new Promise((resolve5) => {
+      return new Promise((resolve6) => {
         if (timeoutMs <= 0) {
-          resolve5({ code: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0), timedOut: true });
+          resolve6({ code: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0), timedOut: true });
           return;
         }
         const out = [];
@@ -46470,7 +46470,7 @@ function createDockerClient(file2 = "docker", clock = systemClock) {
             return;
           settled = true;
           clearTimeout(timer);
-          resolve5(r);
+          resolve6(r);
         };
         const timer = setTimeout(() => {
           timedOut = true;
@@ -47163,9 +47163,10 @@ var DB_SCHEMES = [
 ];
 var URL_RE = /\b([a-z][a-z0-9+.-]*):\/\/[^\s'"`<>|;&()\\]+/gi;
 var UNPARSEABLE_KIND = "unparseable-command";
-var isUnderWork = (p) => {
+var isUnder = (n, root) => n === root || n.startsWith(`${root}/`);
+var isInside = (p, originalRoots) => {
   const n = posix2.normalize(p);
-  return n === WORK_ROOT || n.startsWith(`${WORK_ROOT}/`);
+  return isUnder(n, WORK_ROOT) || originalRoots.some((r) => isUnder(n, posix2.normalize(r)));
 };
 var pathCandidates = (token) => {
   const out = [token];
@@ -47174,7 +47175,7 @@ var pathCandidates = (token) => {
     out.push(token.slice(eq + 1));
   return out;
 };
-function analyze(action2) {
+function analyze(action2, originalRoots = []) {
   const effects = [];
   const seen = /* @__PURE__ */ new Set();
   const add = (kind, destination) => {
@@ -47210,11 +47211,41 @@ function analyze(action2) {
     for (const cand of pathCandidates(entry)) {
       if (cand.startsWith("~"))
         add("external-path", cand);
-      else if (cand.startsWith("/") && !isUnderWork(cand) && !isHarmlessDevicePath(cand))
+      else if (cand.startsWith("/") && !isInside(cand, originalRoots) && !isHarmlessDevicePath(cand))
         add("external-path", cand);
     }
   }
   return effects;
+}
+
+// ghost-runner/dist/static/original-roots.js
+import { realpathSync as realpathSync2 } from "node:fs";
+import { resolve as resolve3 } from "node:path";
+var COPY_ROOT = "/work";
+function originalRootsOf(original) {
+  const given = resolve3(original);
+  const roots = /* @__PURE__ */ new Set([given]);
+  try {
+    roots.add(realpathSync2(given));
+  } catch {
+  }
+  roots.delete("/");
+  return [...roots];
+}
+var escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&");
+function mapOriginalToCopy(text2, roots) {
+  const usable = roots.filter((r) => r.startsWith("/") && r !== "/").sort((a, b) => b.length - a.length);
+  if (usable.length === 0)
+    return text2;
+  const re = new RegExp(`(?<![\\w.~/-])(?:${usable.map(escapeRe).join("|")})(?=$|[/\\s'"\`;&|<>()])`, "g");
+  return text2.replace(re, COPY_ROOT);
+}
+function mapCwdToCopy(cwd, roots) {
+  const mapped = mapOriginalToCopy(cwd, roots);
+  if (mapped === cwd)
+    return cwd;
+  const below = mapped.slice(COPY_ROOT.length).replace(/^\/+/, "");
+  return below === "" ? void 0 : below;
 }
 
 // ghost-runner/dist/world/repo-world.js
@@ -47229,10 +47260,13 @@ function describeFailure(outcome) {
   }
 }
 async function stepInSession(session, index, action2) {
-  session.cwds[index] = action2.cwd;
+  const roots = session.originalRoots ?? [];
+  const command = mapOriginalToCopy(action2.command, roots);
+  const cwd = action2.cwd === void 0 ? void 0 : mapCwdToCopy(action2.cwd, roots);
+  session.cwds[index] = cwd;
   if (session.sentinelPath !== void 0)
     session.baselineNs = await readFsClockNs(session.sentinelPath);
-  const outcome = await session.box.exec(index, action2.command, action2.cwd);
+  const outcome = await session.box.exec(index, command, cwd);
   const adv = await advanceEntries({
     root: session.copyDir,
     excludeDirs: session.excludeDirs,
@@ -47328,7 +47362,7 @@ import { randomUUID as randomUUID2 } from "node:crypto";
 import { constants } from "node:fs";
 import { open as open4, realpath as realpath2, rm as rm3, stat as stat2 } from "node:fs/promises";
 import { tmpdir as tmpdir2 } from "node:os";
-import { dirname as dirname3, isAbsolute, join as join8, normalize, resolve as resolve4, sep } from "node:path";
+import { dirname as dirname3, isAbsolute, join as join8, normalize, resolve as resolve5, sep } from "node:path";
 
 // core/src/types.ts
 var VERDICT_ORDER = {
@@ -48907,14 +48941,14 @@ function capText(text2, max = 300) {
   return text2.length > max ? `${text2.slice(0, max)}...` : text2;
 }
 async function scanSymlinksOutside(original, excludeDirs) {
-  const roots = /* @__PURE__ */ new Set([resolve4(original)]);
-  roots.add(await realpath2(original).catch(() => resolve4(original)));
+  const roots = /* @__PURE__ */ new Set([resolve5(original)]);
+  roots.add(await realpath2(original).catch(() => resolve5(original)));
   const entries = await walkManifest(original, { excludeDirs });
   const out = [];
   for (const e of entries) {
     if (e.type !== "symlink" || e.target === void 0)
       continue;
-    const abs = isAbsolute(e.target) ? normalize(e.target) : resolve4(dirname3(join8(original, e.path)), e.target);
+    const abs = isAbsolute(e.target) ? normalize(e.target) : resolve5(dirname3(join8(original, e.path)), e.target);
     const inside = [...roots].some((r) => abs === r || abs.startsWith(r.endsWith(sep) ? r : r + sep));
     if (!inside)
       out.push({ kind: "symlink-outside-original", destination: e.target, path: e.path });
@@ -48932,7 +48966,7 @@ async function planB(plan, resolved, original, avail, runId, phases, onNotice) {
     }
   }
   const diagnostics = protectedPathExcludedDiagnostics(detectProtectedPathExcluded(resolved.wardSet, resolved.excludeDirs, resolved.excludedDirMode));
-  const perAction = plan.map((a) => analyze(a));
+  const perAction = plan.map((a) => analyze(a, originalRootsOf(original)));
   const staticFindings = perAction.flat();
   try {
     staticFindings.push(...await scanSymlinksOutside(original, resolved.excludeDirs));
@@ -49213,6 +49247,7 @@ async function execute(c, run) {
       eventBuilder: new EventBuilder(),
       payloads: /* @__PURE__ */ new Map(),
       cwds: [],
+      originalRoots: originalRootsOf(original),
       timings,
       entries,
       sqlite: sqlite0,
@@ -49250,7 +49285,7 @@ async function execute(c, run) {
       };
       run.snapshots.push(snap);
       run.changes.push(diff(prev.state, snap.state));
-      run.effects.push(analyze(action2));
+      run.effects.push(analyze(action2, session.originalRoots ?? []));
       run.exitCodes.push(r.outcome.kind === "exited" ? r.outcome.exitCode : -1);
       run.diagnostics.push(...snap.state.lastStep?.diagnostics ?? [], ...diffDiagnostics(prev.state, snap.state, i));
       phases.diffMs += perf() - diffStart;
@@ -49410,7 +49445,7 @@ async function runPlan(plan, opts) {
   validatePlanSize(plan.length);
   const resolved = resolveRunnerOptions(opts);
   validateActions(plan);
-  const original = resolve4(resolved.original);
+  const original = resolve5(resolved.original);
   await assertDirectory(original);
   const image = resolved.image ?? imageFromEnv(process.env);
   const clock = opts.clock ?? systemClock3;
@@ -52871,14 +52906,14 @@ function invalidInputResult(field, message2) {
 }
 
 // integrations/mcp/src/tool-kit.mjs
-import { realpathSync as realpathSync2 } from "node:fs";
+import { realpathSync as realpathSync3 } from "node:fs";
 function cutCommand(command) {
   return sanitizeText2(String(command), 120);
 }
 function fixedRoot(root, workspace) {
   if (workspace === void 0) return { ok: true, root };
   try {
-    if (realpathSync2(workspace) === realpathSync2(root)) return { ok: true, root };
+    if (realpathSync3(workspace) === realpathSync3(root)) return { ok: true, root };
   } catch {
   }
   return { ok: false, error: WORKSPACE_MISMATCH_MESSAGE };
