@@ -68,7 +68,6 @@ const HEADER = '<header><svg width="28" height="36" viewBox="0 0 28 36" role="im
 const MAX_COMMAND = 4096;
 /** Longest first-line preview in the list, in code points. */
 export const LIST_COMMAND_MAX = 120;
-const BADGE = { pass: 'lit', warn: 'flickering', block: 'out' };
 
 /**
  * @param {string} title
@@ -96,7 +95,7 @@ function verdictHtml(verdict) {
   const label = v === undefined ? 'unknown' : CANDLE[/** @type {'pass'|'warn'|'block'} */ (v)];
   const violations = Array.isArray(verdict.violations) ? verdict.violations.filter(isObj).slice(0, MAX_ITEMS) : [];
   const notices = Array.isArray(verdict.notices) ? verdict.notices.filter(isObj).slice(0, MAX_ITEMS) : [];
-  let out = `<section><h2>Verdict</h2><p class="candle">Candle <span class="badge ${v ?? 'unknown'}">${text(label)}</span></p>`;
+  let out = `<section><h2>Verdict</h2><p class="candle">Ward verdict <span class="badge ${v ?? 'unknown'}">${text(label)}</span></p>`;
   out += '<h2>Wards</h2>';
   out += violations.length === 0
     ? '<p class="note">No ward was violated.</p>'
@@ -175,15 +174,31 @@ export function firstLine(command) {
 }
 
 /**
- * Candle state of a grave as a colored badge.
+ * Candle of a grave as a colored badge: the gate's final decision, not the ward verdict.
+ * A grave exists only because the gate blocked (out) or asked (flickering).
  * @param {GraveEntry} e
  * @returns {string}
  */
 function badgeOf(e) {
   const d = isObj(e.detail) ? e.detail : {};
-  const w = isObj(d.wardVerdict) ? d.wardVerdict.verdict : undefined;
-  const v = w === 'pass' || w === 'warn' || w === 'block' ? w : undefined;
-  return `<span class="badge ${v ?? 'unknown'}">${v === undefined ? 'unknown' : BADGE[v]}</span>`;
+  const out = isObj(d.wardVerdict) && d.wardVerdict.verdict === 'block';
+  return `<span class="badge ${out ? 'block' : 'warn'}">${out ? 'out' : 'flickering'}</span>`;
+}
+
+/**
+ * Note for a grave whose ward verdict is pass: a gate rule asked. Uses the entry's notices when present.
+ * @param {GraveEntry} e
+ * @returns {string}
+ */
+function gateNoteHtml(e) {
+  const d = isObj(e.detail) ? e.detail : {};
+  const wv = d.wardVerdict;
+  if (!isObj(wv) || wv.verdict !== 'pass') return '';
+  const notices = Array.isArray(wv.notices) ? wv.notices.filter(isObj).slice(0, MAX_ITEMS) : [];
+  const why = notices.length > 0
+    ? `<ul>${notices.map((n) => `<li>${text(n.reason)}</li>`).join('')}</ul>`
+    : '';
+  return `<section><h2>Gate rule</h2><p>No ward was violated, but a gate rule asked for approval (for example the self-protection floor for gate-protected paths).</p>${why}</section>`;
 }
 
 /**
@@ -216,7 +231,7 @@ export function renderGrave(entry) {
   const d = isObj(entry.detail) ? entry.detail : {};
   let body = '<h1>Seance</h1><p><a href="/seance/">Back to the graveyard</a></p>';
   body += `<section>${badgeOf(entry)}<pre class="cmd">${text(entry.command, MAX_COMMAND)}</pre><p class="mono">${text(entry.recordedAt)}</p><p class="mono">${text(entry.wardIds.join(', '))}</p></section>`;
-  body += verdictHtml(d.wardVerdict) + changesHtml(d.changes) + claimsHtml(d.claims) + threadHtml(d.links);
+  body += gateNoteHtml(entry) + verdictHtml(d.wardVerdict) + changesHtml(d.changes) + claimsHtml(d.claims) + threadHtml(d.links);
   return page('Seance \u00B7 Ghost Run+', body);
 }
 

@@ -239,6 +239,36 @@ describe('seance viewer', () => {
     expect(one.body).not.toMatch(/<script|<img|https?:\/\//i);
   });
 
+  it('shows the gate decision as the badge: flickering for a pass ward verdict, out for block, flickering for an old entry', async () => {
+    const NOTICE = 'step 0: change to a gate-protected path needs human approval.';
+    const pass = { ...BLOCK, runId: 'run-pass', verdict: 'warn', wardVerdict: { verdict: 'pass', violations: [], notices: [{ kind: 'self-protected', reason: NOTICE }] } };
+    const entry = buildGraveEntry({ runId: 'run-pass', command: 'write .kiro/hooks/x', recordedAt: AT, result: /** @type {any} */ (pass) });
+    const file = path.join(root, '.ghost-run', 'graveyard.jsonl');
+    await fsp.appendFile(file, `${graveLine(/** @type {any} */ (entry), [])}\n`);
+    await addGrave('run-block', 'rm -rf data');
+    const old = { id: 'g-run-old', command: 'echo old', recordedAt: AT, wardIds: [] };
+    await fsp.appendFile(file, `${JSON.stringify(old)}\n`);
+    const port = await start();
+    const row = (/** @type {string} */ body, /** @type {string} */ id) => body.slice(body.indexOf(`href="/seance/${id}"`)).split('</a>')[0];
+    const list = /** @type {any} */ (await request(port, '/seance/'));
+    expect(row(list.body, 'g-run-pass')).toContain('flickering');
+    expect(row(list.body, 'g-run-pass')).not.toContain('lit');
+    expect(row(list.body, 'g-run-block')).toContain('>out<');
+    expect(row(list.body, 'g-run-old')).toContain('flickering');
+    const p = /** @type {any} */ (await request(port, '/seance/g-run-pass'));
+    expect(p.body).toContain('>flickering<');
+    expect(p.body).toContain('a gate rule asked');
+    expect(p.body).toContain('self-protection floor');
+    expect(p.body).toContain(NOTICE);
+    const b = /** @type {any} */ (await request(port, '/seance/g-run-block'));
+    expect(b.body).toContain('>out<');
+    expect(b.body).not.toContain('a gate rule asked');
+    const o = /** @type {any} */ (await request(port, '/seance/g-run-old'));
+    expect(o.status).toBe(200);
+    expect(o.body).toContain('>flickering<');
+    expect(o.body).not.toContain('a gate rule asked');
+  });
+
   it('calls onIdle after the quiet period', async () => {
     const onIdle = vi.fn();
     const server = createSeanceServer({ root, idleMs: 30, onIdle });
