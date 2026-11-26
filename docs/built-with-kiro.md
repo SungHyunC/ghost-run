@@ -8,7 +8,7 @@ Everything below is in this repository.
 
 **Specs** (`.kiro/specs/<name>/` with `requirements.md`, `design.md`, and `tasks.md`). "Tasks" is the number of checked items out of all checklist items in `tasks.md`: every line that matches `^\s*- \[[ xX]\]\*? ` counts, whether it is a task group or a sub-task, and whether it is marked optional with `*`. "Properties" is the number of numbered property headings in `design.md`: lines that match `^### Property [0-9]+`. Headings that only start with the word "Property" are not properties and are not counted: "### Property-based tests" in `possession` and "### Property run sizes and the 60-second budget" in `ui-kit`. For `ghost-cloud`, whose `design.md` has no such headings, it is the number of numbered rows in the table under "Correctness Properties". Counts were taken from the files on 2026-11-26.
 
-**Totals:** 14 specs, 927 of 932 checklist items checked, and 204 properties. The 5 open items are tasks 19, 19.2, and 20 of `kiro-integration` (the gate's daily approval count and the final checkpoint) and tasks 21 and 21.1 of `ghost-hand` (the optional forbidden-contact red thread).
+**Totals:** 14 specs, 934 of 939 checklist items checked, and 204 properties. The 5 open items are tasks 19, 19.2, and 20 of `kiro-integration` (the gate's daily approval count and the final checkpoint) and tasks 21 and 21.1 of `ghost-hand` (the optional forbidden-contact red thread).
 
 | Spec | What it decided | Tasks | Properties |
 |---|---|---|---|
@@ -17,13 +17,13 @@ Everything below is in this repository.
 | `wards` | The judging rules, the `wards.yaml` format, the parser in `wards-config`, and the block message | 65 of 65 | 17 |
 | `ghost-runner` | The Docker box (`--network none`, copy-only mount), Repo_World, and Plan B | 102 of 102 | 22 |
 | `ui-kit` | The shared screens and their render properties | 87 of 87 | 11 |
-| `kiro-integration` | The five hooks, the MCP server, and the power | 153 of 156 | 24 |
+| `kiro-integration` | The six hooks, the MCP server, and the power | 156 of 159 | 24 |
 | `ghost-shell` | App 1: the playground page and the playground world | 80 of 80 | 26 |
-| `ghost-hand` | App 2: the MuJoCo arm page, the drawer-arm world, and the 8 haunted variants | 103 of 105 | 23 |
+| `ghost-hand` | App 2: the MuJoCo arm page, the drawer-arm world, and the 8 haunted variants | 104 of 106 | 23 |
 | `world-smith` | The `world-smith` agent | 9 of 9 | none |
 | `ghost-cloud` | The third world: an S3-compatible object store driven by AWS CLI lines, with wards for protected and public buckets | 43 of 43 | 17 |
-| `starter-world` | The smallest world: a to-do list, one `path` ward, and a one-command demo | 16 of 16 | none |
-| `site` | The public landing page and the build that assembles `site/dist/` | 67 of 67 | 12 |
+| `starter-world` | The smallest world: a to-do list, one `path` ward, and a one-command demo | 18 of 18 | none |
+| `site` | The public landing page and the build that assembles `site/dist/` | 68 of 68 | 12 |
 | `site-live` | The live "Watch the ghost work" demo in the browser, in place of recorded replays | 56 of 56 | 12 |
 | `site-pages` | The paged landing page, the kit showcase at `/kit/`, and the shorter copy | 66 of 66 | 10 |
 
