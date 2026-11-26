@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "docker-warmup (shell)",
-      "description": "Wakes Docker Desktop in the background before the gate's first check. Never blocks, prints nothing. Disabled until task 19.1.",
+      "description": "Wakes Docker Desktop in the background before the gate's first check. Never blocks, prints nothing. Ships disabled; `corepack pnpm gate:on` switches it on and `corepack pnpm gate:off` switches it off.",
       "trigger": "PreToolUse",
       "matcher": "shell",
       "action": { "type": "command", "command": "node integrations/kiro-hook/docker-warmup.mjs" },

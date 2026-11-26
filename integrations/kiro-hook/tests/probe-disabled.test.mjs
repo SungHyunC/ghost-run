@@ -3,11 +3,15 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// Task 1.8: the probe hook files stay in the repository but must be off once the results
+// Task 1.8: the probe hook files stay in the repository (task 28.1 moved them to
+// integrations/kiro-hook/experiments/) but must be off once the results
 // table (heading `Probe results`) exists in docs/measurements.md.
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const PROBE_FILES = ['.kiro/hooks/probe-host-facts.json', '.kiro/hooks/probe-ask.json'];
+const PROBE_FILES = [
+  'integrations/kiro-hook/experiments/probe-host-facts.json',
+  'integrations/kiro-hook/experiments/probe-ask.json',
+];
 const MEASUREMENTS = 'docs/measurements.md';
 
 /**
@@ -63,6 +67,12 @@ describe('probe hook files stay disabled', () => {
       files[rel] = readFileSync(abs, 'utf8');
     }
     expect(probeViolations(measurements, files)).toEqual([]);
+  });
+
+  it('the probe files are no longer in .kiro/hooks', () => {
+    for (const rel of PROBE_FILES) {
+      expect(existsSync(resolve(repoRoot, '.kiro/hooks', rel.split('/').pop() ?? '')), rel).toBe(false);
+    }
   });
 
   it('keeps the probe script in the package', () => {

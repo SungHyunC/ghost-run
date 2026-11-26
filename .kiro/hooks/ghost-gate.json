@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "ghost-gate (shell)",
-      "description": "Rehearses shell commands in a sealed copy before they run. Disabled until task 19.1.",
+      "description": "Rehearses shell commands in a sealed copy before they run. Ships disabled; `corepack pnpm gate:on` switches it on and `corepack pnpm gate:off` switches it off.",
       "trigger": "PreToolUse",
       "matcher": "shell",
       "action": { "type": "command", "command": "node integrations/kiro-hook/ghost-gate.mjs" },
@@ -12,7 +12,7 @@
     },
     {
       "name": "ghost-gate (write)",
-      "description": "Judges file writes against the wards before they happen. Disabled until task 19.1.",
+      "description": "Judges file writes against the wards before they happen. Ships disabled; `corepack pnpm gate:on` switches it on and `corepack pnpm gate:off` switches it off.",
       "trigger": "PreToolUse",
       "matcher": "write",
       "action": { "type": "command", "command": "node integrations/kiro-hook/ghost-gate.mjs" },

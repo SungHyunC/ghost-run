@@ -365,7 +365,7 @@ describe('.kiro/hooks/contract-pbt.json (task 11.4)', () => {
   const file = new URL('../../../.kiro/hooks/contract-pbt.json', import.meta.url);
   const doc = JSON.parse(readFileSync(file, 'utf8'));
 
-  it('has one PostFileSave entry with the prefilter matcher, entry-level timeout 60, and enabled false until task 19.1', () => {
+  it('has one PostFileSave entry with the prefilter matcher, entry-level timeout 60, and ships disabled', () => {
     expect(doc.version).toBe('v1');
     expect(doc.hooks).toHaveLength(1);
     const h = doc.hooks[0];

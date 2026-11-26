@@ -10,7 +10,7 @@ Hook scripts that connect Ghost Run+ to Kiro (IDE and CLI). Each script reads on
 | world-scaffold | `world-scaffold.mjs` | File create under `worlds/<name>/` | Generates the registration, test, wards, and README files of a new world. |
 | blacklight-steering | `blacklight-steering.mjs` | File save under `.kiro/` | Reports hidden Unicode in steering, spec, and hook files. |
 
-State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`, including the probe hook files (task 1.8; `tests/probe-disabled.test.mjs` keeps them off). The gate is switched on by a human in task 19.1 after the checklist there. A human switches it with `corepack pnpm gate:on`, `gate:off`, or `gate:status` from the repository root (`gate-switch.mjs`; it flips `enabled` in both entries of `ghost-gate.json` and in `docker-warmup.json`, and nothing else). The committed files stay `enabled: false`, and `hook-files.test.mjs` and `docker-warmup.test.mjs` expect that, so they fail in a working tree where the gate is on. `tests/gate-switch.test.mjs` runs the script on a temporary folder only. Facts that no probe settled are marked "not confirmed".
+State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`. The four probe and experiment hook files are in `experiments/` (see its README; `tests/probe-disabled.test.mjs` keeps them off). The gate is switched on by a human in task 19.1 after the checklist there. A human switches it with `corepack pnpm gate:on`, `gate:off`, or `gate:status` from the repository root (`gate-switch.mjs`; it flips `enabled` in both entries of `ghost-gate.json` and in `docker-warmup.json`, and nothing else). The committed files stay `enabled: false`, and `hook-files.test.mjs` and `docker-warmup.test.mjs` expect that, so they fail in a working tree where the gate is on. `tests/gate-switch.test.mjs` runs the script on a temporary folder only. Facts that no probe settled are marked "not confirmed".
 
 ## Installing the gate in another project
 
@@ -139,12 +139,12 @@ Docker Desktop's Resource Saver stops its VM after five idle minutes. The next e
 
 - **Fast path.** A reachable daemon still answers within the 2 s check. Nothing changes.
 - **Wake retry.** If the 2 s check times out, the gate repeats it once with `DOCKER_WAKE_RETRY_MS = 10_000` (`gate-config.mjs`), capped by the runner deadline of 44 s, so 2 s + 10 s stays inside the 50 s watchdog. Only after the retry also fails does the gate use static analysis. A daemon that answers with an error, or a missing `docker` binary, is not retried. The run record has `phases.dockerCheckMs` and `dockerWakeRetried`.
-- **Warm-up hook.** `docker-warmup.mjs` is a Pre Tool Use hook for `shell` calls (`.kiro/hooks/docker-warmup.json`, committed disabled until task 19.1). It starts one detached `docker info --format '{{.ServerVersion}}'` (an engine call; `docker version` does not wake a stopped Docker Desktop VM, see `docs/measurements.md`), at most once per 60 s, prints nothing, never waits, and always exits 0. The probe (CLI 3.4.0 and IDE 1.4.215) recorded no prompt-submit trigger, so it warms up on the Pre Tool Use of the first shell call instead. It cannot save the first check when it runs in the same moment as the gate, which is why the retry exists.
+- **Warm-up hook.** `docker-warmup.mjs` is a Pre Tool Use hook for `shell` calls (`.kiro/hooks/docker-warmup.json`, committed disabled; `corepack pnpm gate:on` switches it). It starts one detached `docker info --format '{{.ServerVersion}}'` (an engine call; `docker version` does not wake a stopped Docker Desktop VM, see `docs/measurements.md`), at most once per 60 s, prints nothing, never waits, and always exits 0. The probe (CLI 3.4.0 and IDE 1.4.215) recorded no prompt-submit trigger, so it warms up on the Pre Tool Use of the first shell call instead. It cannot save the first check when it runs in the same moment as the gate, which is why the retry exists.
 - **Alternative.** Turning Resource Saver off in Docker Desktop (Settings, Resources) also removes the delay. The gate stays fail-closed either way.
 
 ## Experiment B
 
-`exp-b-gate.mjs` and `.kiro/hooks/exp-b-*.json` were a measurement of a pattern-based block (19 blocks, all false positives or bypassed). They are kept, disabled, and nothing imports them. The gate decides from the diff of a ghost run, not from the shape of a command.
+`exp-b-gate.mjs` and `experiments/exp-b-*.json` were a measurement of a pattern-based block (19 blocks, all false positives or bypassed). They are kept, disabled, and nothing imports them. The gate decides from the diff of a ghost run, not from the shape of a command.
 
 ## Build, test, and timing
 

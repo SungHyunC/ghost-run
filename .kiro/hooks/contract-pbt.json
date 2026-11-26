@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "contract-pbt",
-      "description": "Runs the safety-contract property tests briefly when core or world code is saved. The result goes to .ghost-run/pbt/last.json. Disabled until task 19.1.",
+      "description": "Runs the safety-contract property tests briefly when core or world code is saved. The result goes to .ghost-run/pbt/last.json. Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.",
       "trigger": "PostFileSave",
       "matcher": "(^|/)(core|worlds)/",
       "action": { "type": "command", "command": "node integrations/kiro-hook/contract-pbt.mjs" },

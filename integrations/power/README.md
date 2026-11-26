@@ -11,7 +11,7 @@ Install from the folder:
 
 ## Tool names
 
-Kiro CLI 3.5.0 lists the tools as `blacklight`, `ghost_diff`, `ghost_run`, `ghost_trace`, and `wards_check`, and shows a call as `@ghost-run/ghost-run/wards_check` (power, server, tool). The names in the Kiro IDE are not confirmed yet.
+Kiro CLI 3.5.0 lists the tools as `blacklight`, `ghost_diff`, `ghost_run`, `ghost_trace`, and `wards_check`, and shows a call as `@ghost-run/ghost-run/wards_check` (power, server, tool). Kiro IDE 1.4.236 shows the same five tool names (`docs/measurements.md`, section 17.4).
 
 ## Which project the tools work on
 

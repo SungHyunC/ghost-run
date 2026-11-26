@@ -31,6 +31,7 @@ const USER_NAMES = [userInfo().username].filter((n) => n.length > 3);
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const hooksDir = resolve(repoRoot, '.kiro', 'hooks');
+const experimentsDir = resolve(repoRoot, 'integrations', 'kiro-hook', 'experiments');
 
 /**
  * Validate one hook file. Returns a list of error strings (empty = valid).
@@ -198,7 +199,7 @@ describe('ghost-gate.json (task 8.3)', () => {
     ]);
   });
 
-  it('uses one command, entry-level timeout 60, and is disabled until task 19.1', () => {
+  it('uses one command, entry-level timeout 60, and ships disabled', () => {
     for (const h of gate.hooks) {
       expect(h.action).toEqual({ type: 'command', command: 'node integrations/kiro-hook/ghost-gate.mjs' });
       expect(h.timeout).toBe(60);
@@ -226,7 +227,7 @@ describe('ghost-log.json (task 10.3)', () => {
     ]);
   });
 
-  it('uses one command, entry-level timeout 10, and is disabled until task 19.1', () => {
+  it('uses one command, entry-level timeout 10, and ships disabled', () => {
     for (const h of log.hooks) {
       expect(h.action).toEqual({ type: 'command', command: 'node integrations/kiro-hook/ghost-log.mjs' });
       expect(h.timeout).toBe(10);
@@ -241,13 +242,45 @@ describe('exp-b retirement', () => {
     expect(retirementViolations(docs)).toEqual([]);
   });
 
-  it('both exp-b files stay disabled and exp-b-gate.mjs still exists', () => {
+  it('both exp-b files live in experiments/, stay disabled, and exp-b-gate.mjs still exists', () => {
     for (const name of ['exp-b-block-rm-rf.json', 'exp-b-log-write.json']) {
-      expect(docs[name], name).toBeDefined();
-      for (const h of docs[name].hooks) expect(h.enabled, name).toBe(false);
+      const file = resolve(experimentsDir, name);
+      expect(existsSync(file), name).toBe(true);
+      expect(existsSync(resolve(hooksDir, name)), `${name} must not be in .kiro/hooks`).toBe(false);
+      for (const h of JSON.parse(readFileSync(file, 'utf8')).hooks) expect(h.enabled, name).toBe(false);
     }
     expect(existsSync(resolve(repoRoot, 'integrations', 'kiro-hook', 'exp-b-gate.mjs'))).toBe(true);
   });
+});
+
+describe('.kiro/hooks holds only the six product hooks (task 28.1)', () => {
+  it('has exactly the six product hook files', () => {
+    expect([...fileNames].sort()).toEqual([
+      'blacklight-steering.json',
+      'contract-pbt.json',
+      'docker-warmup.json',
+      'ghost-gate.json',
+      'ghost-log.json',
+      'world-scaffold.json',
+    ]);
+  });
+});
+
+describe('hook descriptions (task 28.2)', () => {
+  const SWITCHED_BY_SCRIPT = ['ghost-gate.json', 'docker-warmup.json'];
+  const GATE_SENTENCE = 'Ships disabled; `corepack pnpm gate:on` switches it on and `corepack pnpm gate:off` switches it off.';
+  const PANEL_SENTENCE = "Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.";
+
+  for (const name of fileNames) {
+    it(`${name}: every description ends with the sentence that is true today`, () => {
+      const want = SWITCHED_BY_SCRIPT.includes(name) ? GATE_SENTENCE : PANEL_SENTENCE;
+      for (const h of docs[name].hooks) {
+        expect(h.description, `${name} ${h.name}`).toMatch(/\.$/);
+        expect(h.description.endsWith(` ${want}`), `${name} ${h.name}`).toBe(true);
+        expect(h.description).not.toMatch(/task \d+\.\d+/);
+      }
+    });
+  }
 });
 
 describe('hook file validator self-tests', () => {

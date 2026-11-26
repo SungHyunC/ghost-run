@@ -18,7 +18,7 @@ The plan follows this order:
 
 State that already exists and is not recreated by this plan:
 
-- `integrations/kiro-hook/exp-b-gate.mjs` and `.kiro/hooks/exp-b-block-rm-rf.json`, `.kiro/hooks/exp-b-log-write.json` (experiment B). Task 3.1 changes only the `enabled` field of the two JSON files. `exp-b-gate.mjs` is kept unchanged and nothing imports it.
+- `integrations/kiro-hook/exp-b-gate.mjs` and `.kiro/hooks/exp-b-block-rm-rf.json`, `.kiro/hooks/exp-b-log-write.json` (experiment B; the two JSON files moved to `integrations/kiro-hook/experiments/` in task 28.1). Task 3.1 changes only the `enabled` field of the two JSON files. `exp-b-gate.mjs` is kept unchanged and nothing imports it.
 - `pnpm-workspace.yaml` already lists `integrations/*`, so `@ghost-run/kiro-hook` and `@ghost-run/mcp` need no new entry. The folder `integrations/power/` has no `package.json` and is not a workspace package.
 - `core` already exports `sanitizeJudgeText` (the judge sanitizer, renamed because `possession` exports its own `sanitizeText`), `normalizePath`, `compilePathSet`, `extractCanaries`, `createInspector`, `renderMessage` (`wards`), and the possession API (`scanText`, `scanTexts`, `formatReport`, `exitCodeFor`, `collectNeedles`, `traceRedThread`, `parseProvenanceLog`, `serializeProvenanceLog`), with `scanFiles` in the subpath `@ghost-run/core/possession-node`.
 - `@ghost-run/ghost-runner` already exports `runPlan`, `RunResult`, `RunOutput`, `Isolation`, `Diagnostic`, `serializeRunResult`, and `parseRunResult`.
@@ -115,7 +115,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
 
   - [x] 1.8 Disable the probe hook files and add the test that keeps them disabled
     - Set `enabled` to `false` in every entry of `.kiro/hooks/probe-host-facts.json` (and keep `.kiro/hooks/probe-ask.json` disabled). Keep both files and `probe-host-facts.mjs` in the repository.
-    - `integrations/kiro-hook/tests/probe-disabled.test.mjs`: fails when any entry of `probe-host-facts.json` or `probe-ask.json` has `enabled` equal to `true` while `docs/measurements.md` contains the heading `Probe results`.
+    - `integrations/kiro-hook/tests/probe-disabled.test.mjs` (the two files moved to `integrations/kiro-hook/experiments/` in task 28.1): fails when any entry of `probe-host-facts.json` or `probe-ask.json` has `enabled` equal to `true` while `docs/measurements.md` contains the heading `Probe results`.
     - **Depends on tasks 1.6 and 1.7.**
     - _Requirements: 24.6_
 
@@ -846,6 +846,15 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Tests: `tests/gate-bundle.test.mjs` (the bundled bootstrap prints the new line without and with a broken `gate-main.mjs`; the line has no `pnpm`), `tests/installed-gate.test.mjs` (an installed project whose `gate-main.mjs` is deleted prints it, exit 2), `tests/bootstrap.test.mjs` (in-repo line unchanged).
     - _Requirements: 29.14_
 
+- [x] 28. Product hooks only in `.kiro/hooks/`, true descriptions
+  - [x] 28.1 Move the four host-check files
+    - `git mv` of `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, `probe-ask.json`, and `probe-host-facts.json` from `.kiro/hooks/` to `integrations/kiro-hook/experiments/` (content unchanged), `experiments/README.md`, and the tests `tests/hook-files.test.mjs` (the folder holds exactly the six product files; the exp-b files are in `experiments/` and disabled) and `tests/probe-disabled.test.mjs` (new paths). The probe scripts stay in `integrations/kiro-hook/`.
+    - _Requirements: 30.1, 30.2, 30.4_
+
+  - [x] 28.2 Hook descriptions
+    - Replace "Disabled until task 19.1." in every product hook description with the sentences of Requirement 30 criterion 3 (only the `description` values; `enabled` and the git flags of the locally enabled `ghost-gate.json` and `docker-warmup.json` stay as they are). `tests/hook-files.test.mjs` pins the sentences. `integrations/power/install-gate.mjs` writes other descriptions and does not change, so the gate bundle is not rebuilt.
+    - _Requirements: 30.3, 30.4_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.
@@ -894,7 +903,8 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     { "id": 25, "tasks": ["22.6"] },
     { "id": 26, "tasks": ["27.1"] },
     { "id": 27, "tasks": ["27.2", "27.3", "27.4"] },
-    { "id": 28, "tasks": ["27.5", "27.6"] }
+    { "id": 28, "tasks": ["27.5", "27.6"] },
+    { "id": 29, "tasks": ["28.1", "28.2"] }
   ]
 }
 ```

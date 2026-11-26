@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "ghost-log (read)",
-      "description": "Records what the agent read, for the red thread. Never blocks. Disabled until task 19.1.",
+      "description": "Records what the agent read, for the red thread. Never blocks. Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.",
       "trigger": "PostToolUse",
       "matcher": "read",
       "action": {
@@ -15,7 +15,7 @@
     },
     {
       "name": "ghost-log (web)",
-      "description": "Records fetched web text, for the red thread. Never blocks. Disabled until task 19.1.",
+      "description": "Records fetched web text, for the red thread. Never blocks. Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.",
       "trigger": "PostToolUse",
       "matcher": "web",
       "action": {
@@ -27,7 +27,7 @@
     },
     {
       "name": "ghost-log (shell)",
-      "description": "Counts shell calls that ran. Never blocks. Disabled until task 19.1.",
+      "description": "Counts shell calls that ran. Never blocks. Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.",
       "trigger": "PostToolUse",
       "matcher": "shell",
       "action": {
@@ -39,7 +39,7 @@
     },
     {
       "name": "ghost-log (mcp)",
-      "description": "Records MCP tool output, for the red thread. Never blocks. Disabled until task 19.1.",
+      "description": "Records MCP tool output, for the red thread. Never blocks. Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.",
       "trigger": "PostToolUse",
       "matcher": "@mcp",
       "action": {

@@ -13,7 +13,7 @@ The `kiro-integration` spec defines how Ghost Run+ plugs into Kiro (IDE and CLI)
 7. **MCP server `ghost-run`** (`integrations/mcp/`): the tools `ghost_run`, `ghost_diff`, `ghost_trace`, `wards_check`, and `blacklight`.
 8. **Kiro power** (`integrations/power/`): `plugin.json`, `skills/ghost-run/SKILL.md`, and `mcp.json` in the Agent Plugins format, plus the built `server/` and `box/` folders (Requirement 20).
 
-The files `probe-host-facts.json` and `probe-ask.json` (Requirement 24) and `exp-b-block-rm-rf.json` and `exp-b-log-write.json` (Requirement 21) in `.kiro/hooks/` are probes or retired experiments and not product hooks.
+The files `probe-host-facts.json` and `probe-ask.json` (Requirement 24) and `exp-b-block-rm-rf.json` and `exp-b-log-write.json` (Requirement 21) are probes or retired experiments and not product hooks. They live in `integrations/kiro-hook/experiments/`, not in `.kiro/hooks/`, which holds only the six product hooks (Requirement 30).
 
 The spec also states what happens to the two experiment B hooks once ghost-gate is in place (Requirement 21), and it makes a probe hook the first implementation task (Requirement 24), because several host facts about file events and Post Tool Use are not yet confirmed.
 
@@ -459,7 +459,7 @@ Hidden characters are never written literally in this document. A hidden charact
 
 #### Acceptance Criteria
 
-1. WHEN the Ghost_Gate hook is enabled, THE integration SHALL have `enabled` set to `false` in `.kiro/hooks/exp-b-block-rm-rf.json` and `.kiro/hooks/exp-b-log-write.json`, because the experiment hooks block by command shape (19 recorded blocks, all false positives or bypassed) and would double-block the calls that the Ghost_Gate judges by diff.
+1. WHEN the Ghost_Gate hook is enabled, THE integration SHALL have `enabled` set to `false` in `integrations/kiro-hook/experiments/exp-b-block-rm-rf.json` and `integrations/kiro-hook/experiments/exp-b-log-write.json` (moved there from `.kiro/hooks/` by Requirement 30; a copy in `.kiro/hooks/` is not loaded unless a human puts it there), because the experiment hooks block by command shape (19 recorded blocks, all false positives or bypassed) and would double-block the calls that the Ghost_Gate judges by diff.
 2. THE implementation SHALL keep `integrations/kiro-hook/exp-b-gate.mjs` and the two experiment hook files in the repository (disabled), and the experiment record in `docs/devlog.md` SHALL stay unchanged; the actual edits of these files happen at implementation time and not in this requirements phase.
 3. THE repository SHALL contain a test that fails WHEN a hook file whose name begins with `exp-b-` has `enabled` equal to `true` while `ghost-gate.json` has `enabled` equal to `true`.
 4. THE Ghost_Gate SHALL NOT reuse the command-shape logic of `exp-b-gate.mjs`.
@@ -525,7 +525,7 @@ Hidden characters are never written literally in this document. A hidden charact
 
 #### Acceptance Criteria
 
-1. THE first implementation task in tasks.md of this spec SHALL create the Probe_Hook, a small command hook (a file `.kiro/hooks/probe-host-facts.json` and one script in `integrations/kiro-hook/`) that is registered for the Pre Tool Use, Post Tool Use, file-save, and candidate file-create triggers, and no other task that depends on an unconfirmed fact SHALL start before the probe results are recorded.
+1. THE first implementation task in tasks.md of this spec SHALL create the Probe_Hook, a small command hook (a file `probe-host-facts.json`, first in `.kiro/hooks/` and from Requirement 30 on in `integrations/kiro-hook/experiments/`, and one script in `integrations/kiro-hook/`) that is registered for the Pre Tool Use, Post Tool Use, file-save, and candidate file-create triggers, and no other task that depends on an unconfirmed fact SHALL start before the probe results are recorded.
 2. THE Probe_Hook SHALL record, for each event it receives, only the trigger name, the sorted field names of the STDIN JSON at the top level and inside `tool_input`, the tool name, and workspace-relative file paths; THE Probe_Hook SHALL NOT record file content, command text, tool response text, secret values, or any value other than those named in this criterion.
 3. THE Probe_Hook SHALL write its records to the Ghost_Store folder `.ghost-run/probe/`, SHALL print nothing on STDOUT, SHALL exit with code 0 on every path, and SHALL make no LLM call and no network call.
 4. THE probe task SHALL run the Probe_Hook in Kiro IDE and in Kiro CLI and SHALL determine at least: (a) the identifier of the file-create trigger (the candidate `PostFileCreate`) and the identifier of the file-delete trigger, if any; (b) the STDIN fields of file events, and whether the file path is among them; (c) whether Post Tool Use delivers the tool response, and under which field name; (d) whether a blocked call (exit code 2 of a Pre Tool Use hook) fires Post Tool Use; (e) whether the STDOUT of a file-event hook reaches the agent context; (f) whether the `timeout` field sits at entry level or inside `action` in a hook file that the host loads.
@@ -626,6 +626,17 @@ Hidden characters are never written literally in this document. A hidden charact
 12. THE tests SHALL cover: bundle reproducibility; the fail-closed bootstrap (missing bundle, broken bundle, broken event); the installer in a temporary git project (files and hook JSON as specified, `.gitignore`, refusal without `--force`, `--uninstall` removing exactly the manifest's files, idempotent `--force` re-install); and the installed gate end to end with Pre Tool Use events (`ls` passes silently; a delete of protected data is blocked when Docker and the box image are available and asks without Docker; a write to `.kiro/hooks/ghost-gate.json` asks; a trusted command of the project's `wards.yaml` passes and is counted as `trusted`), with `GHOST_RUN_SEANCE_AUTOSTART=0` so that no viewer is left running.
 13. THE root README, the README of `integrations/power`, and the Hook_Package README SHALL describe the installer next to the advisory power.
 14. THE `unavailable` line of the bundled `ghost-gate.mjs` SHALL name the fix that fits an installed gate ("run the installer again with --force") and SHALL NOT tell the user to build the packages with `pnpm -r build`, which applies only inside this repository. THE line of the Hook_Package source (`FATAL_LINES.unavailable`) SHALL stay as it is. THE bundle script SHALL select the text with a build-time constant, and a test SHALL check the line in a copy of the bootstrap without `gate-main.mjs` and in an installed project.
+
+### Requirement 30: Product hooks only in `.kiro/hooks/`, true hook descriptions
+
+**User Story:** As a judge or a new user, I want `.kiro/hooks/` to hold exactly the six product hooks and each description to say what is true today, so that the folder matches the README and no text refers to a finished task.
+
+#### Acceptance Criteria
+
+1. THE folder `.kiro/hooks/` SHALL hold exactly the six files `ghost-gate.json`, `ghost-log.json`, `contract-pbt.json`, `world-scaffold.json`, `blacklight-steering.json`, and `docker-warmup.json`.
+2. THE four files `exp-b-block-rm-rf.json`, `exp-b-log-write.json`, `probe-ask.json`, and `probe-host-facts.json` SHALL live in `integrations/kiro-hook/experiments/` with their content unchanged, together with a `README.md` that says what each file proved, where the results are (`docs/measurements.md`), and how to run one again (copy it into `.kiro/hooks/` and enable it). The probe scripts SHALL stay in `integrations/kiro-hook/`.
+3. THE `description` of every entry of `ghost-gate.json` and `docker-warmup.json` SHALL end with the sentence "Ships disabled; `corepack pnpm gate:on` switches it on and `corepack pnpm gate:off` switches it off.", AND THE `description` of every entry of the other four files SHALL end with "Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.". No description SHALL refer to a task number.
+4. THE tests SHALL check the folder content of criterion 1, the location and the disabled state of the four files of criterion 2, and the sentences of criterion 3. The installer writes its own descriptions for an installed project (it ends them with "Switch off: set enabled to false, or run install-gate.mjs --uninstall.") and is not changed.
 
 ## Out of Scope
 

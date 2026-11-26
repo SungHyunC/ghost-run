@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "blacklight-steering",
-      "description": "Scans a saved .kiro/ file for hidden Unicode and reports it. A report, not a block. Disabled until task 19.1.",
+      "description": "Scans a saved .kiro/ file for hidden Unicode and reports it. A report, not a block. Ships disabled; switch it on in Kiro's hook panel or set `enabled` to true.",
       "trigger": "PostFileSave",
       "matcher": "(^|/)\\.kiro/",
       "action": { "type": "command", "command": "node integrations/kiro-hook/blacklight-steering.mjs" },
