@@ -27,7 +27,7 @@ export const RECIPE_HEADS = {
   sticker: `That's all. Ghost Cloud is about ${LINES_TOKEN} lines.`,
   skeletonTitle: 'The skeleton',
   skeletonSub: 'Ready-made and wired.',
-  chipText: 'Built from 6 Kiro specs',
+  chipText: 'Built from 6 of our 14 Kiro specs',
   resultTitle: 'Your ghost-run app',
   resultText: 'Copy → try → judge → candle.',
 } as const;

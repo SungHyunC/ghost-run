@@ -386,7 +386,7 @@ Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and on
 - **P1 is claimed per run, never as a property of a hook.** The gate and `ghost_run` repeat the flags `p1Claimed`, `p5Claimed`, and `p6Claimed` of the run they report, and claim nothing when the flag is `false`.
 - **Plan B.** Without Docker and the built box image the run is static analysis only. P1, P5, and P6 are not claimed, the message says `P1 isolation is NOT guaranteed`, and the verdict is at least `warn`.
 - **A seatbelt, not full isolation.** A `pass` is not an approval of the real command, text analysis does not catch every injection, and the hooks are not tamper-resistant against a process with the developer's privileges. P6 holds within one tool call only.
-- **State.** Every hook file in `.kiro/hooks/` is disabled except the probe hook. The gate is switched on by a human after a checklist. Facts measured only in the Kiro CLI are marked "pending (task 1.4)" for the IDE.
+- **State.** Every hook file in `.kiro/hooks/` is committed with `enabled: false`, including the probe hook. The gate is switched on by a human after a checklist. Facts measured only in the Kiro CLI are marked "pending (task 1.4)" for the IDE.
 - Supported on macOS and Linux. Windows is unverified.
 
 ### Build a world with the `world-smith` agent

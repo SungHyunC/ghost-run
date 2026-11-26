@@ -78,7 +78,7 @@ const EXPECTED = {
       ['Kiro hook', 'Stop risky commands in Kiro'],
       ['world-smith', 'A Kiro agent that builds worlds'],
     ],
-    chip: 'Built from 6 Kiro specs',
+    chip: 'Built from 6 of our 14 Kiro specs',
     chipTitle: 'core-contract, ghost-runner, wards, possession, ui-kit, kiro-integration',
     resultTitle: 'Your ghost-run app',
     resultText: 'Copy → try → judge → candle.',
@@ -285,7 +285,7 @@ describe('Pg3: the copy deck is pinned (landing part)', () => {
     expect(RECIPE_HEADS.sticker.replace('{lines}', N)).toBe(`That's all. Ghost Cloud is about ${N} lines.`);
     expect(RECIPE_HEADS.chipText).toBe(EXPECTED.recipe.chip);
     expect(SPEC_NAMES.join(', ')).toBe(EXPECTED.recipe.chipTitle);
-    expect(`Built from ${String(SPEC_NAMES.length)} Kiro specs`).toBe(EXPECTED.recipe.chip);
+    expect(`Built from ${String(SPEC_NAMES.length)} of our 14 Kiro specs`).toBe(EXPECTED.recipe.chip);
     expect(WORLD_FUNCTIONS.map((f) => [f.name, f.line])).toEqual(EXPECTED.recipe.functions);
     expect(SKELETON_PARTS.map((p) => [p.name, p.line])).toEqual(EXPECTED.recipe.parts);
     expect(RECIPE_HEADS.resultTitle).toBe(EXPECTED.recipe.resultTitle);

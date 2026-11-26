@@ -103,7 +103,7 @@ Use these texts word for word. Do not add others. Remove the texts that this dec
     | Kiro hook | Stop risky commands in Kiro |
     | world-smith | A Kiro agent that builds worlds |
 
-  - Bottom: one chip, "Built from 6 Kiro specs", whose title attribute lists the six spec names.
+  - Bottom: one chip, "Built from 6 of our 14 Kiro specs", whose title attribute lists the six spec names.
 - Result card: title "Your ghost-run app", text "Copy → try → judge → candle."
 
 ### Page 3, One skeleton, three costumes

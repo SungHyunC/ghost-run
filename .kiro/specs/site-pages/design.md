@@ -315,7 +315,7 @@ No section reads the address hash (Requirement 9, criterion 9).
 | `Make.tsx` | deck texts; the code block and the command as today |
 | `Footer.tsx` | unchanged (Difference D12) |
 
-The chip text "Built from 6 Kiro specs" has a `title` that lists the six spec names in order (`core-contract`, `ghost-runner`, `wards`, `possession`, `ui-kit`, `kiro-integration`). The array lives in `data/skeleton.ts` as today, and the text is built from its length.
+The chip text "Built from 6 of our 14 Kiro specs" has a `title` that lists the six spec names in order (`core-contract`, `ghost-runner`, `wards`, `possession`, `ui-kit`, `kiro-integration`). The array lives in `data/skeleton.ts` as today, and the text names the array length (6) and the repository total (14), set in `data/copy.ts`.
 
 ### Component 8: The Showcase page (`site/kit/index.html`, `site/src/showcase/`)
 

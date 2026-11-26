@@ -155,7 +155,7 @@ The plan follows this order:
 - [x] 6. The copy deck of the landing page
   - [x] 6.1 Move the deck into data modules and update the components
     - `data/copy.ts` (new): `COVER`, `RECIPE_HEADS` (heading, sub-heading, block titles and sub-lines, sticker pattern, the chip text and its `title` list, the result card), `COSTUMES_HEADS` (heading, sub-heading, legend), `RUN_HEADS` (heading, sub-heading), `MAKE_HEADS` (heading, sub-heading, spellbook title, agent card texts, command, closing line). Use the exact strings of Requirement 11, criteria 1 to 6.
-    - `data/skeleton.ts`: the eight parts keep a name and one line and lose `folder`; the cost cards keep name, tag, world line, Kiro line, and button, and lose `folder`, `usedTitle`, and the prefixes "Costume: " and "World: ". The six function names and the six spec names stay; the chip text "Built from 6 Kiro specs" is built from the array length.
+    - `data/skeleton.ts`: the eight parts keep a name and one line and lose `folder`; the cost cards keep name, tag, world line, Kiro line, and button, and lose `folder`, `usedTitle`, and the prefixes "Costume: " and "World: ". The six function names and the six spec names stay; the chip text is "Built from 6 of our 14 Kiro specs".
     - `Hero.tsx`, `Recipe.tsx`, `Costumes.tsx`, `Walkthrough.tsx`, `Make.tsx`: read the texts from the data modules; the chip is the only element of the block's bottom row; each card renders name, tag, world line, chips, Kiro line, button in that order; the legend replaces the old note; the sr-only " not used" stays; the sticker N comes from the world-size data through `roundLines`. `Footer.tsx` is unchanged.
     - Tests: update `tests/unit/skeleton-data.test.ts` (eight parts without folders, six function names, the card fields of the deck, the six spec names in order); update `tests/dom/render.test.tsx` and `tests/dom/costumes.test.tsx` for the deck strings, the field order, and the legend; update `tests/dom/chips.test.tsx` and `tests/dom/live-badge.test.tsx` for the new sub-heading.
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8_
@@ -335,6 +335,10 @@ The plan follows this order:
 - [x] 15. Put both apps on the cover
   - `COVER.appLinks` in `data/copy.ts` and a second `.cta-apps` row in `components/Hero.tsx`: "Ghost Shell" (`shell/`) and "Ghost Hand" (`hand/`) as `.btn.small` anchors below the two main buttons. The nav stays as in task 14. Test: `tests/dom/cover-apps.test.tsx`. Run the gates.
   - _Requirements: 3.9_
+
+- [x] 16. Make the skeleton chip say both spec counts
+  - `RECIPE_HEADS.chipText` in `data/copy.ts` reads "Built from 6 of our 14 Kiro specs" (the skeleton is built from 6 of the repository's 14 specs); `.built .chip` stays on one line (`white-space:nowrap`). Update `tests/dom/copy-deck.test.tsx`, `tests/dom/render.test.tsx`, and the spec lines that quote the chip. Run the gates.
+  - _Requirements: 11, 12_
 
 ## Notes
 

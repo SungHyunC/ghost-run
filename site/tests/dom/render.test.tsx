@@ -168,7 +168,7 @@ describe('Recipe', () => {
     const { container } = render(<App />);
     const built = container.querySelector('#recipe .built');
     expect(built?.children).toHaveLength(1);
-    expect(built?.textContent).toBe('Built from 6 Kiro specs');
+    expect(built?.textContent).toBe('Built from 6 of our 14 Kiro specs');
     expect(built?.firstElementChild?.getAttribute('title')).toBe(
       'core-contract, ghost-runner, wards, possession, ui-kit, kiro-integration',
     );
