@@ -69,6 +69,32 @@ function request(port, p, method = 'GET') {
   });
 }
 
+/** @param {number} port @param {string} p @param {Record<string, string>} headers */
+function requestWith(port, p, headers) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port, path: p, method: 'GET', headers }, (res) => {
+      let body = '';
+      res.setEncoding('utf8');
+      res.on('data', (c) => (body += c));
+      res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/** Send raw bytes (for a request with no Host header) and return the whole answer. @param {number} port @param {string} data */
+function rawGet(port, data) {
+  return new Promise((resolve, reject) => {
+    const sock = net.connect(port, '127.0.0.1', () => sock.write(data));
+    let out = '';
+    sock.setEncoding('utf8');
+    sock.on('data', (c) => (out += c));
+    sock.on('end', () => resolve(out));
+    sock.on('error', reject);
+  });
+}
+
 describe('seance viewer', () => {
   it('lists graves newest first and shows one grave with ward id, command, and numbers', async () => {
     await addGrave('run-1', 'rm -rf data');
@@ -155,6 +181,62 @@ describe('seance viewer', () => {
     const bad = /** @type {any} */ (await request(port, '/seance/'));
     expect(bad.status).toBe(200);
     expect((/** @type {any} */ (await request(port, '/seance/g-x'))).status).toBe(404);
+  });
+
+  it('answers 421 to a wrong or missing Host and does not read the graveyard', async () => {
+    await addGrave('run-1', 'rm -rf data');
+    const port = await start();
+    const spy = vi.spyOn(fsp, 'readFile');
+    const before = spy.mock.calls.length;
+    for (const host of ['evil.example', `evil.example:${port}`, `localhost:${port + 1}`, 'localhost', `127.0.0.1:0${port}`, `localhost.evil.example:${port}`]) {
+      for (const p of ['/seance/', '/seance/g-run-1', '/seance/health']) {
+        const r = /** @type {any} */ (await requestWith(port, p, { Host: host }));
+        expect(r.status, `${host} ${p}`).toBe(421);
+        expect(r.body).not.toContain('rm -rf');
+      }
+    }
+    const raw = await rawGet(port, 'GET /seance/ HTTP/1.0\r\n\r\n');
+    expect(raw).toMatch(/^HTTP\/1\.1 421 /);
+    expect(raw).not.toContain('rm -rf');
+    expect(spy.mock.calls.length).toBe(before);
+    await request(port, '/seance/');
+    expect(spy.mock.calls.length).toBeGreaterThan(before);
+    spy.mockRestore();
+  });
+
+  it('accepts localhost:<port> and 127.0.0.1:<port>, host name in any case', async () => {
+    await addGrave('run-1', 'rm -rf data');
+    const port = await start();
+    for (const host of [`localhost:${port}`, `127.0.0.1:${port}`, `LocalHost:${port}`]) {
+      for (const p of ['/seance/', '/seance/g-run-1', '/seance/health']) {
+        expect((/** @type {any} */ (await requestWith(port, p, { Host: host }))).status, `${host} ${p}`).toBe(200);
+      }
+    }
+  });
+
+  it('lists one row per grave with the first line of the command cut, and shows it in full on the grave page', async () => {
+    const long = `echo ${'x'.repeat(300)}`;
+    const script = `${long}\nrm -rf data\nSECOND_LINE_MARKER`;
+    await addGrave('run-long', script);
+    await addGrave('run-short', 'ls -la');
+    const port = await start();
+    const list = /** @type {any} */ (await request(port, '/seance/'));
+    expect(list.status).toBe(200);
+    expect(list.body).toContain('2 graves');
+    expect(list.body).not.toContain('SECOND_LINE_MARKER');
+    expect(list.body).not.toContain('rm -rf data');
+    expect(list.body).not.toContain('x'.repeat(130));
+    expect(list.body).toContain(`echo ${'x'.repeat(114)}\u2026`);
+    expect(list.body.indexOf('ls -la')).toBeLessThan(list.body.indexOf('echo xxx'));
+    expect(list.body).toContain('href="/seance/g-run-long"');
+    expect(list.body).toContain('out');
+    expect(list.body).toContain('protect-data');
+    expect(list.body).toContain('<title>Graveyard \u00B7 Ghost Run+</title>');
+    const one = /** @type {any} */ (await request(port, '/seance/g-run-long'));
+    expect(one.body).toContain(long);
+    expect(one.body).toContain('SECOND_LINE_MARKER');
+    expect(one.body).toContain('<title>Seance \u00B7 Ghost Run+</title>');
+    expect(one.body).not.toMatch(/<script|<img|https?:\/\//i);
   });
 
   it('calls onIdle after the quiet period', async () => {

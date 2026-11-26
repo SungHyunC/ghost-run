@@ -778,6 +778,10 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - Section "Seance link" in `integrations/kiro-hook/README.md` and a bullet in "Kiro integration" of the root README.
     - _Requirements: 26.5, 26.7, 26.8_
 
+  - [x] 24.6 Host check, compact list, look
+    - `lib/seance/server.mjs` answers 421 to any `Host` other than `localhost:<port>` or `127.0.0.1:<port>` before reading the graveyard; `lib/seance/render.mjs` lists one row per grave (time, candle badge, ward ids, first line cut to 120 code points) and gives both pages the Ghost Run+ look and titles; three tests in `tests/seance.test.mjs`.
+    - _Requirements: 26.2, 26.10, 26.11_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.

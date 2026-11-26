@@ -1,5 +1,5 @@
 // Seance viewer (Requirement 26): a read-only HTTP server for the graveyard of one workspace.
-// Binds 127.0.0.1 only. GET only. Serves an id only when it matches the id pattern and exists in
+// Binds 127.0.0.1 only and answers 421 to any other Host. GET only. Serves an id only when it matches the id pattern and exists in
 // the graveyard. Every page is built without script.
 import http from 'node:http';
 import { readGraveyard } from '../gate/grave.mjs';
@@ -28,6 +28,19 @@ export function parseSeanceBase(base) {
   } catch {
     return { local: false, port: 0 };
   }
+}
+
+/**
+ * Whether a Host header names this viewer: `localhost:<port>` or `127.0.0.1:<port>` for the port it
+ * listens on, host name compared case-insensitively. A missing Host is refused.
+ * @param {string | undefined} host
+ * @param {import('node:net').AddressInfo | string | null} address
+ * @returns {boolean}
+ */
+export function hostAllowed(host, address) {
+  if (typeof host !== 'string' || address === null || typeof address !== 'object') return false;
+  const m = /^(?:localhost|127\.0\.0\.1):([0-9]{1,5})$/i.exec(host);
+  return m !== null && m[1] === String(address.port);
 }
 
 /** @type {Record<string, string>} */
@@ -70,6 +83,11 @@ export function createSeanceServer({ root, idleMs, onIdle }) {
     touch();
     void (async () => {
       try {
+        // DNS rebinding guard: first, and before the graveyard is read.
+        if (!hostAllowed(req.headers.host, server.address())) {
+          send(res, 421, renderMessage('Misdirected request', 'This viewer answers only to localhost and 127.0.0.1 on its own port.'));
+          return;
+        }
         if (req.method !== 'GET') {
           send(res, 405, renderMessage('Method not allowed', 'Only GET is supported.'), undefined, { Allow: 'GET' });
           return;
