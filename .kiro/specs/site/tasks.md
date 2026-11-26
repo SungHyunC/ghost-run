@@ -28,7 +28,7 @@ The plan follows the implementation order of the design:
 2. **The walkthrough is a pure engine plus a thin hook** (design D1, D11). Settling, jumping, and playing all fold the same events.
 3. **The Reality pane takes only its scene as props** (design D2). Property 1 checks it.
 4. **No shared test files across waves.** Each property test lives in its own file. Shared helpers are written by one task and only read by later tasks. Tasks that edit the same file (`App.tsx`, the stylesheets, `README.md`, `docs/measurements.md`) are in different waves.
-5. **Open items taken with the design default.** O1: `REPO_URL` is a fixed constant, `https://github.com/SungHyunC/ghost-run` (the owner's decision). O2: the allowlist gets the entry `https://react.dev/errors/`. O3: no `/hand/*` or `/kit/*` headers block. O4: the joint-limit report is read from a structured field when the Ghost Hand result has one, else by the pattern of design Component 8. O5 and O9: the edits outside `site/` named above. Where the real repository contradicts an item, the task reports it and follows the repository (Requirement 24).
+5. **Open items taken with the design default.** O1: `REPO_URL` is a fixed constant, `https://github.com/SungHyunC/ghost-run` (the owner's decision). O2: the allowlist gets the entry `https://react.dev/errors/`. O3: no `/kit/*` headers block; the `/hand/` blocks were added later (task 21). O4: the joint-limit report is read from a structured field when the Ghost Hand result has one, else by the pattern of design Component 8. O5 and O9: the edits outside `site/` named above. Where the real repository contradicts an item, the task reports it and follows the repository (Requirement 24).
 
 ## Conventions
 
@@ -336,6 +336,13 @@ The plan follows the implementation order of the design:
   - Confirm: Properties 1 to 12 each have a test with at least 100 runs in the Short_Run; `site/dist/` has the paths of Requirement 18, criterion 1 and exactly one `_headers`; `git status` shows changes only in `site/`, `.kiro/specs/site/`, `pnpm-workspace.yaml`, `package.json`, `pnpm-lock.yaml`, `.kiro/steering/structure.md`, `README.md`, `docs/measurements.md`, and the two app header links with their tests. Ensure all tests pass, ask the user if questions arise.
   - Report the files changed, the test results, the `REPO_URL` value to confirm, any value of the recorded runs that differed from the requirements, and the items left to the owner (see Notes).
 
+- [x] 21. Content-Security-Policy for `/hand/` (open question O3)
+  - Add `handHeaderPolicy()` to `site/scripts/lib/csp.mjs` and the blocks `/hand/` and `/hand/*` to `buildRootHeaders` in `site/scripts/lib/headers.mjs`. The policy is the Landing_Policy plus `'unsafe-eval'` in `script-src`.
+  - In `site/scripts/check-site.mjs`: require both blocks, let `'unsafe-eval'` pass only in `/hand/` blocks, and apply the positive directive rule of `/` to them.
+  - Update `headers.test.ts`, `headers.property.test.ts`, `csp-kit.property.test.ts`, `build-site.test.ts`, and `check-site.test.ts`.
+  - Browser check: serve `site/dist` with the root `_headers` applied, open `/hand/` in Chrome through Playwright, press `Play demo`; the console shows no violation and the demo reaches step 4 of 4. Without `'unsafe-eval'` the check fails with `script-src eval`.
+  - _Requirements: 19.3, 19.5, 19.8_
+
 ## Notes
 
 - Every task is required. No task is marked optional.
@@ -392,7 +399,8 @@ The plan follows the implementation order of the design:
     { "id": 33, "tasks": ["17"] },
     { "id": 34, "tasks": ["18.1", "18.2"] },
     { "id": 35, "tasks": ["19.1", "19.2"] },
-    { "id": 36, "tasks": ["20"] }
+    { "id": 36, "tasks": ["20"] },
+    { "id": 37, "tasks": ["21"] }
   ]
 }
 ```

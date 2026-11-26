@@ -26,6 +26,9 @@ const SHELL_FILE = `/*
 const ROOT_CSP =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
+const HAND_CSP =
+  "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+
 const EXPECTED_ROOT = `/
   Content-Security-Policy: ${ROOT_CSP}
   X-Content-Type-Options: nosniff
@@ -40,6 +43,14 @@ const EXPECTED_ROOT = `/
   Referrer-Policy: no-referrer
 /kit/index.html
   Content-Security-Policy: ${ROOT_CSP}
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+/hand/
+  Content-Security-Policy: ${HAND_CSP}
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+/hand/*
+  Content-Security-Policy: ${HAND_CSP}
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
 /shell/*
@@ -76,13 +87,22 @@ describe('headers library', () => {
     expect(buildRootHeaders(SHELL_FILE)).toBe(EXPECTED_ROOT);
   });
 
-  it('has the /kit/ blocks equal to the / block apart from the path; no /*, /hand/*, /kit/*, or /kit/gallery/*', () => {
+  it('has the /kit/ blocks equal to the / block apart from the path; no /*, /kit/*, or /kit/gallery/*', () => {
     const blocks = parseHeaders(buildRootHeaders(SHELL_FILE));
-    expect(blocks.map((b) => b.path)).toEqual(['/', '/index.html', '/kit/', '/kit/index.html', '/shell/*']);
+    expect(blocks.map((b) => b.path)).toEqual(['/', '/index.html', '/kit/', '/kit/index.html', '/hand/', '/hand/*', '/shell/*']);
     const root = blocks.find((b) => b.path === '/');
     for (const scope of ['/index.html', '/kit/', '/kit/index.html']) {
       expect(blocks.find((b) => b.path === scope)?.headers).toEqual(root?.headers);
     }
+  });
+
+  it("gives /hand/ and /hand/* the same policy: the landing policy plus 'unsafe-eval', no other origin", () => {
+    const blocks = parseHeaders(buildRootHeaders(SHELL_FILE));
+    const hand = blocks.find((b) => b.path === '/hand/');
+    expect(blocks.find((b) => b.path === '/hand/*')?.headers).toEqual(hand?.headers);
+    expect(hand?.headers).toEqual([`Content-Security-Policy: ${HAND_CSP}`, 'X-Content-Type-Options: nosniff', 'Referrer-Policy: no-referrer']);
+    expect(HAND_CSP.replace(" 'unsafe-eval'", '')).toBe(ROOT_CSP);
+    expect(HAND_CSP).not.toMatch(/unsafe-inline|https?:|data:|blob:|\*/);
   });
 
   it('refuses an input without blocks', () => {

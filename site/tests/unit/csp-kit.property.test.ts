@@ -94,7 +94,7 @@ describe('Property Pg6: the /kit/ policy blocks', () => {
         const root = parseHeaders(buildRootHeaders(printHeaders(blocks)));
         const shell = scopeBlocks(blocks, '/shell');
         const rest = root.filter((b) => !shell.some((s) => s.path === b.path));
-        expect(rest.map((b) => b.path)).toEqual([...KIT_SCOPES]);
+        expect(rest.map((b) => b.path)).toEqual([...KIT_SCOPES, '/hand/', '/hand/*']);
         for (const block of root.filter((b) => b.path.startsWith('/kit/'))) {
           expect(block.headers).toEqual(root[0]?.headers);
         }

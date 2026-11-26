@@ -16,4 +16,6 @@ The command builds the three apps and the kit, assembles the result into `site/d
 
 The walkthrough in section 3 runs live in the browser with the same engines as the apps: Ghost Shell and Ghost Cloud run in the page (SQLite through `sql.js` in a Web Worker), and Ghost Hand runs the MuJoCo simulation in a worker. The Ghost Hand engine (about 11 MB of WebAssembly) loads only when Ghost Hand is picked, and a browser that cannot run the engines shows the recorded runs. Reality is a drawn copy that no run changes, and nothing leaves the page. Details and sizes: `docs/measurements.md`, section "Live walkthrough measurements".
 
+Every page sends a Content-Security-Policy through the root `_headers` file that the build writes: `/`, `/kit/`, `/hand/` and `/shell/`. `/hand/` uses the landing policy plus `'unsafe-eval'` in `script-src`, because the MuJoCo glue on the main thread calls `new Function`; it allows no other origin and no inline script. The site check fails when `/hand/` has no policy.
+
 The landing page at `/` has five pages with the hashes `#cover`, `#recipe`, `#costumes`, `#run`, and `#make`. `/kit/` is a showcase of the real UI kit, rendered with the gallery's sample data. The developer gallery is at `/kit/gallery/`.

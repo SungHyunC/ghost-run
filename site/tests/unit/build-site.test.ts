@@ -108,7 +108,14 @@ describe('buildSite', () => {
     expect(listAll(dist).some((f) => f.endsWith('.DS_Store'))).toBe(false);
     const headers = readFileSync(join(dist, '_headers'), 'utf8');
     expect(headers).toContain('/shell/*');
-    expect(headers).not.toMatch(/^\/(\*|hand\/\*|kit\/\*|kit\/gallery\/\*)$/m);
+    for (const block of ['/hand/', '/hand/*']) {
+      const text = `${block}\n  Content-Security-Policy: `;
+      expect(headers, block).toContain(text);
+      const rest = headers.slice(headers.indexOf(text) + text.length).split('\n');
+      expect(rest[0], block).toContain("script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'");
+      expect(rest.slice(1, 3), block).toEqual(['  X-Content-Type-Options: nosniff', '  Referrer-Policy: no-referrer']);
+    }
+    expect(headers).not.toMatch(/^\/(\*|kit\/\*|kit\/gallery\/\*)$/m);
     for (const block of ['/kit/', '/kit/index.html']) expect(headers, block).toMatch(new RegExp(`^${block.replace(/[./]/g, '\\$&')}$`, 'm'));
     expect(readFileSync(join(dist, 'kit/index.html'), 'utf8')).toBe('<html>showcase</html>');
     expect(r.lines.join('\n')).toMatch(/\/kit\/gallery\/ 2 files/);

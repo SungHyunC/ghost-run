@@ -2,7 +2,7 @@
 // and build the root file of the assembled site (design Component 11).
 // A block is a path line (no indentation) followed by indented header lines.
 
-import { landingHeaderPolicy } from './csp.mjs';
+import { handHeaderPolicy, landingHeaderPolicy } from './csp.mjs';
 
 /**
  * @typedef {{ path: string, headers: string[] }} HeaderBlock
@@ -11,6 +11,13 @@ import { landingHeaderPolicy } from './csp.mjs';
 /** The three headers of the Landing_Page blocks, in order. */
 export const LANDING_HEADERS = Object.freeze([
   `Content-Security-Policy: ${landingHeaderPolicy()}`,
+  'X-Content-Type-Options: nosniff',
+  'Referrer-Policy: no-referrer',
+]);
+
+/** The three headers of the `/hand/` blocks, in order. */
+export const HAND_HEADERS = Object.freeze([
+  `Content-Security-Policy: ${handHeaderPolicy()}`,
   'X-Content-Type-Options: nosniff',
   'Referrer-Policy: no-referrer',
 ]);
@@ -75,6 +82,8 @@ export function buildRootHeaders(shellHeadersText) {
     { path: '/index.html', headers: [...LANDING_HEADERS] },
     { path: '/kit/', headers: [...LANDING_HEADERS] },
     { path: '/kit/index.html', headers: [...LANDING_HEADERS] },
+    { path: '/hand/', headers: [...HAND_HEADERS] },
+    { path: '/hand/*', headers: [...HAND_HEADERS] },
     ...shell,
   ]);
 }

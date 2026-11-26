@@ -39,6 +39,7 @@ export const RULE_POLICY_REQUIRED = 'headers-policy: a required directive is mis
 export const RULE_SHOWCASE_ENGINE = 'showcase: the Showcase names an Engine_Bundle, a worker file, or a wasm file';
 export const RULE_LANDING_SHOWCASE = 'showcase: the Landing_Page names an asset with the prefix showcase-';
 export const RULE_SHOWCASE_SIZE = 'showcase: the closure of the Showcase entry is larger than the limit';
+export const RULE_HAND_POLICY = 'headers-policy: /hand/ and /hand/* must each have a Content-Security-Policy block';
 export const RULE_KIT_BLOCK = 'headers-policy: a /kit/ block differs from the block of /';
 export const RULE_NOTICE_LINK = 'structure: index.html has no link to THIRD_PARTY_NOTICES.txt';
 export const RULE_NOTICE_PACKAGE = 'notices: a bundled package has no license section in THIRD_PARTY_NOTICES.txt';
@@ -220,16 +221,18 @@ function judgeExternalRef(file, ref, allowlist) {
 /**
  * The policy rule of Requirement 19, criterion 5, for one Content-Security-Policy value.
  * `data:` and `'unsafe-inline'` are tolerated only when `shellScope` is true (the `/shell/*` block, Requirement 19, criterion 2).
+ * `'unsafe-eval'` is tolerated only when `handScope` is true (the `/hand/` blocks: MuJoCo runs on the main thread, open question O3).
  * @param {string} policy
  * @param {boolean} shellScope
+ * @param {boolean} [handScope]
  * @returns {string[]} the forbidden tokens found
  */
-function policyViolations(policy, shellScope) {
+function policyViolations(policy, shellScope, handScope = false) {
   const found = [];
   if (/\bhttps:/i.test(policy)) found.push('https:');
   if (/\bhttp:/i.test(policy)) found.push('http:');
   if (policy.includes('*')) found.push('*');
-  if (/'unsafe-eval'/i.test(policy)) found.push("'unsafe-eval'");
+  if (!handScope && /'unsafe-eval'/i.test(policy)) found.push("'unsafe-eval'");
   if (!shellScope && /'unsafe-inline'/i.test(policy)) found.push("'unsafe-inline'");
   if (!shellScope && /\bdata:/i.test(policy)) found.push('data:');
   return found;
@@ -404,13 +407,14 @@ function checkStructure(distRoot, files, repoUrl, findings, kitLinks) {
         if (block.path === '/*') findings.push({ file: '_headers', reference: block.path, rule: RULE_SCOPE_ALL });
         else if (!scopeExists(block.path, files)) findings.push({ file: '_headers', reference: block.path, rule: RULE_SCOPE_MISSING });
         const shellScope = block.path.startsWith('/shell/') || block.path === '/shell';
+        const handScope = block.path === '/hand/' || block.path === '/hand' || block.path.startsWith('/hand/');
         for (const header of block.headers) {
           if (!/^content-security-policy\s*:/i.test(header)) continue;
           const policy = header.slice(header.indexOf(':') + 1);
-          for (const token of policyViolations(policy, shellScope)) {
+          for (const token of policyViolations(policy, shellScope, handScope)) {
             findings.push({ file: '_headers', reference: `${block.path}  ${token}`, rule: RULE_POLICY });
           }
-          if (block.path === '/' || block.path === '/index.html' || block.path.startsWith('/kit/')) {
+          if (block.path === '/' || block.path === '/index.html' || block.path.startsWith('/kit/') || handScope) {
             for (const problem of policyRequirements(policy)) {
               findings.push({ file: '_headers', reference: `${block.path}  ${problem}`, rule: RULE_POLICY_REQUIRED });
             }
@@ -421,6 +425,13 @@ function checkStructure(distRoot, files, repoUrl, findings, kitLinks) {
           if (root === undefined || JSON.stringify(root.headers) !== JSON.stringify(block.headers)) {
             findings.push({ file: '_headers', reference: block.path, rule: RULE_KIT_BLOCK });
           }
+        }
+      }
+      if (fileSet.has('hand/index.html')) {
+        const hasPolicy = (scope) =>
+          blocks.some((b) => b.path === scope && b.headers.some((h) => /^content-security-policy\s*:/i.test(h)));
+        for (const scope of ['/hand/', '/hand/*']) {
+          if (!hasPolicy(scope)) findings.push({ file: '_headers', reference: scope, rule: RULE_HAND_POLICY });
         }
       }
     } catch {

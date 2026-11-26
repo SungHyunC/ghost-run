@@ -25,3 +25,15 @@ export function landingHeaderPolicy() {
 export function landingMetaPolicy() {
   return LANDING_CSP_PARTS.filter((part) => !part.startsWith('frame-ancestors')).join('; ');
 }
+
+/**
+ * Ordered directives of the policy for `/hand/` and the files under it (open question O3). The page needs
+ * nothing beyond the landing policy: MuJoCo is WebAssembly (`'wasm-unsafe-eval'`, no `'unsafe-eval'`), the
+ * simulation runs in a same-origin module worker, and the page loads no font, image, or inline style.
+ */
+export const HAND_CSP_PARTS = LANDING_CSP_PARTS.map((part) => part.startsWith('script-src') ? "script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'" : part);
+
+/** @returns {string} the policy of the `_headers` blocks for `/hand/` and `/hand/*` */
+export function handHeaderPolicy() {
+  return HAND_CSP_PARTS.join('; ');
+}

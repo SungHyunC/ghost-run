@@ -94,9 +94,10 @@ describe('checkSite local links', () => {
 const REPO = 'https://github.com/SungHyunC/ghost-run';
 const LANDING_POLICY =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const HAND_POLICY = LANDING_POLICY.replace("'wasm-unsafe-eval'", "'wasm-unsafe-eval' 'unsafe-eval'");
 const SHELL_POLICY =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
-const HEADERS = `/\n  Content-Security-Policy: ${LANDING_POLICY}\n/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/kit/\n  Content-Security-Policy: ${LANDING_POLICY}\n/kit/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/shell/*\n  Content-Security-Policy: ${SHELL_POLICY}\n`;
+const HEADERS = `/\n  Content-Security-Policy: ${LANDING_POLICY}\n/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/kit/\n  Content-Security-Policy: ${LANDING_POLICY}\n/kit/index.html\n  Content-Security-Policy: ${LANDING_POLICY}\n/hand/\n  Content-Security-Policy: ${HAND_POLICY}\n/hand/*\n  Content-Security-Policy: ${HAND_POLICY}\n/shell/*\n  Content-Security-Policy: ${SHELL_POLICY}\n`;
 
 function validSite(): Record<string, string> {
   return {
@@ -408,6 +409,26 @@ describe('checkSite Showcase rules', () => {
     const narrow = showcaseSite();
     narrow['_headers'] = HEADERS.replaceAll("worker-src 'self'; ", '');
     expect(run(narrow).some((f) => f.reference.startsWith('/kit/') && /required directive/.test(f.rule))).toBe(true);
+  });
+
+  it("requires a policy block for /hand/ and /hand/*, and allows 'unsafe-eval' there only", () => {
+    const handFindings = (files: Record<string, string>) => run(files).filter((f) => /\/hand\/ and \/hand\/\*/.test(f.rule)).map((f) => f.reference);
+    const none = showcaseSite();
+    none['_headers'] = HEADERS.replace(`/hand/\n  Content-Security-Policy: ${HAND_POLICY}\n`, '').replace(`/hand/*\n  Content-Security-Policy: ${HAND_POLICY}\n`, '');
+    expect(handFindings(none)).toEqual(['/hand/', '/hand/*']);
+    const half = showcaseSite();
+    half['_headers'] = HEADERS.replace(`/hand/*\n  Content-Security-Policy: ${HAND_POLICY}\n`, '/hand/*\n  X-Extra: 1\n');
+    expect(handFindings(half)).toEqual(['/hand/*']);
+    const loose = showcaseSite();
+    loose['_headers'] = HEADERS.replace(`/hand/\n  Content-Security-Policy: ${HAND_POLICY}`, `/hand/\n  Content-Security-Policy: ${HAND_POLICY.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")}`);
+    expect(run(loose).some((f) => f.reference === "/hand/  'unsafe-inline'")).toBe(true);
+    const narrow = showcaseSite();
+    narrow['_headers'] = HEADERS.replace(`/hand/\n  Content-Security-Policy: ${HAND_POLICY}`, `/hand/\n  Content-Security-Policy: ${HAND_POLICY.replace("worker-src 'self'; ", '')}`);
+    expect(run(narrow).some((f) => f.reference.startsWith('/hand/') && /required directive/.test(f.rule))).toBe(true);
+    const elsewhere = showcaseSite();
+    elsewhere['_headers'] = HEADERS.replace(`/kit/\n  Content-Security-Policy: ${LANDING_POLICY}`, `/kit/\n  Content-Security-Policy: ${HAND_POLICY}`);
+    expect(run(elsewhere).some((f) => f.reference === "/kit/  'unsafe-eval'")).toBe(true);
+    expect(run(showcaseSite()).filter((f) => f.file === '_headers')).toEqual([]);
   });
 
   it('checks the meta policy of kit/index.html', () => {
