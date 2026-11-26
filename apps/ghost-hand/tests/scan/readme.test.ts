@@ -11,10 +11,12 @@ import {
 } from '../../src/texts';
 
 // README consistency guard. Validates: Requirements 1.10, 12.12, 19.1, 19.2, 19.3, 19.4, 19.6, 19.8.
-// Only the `## Ghost Hand` section of the root README.md is tested.
+// Only the `## Ghost Hand` section is tested; it moved from the root README.md to docs/ghost-hand.md. The dependency
+// table is in docs/dependencies.md.
 
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
-const readme = readFileSync(join(repoRoot, 'README.md'), 'utf8');
+const readme = readFileSync(join(repoRoot, 'docs/ghost-hand.md'), 'utf8');
+const dependencies = readFileSync(join(repoRoot, 'docs/dependencies.md'), 'utf8');
 const HEADING = '## Ghost Hand';
 
 function topSection(text: string): string {
@@ -101,7 +103,7 @@ describe('Ghost Hand README section', () => {
     const licenses = subsection(body, 'Licenses and assets');
     expect(licenses).toMatch(/`@mujoco\/mujoco` 4\.0\.1 declares Apache-2\.0/);
     expect(licenses).toMatch(/tarball has no LICENSE file/);
-    const rows = readme.split('\n').filter((l) => l.startsWith('|'));
+    const rows = dependencies.split('\n').filter((l) => l.startsWith('|'));
     const row = (name: string): string => {
       const found = rows.find((l) => l.startsWith(`| ${name} |`));
       if (found === undefined) throw new Error(`license row missing: ${name}`);
@@ -115,7 +117,7 @@ describe('Ghost Hand README section', () => {
 
   it('has a Playwright row if and only if playwright is in a package.json', () => {
     const usesPlaywright = packageJsonFiles(repoRoot).some((f) => /"playwright(-core)?"\s*:/.test(readFileSync(f, 'utf8')));
-    const hasRow = readme.split('\n').some((l) => /^\| *playwright\b/i.test(l));
+    const hasRow = dependencies.split('\n').some((l) => /^\| *playwright\b/i.test(l));
     expect(hasRow).toBe(usesPlaywright);
   });
 

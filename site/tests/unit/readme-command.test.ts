@@ -7,7 +7,8 @@ import { createElement } from 'react';
 import { Make } from '../../src/components/Make';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const README = readFileSync(resolve(here, '../../../README.md'), 'utf8');
+// The section moved from the root README to docs/build-a-world.md.
+const README = readFileSync(resolve(here, '../../../docs/build-a-world.md'), 'utf8');
 const HEADING = 'Build a world with the `world-smith` agent';
 
 function section(): string {
@@ -19,7 +20,7 @@ function section(): string {
 }
 
 describe('world-smith command', () => {
-  it('equals the command in the README section', () => {
+  it('equals the command in the build-a-world section', () => {
     const html = renderToStaticMarkup(createElement(Make));
     const m = /<code class="cmd">([^<]*)<\/code>/.exec(html);
     expect(m).not.toBeNull();

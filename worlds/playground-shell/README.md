@@ -1,6 +1,6 @@
 # @ghost-run/playground-shell
 
-Dependencies and licenses are listed in the repository README.
+Dependencies and licenses are listed in [docs/dependencies.md](../../docs/dependencies.md).
 
 ## World registration
 

@@ -100,11 +100,17 @@ async function featureSourceFiles(): Promise<string[]> {
 }
 
 describe('repository hygiene', () => {
-  it('specs, steering and root README are clean', async () => {
+  it('specs, steering, root README and the documents moved out of it are clean', async () => {
+    // The sections of the root README that moved to docs/ keep the same hygiene rule.
+    const movedDocs = [
+      'build-a-world', 'built-with-kiro', 'dependencies', 'ghost-hand', 'ghost-runner', 'ghost-shell', 'how-it-works',
+      'kiro-integration', 'landing-site', 'possession', 'quick-start', 'ui-kit', 'wards',
+    ].map((name) => join(repoRoot, 'docs', `${name}.md`));
     const candidates = [
       ...(await walk(join(repoRoot, '.kiro/specs/possession'))),
       ...(await walk(join(repoRoot, '.kiro/steering'))),
       join(repoRoot, 'README.md'),
+      ...movedDocs,
     ];
     const files = dropGitIgnored(candidates);
     expect(files.length).toBeGreaterThan(0);

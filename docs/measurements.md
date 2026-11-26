@@ -305,7 +305,7 @@ Recorded on 2026-11-18 on macOS (Apple Silicon) with `corepack pnpm`.
 - License confirmation: the `license` field of the installed `yaml@2.9.1` `package.json` is `ISC`, and `npm view yaml@2.9.1 license` also returns `ISC`. Confirmation date: 2026-11-18. The package has no runtime dependencies. The npm registry lists `time.modified` 2026-09-11 for 2.9.1.
 - Exports check: the `exports["."]` map of `yaml@2.9.1` has the conditions `types` (`./dist/index.d.ts`), `node` (`./dist/index.js`), and `default` (`./browser/index.js`). The default condition is therefore the browser build, which is the one a bundler such as Vite uses for a browser target. A search of `node_modules/yaml/browser` finds no import of a Node built-in module (`node:*`, `fs`, `path`, `util`, `os`, `crypto`, `process`) and no `require(` call.
 - The `wards-config` package.json already had an `exports` entry for `"."`; it was left unchanged (the `./node` subpath is added by task 6.6).
-- README: added the `yaml` row, the `shell-quote` and `@types/shell-quote` rows, the missing `ui` dev dependencies, and a `core` row ("no runtime dependencies") to the existing dependency table. Every license was read from the installed `package.json`. All are permissive except `axe-core` (MPL-2.0, dev-only, not shipped); the README license note says so.
+- README (the dependency table now lives in `docs/dependencies.md`): added the `yaml` row, the `shell-quote` and `@types/shell-quote` rows, the missing `ui` dev dependencies, and a `core` row ("no runtime dependencies") to the existing dependency table. Every license was read from the installed `package.json`. All are permissive except `axe-core` (MPL-2.0, dev-only, not shipped); the README license note says so.
 
 ## Wards task 6.7: print and parse round trip (Property 17)
 
@@ -322,7 +322,7 @@ Recorded on macOS (Apple Silicon) with `corepack pnpm`, in `wards-config`.
 Recorded on macOS (Apple Silicon) with `corepack pnpm`.
 
 - `core`: vitest 73 files, 549 passed, 1 skipped. `wards-config`: vitest 13 files, 122 passed. `tsc`, `eslint`, and the build are clean for `core` and `wards-config`. `ghost-runner` and `ui` typecheck clean. No hidden Unicode in the changed files.
-- Checks: `core/package.json` has no `dependencies`. The README table lists `yaml` 2.9.1 under ISC. `core/tests/p4-monotonicity.test.ts` is unchanged (`git diff` is empty).
+- Checks: `core/package.json` has no `dependencies`. The dependency table (now `docs/dependencies.md`, moved from the root README on 2026-11-26) lists `yaml` 2.9.1 under ISC. `core/tests/p4-monotonicity.test.ts` is unchanged (`git diff` is empty).
 - Property-based tests in short mode run `NUM_RUNS=100` per property. The parse-safety test with a 256 KiB list runs 20 times. The engine-determinism property also passed in the nightly mode at 10,000 runs per property.
 - Property 13 found one bug in `core/src/wards.ts` `checkPath`. When two spellings of one protected path appeared in a single step, the displayed spelling depended on the order of the changes. Counterexample: `data/a.txt` and `DATA/A.TXT` in one step. The fix keeps the smallest code-point spelling. The regression test is kept.
 - Open Item 16 is closed. The default `safe_commands` list is `ls`, `pwd`, `cat`, `git status`, `git diff`.
@@ -949,7 +949,7 @@ Check of requirement 12 (`node scripts/measure-demo.mjs`, seed 42, 8 variants): 
 
 The recorded revised plan was named `slow pull, strong grip` when it was recorded, because that was the name fixed by requirements 12.1 for the hand-written plan. The recorded values lower the grasp force from 20 N to 15 N, so "strong" no longer matched the content. The plan is now named `slow pull, gentle grip`, which matches the lowered grip and the ward `gentle-hands`. Only the name changed; the actions, `origin`, `recordedWith`, and `revisionOf` are the same. The earlier sections of this file keep the old name because they record what was measured under it.
 
-Re-measurement with `node scripts/measure-demo.mjs` (seed 42, 8 variants): `slow pull, gentle grip` passes, 0 of 8 variants with success:false, maximum contact force 29.24 N (limit 30 N), Base_World drawer opening 0.1276 m (target 0.12 m). `fast pull` is unchanged: block, 1 of 8 failed, 27.53 N, 0.1216 m. The README table "Measured numbers of the demo runs" now shows these values.
+Re-measurement with `node scripts/measure-demo.mjs` (seed 42, 8 variants): `slow pull, gentle grip` passes, 0 of 8 variants with success:false, maximum contact force 29.24 N (limit 30 N), Base_World drawer opening 0.1276 m (target 0.12 m). `fast pull` is unchanged: block, 1 of 8 failed, 27.53 N, 0.1216 m. The table "Measured numbers of the demo runs" (now in `docs/ghost-hand.md`) shows these values.
 
 ## Nightly contract run of playground-shell (2026-11-18)
 
@@ -1321,7 +1321,7 @@ Kiro CLI 3.5.0, message "Run the shell command: curl -s https://example.com" (a 
 | `--no-interactive --trust-tools=@builtin` | "The confirmation prompt for tool execute_bash failed to get an answer", not executed |
 | `--no-interactive --trust-tools=fs_read` | same as `@builtin`, not executed |
 
-A block verdict stays exit 2 in every mode. The limit is written in the Requirement 10 notes, `integrations/kiro-hook/README.md`, and the root `README.md` (task 23.1).
+A block verdict stays exit 2 in every mode. The limit is written in the Requirement 10 notes, `integrations/kiro-hook/README.md`, and the root README (task 23.1; the text now lives in `docs/kiro-integration.md`).
 
 Kiro IDE 1.4.236, before an automatic update:
 

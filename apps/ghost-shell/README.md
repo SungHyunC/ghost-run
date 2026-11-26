@@ -115,4 +115,4 @@ Run after every build, in a real browser (Chromium-based, Firefox, and Safari wh
 
 ## Dependencies
 
-The runtime dependencies are `@ghost-run/core`, `@ghost-run/playground-shell`, `@ghost-run/ui`, `@ghost-run/wards-config`, `react`, `react-dom`, and `sql.js`. The full dependency and license table is in the repository README.
+The runtime dependencies are `@ghost-run/core`, `@ghost-run/playground-shell`, `@ghost-run/ui`, `@ghost-run/wards-config`, `react`, `react-dom`, and `sql.js`. The full dependency and license table is in [docs/dependencies.md](../../docs/dependencies.md).

@@ -4,8 +4,15 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const README = readFileSync(resolve(here, '../../../README.md'), 'utf8');
-const rows = README.split('\n').filter((l) => l.startsWith('|'));
+// The root README keeps the skeleton table. The landing site section, "Built with Kiro", and the dependency table
+// moved to docs/landing-site.md, docs/built-with-kiro.md, and docs/dependencies.md.
+const read = (rel: string): string => readFileSync(resolve(here, '../../..', rel), 'utf8');
+const ROOT = read('README.md');
+const README = read('docs/landing-site.md');
+const BUILT = read('docs/built-with-kiro.md');
+const DEPS = read('docs/dependencies.md');
+const rows = DEPS.split('\n').filter((l) => l.startsWith('|'));
+const rootRows = ROOT.split('\n').filter((l) => l.startsWith('|'));
 
 describe('README site documentation', () => {
   it('states the build command and the output folder', () => {
@@ -14,16 +21,16 @@ describe('README site documentation', () => {
   });
 
   it('has a Ghost Cloud row in the skeleton table', () => {
-    const row = rows.find((l) => l.includes('worlds/ghost-cloud/'));
+    const row = rootRows.find((l) => l.includes('worlds/ghost-cloud/'));
     expect(row).toBeDefined();
     expect(row).toContain('world-smith');
     expect(row).toContain('no real mode');
   });
 
   it('has the Claude Code mockup line in the "Not written by Kiro" paragraph', () => {
-    const start = README.indexOf('**Not written by Kiro**');
+    const start = BUILT.indexOf('**Not written by Kiro**');
     expect(start).toBeGreaterThanOrEqual(0);
-    const paragraph = README.slice(start).split('\n\n')[0] ?? '';
+    const paragraph = BUILT.slice(start).split('\n\n')[0] ?? '';
     expect(paragraph).toContain('landing page design draft (mockup) was made by Claude Code');
     expect(paragraph).toContain('Kiro built the page from it');
   });
@@ -66,8 +73,8 @@ describe('README site documentation', () => {
     });
 
     it('has the v6 and kit showcase line in "Not written by Kiro"', () => {
-      const start = README.indexOf('**Not written by Kiro**');
-      const paragraph = README.slice(start).split('\n\n')[0] ?? '';
+      const start = BUILT.indexOf('**Not written by Kiro**');
+      const paragraph = BUILT.slice(start).split('\n\n')[0] ?? '';
       expect(paragraph).toContain(
         'The paged landing mockup (v6) and the kit showcase mockup were made by Claude Code; Kiro built them.',
       );

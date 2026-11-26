@@ -15,8 +15,8 @@ const repoDir = resolve(pkgDir, '..');
 const read = (p: string): string => readFileSync(p, 'utf8');
 
 describe('repository wiring', () => {
-  it('README has the yaml row with version 2.9.1 and license ISC', () => {
-    const rows = read(resolve(repoDir, 'README.md'))
+  it('the dependency table (docs/dependencies.md) has the yaml row with version 2.9.1 and license ISC', () => {
+    const rows = read(resolve(repoDir, 'docs/dependencies.md'))
       .split('\n')
       .filter((l) => l.startsWith('|'))
       .map((l) => l.split('|').map((c) => c.trim()));

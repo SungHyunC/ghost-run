@@ -7,7 +7,10 @@ const uiRoot = new URL('../../', import.meta.url);
 const repoRoot = new URL('../../../', import.meta.url);
 
 const uiReadme = readFileSync(new URL('README.md', uiRoot), 'utf8');
-const repoReadme = readFileSync(new URL('README.md', repoRoot), 'utf8');
+// The repository README moved its detail sections to docs/: the secret-like key rule to docs/ui-kit.md, the tables to
+// docs/dependencies.md.
+const repoUiDoc = readFileSync(new URL('docs/ui-kit.md', repoRoot), 'utf8');
+const repoDeps = readFileSync(new URL('docs/dependencies.md', repoRoot), 'utf8');
 const pkg = JSON.parse(readFileSync(new URL('package.json', uiRoot), 'utf8')) as {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -43,7 +46,7 @@ function findRow(rows: string[][], name: string): string[] | undefined {
 describe('Secret-like key rule section', () => {
   describe.each([
     ['ui/README.md', uiReadme],
-    ['README.md', repoReadme],
+    ['docs/ui-kit.md', repoUiDoc],
   ])('%s', (_label, text) => {
     it('has the heading', () => {
       expect(text).toMatch(/^#{2,4} Secret-like key rule\s*$/m);
@@ -60,8 +63,8 @@ describe('Secret-like key rule section', () => {
   });
 });
 
-describe('repository README dependency table', () => {
-  const rows = tableRows(repoReadme);
+describe('repository dependency table (docs/dependencies.md)', () => {
+  const rows = tableRows(repoDeps);
   const all = { ...pkg.dependencies, ...pkg.devDependencies };
 
   it('lists axe-core with MPL-2.0 and a dev-only, not-shipped note', () => {
@@ -74,7 +77,7 @@ describe('repository README dependency table', () => {
 
   it.each(Object.entries(all))('lists %s with a version and a license', (name, range) => {
     const row = findRow(rows, name);
-    expect(row, `${name} is missing from the repository README table`).toBeDefined();
+    expect(row, `${name} is missing from the table in docs/dependencies.md`).toBeDefined();
     const version = row?.[1] ?? '';
     const license = row?.[row.length - 1] ?? '';
     expect(version).toMatch(/\d/);
@@ -87,8 +90,8 @@ describe('repository README dependency table', () => {
 });
 
 describe('asset tables', () => {
-  it('repository README lists the original SVG source and ships no font and no audio', () => {
-    const row = tableRows(repoReadme).find((cells) => (cells[0] ?? '').startsWith('Fonts, icons, and assets of `ui`'));
+  it('docs/dependencies.md lists the original SVG source and ships no font and no audio', () => {
+    const row = tableRows(repoDeps).find((cells) => (cells[0] ?? '').startsWith('Fonts, icons, and assets of `ui`'));
     expect(row).toBeDefined();
     const note = row?.join(' | ') ?? '';
     expect(note).toMatch(/original SVG/);
