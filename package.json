@@ -5,6 +5,9 @@
   "type": "module",
   "packageManager": "pnpm@12.21.0",
   "scripts": {
+    "gate:on": "node integrations/kiro-hook/gate-switch.mjs on",
+    "gate:off": "node integrations/kiro-hook/gate-switch.mjs off",
+    "gate:status": "node integrations/kiro-hook/gate-switch.mjs status",
     "build": "\"$npm_execpath\" -r build",
     "test": "\"$npm_execpath\" -r --workspace-concurrency=1 --no-bail test",
     "typecheck": "\"$npm_execpath\" -r --workspace-concurrency=1 --no-bail typecheck",

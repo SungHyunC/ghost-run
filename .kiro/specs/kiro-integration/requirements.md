@@ -593,6 +593,19 @@ Hidden characters are never written literally in this document. A hidden charact
 11. THE Ghost_Gate SHALL NOT claim P1, P5, or P6 for a Trusted_Command. THE README of the Hook_Package and the root README SHALL state that a trusted command runs whatever the project's scripts, tests, and config files contain, so an agent that edits those files changes what runs without a rehearsal; that the list should hold only commands whose inputs the team reviews; and that this repository trusts its own test, lint, typecheck, and build commands to cut the asks measured on 2026-11-25 and 2026-11-26.
 12. THE test suite SHALL contain examples for every allowed shape of criterion 2 and for every construct of criteria 4 to 7, a property that a wildcard never matches a word that starts with `-` (KI-P24), and cases for `--config=x`, `-c x`, `--`, and `-`; a test of the `cd` real-path check with a symbolic link out of the workspace; and gate tests that a trusted line yields no grave, no Run_Record, no runner call, and one `trusted` Stats_Event.
 
+### Requirement 28: One-Command Gate Switch
+
+**User Story:** As a developer who enables the gate in a clone of this template, I want one command that switches it on or off, so that I do not edit `enabled` in two hook files by hand.
+
+#### Acceptance Criteria
+
+1. THE root `package.json` SHALL define the scripts `gate:on`, `gate:off`, and `gate:status`, all backed by `integrations/kiro-hook/gate-switch.mjs`.
+2. THE script SHALL set `enabled` in both entries of `.kiro/hooks/ghost-gate.json` and in the entry of `.kiro/hooks/docker-warmup.json`, and SHALL change nothing else; the JSON formatting of the files SHALL stay byte-identical except for the `enabled` values.
+3. THE script SHALL print the state before and after, SHALL be idempotent (a second run changes no byte and says so), and `gate:status` SHALL write nothing.
+4. WHEN a hook file is missing, is not valid JSON, or does not have the expected entries with a boolean `enabled`, THE script SHALL exit with code 1 and a message that names the file, and SHALL change no file.
+5. THE tests SHALL run the script only against a temporary copy of a hooks folder (option `--hooks-dir`). THE committed hook files SHALL stay `enabled: false`, and the hook-file tests SHALL expect that; a working tree where the gate is switched on fails those tests by design.
+6. THE README and the Hook_Package README SHALL use these commands instead of editing the files by hand.
+
 ## Out of Scope
 
 - Kiro Crew integration (product rule), including the `kirocrew-*` agents and the `kirocrew-work` MCP tools.

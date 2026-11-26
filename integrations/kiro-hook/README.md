@@ -10,7 +10,7 @@ Hook scripts that connect Ghost Run+ to Kiro (IDE and CLI). Each script reads on
 | world-scaffold | `world-scaffold.mjs` | File create under `worlds/<name>/` | Generates the registration, test, wards, and README files of a new world. |
 | blacklight-steering | `blacklight-steering.mjs` | File save under `.kiro/` | Reports hidden Unicode in steering, spec, and hook files. |
 
-State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`, including the probe hook files (task 1.8; `tests/probe-disabled.test.mjs` keeps them off). The gate is switched on by a human in task 19.1 after the checklist there. Facts that no probe settled are marked "not confirmed".
+State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`, including the probe hook files (task 1.8; `tests/probe-disabled.test.mjs` keeps them off). The gate is switched on by a human in task 19.1 after the checklist there. A human switches it with `corepack pnpm gate:on`, `gate:off`, or `gate:status` from the repository root (`gate-switch.mjs`; it flips `enabled` in both entries of `ghost-gate.json` and in `docker-warmup.json`, and nothing else). The committed files stay `enabled: false`, and `hook-files.test.mjs` and `docker-warmup.test.mjs` expect that, so they fail in a working tree where the gate is on. `tests/gate-switch.test.mjs` runs the script on a temporary folder only. Facts that no probe settled are marked "not confirmed".
 
 ## Claims and non-claims
 
@@ -101,7 +101,7 @@ A change under `.kiro/hooks/**`, `integrations/kiro-hook/**`, `integrations/mcp/
 
 **Failure before Node starts.** If the `node` binary is missing, the shell exits with code 127. The CLI lets the call through on an exit code other than 2. The gate cannot prevent this. Pending (task 17.2) for the observed behavior in both hosts.
 
-**Disable path.** The only supported way to switch the gate off is that the human sets `enabled` to `false` in the hook entry (Kiro hooks panel or the file). The gate reads no environment variable and no workspace file that disables it, because an agent can write to both.
+**Disable path.** The only supported way to switch the gate off is that the human runs `corepack pnpm gate:off`, or sets `enabled` to `false` in the hook entry (Kiro hooks panel or the file). The gate reads no environment variable and no workspace file that disables it, because an agent can write to both.
 
 **Fresh clone.** The scripts import the built `core`, `ghost-runner`, and `wards-config`. On a fresh clone the human runs `corepack pnpm -r build` once outside the gate, because the gate blocks the agent's own build command. Until then the gate prints `GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build).` and exits with code 2.
 

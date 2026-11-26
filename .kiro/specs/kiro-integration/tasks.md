@@ -54,7 +54,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
 
 ## Tasks
 
-- [ ] 1. Host fact probe (first task; Requirement 24)
+- [x] 1. Host fact probe (first task; Requirement 24)
   - [x] 1.1 Create the minimal Hook_Package skeleton that the probe lives in
     - Create `integrations/kiro-hook/package.json` (`name: "@ghost-run/kiro-hook"`, `private: true`, `type: "module"`, `engines.node >= 20`, dev dependencies `vitest` and `fast-check`, script `test` as `vitest --run`). `pnpm-workspace.yaml` already lists `integrations/*`. Keep `exp-b-gate.mjs` untouched. Run `pnpm install`.
     - Task 2.1 completes the package (tsconfig, ESLint, dependencies on the workspace packages). The probe script itself imports only `node:fs` and `node:path`, so it needs none of them.
@@ -119,7 +119,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Depends on tasks 1.6 and 1.7.**
     - _Requirements: 24.6_
 
-- [ ] 2. Package scaffold, import bans, steering, and source scans
+- [x] 2. Package scaffold, import bans, steering, and source scans
   - [x] 2.1 Complete the Hook_Package configuration and the test harness
     - Extend `integrations/kiro-hook/package.json`: dependencies `@ghost-run/core`, `@ghost-run/ghost-runner`, and `@ghost-run/wards-config` (all `workspace:*`); dev dependencies `typescript`, `vitest`, `fast-check`, `eslint`, `@types/node`; scripts `test`, `test:nightly`, `typecheck`, `lint`. The type-only dependency on `@ghost-run/ui` is added by task 7.5.
     - Create `tsconfig.json` (`allowJs`, `checkJs`, `strict`, `noEmit`, `module` and `moduleResolution` `NodeNext`, include the scripts, `lib/`, and `tests/`), `eslint.config.mjs` (`no-restricted-imports` that allow `@ghost-run/core`, `@ghost-run/core/possession-node`, `@ghost-run/ghost-runner`, `@ghost-run/wards-config`, `@ghost-run/wards-config/node`, and `import type` of `@ghost-run/ui`, and ban deep imports into other packages and the `exp-b-gate.mjs` module; `no-eval`, `no-new-func`, `no-implied-eval`), and `vitest.config.ts` (aliases of the three packages to their `src` entry for pure tests).
@@ -580,34 +580,38 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - The test gets explicit examples so that every unknown value type (string, number, boolean, null) is always covered, whatever the generated examples are. Unrelated to the wake retry; recorded here only so that the change is listed.
     - _Requirements: 23.5_
 
-- [ ] 17. Host verification (manual tasks for the human)
-  - [ ] 17.1 MANUAL (human): verify the exit-code behavior of the gate in Kiro IDE and Kiro CLI
+- [x] 17. Host verification (manual tasks for the human)
+  - [x] 17.1 MANUAL (human): verify the exit-code behavior of the gate in Kiro IDE and Kiro CLI
     - **Depends on tasks 8.3 and 9.** Run this task in a scratch clone and not in this repository. Make a scratch clone (`git clone` of this repository into a temporary folder), run `pnpm install` and `pnpm -r build` there, and in the scratch clone set `enabled` to `true` in `ghost-gate.json` (and keep the exp-b files disabled). The gate in this repository stays disabled.
     - IDE steps: open the scratch folder in Kiro IDE, trust it (click the trust button in the trust dialog), reload the window (Cmd+Shift+P, "Developer: Reload Window"), start a new chat session, and send: (1) "Run the shell command: ls" (expect: allowed, no hook output); (2) "Run the shell command: rm -rf data" in a clone that contains a `data/` folder (expect: blocked, the chat shows the block message that names `protect-data`); (3) "Overwrite the existing file data/a.csv with the text hi" in a clone that contains `data/a.csv` (expect: blocked by the write judgment, naming `protect-data`). Creating a new file such as data/x.txt is allowed by design, because the path wards of `protect-data` deny only delete and overwrite. Then rename `core/dist` in the scratch clone, send "Run the shell command: echo hello" (expect: blocked with the line `GHOST RUN GATE UNAVAILABLE: build the packages first (pnpm -r build).`), and rename it back. Write down for each case whether the IDE blocked the call and whether the agent saw the hook message.
     - CLI steps: in a terminal run `cd <scratch>` and `kiro-cli chat`, repeat the same four messages and write down the same facts. Check that an exit code 2 blocks the call in the CLI and that the message reaches the agent.
     - Record the results in `docs/measurements.md` as one entry (a table of case, IDE result, CLI result). If any case lets the call through, mark the gate as not safe to enable and report it in the final checkpoint.
-    - CLI side recorded 2026-11-21 in `docs/measurements.md`; the IDE side is pending.
+    - CLI and IDE sides recorded 2026-11-21 in `docs/measurements.md` (IDE 1.4.236 and 1.5.11).
+    - Evidence: `docs/measurements.md`, "Host checks before enabling the gate", section "17.1 Exit codes" (table with CLI and IDE results for all four cases, including the `GHOST RUN GATE UNAVAILABLE` line). The IDE crash and syntax-error cases of task 19.1 check D were not measured (IDE update); the missing-build case shows the exit-2 path in the IDE.
     - _Requirements: 2.9, 7.8, 8.7_
 
-  - [ ] 17.2 MANUAL (human): verify whether a Pre Tool Use `ask` output raises an approval prompt (IDE and CLI)
+  - [x] 17.2 MANUAL (human): verify whether a Pre Tool Use `ask` output raises an approval prompt (IDE and CLI)
     - **Depends on task 8.3 and the probe files of task 1.2.** Use the scratch clone of task 17.1 or this repository with the gate disabled. Enable only `probe-ask.json` (set `enabled` to `true`), reload the window or start a new CLI session.
     - For each of three tool trust settings (a) `execute_bash` not trusted, (b) `execute_bash` trusted (in the IDE add the command pattern `echo *` to the trusted commands in the Kiro settings; in the CLI use the tool trust command, for example `/tools`), (c) trust-all or autopilot mode: send "Run the shell command: echo ghost-run-ask-probe". Judge: a prompt appeared if the host showed an approval dialog or a confirmation line before the command ran, with the reason text `probe: ask test`; a decline blocked the call if you decline and the chat shows no command output. Also check the log line `askTest: asked` in `.ghost-run/probe/events.jsonl`.
     - Record in `docs/measurements.md` a table with the rows (a), (b), (c) and the columns IDE prompt shown, IDE decline blocked, CLI prompt shown, CLI decline blocked, reason text shown. Add the `ask` row to the `Probe results` table. Set `probe-ask.json` back to `enabled: false`.
     - Decision rule written in the entry: `WARN_MODE` may become `ask` only if both hosts show the prompt and a decline blocks the call in all three settings, or in the untrusted setting if the README then states the trusted-tool limit; if the IDE and the CLI differ, `WARN_MODE` stays `exit2` for both.
-    - CLI side recorded 2026-11-21 in `docs/measurements.md`; the IDE side is pending.
+    - CLI and IDE sides recorded 2026-11-21 in `docs/measurements.md`.
+    - Evidence: `docs/measurements.md`, "Host checks before enabling the gate", section "17.2 The `ask` probe" (rows a, b, c for IDE and CLI: prompt shown, reason shown, Deny blocks, all six cells met); row (i) `ask` of the `Probe results` table; `probe-ask.json` is `enabled: false`.
     - _Requirements: 10.3, 10.4, 10.11, 7.3_
 
-  - [ ] 17.3 Decide `WARN_MODE` from the `ask` verification and update the gate constant
+  - [x] 17.3 Decide `WARN_MODE` from the `ask` verification and update the gate constant
     - **Depends on task 17.2.** Keep `WARN_MODE = 'exit2'` in `gate-config.mjs` unless the decision rule of task 17.2 allows `ask`. If it allows `ask`, change the constant to `'ask'` (a Self_Protected_Path, so the change needs the human) and add a test that pins the committed value to the recorded decision. If it does not, add a test that pins `'exit2'` and a note in `gate-config.mjs` that names the `docs/measurements.md` entry.
     - Both modes are already covered by Property 1. A `warn` never exits 0 without the `ask` JSON.
-    - Decision (human, 2026-11-21): `WARN_MODE` is `ask`, after the IDE 1.4.236 and CLI prompt tests. This task stays unticked as a record of the decision rule; the change itself is task 22.3.
+    - Decision (human, 2026-11-21): `WARN_MODE` is `ask`, after the IDE 1.4.236 and CLI prompt tests. The change itself is task 22.3.
+    - Evidence: decision line at the end of section "17.2 The `ask` probe" in `docs/measurements.md`; `WARN_MODE = 'ask'` in `integrations/kiro-hook/gate-config.mjs`; `tests/warn-mode.test.mjs` pins it.
     - _Requirements: 10.3, 10.4, 7.3, 7.9_
 
-  - [ ] 17.4 MANUAL (human): install the power from the folder in a second project and record the evidence
+  - [x] 17.4 MANUAL (human): install the power from the folder in a second project and record the evidence
     - **Depends on tasks 15.3 and 16.2.** Use a second, empty project folder outside this repository.
     - Steps: open the second project in Kiro IDE and trust it; open the Powers panel and choose "Add Custom Power", then "Local folder", and select `integrations/power` of this repository; when the install finishes, open the MCP servers view and confirm that the `ghost-run` server is running and lists the five tools (note the exact prefixed names the host shows); start a new chat and send "I want to run rm -rf build to clean up" and check whether the `ghost-run` skill is activated (the chat shows the skill name or the agent calls `wards_check`); ask the agent to call `wards_check` for the plan `ls`. If the server does not start because `server/ghost-run-mcp.mjs` does not resolve, run `pnpm power:link` (task 15.4), copy the absolute path from `mcp.local.json` into the power install, and record that the fallback was needed.
     - Save a screen capture or a log of the three observations (server listed with the five tools, keyword activates the skill, `wards_check` answer) for the Kiro usage report. Append the result and the displayed tool names to `docs/measurements.md`, and write the displayed names into `integrations/power/README.md` (design O3).
-    - CLI side recorded 2026-11-21 in `docs/measurements.md`; the IDE side is pending. The CLI side found that the server worked on the power folder; fixed by task 21; repeat the CLI check after the fix and then the IDE side.
+    - CLI and IDE sides recorded 2026-11-21 in `docs/measurements.md`. The first CLI check found that the server worked on the power folder; fixed by tasks 21 and 22 and re-checked in both hosts.
+    - Evidence: `docs/measurements.md`, sections "17.4 Power installed in a second project (CLI side)" and "Power after fix rounds 1 and 2 (62bb374)" (five tools listed with their displayed names in CLI and IDE; `wards_check` and `ghost_run` answered in a second project; names written into `integrations/power/README.md`), and the devlog entry "Re-checked after reinstalling". Recorded as a negative result: a plain "I want to run rm -rf ..." does not make the agent use the skill; the power is advisory.
     - _Requirements: 20.6, 20.8_
 
 - [x] 18. Documentation
@@ -640,7 +644,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - _Requirements: 25.9_
 
 - [ ] 19. Enable the gate for our own development (target 2026-11-22)
-  - [ ] 19.1 MANUAL (human confirms): pre-enable checklist, then switch the gate on
+  - [x] 19.1 MANUAL (human confirms): pre-enable checklist, then switch the gate on
     - This is a checkpoint-style task. The agent does not enable the gate. A human works through the checklist, confirms each check (A to F) only when verified, and records the evidence in `docs/measurements.md`. Do not enable the gate before every check is confirmed.
     - Checklist:
       - Check A (tests): Full test suite passes: `pnpm -r build`, `pnpm -r test`, and `pnpm lint`, with the `[docker]` tests run on a Docker machine (a `skipped (docker unavailable)` line is not a pass), and the `[docker]` leftover-container test passes.
@@ -652,14 +656,17 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - After checks A to F are confirmed, the human sets `enabled` to `true` in both entries of `.kiro/hooks/ghost-gate.json` (through the Kiro hooks panel or the file), reloads the window or starts a new session, runs `ls` and one blocked call to confirm, and appends the date and the evidence to `docs/measurements.md`.
     - Also set `enabled` to `true` in `.kiro/hooks/docker-warmup.json`, and re-measure `dockerCheckMs` in the IDE after a stop of more than 5 minutes (Docker Desktop Resource Saver); record in `docs/measurements.md` whether `dockerWakeRetried` was `true`.
     - **Depends on tasks 16.2, 17.1, 17.2, 17.3, 17.4, and 18.1.**
+    - Evidence: `docs/measurements.md`, sections "19.1 Evidence" (checks B to E), "Check A at 7c6e39a (2026-11-25)" (full suite, 4,580 tests passed), "Host checks before enabling the gate" (IDE `dockerCheckMs` 2589, `dockerWakeRetried` true), and "Gate switched on for daily use (task 19.1, 2026-11-25)" (`ls` ran, the approval command was denied); check F: `RunnerOptions.runId` in `ghost-runner/README.md` and the devlog entry of ghost-runner run 7.
     - _Requirements: 10.11, 8.2, 8.6, 21.1_
 
   - [ ] 19.2 MANUAL (human): record the number of approvals per development day
     - From the first day the gate is enabled, count the human approvals (and, in `exit2` mode, the commands that you had to run outside the agent) per development day, and append the counts to `docs/measurements.md` together with the `summarizeStats` table of the session for at least three working days. Record which necessary commands needed approval (for example a dependency install).
+    - Open until the freeze (2026-12-02).
     - _Requirements: 10.11, 13.8_
 
 - [ ] 20. Final checkpoint - Ensure all tests pass
   - Run `pnpm -r build`, `pnpm lint`, `pnpm --filter @ghost-run/kiro-hook test`, `pnpm --filter @ghost-run/mcp test`, and `typecheck` for both packages, in the Short_Run, and, where Docker is available, the `[docker]` tests. Confirm: every property of the design (1 to 21) has a test with at least 100 runs in the Short_Run and the Short_Run is within 60 s without Docker; the hook file format test, the exp-b retirement test, and the probe-disabled test pass; the five hook files exist (or the recorded reason for a missing `world-scaffold.json` stands); the possession scan of `integrations/`, `.kiro/hooks/`, and `.kiro/specs/kiro-integration/` is `clean`; the source-scan test passes; no `.ghost-run/` content is in the working tree; the README tables list every dependency with its license; the `core`, `ghost-runner`, `wards-config`, and `ui` ESLint import bans hold; the `Probe results` table, the exit-code table, the `ask` table, the timing entry, and the power install entry exist in `docs/measurements.md`; the open items that remain (O7 `safeCommands`, O12 `runId`, O10, `ui` import ban if `ui` was missing) are listed in the checkpoint report with the spec that owns each. Ensure all tests pass, ask the user if questions arise.
+  - Open until the freeze (2026-12-02).
 
 - [x] 21. Fix round 2026-11-21: the power works in another project (the `PWD` source of 21.1 is superseded by task 22)
   - [x] 21.1 Workspace root resolver, per-call context, and roots/list
@@ -806,6 +813,11 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
   - [x] 25.4 Docs
     - "Trusted commands" in `integrations/kiro-hook/README.md` and in the root README, with the trade-off and the measured reason (asks measured on 2026-11-25 and 2026-11-26).
     - _Requirements: 27.11_
+
+- [x] 26. One-command gate switch 2026-11-26
+  - [x] 26.1 `gate:on`, `gate:off`, `gate:status`
+    - `integrations/kiro-hook/gate-switch.mjs` (validates both files before writing, text-level flip of `enabled` lines, `--hooks-dir` option for tests), root scripts in `package.json`, `tests/gate-switch.test.mjs` (temporary folder only), and the commands in the root README and `integrations/kiro-hook/README.md`.
+    - _Requirements: 28.1, 28.2, 28.3, 28.4, 28.5, 28.6_
 
 ## Notes
 

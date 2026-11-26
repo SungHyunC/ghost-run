@@ -46,7 +46,7 @@ The plan follows this order:
 
 ## Tasks
 
-- [ ] 1. Steering, lint, and the policy constant
+- [x] 1. Steering, lint, and the policy constant
   - [x] 1.1 Update steering and the lint rules
     - Edit `.kiro/steering/structure.md`: replace the `site/` dependency sentence with the text of design "Dependency direction" (`site/src/live/` may import `core/`, `wards-config/`, and `worlds/*` through their public entry points, and by relative path the pipeline modules, plan parsers, executor modules, and worker entry files of `apps/ghost-shell` and `apps/ghost-hand`; the rest of `site/src/` imports none of them; no package may depend on `site/`). Keep every other rule. Keep the file free of hidden Unicode and comment openers.
     - Edit `site/eslint.config.mjs`: keep `PAGE_BANNED_IMPORTS` for `src/**`; add a block for `src/live/**` that replaces that ban by an allowlist of the design table and keeps the syntax and network bans; keep the block of `scripts/record-runs.measure.ts` and change its allowlist to the design table (adapters, core, wards-config, the two world packages, `drawer-arm`, `vitest`).
@@ -66,7 +66,7 @@ The plan follows this order:
     - In `tests/unit/csp.property.test.ts`: for any generated `_headers` input to `buildRootHeaders`, the blocks for `/` and `/index.html` carry `landingHeaderPolicy()`, no block has the scope `/*`, and the Site_Check policy rule (task 12.2 extends it; here the existing rule function) accepts the policy and rejects any policy with `https:`, `*`, `'unsafe-eval'`, `'unsafe-inline'`, or a `connect-src` other than `'self'` added.
     - **Validates: Requirements 14.1, 14.2, 14.3, 14.4**
 
-- [ ] 2. The live contract and input handling
+- [x] 2. The live contract and input handling
   - [x] 2.1 Write `live/types.ts` and `live/input.ts`
     - Add `"@ghost-run/ui": "workspace:*"` to `devDependencies` in `site/package.json` and update `pnpm-lock.yaml` with `corepack pnpm install` (owner approval; `input.ts` imports `@ghost-run/ui`).
     - `types.ts`: `LiveInput`, `LiveRun`, `LiveAnswer`, `LiveEngine`, `Outcome`, and `UnsupportedNote` exactly as in design Component 1 and Component 7. It imports types only.
@@ -79,7 +79,7 @@ The plan follows this order:
     - In `tests/unit/live-input.property.test.ts`: for any generated string (control characters, hidden code points from code points, markup, strings around and above the limit), `normalizeText` rejects it or returns a text of at most 256 code points with no control or hidden code point and equal to the trimmed input; `echo` has no control or hidden code point and at most 80 code points before the ellipsis.
     - **Validates: Requirements 9.1, 9.2, 9.3**
 
-- [ ] 3. Presets and the Hand plan
+- [x] 3. Presets and the Hand plan
   - [x] 3.1 Write `live/presets.ts`
     - Read the plan files, wards files, and demo files with `?raw`: `apps/ghost-shell/plans/scenario-1.json`, `scenario-1-fixed.json`, `scenario-2.json`, `scenario-2-fixed.json`, `scenario-4.json`, `apps/ghost-hand/plans/first.plan.json`, `revised.plan.json`, `worlds/ghost-cloud/demo/01-delete-protected-bucket.txt`, `03-delete-temporary-bucket.txt`. Parse the plan files with the apps' `parsePlanFile`. Export `PRESETS` and `FIXED` as in design Component 9: nine Presets in the order of Requirement 8, criterion 1, and four Fixed_Plans (Requirement 8, criterion 3). Hand Presets hold slider values derived from the plan files' grasp and pull actions; `strong grip` (0.3, 38, 0.2) and `make it public` hold the brief's values. Add `isKnown(box, preset)`.
     - Write `tests/unit/live-presets.test.ts`: each Preset input equals its file; each Fixed_Plan equals its file; only the four named Presets have a fix; the Hand values equal (0.6, 20, 0.2), (0.15, 15, 0.15), (0.3, 38, 0.2); `isKnown` is false after one character changes and after a slider moves by one step.
@@ -95,7 +95,7 @@ The plan follows this order:
     - In `tests/unit/live-hand-plan.property.test.ts`: for any three finite numbers, `normalizeSliders` returns values inside the ranges rounded to the step, and `buildHandPlan` gives five actions that all pass `validateAction`, whose reach and release actions equal those of `first.plan.json` and whose grasp force, pull distance, and pull speed equal the rounded values.
     - **Validates: Requirements 5.4, 3.2, 9.2**
 
-- [ ] 4. Data types of `runs.json` version 2
+- [x] 4. Data types of `runs.json` version 2
   - [x] 4.1 Change the data types and add `derive/common.ts`
     - `src/data/types.ts`: `RunsFile` becomes version 2 (`WorldRecordV2` with `presets`), `WorldRecord` gains `fixed: PlanRecord | null`, `outcome`, `source`, and `unsupported?`; `CopyScene.shell` gains `entries`; `CopyScene.cloud` buckets gain `tag?`. `RealityScene.shell` lists entries instead of the fixed subset.
     - `src/live/derive/common.ts`: pure helpers that build check rows from a ward and a measurement, the sorted unique destinations of effects and network events, the violated ward ids, and the extra chip of a violated non-headline ward (text from the engine's reason, shortened and sanitized).
@@ -103,13 +103,13 @@ The plan follows this order:
     - Fix the typecheck of the files that read the old shape by adapting them minimally (the engine and components read `WorldRecord`; their full change is in tasks 9 to 11). Run `typecheck` and fix compile errors only.
     - _Requirements: 7.3, 11.2, 11.7_
 
-- [ ] 5. Ghost Shell adapter
+- [x] 5. Ghost Shell adapter
   - [x] 5.1 Write `live/shell.ts` and `live/derive/shell.ts`
     - `createShellEngine({ sql, wardsText })` as in design Component 3: fresh project per run, `parseWards` once, `runPlayground` with a `worldFactory` that records the two fingerprint hashes, `unsupported` answer for unsupported or watchdog steps, `failed` for an exception. `derive/shell.ts` builds the `PlanRecord` (checks `rows lost, at most N`, entries with `intact`, `gone`, or `new`, tables with `intact`, `dropped`, or `soft`, facts `rowsLost`, `entriesGone`, `entriesNew`, `networkAttempts`) and the reality scene (non-hidden top-level entries without secret-pattern matches). It never reads or stores `.env` contents. The chips follow the ward verdict: the headline chip is ✗ exactly when `no-data-loss` is violated, and each other violated ward adds one chip with the engine's reason (task 15.3).
     - Write `tests/unit/live-shell.test.ts` with the inline SQL executor: `DROP TABLE users` blocks with 1,206 rows lost and `p1.equal`; its fixed plan passes with 0 lost; `rm -rf ./data ./build` blocks by `protect-data` and adds the extra chip; its fixed plan passes; `npm test` passes; `curl` to a `.example` host gives `warn` with the destination in effectsOutside; `git status` and `$(echo x)` give `unsupported` with a fixed reason and no input echo; a stub executor that answers with the watchdog flag gives `unsupported`; the reality scene lists `app.db`, `build/`, `data/`, `package.json`, `README.md` and no hidden entry; the serialized record never contains the canary value of `.env`.
     - _Requirements: 5.1, 5.2, 5.6, 5.7, 5.8, 7.2, 7.3, 9.4, 12.2, 12.4_
 
-- [ ] 6. Ghost Cloud adapter
+- [x] 6. Ghost Cloud adapter
   - [x] 6.1 Write `live/cloud.ts` and `live/derive/cloud.ts`
     - `createCloudEngine({ wardsText })` as in design Component 4: `runGhostCloudPlan`, `failed: 'internal'` for the internal-error run, `unsupported` with the engine's reason, otherwise `derive/cloud.ts` builds the record (checks `never delete prod-*` whose text and ✓ or ✗ follow the `no-bucket-delete` verdict (protected bucket deleted, objects deleted in a protected bucket that stays, objects deleted outside `prod-*`, nothing deleted), buckets with their object keys after the run, a tag for a changed ACL or public-access block, facts `bucketsRemoved`, `objectsRemoved`, `removedBuckets`, and `objectsDeleted` and `objectsDeletedIn` only when a run empties a bucket that stays; see tasks 15.3 and 15.4).
     - Write `tests/unit/live-cloud.test.ts`: `delete prod-assets` blocks by `no-bucket-delete`; `delete tmp-build-cache` passes; `make it public` blocks by `no-public-bucket` with the extra chip and the tag; `aws s3 ls --endpoint-url http://s3.example` gives `warn`; `aws ec2 describe-instances` and a line with `;` give `unsupported` with the world's fixed reason and no echo; a 51-line input is not possible from the page, but the adapter keeps the engine's cut; the internal-error run (a world factory that throws) gives `failed`.
@@ -120,14 +120,14 @@ The plan follows this order:
     - In `tests/unit/live-reality.property.test.ts`: for any generated accepted visitor text (commands built from a grammar of the 15 Shell commands with fixture paths, and of the Cloud commands with fixture buckets, plus noise), each run reports `p1.equal`, and a world built fresh from the fixture after the sequence has the fingerprint of one built before it. The Hand form runs in task 7.1's gated test.
     - **Validates: Requirements 12.2, 12.3**
 
-- [ ] 7. Ghost Hand adapter
+- [x] 7. Ghost Hand adapter
   - [x] 7.1 Write `live/hand.ts` and `live/derive/hand.ts`
     - Move `scripts/lib/tile-label.ts` to `src/live/derive/tile-label.ts` and leave a re-export in `scripts/lib/tile-label.ts` (the existing tile-label tests keep passing). `createHandEngine({ createWorld, createExecutor, wardsText, variantConfigText, capabilities, scheduler })` as in design Component 5: build the plan with `buildHandPlan`, create the reference world and the executor, call `runGhostHand` (seed 42, 8 variants), dispose both in `finally`, map `GhostHandRunError` to `unsupported`, map a run over 30 s (injected scheduler) to `failed: 'timeout'`. `derive/hand.ts` builds the three `gentle-hands` rows (each ✗ exactly when the verdict has a violation of its kind, plus a fourth chip for a joint-limit or self-collision violation; task 15.3), the tiles with label, outcome, and joint-limit flag (structured field first, the sentence pattern as the fallback, failing when the verdict names a joint limit and neither finds an id), and the facts. Re-export `handCapabilities()`.
     - Write `tests/unit/live-hand.test.ts` with stub services (no MuJoCo): a thrown `GhostHandRunError` gives `unsupported`; the timeout gives `failed` and calls `dispose` on the executor and the world; a run that throws gives `failed` and still disposes; the derivation of a fixture variant list gives the expected rows and tiles.
     - Write `tests/record/live-hand.test.ts` (gated): the three Hand Presets and the fixed plan run through the real world and the inline executor; `fast pull` blocks with 7 of 8 and `p1.equal`; `slow pull, gentle grip` passes with 8 of 8; a sample of ten slider triples (seeded) all report `p1.equal` and a world built fresh afterwards has the fingerprint of one built before.
     - _Requirements: 5.3, 5.4, 5.6, 5.9, 7.2, 9.4, 12.2_
 
-- [ ] 8. The record script and the parity tests
+- [x] 8. The record script and the parity tests
   - [x] 8.1 Move the record script onto the adapters and re-record `runs.json`
     - Change `scripts/record-runs.measure.ts` to build the three engines through the adapters with in-process services, run every Preset and every Fixed_Plan, and write `runs.json` version 2 (design Component 14). Keep the refusals of the `site` design and add the named-Preset table (`DROP TABLE users`, `rm -rf ./data ./build`, `fast pull`, `delete prod-assets` block; the four Fixed_Plans pass). Remove the duplicate derivation code and the direct app imports (the adapters hold them).
     - Update `scripts/lib/print-json.mjs` only if the new shape needs it. Update the pure `validateRecords` function and `tests/unit/record-script.test.ts` or the existing record tests that name the old shape (`tests/unit/record-runs-args.test.ts`, `tests/unit/runs-printer.property.test.ts`).
@@ -142,7 +142,7 @@ The plan follows this order:
     - Add the case "a Preset with no entry in the committed file is compared with a fresh recording" with a fixture engine and a temporary file.
     - **Validates: Requirements 11.1, 11.3, 11.4, 11.5, 11.6**
 
-- [ ] 9. Walkthrough engine: outcomes, classification, narration
+- [x] 9. Walkthrough engine: outcomes, classification, narration
   - [x] 9.1 Change the engine types and the reducer
     - `engine/types.ts` and `engine/reducer.ts`: `candle: 'lit' | 'out' | 'flicker'`, `stamp` with `'ASK A HUMAN'`, `disabledSteps`, the Shell copy state with `tables` and `entries`, the Cloud bucket `tag` and its `objects: string[]` copy state, and the events they need (`candle`, `entry`, `table`, `bucketTag`, `bucketObjects`, `disable`). `initialState` reads the v2 reality scene.
     - Update `tests/unit/engine.test.ts` and the other tests that read the old state fields. Add reducer example tests for each new event and for immutability (the input state is not mutated).
@@ -230,7 +230,7 @@ The plan follows this order:
     - `tests/dom/live-no-network.test.tsx`: replace `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, and `navigator.sendBeacon` with recorders that accept a same-origin URL ending in `.js` or `.wasm` and throw otherwise; play every Preset and Fixed_Plan of all worlds with fake engines that also run `curl` to a `.example` host and a Cloud `--endpoint-url` plan; assert no throw, no foreign host, and no storage write. Extend `tests/unit/hygiene.test.ts` so that `site/src/live/` is scanned for network and storage APIs.
     - **Validates: Requirements 13.1, 13.2, 13.4**
 
-- [ ] 12. Wiring, build, and the Site_Check
+- [x] 12. Wiring, build, and the Site_Check
   - [x] 12.1 Write the wiring modules and check the build output
     - `live/engine-light.ts`: `createLightEngines()` with `createWatchdogExecutor({ spawn: createWorkerRunner })`, the wards texts through `?raw`, the Shell and Cloud engines, and `dispose`. `live/engine-hand.ts`: wiring only. `createHandEngine()` returns `createHandProxy({ spawn, scheduler })` with `spawn = () => new Worker(new URL('./hand-worker.ts', import.meta.url), { type: 'module' })`. The Hand run lives in `live/hand-worker.ts` (world, pipeline, capabilities, and the simulation-worker spawn through `createExecutor`), with `live/hand-proxy.ts` and `live/hand-protocol.ts` on the page side (task 15.1). Neither wiring module is imported statically by any other file.
     - Run `corepack pnpm --filter @ghost-run/site build` and confirm that `build/dist/assets/` holds `engine-light-*.js`, `engine-hand-*.js`, `hand-worker-*.js`, `sim-worker-*.js`, `worker-entry-*.js`, `mujoco-*.wasm`, and `sql-wasm-*.wasm` (no shared `common-*.js` chunk is emitted any more), and that the Entry_Bundle contains no static import of them. If a name differs, adjust the Vite output names (`chunkFileNames`) so that the Site_Check patterns of task 12.2 hold, and report it.
@@ -243,7 +243,7 @@ The plan follows this order:
     - Owner decision D6: `src/components/Footer.tsx` ends with the link "Third-party notices" (`href="./THIRD_PARTY_NOTICES.txt"`, class `foot-notice`, styled in `09-make-footer.css`); nothing else in the footer changes. The Site_Check requires the notice file and a link to it (an anchor in `index.html` or the string literal in the Entry_Bundle). `assets/common-*.js` is classified as an Engine_Bundle. `tests/dom/render.test.tsx` and `tests/unit/build-site.test.ts` cover the link and the copy.
     - _Requirements: 14.3, 14.4, 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.8, 18.3_
 
-- [ ] 13. Documentation
+- [x] 13. Documentation
   - [x] 13.1 Update the README and the measurements
     - `README.md`: add the one line to "Landing site" (Requirement 18, criterion 1), the one line to "Not written by Kiro" (Requirement 18, criterion 2), and the dependency rows of Requirement 1, criterion 6 with the versions and licenses read from the installed `package.json` files on the day. Keep the file free of hidden Unicode.
     - `docs/measurements.md`: append the section "Live walkthrough measurements" with the sizes read from `site/build/dist/assets/` (Entry_Bundle, the two engine chunks, the two workers, the two wasm files), the list of the additions of Requirement 2, criterion 7, the contrast changes of task 11.1, the durations of the Shell and Cloud parity tests and of the gated Hand parity test, and the line "browser load times: measured by the owner's agent in Chrome" marked not yet measured. Do not edit `docs/devlog.md`.
