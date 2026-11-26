@@ -806,3 +806,20 @@ The same judge prompt ran on a clean clone of `f1d6a7d`: OpenAI Codex 8.0 (was 7
 - After the third review, the video grew from 2:20 to 2:52. New scenes: the seance page of a block and the one-command installer, the starter world's "change one rule" step, and both apps in use (Ghost Shell: the `DROP TABLE` block, the fixed plan, and the blacklight on the README; Ghost Hand: the eight ghost arms, "2 of 8 ghosts failed" with the reasons, the gentler plan, and the reference arm moving once). The skeleton scene was re-recorded from the live site, so its chip now reads "Built from 6 of our 14 Kiro specs", and the end card shows the run above.
 - The seance page and the installer were filmed in a throwaway demo project outside this repository; the repository's own graveyard holds real local paths, so it was not filmed.
 
+
+## 2026-11-27 (Fri)
+
+### Fourth review and what it changed (owner's request)
+
+The same judge prompt ran on a clean clone of `7880d23` with the v11 video and the live Devpost text: OpenAI Codex 7.9, Google Antigravity 7.8, and Anthropic Claude Code 7.8 (round three: 8.0, 8.0, 7.6). None repeated a round-three finding. The new points were consistency and polish, and Claude Code checked each one in the repository first.
+
+- **Fixed by Kiro** (9.58 credits): the Ghost Hand counts now agree everywhere (re-measured with seed 42: 2 of 8 ghosts fail, one misses the drawer target and one exceeds a joint limit; only the first has `success: false`); the quick start cites the current full run; the Ghost Shell README's build commands work in a fresh clone; the hook lists name `docker-warmup`; the Ghost Cloud README says what was not measured in a browser; the hook-file tests read the committed files, so `corepack pnpm test` passes after `gate:on`; and `.kiro/settings/mcp.json` registers this repository's `ghost-run` MCP server, shipped disabled like the hooks.
+- **Done by Claude Code**: the GitHub description, homepage and topics; the Devpost wording (the disclosure's README section name, several pipes for trusted commands, how commits are grouped, the skipped tests, the MCP settings); gallery image 1 now shows the real Kiro block and both apps, and image 4 shows the 3D arm next to the result.
+- **Finding that was wrong**: "possession is a report-only scanner". The possession scenario is blocked by the `no-secret-egress` ward; the blacklight explains where the instruction came from.
+- **Reference full run**: Check A at `dad96ee`: 4,839 passed, 11 skipped, none failed, 13 packages (941 s test step).
+
+### Demo video v12 (Claude Code, not in this repository)
+
+- The video opens cold on the real Kiro block ("DROP TABLE users", 1,206 users gone in the copy) instead of a dim screenshot, keeps the seance page and the installer on screen 3 s longer, and ends with the run above. Length 2:55. Every frame was checked by OCR for personal data.
+- Uploaded as a new public video, https://youtu.be/mH8x6jzWuIQ (the earlier two stay up). The README, the quick start, Devpost (story, Kiro answer, disclosure, testing steps, video link, gallery images 1 and 4, thumbnail) point to it and to the run at `dad96ee`.
+- Kiro credits this round: 10.43 (9.58 for the fixes, 0.85 for the README numbers and link).
