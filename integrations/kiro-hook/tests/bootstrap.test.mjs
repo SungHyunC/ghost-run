@@ -75,7 +75,7 @@ function runGate(pkg, stdin, env = {}, cwd = pkg) {
     delete clean['GHOST_RUN_SEANCE_BASE'];
     const child = spawn(process.execPath, [join(pkg, 'ghost-gate.mjs')], {
       cwd,
-      env: { ...clean, ...env },
+      env: { ...clean, GHOST_RUN_SEANCE_AUTOSTART: '0', ...env },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     let stdout = '';

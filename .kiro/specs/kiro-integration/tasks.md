@@ -786,6 +786,10 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - `lib/seance/render.mjs`: the badge is "out" for a `block` ward verdict and "flickering" otherwise; a grave with a `pass` ward verdict gets a "Gate rule" note with the entry's notices; the verdict section is labelled "Ward verdict". No change to the entry the gate writes. Tests in `tests/seance.test.mjs`; "Seance link" in `integrations/kiro-hook/README.md` gains the Host check line.
     - _Requirements: 26.11, 26.12_
 
+  - [x] 24.8 Tests leave no seance viewer behind
+    - `vitest.config.ts` sets `test.env.GHOST_RUN_SEANCE_AUTOSTART=0`; `tests/bootstrap.test.mjs` and `tests/gate-docker.test.mjs` also set it in the `env` of the gate child process; `tests/seance.test.mjs` keeps injecting the probe and the spawn. New globalSetup `tests/global-seance.mjs` fails the run when a viewer answers on 127.0.0.1:5317 that did not before the run, or when a `kiro-hook/seance.mjs` process with a temp-folder `--root` is running (the health answer has no root, so the process list tells the two apart).
+    - _Requirements: 26.7, 26.9_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.

@@ -77,7 +77,8 @@ async function cleanupAll() {
  */
 function runGate(gateFile, cwd, command, o = {}) {
   return new Promise((resolve, reject) => {
-    const env = { ...process.env };
+    /** @type {NodeJS.ProcessEnv} */
+    const env = { ...process.env, GHOST_RUN_SEANCE_AUTOSTART: '0' };
     delete env['GHOST_RUN_WARDS_FILE'];
     delete env['GHOST_RUN_SEANCE_BASE'];
     const t0 = Date.now();

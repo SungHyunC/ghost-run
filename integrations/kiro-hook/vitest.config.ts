@@ -15,7 +15,10 @@ export default defineConfig({
   },
   test: {
     include: ['tests/**/*.test.mjs'],
-    globalSetup: ['tests/global-box-lock.mjs', 'tests/global-hygiene.mjs'],
+    globalSetup: ['tests/global-box-lock.mjs', 'tests/global-hygiene.mjs', 'tests/global-seance.mjs'],
+    // Tests never auto-start a real seance viewer (it would outlive the run and hold port 5317).
+    // tests/seance.test.mjs injects the probe and the spawn to cover the auto-start itself.
+    env: { GHOST_RUN_SEANCE_AUTOSTART: '0' },
     testTimeout: 60_000,
     passWithNoTests: true,
   },
