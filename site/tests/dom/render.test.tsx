@@ -82,7 +82,7 @@ describe('Hero', () => {
 
   it('has the two buttons with their targets', () => {
     const { container } = render(<App />);
-    const links = [...container.querySelectorAll('.hero .cta a')];
+    const links = [...container.querySelectorAll('.hero .cta:not(.cta-apps) a')];
     expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
       ['Meet the skeleton', '#recipe'],
       ['Watch the ghost work', '#run'],

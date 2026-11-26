@@ -109,6 +109,7 @@ This spec covers these parts:
 6. THE wrapper element of the page content in `App.tsx` that has the class `page` today SHALL be renamed so that the class `page` of Mockup_V6 is used only by the Book_Pages (Difference D1).
 7. THE content of each Book_Page SHALL be the content of its section today, apart from the Copy_Deck (Requirement 11) and Requirement 9. THE hero SHALL stay in the Book_Page `cover` with its art. THE footer SHALL be the last element of the Book_Page `make`.
 8. THE nav SHALL stay above the Book_Pages on every page. THE nav link "Home" SHALL open the Book_Page `cover` (Requirement 7, criterion 5). THE nav links SHALL be Home, UI Kit, and GitHub, in that order. THE apps SHALL be reached from the costume cards ("Open Ghost Shell →" and "Open Ghost Hand →").
+9. THE cover SHALL show, below its two buttons, one row with two plain anchors: "Ghost Shell" (App 1, "shell and SQL") to `shell/` and "Ghost Hand" (App 2, "a robot arm") to `hand/`. THE text SHALL live in `COVER` in `data/copy.ts`. THE links SHALL use the existing `.btn.small` style (lighter than the two main buttons), SHALL show the focus ring, SHALL wrap without horizontal overflow at 390 px, and SHALL add no motion. THE nav SHALL still have no app links (criterion 8).
 
 ### Requirement 4: The Page Bar
 

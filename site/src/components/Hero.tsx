@@ -23,6 +23,15 @@ export function Hero() {
             {COVER.secondaryButton.text}
           </a>
         </div>
+        <div className="cta cta-apps">
+          {COVER.appLinks.map((app) => (
+            <a key={app.href} className="btn small" href={app.href}>
+              <span className="app-tag">{app.tag}</span>
+              <b>{app.name}</b>
+              <span className="app-label">{app.label}</span>
+            </a>
+          ))}
+        </div>
       </div>
       <HeroArt />
       <Hill />

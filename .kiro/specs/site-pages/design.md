@@ -308,7 +308,7 @@ No section reads the address hash (Requirement 9, criterion 9).
 |---|---|
 | `data/copy.ts` (new) | `COVER` (kicker, heading parts, text parts, button labels and hrefs), `RECIPE_HEADS` (heading, sub-heading, block titles and sub-lines, sticker pattern, chip text and its `title` list, result card), `COSTUMES_HEADS` (heading, sub-heading, legend), `RUN_HEADS` (heading, sub-heading), `MAKE_HEADS` (heading, sub-heading, spellbook title, agent card texts, command) |
 | `data/skeleton.ts` | the eight skeleton parts keep a name and one line and lose `folder`; the cost cards keep name, tag, world line, Kiro line, button, and lose `folder`, `usedTitle`, and the prefixes "Costume: " and "World: " |
-| `Hero.tsx` | texts from `COVER`; `h1` gets `tabIndex={-1}`; the two buttons keep `href="#recipe"` and `href="#run"` |
+| `Hero.tsx` | texts from `COVER`; `h1` gets `tabIndex={-1}`; the two buttons keep `href="#recipe"` and `href="#run"`; a second `.cta.cta-apps` row below them holds two `.btn.small` anchors from `COVER.appLinks` (`shell/`, `hand/`) |
 | `Recipe.tsx` | the three blocks and the bottom chip from `RECIPE_HEADS`; the chip is the only element of the bottom row; the sticker N comes from `world-size.json` through `roundLines`, as today |
 | `Costumes.tsx` | heading and sub-heading from the deck; the legend replaces the old note; each card renders name, tag, world line, chips, Kiro line, button in that order; the sr-only " not used" stays |
 | `Walkthrough.tsx` | sub-heading "Give the ghost a plan. It tries it on a copy first."; props `visibility`; `Theater active` |

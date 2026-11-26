@@ -10,6 +10,10 @@ export const COVER = {
   textBold: 'One skeleton, three costumes.',
   primaryButton: { text: 'Meet the skeleton', href: '#recipe' },
   secondaryButton: { text: 'Watch the ghost work', href: '#run' },
+  appLinks: [
+    { tag: 'App 1', name: 'Ghost Shell', label: 'shell and SQL', href: 'shell/' },
+    { tag: 'App 2', name: 'Ghost Hand', label: 'a robot arm', href: 'hand/' },
+  ],
 } as const;
 
 /** The sticker text has the token {lines}; the page fills it from the world-size data. */

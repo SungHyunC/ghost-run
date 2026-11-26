@@ -332,6 +332,10 @@ The plan follows this order:
   - `components/Nav.tsx` drops "Ghost Shell" and "Ghost Hand"; the nav keeps Home, UI Kit, and GitHub. The costume cards keep the app links. Update `data/kit-links.json`, the nav tests, and the spec lines that list the nav links. Run the gates.
   - _Requirements: 4.8, 13.3_
 
+- [x] 15. Put both apps on the cover
+  - `COVER.appLinks` in `data/copy.ts` and a second `.cta-apps` row in `components/Hero.tsx`: "Ghost Shell" (`shell/`) and "Ghost Hand" (`hand/`) as `.btn.small` anchors below the two main buttons. The nav stays as in task 14. Test: `tests/dom/cover-apps.test.tsx`. Run the gates.
+  - _Requirements: 3.9_
+
 ## Notes
 
 - Every task is required. No task is marked optional.
@@ -375,7 +379,8 @@ The plan follows this order:
     { "id": 21, "tasks": ["13.1", "13.2", "13.3", "13.4", "13.5"] },
     { "id": 22, "tasks": ["13.6", "13.7"] },
     { "id": 23, "tasks": ["13.8"] },
-    { "id": 24, "tasks": ["14"] }
+    { "id": 24, "tasks": ["14"] },
+    { "id": 25, "tasks": ["15"] }
   ]
 }
 ```

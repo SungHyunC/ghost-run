@@ -8,6 +8,10 @@
 .hero p{margin:0 0 16px;color:var(--dim);font-size:15.5px;max-width:34ch}
 .hero p b{color:var(--bone)}
 .cta{display:flex;flex-wrap:wrap;gap:8px}
+.cta-apps{margin-top:12px}
+.cta-apps .btn{gap:7px;line-height:1.2}
+.cta-apps .app-tag{font-size:11px;font-weight:600;color:var(--ink);background:var(--pump2);padding:2px 7px;border-radius:999px}
+.cta-apps .app-label{color:var(--dim);font-weight:500}
 .hero-art{position:relative;min-height:260px}
 .moon{position:absolute;right:6%;top:-4px;width:120px;height:120px;filter:drop-shadow(0 0 26px rgba(255,236,170,.55))}
 .bat{position:absolute;width:46px;height:23px}
