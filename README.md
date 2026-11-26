@@ -317,6 +317,14 @@ The default file is `apps/ghost-shell/wards.yaml`. It holds three wards: `protec
 
 The file also has a top-level `safe_commands` list: `ls`, `pwd`, `cat`, `git status`, `git diff`. `wards-config` parses, validates, and prints the list for the `ghost-gate` hook. The matching rules for these commands are owned by the kiro-integration spec, not by the wards spec. The list is not a ward and does not change any verdict computed by the engine.
 
+### Trusted commands
+
+The file can also have a top-level `trusted_commands` list of command patterns, for example `corepack pnpm test` or `corepack pnpm --filter * test`. In a pattern, `*` matches exactly one word and a final `**` matches zero or more remaining words. A wildcard never matches a word that starts with `-`, so options must be written literally in the pattern (for example `npx tsc --noEmit -p *`) and `npx vitest run **` does not match `npx vitest run --config=x`. Entries are validated like `safe_commands` entries (at most 256 entries of at most 256 characters, no shell operators, no empty entry, errors reported as `unsafe-command-entry`), with `*` allowed as a whole word. `wards-config` parses, validates, and prints the list (`parseWards` returns `trustedCommands`, `printWards` takes `options.trustedCommands`).
+
+The `ghost-gate` hook lets a shell call through without a rehearsal when the whole line is an optional `cd <dir> &&` inside the workspace, one command that matches a pattern, and optional `2>&1`, `/dev/null` redirects, and pipes into `cat`, `head`, `tail`, or `wc` without a path argument. Any other operator or construct (`;`, `||`, a second `&&`, backticks, `$`, redirects to files, input, environment assignments, subshells) makes the call untrusted and it is rehearsed. Shells, `node -e` style interpreters, `sudo`, `curl`, `wget`, `ssh`, `scp`, `eval`, and the approval command are never trusted. Listing a pattern means "I trust what this command runs": the gate checks the shape of the line and not the effect of the command. The exact rules are in `integrations/kiro-hook/README.md`, section "Trusted commands". The root `wards.yaml` of this repository lists the routine `corepack pnpm` checks.
+
+**Trade-off.** A trusted command runs whatever the project's scripts, tests, and config files contain. An agent that edits `package.json`, a test file, or a config file changes what the trusted command runs, and that run is not rehearsed. Keep the list to commands whose inputs you review; list nothing that installs, deploys, or uses the network. This repository trusts its own test, lint, typecheck, and build commands to cut the asks measured on 2026-11-25 and 2026-11-26.
+
 ### Claims
 
 | Property | Claimed where | Not claimed |

@@ -478,6 +478,34 @@ Auto-start: `decide` takes an optional `deps.onGrave` that it calls after a Grav
 
 Limit: one port serves one workspace. A second workspace whose gate finds a viewer on the port starts nothing, and its link shows the first workspace's graveyard (404 for its ids). Use `GHOST_RUN_SEANCE_BASE` with another port per workspace.
 
+### Trusted commands (`gate/trusted.mjs`, `gate/shell-judgment.mjs`, Requirement 27)
+
+```js
+export function matchesPattern(pattern, words) {}   // -> boolean
+export function isNeverTrusted(words) {}            // -> boolean
+export function classifyTrusted(line, { patterns, grammar, secretMatcher }) {}  // -> { trusted: false } | { trusted: true, dir? }
+export async function trustedDirInside(root, cwd, dir) {}  // shell-judgment.mjs, -> boolean
+```
+
+`classifyTrusted` is pure and total (it catches every exception and returns `{ trusted: false }`). Steps, each returning `not trusted` at the first failure:
+
+1. Reject an empty line, a line over 4,096 code points, a line with no patterns, a line with a hidden or control character, and the approval command.
+2. Split the line at the unquoted `&&` and `|` operators with a hand-written scanner that follows the quote rules of the Safe_List tokenizer. The characters `;`, `$`, a backtick, `\`, `(`, `)`, `{`, `}`, `!`, `#`, and `<` reject the line anywhere, quoted or not. `&`, `|`, and `>` are rejected inside quotes. Outside quotes, `&` is accepted only as part of `2>&1` or `&>` or as `&&`, `||` and `|&` are rejected, and a lone `&` is rejected.
+3. When the second segment follows an `&&`, the first segment must be exactly `cd <dir>` with a `<dir>` that does not begin with `-`; `dir` is returned literally. A second `&&` is not accepted.
+4. The command segment is tokenized; a glob word, an empty word, or a word beginning with `~` or `#` rejects it. Words up to the first redirect are the command words; every later word must be `2>&1`, a one-word redirect to `/dev/null`, or a redirect operator followed by `/dev/null`. An environment assignment as the first word rejects the line.
+5. `isNeverTrusted` rejects shells, `sudo`, network clients, `eval`, and wrappers by lower-case base name, and an interpreter with a code option (long options `--eval`, `--print`, `--command`, `--exec`, `--require`, `--import`, `--call`, a short cluster with one of `c e E p r x`, `deno eval`).
+6. `matchesPattern` against each pattern (below).
+7. A command word that names a secret path (normalized and raw) rejects the line.
+8. Every further segment must be a pipe into `cat`, `head`, `tail`, or `wc` that `classifySafe` accepts and that has options only (`head -20` and `tail -20` are rewritten to `-n 20` first).
+
+**Pattern language.** A pattern is words separated by one space. `*` matches exactly one word. A final `**` matches zero or more remaining words. Any other word matches itself. A wildcard never matches a word that starts with `-`, so `--config=x`, `-c`, `--`, and `-` can only be matched by the same literal word in the pattern; this keeps `npx vitest run **` from accepting `npx vitest run --config=evil.config.ts`. The values of an option are ordinary words: `npx tsc --noEmit -p *` matches `npx tsc --noEmit -p tsconfig.json` and not `npx tsc --noEmit -p --evil`.
+
+**The directory check.** `trustedDirInside(root, cwd, dir)` resolves the real path (`realpathNearest`, so a missing tail is allowed) of the workspace root, of the effective cwd (`tool_input.cwd` or the root), and of the `cd` target (relative to that cwd), and requires each to be the root or below it. The gate treats a rejection as `not trusted`.
+
+**Gate order in `decide`.** Approval-command check, Safe_List, then the trusted check; a trusted line returns `allowSilent` after the `trusted` Stats_Event, with no semaphore, no `runPlan`, no Run_Record, and no Grave_Entry. Write tools never reach this branch. `loadWardsForHook` copies `trustedCommands` from the parse result (`[]` when absent). `STATS_KINDS` gains `trusted`, and `summarizeStats` and `formatStatsTable` count it as `commandsTrusted` ("Commands trusted").
+
+**Trade-off.** The gate checks the shape of the line and not what the command does. A trusted `corepack pnpm test` runs the project's scripts, tests, and config files, so an agent that edits those files changes what runs without a rehearsal. The wildcard rule removes the option route (`--config`, `-c`), not this one. The README says so and recommends listing only commands whose inputs the team reviews.
+
 ### contract-pbt (`contract-pbt.mjs`, Requirement 15)
 
 ```js
@@ -707,6 +735,7 @@ P1 to P8 scopes follow the world-contract steering. A component asserts a proper
 | ghost-gate, shell, Docker box | P1 per run when `isolation.p1Claimed` (the gate reports the flag and never raises it). P5 per run when `p5Claimed`. P6 within one tool call when `p6Claimed`. | P2 (Repo_World is `deterministic: false`). P6 across tool calls. A `pass` as approval. |
 | ghost-gate, shell, Plan B | Nothing. The message says P1 isolation is not guaranteed and P5 and P6 are not guaranteed. Verdict at least `warn`. | P1, P5, P6 |
 | ghost-gate, Safe_Command | Nothing (not rehearsed). | P1, P5, P6 |
+| ghost-gate, Trusted_Command | Nothing (not rehearsed; the line shape is checked, the effect is not). | P1, P5, P6, that the project's scripts and config files are unchanged |
 | ghost-gate, write tools | P5 for the declared target path as resolved at judgment time. | P1 (no ghost), P6, protection of other files a code-edit touches, time-of-check to time-of-use changes |
 | ghost-gate, MCP and web tools | Nothing (outside the matchers). | everything |
 | ghost-log | Records only what the hook receives. | P6 across calls; any verdict effect |
@@ -866,6 +895,12 @@ For all values of `workspace` that resolve (by real path, through links, trailin
 
 **Validates: Requirements 18.15, 18.16, 18.18**
 
+### Property 24: A wildcard never matches an option
+
+For all prefixes of plain words and all words that start with `-`, a pattern that ends in `*` does not match the prefix followed by that word, a pattern that ends in `* **` does not match it with any rest, a pattern that ends in `**` does not match a word list that holds that word at any position after the prefix, and a pattern that spells the word literally does match it. Examples: `npx vitest run **` does not match `npx vitest run --config=x`, `-c x`, `--`, or `-`.
+
+**Validates: Requirements 27.3, 27.12**
+
 ---
 
 ## Error Handling
@@ -972,6 +1007,7 @@ Unit tests stay few because the properties cover input space; unit tests pin fix
 | 23 Tests | Testing Strategy, Correctness Properties | all |
 | 24 Probe | Probe hook | probe-disabled test, measurements table |
 | 25 Docker wake retry and warm-up | Docker wake retry and warm-up, Hook file format | `gate-wake`, `docker-warmup`, `worlds-config` tests |
+| 27 Trusted commands | Trusted commands, Decision and output | 24, `trusted-commands`, `gate-trusted`, `wards-file`, `store-records` tests |
 
 ---
 

@@ -28,7 +28,7 @@ export function resolveWardsFile(root, env, exists = existsSync) {
 }
 
 /**
- * @typedef {{ ok: true, wardSet: import('@ghost-run/core').WardSet, safeCommands: string[], file: string }
+ * @typedef {{ ok: true, wardSet: import('@ghost-run/core').WardSet, safeCommands: string[], trustedCommands?: string[], file: string }
  *   | { ok: false, errors: string[] }} WardsLoad
  */
 
@@ -54,5 +54,6 @@ export async function loadWardsForHook(root, env, loader = loadWardsFile) {
     return { ok: false, errors: errors.length > 0 ? errors : ['wards file is not valid'] };
   }
   const safeCommands = Array.isArray(result.safeCommands) ? [...result.safeCommands] : [];
-  return { ok: true, wardSet: result.wardSet, safeCommands, file };
+  const trustedCommands = Array.isArray(result.trustedCommands) ? [...result.trustedCommands] : [];
+  return { ok: true, wardSet: result.wardSet, safeCommands, trustedCommands, file };
 }

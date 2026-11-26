@@ -3,6 +3,7 @@ import type { Ward, WardSet } from '@ghost-run/core';
 /** Optional extras for {@link printWards}. */
 export interface PrintOptions {
   readonly safeCommands?: readonly string[];
+  readonly trustedCommands?: readonly string[];
 }
 
 const PLAIN = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
@@ -78,7 +79,8 @@ function printWard(w: Ward): string[] {
 /**
  * Prints a WardSet as canonical wards.yaml text. Pure: writes no file and
  * does not preserve comments. A non-empty `safeCommands` list is appended as
- * one top-level `safe_commands` flow sequence; an absent or empty list omits it.
+ * one top-level `safe_commands` flow sequence, and a non-empty `trustedCommands` list as one top-level
+ * `trusted_commands` flow sequence after it; an absent or empty list omits its key.
  */
 export function printWards(wardSet: WardSet, options?: PrintOptions): string {
   const lines: string[] = [];
@@ -89,5 +91,7 @@ export function printWards(wardSet: WardSet, options?: PrintOptions): string {
   }
   const sc = options?.safeCommands;
   if (sc !== undefined && sc.length > 0) lines.push(`safe_commands: ${printList(sc)}`);
+  const tc = options?.trustedCommands;
+  if (tc !== undefined && tc.length > 0) lines.push(`trusted_commands: ${printList(tc)}`);
   return `${lines.join('\n')}\n`;
 }

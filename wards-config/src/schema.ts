@@ -21,11 +21,14 @@ export const MAX_WARDS = 256;
 export const MAX_LIST_ENTRIES = 1000;
 export const MAX_SAFE_COMMANDS = 256;
 export const MAX_SAFE_COMMAND_LENGTH = 256;
+export const MAX_TRUSTED_COMMANDS = 256;
+export const MAX_TRUSTED_COMMAND_LENGTH = 256;
 
 const ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const TABLE_RE = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
 const SAFE_COMMAND_RE = /^[A-Za-z0-9_./:=@%+,-]+( [A-Za-z0-9_./:=@%+,-]+)*$/;
 const SAFE_COMMAND_CHARSET_RE = /^[A-Za-z0-9_./:=@%+, -]*$/;
+const TRUSTED_TOKEN_RE = /^[A-Za-z0-9_./:=@%+,*-]+$/;
 const KINDS = ['path', 'sql', 'egress', 'physics'] as const;
 type Kind = (typeof KINDS)[number];
 
@@ -450,15 +453,59 @@ function validateWard(
   return built as unknown as Ward;
 }
 
-function validateSafeCommands(ctx: SchemaContext, value: Node | null): string[] | undefined {
-  const field = 'safe_commands';
+interface CommandListSpec {
+  readonly field: 'safe_commands' | 'trusted_commands';
+  readonly max: number;
+  readonly maxLength: number;
+  /** Returns the `detail` of an unsafe entry, or undefined when the entry is fine. */
+  readonly unsafeDetail: (s: string) => string | undefined;
+}
+
+function safeCommandDetail(s: string): string | undefined {
+  if (SAFE_COMMAND_RE.test(s)) return undefined;
+  return SAFE_COMMAND_CHARSET_RE.test(s) ? 'spacing' : 'charset';
+}
+
+/**
+ * A trusted command pattern: words over the safe charset plus `*`, one space between words.
+ * A word is `*` (exactly one word), a literal without `*`, or `**` as the last word only.
+ */
+function trustedPatternDetail(s: string): string | undefined {
+  if (s.startsWith(' ') || s.endsWith(' ') || s.includes('  ')) return 'spacing';
+  const words = s.split(' ');
+  for (const w of words) if (!TRUSTED_TOKEN_RE.test(w)) return 'charset';
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i] as string;
+    if (w === '*') continue;
+    if (w === '**' && i === words.length - 1) continue;
+    if (w.includes('*')) return 'wildcard';
+  }
+  return undefined;
+}
+
+const SAFE_SPEC: CommandListSpec = {
+  field: 'safe_commands',
+  max: MAX_SAFE_COMMANDS,
+  maxLength: MAX_SAFE_COMMAND_LENGTH,
+  unsafeDetail: safeCommandDetail,
+};
+
+const TRUSTED_SPEC: CommandListSpec = {
+  field: 'trusted_commands',
+  max: MAX_TRUSTED_COMMANDS,
+  maxLength: MAX_TRUSTED_COMMAND_LENGTH,
+  unsafeDetail: trustedPatternDetail,
+};
+
+function validateCommandList(ctx: SchemaContext, value: Node | null, spec: CommandListSpec): string[] | undefined {
+  const field = spec.field;
   if (!isSeq(value)) {
     pushError(ctx, 'wrong-type', value, `field "${field}" must be a list`, { field });
     return undefined;
   }
   const errorsBefore = ctx.errors.length;
-  if (value.items.length > MAX_SAFE_COMMANDS) {
-    pushError(ctx, 'out-of-range', value, `field "${field}" must have at most ${MAX_SAFE_COMMANDS} entries`, { field });
+  if (value.items.length > spec.max) {
+    pushError(ctx, 'out-of-range', value, `field "${field}" must have at most ${spec.max} entries`, { field });
   }
   const out: string[] = [];
   const seen = new Map<string, number>();
@@ -474,12 +521,12 @@ function validateSafeCommands(ctx: SchemaContext, value: Node | null): string[] 
       pushError(ctx, 'invalid-character', item, `field "${f}" contains a control or hidden character`, { field: f });
       return;
     }
-    if (s.length === 0 || s.length > MAX_SAFE_COMMAND_LENGTH) {
-      pushError(ctx, 'out-of-range', item, `field "${f}" must have 1 to ${MAX_SAFE_COMMAND_LENGTH} characters`, { field: f });
+    if (s.length === 0 || s.length > spec.maxLength) {
+      pushError(ctx, 'out-of-range', item, `field "${f}" must have 1 to ${spec.maxLength} characters`, { field: f });
       return;
     }
-    if (!SAFE_COMMAND_RE.test(s)) {
-      const detail = SAFE_COMMAND_CHARSET_RE.test(s) ? 'spacing' : 'charset';
+    const detail = spec.unsafeDetail(s);
+    if (detail !== undefined) {
       pushError(ctx, 'unsafe-command-entry', item, `field "${f}" is not a safe command entry (${detail})`, {
         field: f,
         detail,
@@ -492,6 +539,15 @@ function validateSafeCommands(ctx: SchemaContext, value: Node | null): string[] 
       return;
     }
     seen.set(s, lineOf(ctx, item));
+    if (spec.field === 'trusted_commands' && s.startsWith('*')) {
+      const { line, column } = posOf(ctx.lc, item);
+      ctx.warnings.push({
+        code: 'catch-all-pattern',
+        message: `field "${f}" starts with a wildcard and trusts any command name`,
+        line,
+        column,
+      });
+    }
     out.push(s);
   });
   return ctx.errors.length > errorsBefore ? undefined : out;
@@ -504,7 +560,7 @@ function validateSafeCommands(ctx: SchemaContext, value: Node | null): string[] 
 export function validateRoot(
   ctx: SchemaContext,
   root: Node | null,
-): { wardSet: WardSet; safeCommands: string[] } | undefined {
+): { wardSet: WardSet; safeCommands: string[]; trustedCommands: string[] } | undefined {
   if (!isMap(root)) {
     pushError(ctx, 'root-not-mapping', root, 'the document root must be a mapping');
     return undefined;
@@ -513,6 +569,8 @@ export function validateRoot(
   let wardsValue: Node | null | undefined;
   let safeValue: Node | null | undefined;
   let hasSafe = false;
+  let trustedValue: Node | null | undefined;
+  let hasTrusted = false;
   const seenRoot = new Set<string>();
   for (const p of root.items) {
     if (!isScalar(p.key)) {
@@ -526,6 +584,9 @@ export function validateRoot(
     else if (name === 'safe_commands') {
       hasSafe = true;
       safeValue = p.value as Node | null;
+    } else if (name === 'trusted_commands') {
+      hasTrusted = true;
+      trustedValue = p.value as Node | null;
     } else {
       pushError(ctx, 'unknown-root-field', p.key, `unknown root field "${shown(name)}"`, {
         field: shown(name),
@@ -558,9 +619,14 @@ export function validateRoot(
 
   let safeCommands: string[] = [];
   if (hasSafe) {
-    const s = validateSafeCommands(ctx, safeValue ?? null);
+    const s = validateCommandList(ctx, safeValue ?? null, SAFE_SPEC);
     if (s) safeCommands = s;
   }
+  let trustedCommands: string[] = [];
+  if (hasTrusted) {
+    const t = validateCommandList(ctx, trustedValue ?? null, TRUSTED_SPEC);
+    if (t) trustedCommands = t;
+  }
   if (ctx.errors.length > errorsBefore) return undefined;
-  return { wardSet: { wards }, safeCommands };
+  return { wardSet: { wards }, safeCommands, trustedCommands };
 }

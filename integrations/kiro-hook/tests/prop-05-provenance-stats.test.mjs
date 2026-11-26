@@ -45,7 +45,7 @@ const recordArb = fc.record({
   content: cpString,
 });
 
-const KEYS = ['commandsSeen', 'commandsGhosted', 'commandsBlocked', 'commandsWarned', 'commandsSafeSkipped', 'commandsExecuted'];
+const KEYS = ['commandsSeen', 'commandsGhosted', 'commandsBlocked', 'commandsWarned', 'commandsSafeSkipped', 'commandsTrusted', 'commandsExecuted'];
 /** @type {Record<string, string>} */
 const KIND_TO_KEY = {
   seen: 'commandsSeen',
@@ -53,6 +53,7 @@ const KIND_TO_KEY = {
   blocked: 'commandsBlocked',
   warned: 'commandsWarned',
   'safe-skip': 'commandsSafeSkipped',
+  trusted: 'commandsTrusted',
   executed: 'commandsExecuted',
 };
 

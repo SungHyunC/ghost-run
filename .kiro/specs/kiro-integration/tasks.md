@@ -790,6 +790,23 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - `vitest.config.ts` sets `test.env.GHOST_RUN_SEANCE_AUTOSTART=0`; `tests/bootstrap.test.mjs` and `tests/gate-docker.test.mjs` also set it in the `env` of the gate child process; `tests/seance.test.mjs` keeps injecting the probe and the spawn. New globalSetup `tests/global-seance.mjs` fails the run when a viewer answers on 127.0.0.1:5317 that did not before the run, or when a `kiro-hook/seance.mjs` process with a temp-folder `--root` is running (the health answer has no root, so the process list tells the two apart).
     - _Requirements: 26.7, 26.9_
 
+- [x] 25. Trusted commands 2026-11-26
+  - [x] 25.1 Classifier and pattern language
+    - `integrations/kiro-hook/lib/gate/trusted.mjs`: `classifyTrusted`, `matchesPattern` (a wildcard never matches a word that starts with `-`), `isNeverTrusted` (shells, `sudo`, network clients, `eval`, wrappers, interpreters with code options).
+    - _Requirements: 27.2, 27.3, 27.4, 27.5, 27.6, 27.7_
+
+  - [x] 25.2 Gate wiring, `cd` check, stats
+    - `decide.mjs` runs the trusted check after the Safe_List and before the ghost; `trustedDirInside` in `shell-judgment.mjs` compares real paths; `wards-file.mjs` passes `trustedCommands`; `store/stats.mjs` gains the `trusted` kind and `commandsTrusted`. A trusted line writes no grave and no Run_Record.
+    - _Requirements: 27.1, 27.8, 27.9, 27.10_
+
+  - [x] 25.3 Tests
+    - `tests/trusted-commands.test.mjs` (shapes, constructs, never-trusted commands, patterns, the no-option property, `cd` real-path cases), `tests/gate-trusted.test.mjs`, and updates to `wards-file`, `store-records`, and `prop-05-provenance-stats` tests.
+    - _Requirements: 27.12_
+
+  - [x] 25.4 Docs
+    - "Trusted commands" in `integrations/kiro-hook/README.md` and in the root README, with the trade-off and the measured reason (asks measured on 2026-11-25 and 2026-11-26).
+    - _Requirements: 27.11_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.

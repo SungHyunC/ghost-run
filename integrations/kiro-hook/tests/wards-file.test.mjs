@@ -22,7 +22,13 @@ describe('loadWardsForHook', () => {
     const r = await loadWardsForHook('/proj', { GHOST_RUN_WARDS_FILE: '/f' }, async () => ({
       ok: true, wardSet, safeCommands: ['make'], warnings: [],
     }));
-    expect(r).toEqual({ ok: true, wardSet, safeCommands: ['make'], file: '/f' });
+    expect(r).toEqual({ ok: true, wardSet, safeCommands: ['make'], trustedCommands: [], file: '/f' });
+  });
+  it('returns trustedCommands when present', async () => {
+    const r = await loadWardsForHook('/proj', { GHOST_RUN_WARDS_FILE: '/f' }, async () => ({
+      ok: true, wardSet, safeCommands: [], trustedCommands: ['make test'], warnings: [],
+    }));
+    expect(r.ok && r.trustedCommands).toEqual(['make test']);
   });
   it('defaults safeCommands to []', async () => {
     const r = await loadWardsForHook('/proj', { GHOST_RUN_WARDS_FILE: '/f' }, async () => ({

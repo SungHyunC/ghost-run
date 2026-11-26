@@ -41,6 +41,7 @@ describe('stats', () => {
       statsLine('blocked', at),
       statsLine('warned', at),
       statsLine('safe-skip', at),
+      statsLine('trusted', at),
       statsLine('executed', at),
       statsLine('passed', at),
       statsLine('provenance-skipped', at),
@@ -54,6 +55,7 @@ describe('stats', () => {
       commandsBlocked: 1,
       commandsWarned: 1,
       commandsSafeSkipped: 1,
+      commandsTrusted: 1,
       commandsExecuted: 1,
     });
     expect(formatStatsTable(summarizeStats(lines))).toContain('Commands seen');

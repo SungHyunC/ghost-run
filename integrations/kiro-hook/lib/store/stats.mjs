@@ -4,6 +4,7 @@
 export const STATS_KINDS = Object.freeze([
   'seen',
   'safe-skip',
+  'trusted',
   'ghosted',
   'passed',
   'warned',
@@ -12,11 +13,11 @@ export const STATS_KINDS = Object.freeze([
   'provenance-skipped',
 ]);
 
-/** @typedef {'seen'|'safe-skip'|'ghosted'|'passed'|'warned'|'blocked'|'executed'|'provenance-skipped'} StatsKind */
+/** @typedef {'seen'|'safe-skip'|'trusted'|'ghosted'|'passed'|'warned'|'blocked'|'executed'|'provenance-skipped'} StatsKind */
 /**
  * @typedef {{
  *   commandsSeen: number, commandsGhosted: number, commandsBlocked: number,
- *   commandsWarned: number, commandsSafeSkipped: number, commandsExecuted: number,
+ *   commandsWarned: number, commandsSafeSkipped: number, commandsTrusted: number, commandsExecuted: number,
  * }} StatsSummary
  */
 
@@ -57,6 +58,7 @@ export function summarizeStats(lines) {
     commandsBlocked: 0,
     commandsWarned: 0,
     commandsSafeSkipped: 0,
+    commandsTrusted: 0,
     commandsExecuted: 0,
   };
   for (const line of lines) {
@@ -86,6 +88,9 @@ export function summarizeStats(lines) {
       case 'safe-skip':
         s.commandsSafeSkipped++;
         break;
+      case 'trusted':
+        s.commandsTrusted++;
+        break;
       case 'executed':
         s.commandsExecuted++;
         break;
@@ -108,6 +113,7 @@ export function formatStatsTable(summary) {
     ['Commands blocked', summary.commandsBlocked],
     ['Commands warned', summary.commandsWarned],
     ['Commands safe-skipped', summary.commandsSafeSkipped],
+    ['Commands trusted', summary.commandsTrusted],
     ['Commands executed', summary.commandsExecuted],
   ];
   const width = Math.max(...rows.map(([label]) => String(label).length));

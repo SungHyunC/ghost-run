@@ -97,6 +97,27 @@ async function resolveCwd(root, cwd) {
   return { inside: true, cwdRel: rel.split(path.sep).join('/') };
 }
 
+/**
+ * Whether a trusted call stays inside the workspace: the effective cwd, and the `cd` target when given.
+ * Real paths are compared, so a symbolic link out of the workspace does not count as inside. A target may be
+ * relative (to the cwd), the workspace root as given, its real path, or a path below either (Original-root rule).
+ * @param {string} root absolute workspace root
+ * @param {unknown} cwd tool_input.cwd
+ * @param {string | undefined} dir target of a leading `cd`
+ * @returns {Promise<boolean>}
+ */
+export async function trustedDirInside(root, cwd, dir) {
+  const realRoot = await realpathNearest(path.resolve(root));
+  const within = (/** @type {string} */ p) => {
+    const rel = path.relative(realRoot, p);
+    return !(rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel));
+  };
+  const base = await realpathNearest(path.resolve(realRoot, typeof cwd === 'string' ? cwd : ''));
+  if (!within(base)) return false;
+  if (dir === undefined) return true;
+  return within(await realpathNearest(path.resolve(base, dir)));
+}
+
 /** @param {'pass' | 'warn' | 'block'} v */
 const atLeastWarn = (v) => (v === 'pass' ? 'warn' : v);
 

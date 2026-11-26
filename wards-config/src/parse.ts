@@ -175,7 +175,7 @@ function parseInner(text: string): ParseResult {
   if (unsupported) return fail(errors);
   const result = validateRoot(ctx, root);
   if (errors.length > 0 || result === undefined) return fail(errors);
-  return { ok: true, wardSet: result.wardSet, safeCommands: result.safeCommands, warnings };
+  return { ok: true, wardSet: result.wardSet, safeCommands: result.safeCommands, trustedCommands: result.trustedCommands, warnings };
 }
 
 /** Parses `wards.yaml` text. Never throws. */

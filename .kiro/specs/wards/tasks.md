@@ -300,6 +300,12 @@ Decisions reflected in this plan:
     - One example document per `ConfigErrorCode` (including `unsafe-command-entry`) and the sample strings of `formatConfigError`.
     - _Requirements: 1.1, 1.2, 1.3, 1.7, 1.10, 1.11, 12.13, 13.3, 13.10_
 
+  - [x] 6.9 `trusted_commands` key, pattern language, and tests
+    - `wards-config/src/schema.ts`: `validateCommandList` shared by `safe_commands` and `trusted_commands`; the pattern check (single spaces, charset plus `*`, `*` or a last `**` as the only wildcard words, else `unsafe-command-entry` with `detail` `spacing`, `charset`, or `wildcard`); the `catch-all-pattern` warning for a pattern that starts with a wildcard. `parse.ts` and `types.ts` return `trustedCommands`; `print.ts` takes `options.trustedCommands`.
+    - Tests: `wards-config/tests/trusted-commands.test.ts` (valid and invalid entries, codes and lines, the warning, a repeated key), `roundtrip.test.ts` and `print.test.ts` (print and parse with `trustedCommands`), `default-wards.test.ts` (the root `wards.yaml` parses without warnings and lists exactly the routine check patterns).
+    - Pattern meaning (a wildcard never matches a word that starts with `-`) is owned by the kiro-integration spec, Requirement 27 and task 25.
+    - _Requirements: 12.1, 12.15, 12.16, 14.1_
+
 - [x] 7. Checkpoint - wards-config complete
   - Run vitest, `tsc --noEmit`, and eslint for `core` and `wards-config`. Ensure all tests pass, ask the user if questions arise.
 

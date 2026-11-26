@@ -39,7 +39,7 @@ export const BUILTIN_GRAMMAR = Object.freeze([
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/u;
 
 /** @param {string} s */
-function hasHidden(s) {
+export function hasHidden(s) {
   return CONTROL_CHARS.test(s) || scanText(s, { markdown: false }).findings.length > 0;
 }
 

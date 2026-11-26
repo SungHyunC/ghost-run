@@ -49,6 +49,8 @@ export type ParseResult =
       readonly ok: true;
       readonly wardSet: WardSet;
       readonly safeCommands: string[];
+      /** Patterns of the optional `trusted_commands` key; `[]` when the key is absent. */
+      readonly trustedCommands: string[];
       readonly warnings: readonly ConfigWarning[];
     }
   | { readonly ok: false; readonly errors: readonly ConfigError[] };

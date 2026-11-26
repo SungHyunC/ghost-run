@@ -114,4 +114,21 @@ describe('printWards', () => {
       expect(printWards({ wards: [] }, { safeCommands: ['ls'] })).toBe('wards: []\nsafe_commands: [ls]\n');
     });
   });
+
+  describe('trusted_commands', () => {
+    const ws = one({ id: 'x', kind: 'sql', tables: ['t'], max_rows_lost: 3 });
+
+    it('prints after safe_commands as the last top-level line', () => {
+      expect(printWards(ws, { safeCommands: ['ls'], trustedCommands: ['corepack pnpm test', 'npx tsc --noEmit **'] })).toBe(
+        'wards:\n  - id: x\n    kind: sql\n    tables: [t]\n    max_rows_lost: 3\nsafe_commands: [ls]\n' +
+          'trusted_commands: ["corepack pnpm test", "npx tsc --noEmit **"]\n',
+      );
+    });
+
+    it('is omitted when absent or empty', () => {
+      const base = printWards(ws);
+      expect(printWards(ws, { trustedCommands: [] })).toBe(base);
+      expect(base).not.toContain('trusted_commands');
+    });
+  });
 });

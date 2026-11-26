@@ -15,7 +15,8 @@ import { isApprovalCommand } from './approval-guard.mjs';
 import { buildGraveEntry, graveLine } from './grave.mjs';
 import { decisionFromRunResult } from './output.mjs';
 import { buildGrammar, buildSecretMatcher, classifySafe } from './safe-list.mjs';
-import { CWD_OUTSIDE_NOTICE, SELF_PROTECT_NOTICE, judgeShell } from './shell-judgment.mjs';
+import { CWD_OUTSIDE_NOTICE, SELF_PROTECT_NOTICE, judgeShell, trustedDirInside } from './shell-judgment.mjs';
+import { classifyTrusted } from './trusted.mjs';
 import { createNodeFsView, judgeWrite } from './write-judgment.mjs';
 
 /** @typedef {import('./output.mjs').GateDecision} GateDecision */
@@ -291,8 +292,24 @@ async function decideInner(input, deps) {
     if (isApprovalCommand(command)) return deny(APPROVAL_COMMAND_LINE, stats);
 
     const { grammar } = buildGrammar(load.safeCommands);
-    if (classifySafe(command, grammar, buildSecretMatcher(wardSet)).safe) {
+    const secretMatcher = buildSecretMatcher(wardSet);
+    if (classifySafe(command, grammar, secretMatcher).safe) {
       await stat('safe-skip');
+      return allowSilent(stats);
+    }
+
+    // Trusted_Command: the whole line has the trusted shape and its cd target stays in the workspace.
+    // No rehearsal, no grave. Never applies to write tools (they take the branch below).
+    const trusted = classifyTrusted(command, {
+      patterns: load.trustedCommands ?? [],
+      grammar,
+      secretMatcher,
+    });
+    if (
+      trusted.trusted &&
+      (await trustedDirInside(root, event.tool_input?.cwd, trusted.dir).catch(() => false))
+    ) {
+      await stat('trusted');
       return allowSilent(stats);
     }
 

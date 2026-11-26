@@ -128,6 +128,25 @@ export const safeCommandsArb: fc.Arbitrary<string[]> = fc.uniqueArray(safeComman
   maxLength: 256,
 });
 
+/**
+ * One trusted_commands pattern: literal words over the safe charset (no `*`), `*` words, and an
+ * optional final `**`. The first word is always literal, so no catch-all warning is raised.
+ */
+export const trustedPatternArb: fc.Arbitrary<string> = fc
+  .tuple(
+    fc.array(fc.constantFrom('x', 'pnpm', 'test', '--filter', '@ghost-run/site', 'a.b', '-n=1'), { minLength: 1, maxLength: 4 }),
+    fc.array(fc.oneof(fc.constant('*'), safeTokenArb.filter((t) => !t.includes('*'))), { minLength: 0, maxLength: 3 }),
+    fc.boolean(),
+  )
+  .map(([head, rest, tail]) => [...head, ...rest, ...(tail ? ['**'] : [])].join(' '))
+  .filter((s) => s.length <= 256);
+
+/** Valid trusted_commands list: 0-256 distinct patterns. */
+export const trustedCommandsArb: fc.Arbitrary<string[]> = fc.uniqueArray(trustedPatternArb, {
+  minLength: 0,
+  maxLength: 256,
+});
+
 /** Valid WardSet: 1-8 wards with unique ids, all four kinds reachable. */
 export const wardSetArb: fc.Arbitrary<WardSet> = fc
   .uniqueArray(wardArb, {

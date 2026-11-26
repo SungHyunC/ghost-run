@@ -4,7 +4,7 @@ import type { WardSet } from '@ghost-run/core';
 import { parseWards } from '../src/parse.js';
 import { printWards } from '../src/print.js';
 import { NUM_RUNS, PBT_TIMEOUT } from './pbt-config';
-import { safeCommandsArb, wardSetArb } from './fixtures';
+import { safeCommandsArb, trustedCommandsArb, wardSetArb } from './fixtures';
 
 const roundTrip = (ws: WardSet, sc: string[]) => {
   const text = printWards(ws, { safeCommands: sc });
@@ -73,5 +73,47 @@ describe('Property 17: printing and parsing round trip', () => {
     const b = roundTrip(empty, []);
     expect(b.text).toBe('wards: []\n');
     expect(b.parsed.ok && b.parsed.safeCommands).toEqual([]);
+  });
+});
+
+describe('Property 17b: trusted_commands round trip', () => {
+  it(
+    'parse(print(ws, sc, tc)) equals (ws, sc, tc), printing again is identical, and the key sits last',
+    () => {
+      fc.assert(
+        fc.property(wardSetArb, safeCommandsArb, trustedCommandsArb, (ws, sc, tc) => {
+          const text = printWards(ws, { safeCommands: sc, trustedCommands: tc });
+          const parsed = parseWards(text);
+          expect(parsed.ok).toBe(true);
+          if (!parsed.ok) return;
+          expect(parsed.wardSet).toEqual(ws);
+          expect(parsed.safeCommands).toEqual(sc);
+          expect(parsed.trustedCommands).toEqual(tc);
+          expect(parsed.warnings.filter((w) => w.message.includes('trusted_commands'))).toEqual([]);
+          const again = printWards(parsed.wardSet, {
+            safeCommands: parsed.safeCommands,
+            trustedCommands: parsed.trustedCommands,
+          });
+          expect(again).toBe(text);
+          const lines = text.split('\n');
+          const tcLines = lines.filter((l) => l.startsWith('trusted_commands:'));
+          if (tc.length === 0) expect(text).not.toContain('trusted_commands');
+          else {
+            expect(tcLines).toHaveLength(1);
+            expect(lines[lines.length - 2]).toBe(tcLines[0]);
+          }
+        }),
+        { numRuns: NUM_RUNS },
+      );
+    },
+    PBT_TIMEOUT,
+  );
+
+  it('prints a pattern with wildcards quoted and parses it back', () => {
+    const tc = ['corepack pnpm --filter * test', 'npx vitest run **'];
+    const text = printWards({ wards: [] }, { trustedCommands: tc });
+    expect(text).toBe('wards: []\ntrusted_commands: ["corepack pnpm --filter * test", "npx vitest run **"]\n');
+    const r = parseWards(text);
+    expect(r.ok && r.trustedCommands).toEqual(tc);
   });
 });

@@ -59,6 +59,26 @@ The built-in entries are `pwd`, `ls` (options `-a`, `-l`, `-la`, `-al`), `cat`, 
 
 The wards file can add entries with `safe_commands`. Extension entries use the entry shape of `lib/gate/safe-list.mjs` and an invalid entry is dropped and counted. The string form of the default wards file (`safe_commands: [ls, pwd, ...]`) is not an extension entry and is dropped today; its words are covered by the built-in list.
 
+## Trusted commands
+
+`trusted_commands` in the wards file lists command patterns that a team already trusts. A trusted shell call passes without a rehearsal and the gate writes a `trusted` statistics line and no grave. Setting it means "I trust what this command runs": the gate does not look at what a listed command does, only at the shape of the line.
+
+A pattern is words separated by single spaces. `*` matches exactly one word and a final `**` matches zero or more remaining words, so `corepack pnpm --filter * test` matches `corepack pnpm --filter @ghost-run/site test` and `npx vitest run **` matches `npx vitest run` and `npx vitest run tests/a.test.ts tests/b.test.ts`. A wildcard never matches a word that starts with `-` (`--config=x`, `-c`, `--`, `-`), so `npx vitest run **` does not match `npx vitest run --config=evil.config.ts`. Write options literally in the pattern, for example `npx tsc --noEmit -p *`; the value after a literal option is an ordinary word. Entries use the safe-command charset plus `*`; shell operators, quotes, doubled spaces, empty entries, a `*` inside a word, and a `**` that is not last are rejected, as are more than 256 entries or entries over 256 characters. A bad entry makes the whole wards file invalid and the gate denies every call until it is fixed.
+
+A shell line is trusted only when the whole line, read with the gate's own tokenizer, is:
+
+1. an optional leading `cd <dir> &&`, where `<dir>` resolves inside the workspace (relative to the cwd, the workspace root, or a path below it; real paths are compared, so a symbolic link out of the workspace does not count),
+2. then one command whose words match a trusted pattern,
+3. then optional output handling only: `2>&1`, a redirect to `/dev/null` (`> /dev/null`, `2>/dev/null`, `&>/dev/null`), and pipes into `cat`, `head`, `tail`, or `wc` from the safe-list grammar with options only and no path argument (`tail -20` is read as `tail -n 20`).
+
+Everything else is rehearsed as before: `;`, `||`, a second `&&`, backticks, `$(`, `${`, any `$`, process substitution, a redirect to a file, input from a file, environment assignments, subshells and groups, here-documents, background `&`, a glob, a newline or hidden character, and a `cd` outside the workspace. A command word that names a secret path is not trusted either.
+
+Some commands are never trusted, even when a pattern lists them: shells (`sh`, `bash`, `zsh`, and others), interpreters given code on their command line (`node -e`, `python -c`, `perl -e`, and similar), `sudo`, `su`, `doas`, `curl`, `wget`, `ssh`, `scp`, `eval`, wrappers that run another command (`env`, `xargs`, `exec`, `time`, `nohup`), and the human-only approval command. Trust never applies to write tools.
+
+**The trade-off.** The gate checks the shape of the line, not what the command does. A trusted command runs whatever the project's scripts, tests, and config files contain, so an agent that edits `package.json`, a test file, or a config file changes what runs without a rehearsal. The wildcard rule closes the option route (`--config`, `-c`) and cannot close this one. Keep the list to commands whose inputs you review, keep patterns as narrow as the team accepts, and list nothing that installs, deploys, or uses the network.
+
+This repository trusts its own test, lint, typecheck, and build commands to cut the asks measured on 2026-11-25 and 2026-11-26. Its root `wards.yaml` lists `corepack pnpm test|typecheck|lint|build|build:site`, `corepack pnpm --filter * test|typecheck|lint|build`, `corepack pnpm --filter * exec vitest run **`, `npx vitest run **`, and `npx tsc --noEmit **`. Under the wildcard rule the `**` patterns accept file arguments only, never options.
+
 ## Host facts this package depends on
 
 Facts below are measured with Kiro CLI 3.4.0 (probe, 2026-11-18) and Kiro IDE 1.4.215 (probe, 2026-11-19), `docs/measurements.md`, heading `Probe results`. The IDE run was driven by Claude Code operating the IDE screen. Where a fact names only one host, the other host did not show it.

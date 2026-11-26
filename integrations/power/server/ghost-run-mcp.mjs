@@ -49526,10 +49526,13 @@ var MAX_WARDS = 256;
 var MAX_LIST_ENTRIES = 1e3;
 var MAX_SAFE_COMMANDS = 256;
 var MAX_SAFE_COMMAND_LENGTH = 256;
+var MAX_TRUSTED_COMMANDS = 256;
+var MAX_TRUSTED_COMMAND_LENGTH = 256;
 var ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 var TABLE_RE = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
 var SAFE_COMMAND_RE = /^[A-Za-z0-9_./:=@%+,-]+( [A-Za-z0-9_./:=@%+,-]+)*$/;
 var SAFE_COMMAND_CHARSET_RE = /^[A-Za-z0-9_./:=@%+, -]*$/;
+var TRUSTED_TOKEN_RE = /^[A-Za-z0-9_./:=@%+,*-]+$/;
 var KINDS = ["path", "sql", "egress", "physics"];
 function hasBadChar(s) {
   for (const ch of s) {
@@ -49847,15 +49850,50 @@ function validateWard(ctx, node2, index, idLines) {
   }
   return built;
 }
-function validateSafeCommands(ctx, value) {
-  const field = "safe_commands";
+function safeCommandDetail(s) {
+  if (SAFE_COMMAND_RE.test(s))
+    return void 0;
+  return SAFE_COMMAND_CHARSET_RE.test(s) ? "spacing" : "charset";
+}
+function trustedPatternDetail(s) {
+  if (s.startsWith(" ") || s.endsWith(" ") || s.includes("  "))
+    return "spacing";
+  const words = s.split(" ");
+  for (const w of words)
+    if (!TRUSTED_TOKEN_RE.test(w))
+      return "charset";
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (w === "*")
+      continue;
+    if (w === "**" && i === words.length - 1)
+      continue;
+    if (w.includes("*"))
+      return "wildcard";
+  }
+  return void 0;
+}
+var SAFE_SPEC = {
+  field: "safe_commands",
+  max: MAX_SAFE_COMMANDS,
+  maxLength: MAX_SAFE_COMMAND_LENGTH,
+  unsafeDetail: safeCommandDetail
+};
+var TRUSTED_SPEC = {
+  field: "trusted_commands",
+  max: MAX_TRUSTED_COMMANDS,
+  maxLength: MAX_TRUSTED_COMMAND_LENGTH,
+  unsafeDetail: trustedPatternDetail
+};
+function validateCommandList(ctx, value, spec) {
+  const field = spec.field;
   if (!(0, import_yaml.isSeq)(value)) {
     pushError(ctx, "wrong-type", value, `field "${field}" must be a list`, { field });
     return void 0;
   }
   const errorsBefore = ctx.errors.length;
-  if (value.items.length > MAX_SAFE_COMMANDS) {
-    pushError(ctx, "out-of-range", value, `field "${field}" must have at most ${MAX_SAFE_COMMANDS} entries`, { field });
+  if (value.items.length > spec.max) {
+    pushError(ctx, "out-of-range", value, `field "${field}" must have at most ${spec.max} entries`, { field });
   }
   const out = [];
   const seen = /* @__PURE__ */ new Map();
@@ -49871,12 +49909,12 @@ function validateSafeCommands(ctx, value) {
       pushError(ctx, "invalid-character", item, `field "${f}" contains a control or hidden character`, { field: f });
       return;
     }
-    if (s.length === 0 || s.length > MAX_SAFE_COMMAND_LENGTH) {
-      pushError(ctx, "out-of-range", item, `field "${f}" must have 1 to ${MAX_SAFE_COMMAND_LENGTH} characters`, { field: f });
+    if (s.length === 0 || s.length > spec.maxLength) {
+      pushError(ctx, "out-of-range", item, `field "${f}" must have 1 to ${spec.maxLength} characters`, { field: f });
       return;
     }
-    if (!SAFE_COMMAND_RE.test(s)) {
-      const detail = SAFE_COMMAND_CHARSET_RE.test(s) ? "spacing" : "charset";
+    const detail = spec.unsafeDetail(s);
+    if (detail !== void 0) {
       pushError(ctx, "unsafe-command-entry", item, `field "${f}" is not a safe command entry (${detail})`, {
         field: f,
         detail
@@ -49889,6 +49927,15 @@ function validateSafeCommands(ctx, value) {
       return;
     }
     seen.set(s, lineOf(ctx, item));
+    if (spec.field === "trusted_commands" && s.startsWith("*")) {
+      const { line, column } = posOf(ctx.lc, item);
+      ctx.warnings.push({
+        code: "catch-all-pattern",
+        message: `field "${f}" starts with a wildcard and trusts any command name`,
+        line,
+        column
+      });
+    }
     out.push(s);
   });
   return ctx.errors.length > errorsBefore ? void 0 : out;
@@ -49902,6 +49949,8 @@ function validateRoot(ctx, root) {
   let wardsValue;
   let safeValue;
   let hasSafe = false;
+  let trustedValue;
+  let hasTrusted = false;
   const seenRoot = /* @__PURE__ */ new Set();
   for (const p of root.items) {
     if (!(0, import_yaml.isScalar)(p.key)) {
@@ -49917,6 +49966,9 @@ function validateRoot(ctx, root) {
     else if (name === "safe_commands") {
       hasSafe = true;
       safeValue = p.value;
+    } else if (name === "trusted_commands") {
+      hasTrusted = true;
+      trustedValue = p.value;
     } else {
       pushError(ctx, "unknown-root-field", p.key, `unknown root field "${shown(name)}"`, {
         field: shown(name)
@@ -49948,13 +50000,19 @@ function validateRoot(ctx, root) {
   }
   let safeCommands = [];
   if (hasSafe) {
-    const s = validateSafeCommands(ctx, safeValue ?? null);
+    const s = validateCommandList(ctx, safeValue ?? null, SAFE_SPEC);
     if (s)
       safeCommands = s;
   }
+  let trustedCommands = [];
+  if (hasTrusted) {
+    const t = validateCommandList(ctx, trustedValue ?? null, TRUSTED_SPEC);
+    if (t)
+      trustedCommands = t;
+  }
   if (ctx.errors.length > errorsBefore)
     return void 0;
-  return { wardSet: { wards }, safeCommands };
+  return { wardSet: { wards }, safeCommands, trustedCommands };
 }
 
 // wards-config/dist/src/parse.js
@@ -50131,7 +50189,7 @@ function parseInner(text2) {
   const result = validateRoot(ctx, root);
   if (errors.length > 0 || result === void 0)
     return fail2(errors);
-  return { ok: true, wardSet: result.wardSet, safeCommands: result.safeCommands, warnings };
+  return { ok: true, wardSet: result.wardSet, safeCommands: result.safeCommands, trustedCommands: result.trustedCommands, warnings };
 }
 function parseWards(text2) {
   try {
@@ -50225,7 +50283,8 @@ async function loadWardsForHook(root, env, loader = loadWardsFile) {
     return { ok: false, errors: errors.length > 0 ? errors : ["wards file is not valid"] };
   }
   const safeCommands = Array.isArray(result.safeCommands) ? [...result.safeCommands] : [];
-  return { ok: true, wardSet: result.wardSet, safeCommands, file: file2 };
+  const trustedCommands = Array.isArray(result.trustedCommands) ? [...result.trustedCommands] : [];
+  return { ok: true, wardSet: result.wardSet, safeCommands, trustedCommands, file: file2 };
 }
 
 // core/dist/src/judge/bytes.js
@@ -52766,6 +52825,7 @@ function buildGraveEntry({ runId, command, recordedAt, result, provenance }) {
 var STATS_KINDS = Object.freeze([
   "seen",
   "safe-skip",
+  "trusted",
   "ghosted",
   "passed",
   "warned",
