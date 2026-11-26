@@ -1403,3 +1403,26 @@ Run by Claude Code in a fresh clone of commit `c46d919` on an Apple M1 Mac (macO
 | **Total** | **566** | **4,831** | **11** |
 
 No test failed. The same six commands at `258fa29`, an hour earlier and before the `/hand/` header fix, gave 4,829 passed and 11 skipped. This entry replaces Check A at `7c6e39a` as the reference full run.
+
+## Check A at dad96ee (2026-11-27)
+
+The same six commands in a fresh clone of commit `dad96ee` on the same Mac, after the fourth review's fixes (hook-file tests that read the committed files, and the workspace MCP settings with their test). Every command exited 0. Build took 12 s, lint 13 s, typecheck 29 s, and the test step 941 s.
+
+| Package | Test files | Tests passed | Skipped |
+|---|---|---|---|
+| `core` | 75 (1 skipped) | 556 | 2 |
+| `ghost-runner` | 59 | 385 | 0 |
+| `ui` | 71 | 701 | 0 |
+| `wards-config` | 16 | 146 | 0 |
+| `worlds/drawer-arm` | 24 | 145 | 0 |
+| `integrations/kiro-hook` | 60 | 773 | 0 |
+| `worlds/ghost-cloud` | 16 | 108 | 0 |
+| `worlds/playground-shell` | 34 | 397 | 0 |
+| `worlds/starter` | 2 | 8 | 0 |
+| `apps/ghost-hand` | 39 | 284 | 0 |
+| `integrations/mcp` | 16 | 95 | 3 |
+| `apps/ghost-shell` | 42 | 236 | 0 |
+| `site` | 112 (1 skipped) | 1,005 | 6 |
+| **Total** | **567** | **4,839** | **11** |
+
+No test failed. This entry replaces Check A at `c46d919` as the reference full run.
