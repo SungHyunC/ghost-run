@@ -3,6 +3,7 @@ import { userInfo } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { shippedText, withoutEnabled } from './shipped-file.mjs';
 
 // Task 1.7 (human host probe) may change ALLOWED_TRIGGERS and TIMEOUT_PLACEMENT.
 // Until then these are the currently documented values.
@@ -162,13 +163,25 @@ export function retirementViolations(files) {
 }
 
 const fileNames = readdirSync(hooksDir).filter((n) => n.endsWith('.json'));
-const texts = Object.fromEntries(fileNames.map((n) => [n, readFileSync(resolve(hooksDir, n), 'utf8')]));
+// `texts` and `docs` are the files as they ship (the committed version in a git checkout, the disk
+// otherwise), so a working tree where `corepack pnpm gate:on` was run still tests what ships.
+// `diskTexts` is the working tree, which only has to be valid.
+const diskTexts = Object.fromEntries(fileNames.map((n) => [n, readFileSync(resolve(hooksDir, n), 'utf8')]));
+const texts = Object.fromEntries(fileNames.map((n) => [n, shippedText(repoRoot, `.kiro/hooks/${n}`)]));
 const docs = Object.fromEntries(fileNames.map((n) => [n, JSON.parse(texts[n])]));
 
 describe('.kiro/hooks files', () => {
   for (const name of fileNames) {
     it(`${name} is a valid hook file`, () => {
       expect(validateHookFile(name, texts[name])).toEqual([]);
+    });
+  }
+
+  for (const name of fileNames) {
+    it(`${name} on disk is valid, and differs from the shipped file only in \`enabled\``, () => {
+      expect(validateHookFile(name, diskTexts[name])).toEqual([]);
+      expect(withoutEnabled(diskTexts[name])).toEqual(withoutEnabled(texts[name]));
+      for (const h of JSON.parse(diskTexts[name]).hooks) expect(typeof h.enabled).toBe('boolean');
     });
   }
 

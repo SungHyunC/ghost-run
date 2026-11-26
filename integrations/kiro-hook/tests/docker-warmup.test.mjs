@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { WARMUP_BUDGET_MS } from '../gate-config.mjs';
+import { shippedText } from './shipped-file.mjs';
 import { THROTTLE_MS, WARMUP_ARGS, warmUp } from '../lib/warmup.mjs';
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -140,7 +141,8 @@ describe('warmUp', () => {
 describe('docker-warmup hook entry', () => {
   it('is committed disabled with a short timeout', async () => {
     const repo = join(PKG, '..', '..');
-    const doc = JSON.parse(await readFile(join(repo, '.kiro', 'hooks', 'docker-warmup.json'), 'utf8'));
+    // The committed version: a working tree with `gate:on` run has the file enabled on disk.
+    const doc = JSON.parse(shippedText(repo, '.kiro/hooks/docker-warmup.json'));
     expect(doc.hooks).toHaveLength(1);
     expect(doc.hooks[0]).toMatchObject({ trigger: 'PreToolUse', matcher: 'shell', enabled: false });
     expect(doc.hooks[0].timeout).toBeLessThanOrEqual(10);
