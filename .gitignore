@@ -1,18 +1,18 @@
-# 의존성과 빌드 결과
+# Dependencies and build output
 node_modules/
 dist/
 site/build/
 .DS_Store
 
-# 비밀값 (가짜 canary도 저장소 밖에서 만든다)
+# Secrets (create even fake canary values outside the repository)
 .env
 .env.*
 
-# 내부 기획서: 공개 저장소에 올리지 않는다 (Kiro는 로컬에서 그대로 읽을 수 있다)
+# Internal plan: not published in the public repository (Kiro can still read it locally)
 docs/plan.md
 docs/GhostRun_*.png
 
-# Claude Code 설정은 저장소에 넣지 않는다. .kiro/는 절대 무시하지 않는다(제출 필수)
+# Claude Code settings are not committed. Never ignore .kiro/ (required for the submission)
 .claude/
 CLAUDE.md
 

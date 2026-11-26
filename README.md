@@ -4,6 +4,8 @@ Let your agent's ghost try it first.
 
 **Links:** [live site](https://ghost-run-plus.pages.dev) | [demo video](https://youtu.be/PO4POPsKvXg) | [Ghost Shell](https://ghost-run-plus.pages.dev/shell/) | [Ghost Hand](https://ghost-run-plus.pages.dev/hand/) | [UI kit](https://ghost-run-plus.pages.dev/kit/)
 
+![Kiro IDE session: the ghost-gate hook blocks a DROP TABLE command after the copy lost 1,206 users](docs/images/kiro-blocked.png)
+
 ## What it is
 
 Ghost Run+ lets an AI agent rehearse an irreversible action in a copy of the world before it runs for real. A "ghost" plays the agent's plan against a mirror world (a copy of the files, the database, or the physics scene). Declared guard rules, called wards and written in `wards.yaml`, judge the result, and the real action proceeds only if every ward passes. It addresses two failures: a plain mistake, such as an agent deleting a production database during a code freeze (reported publicly for a Replit agent in July 2025), and possession, where hidden instructions in a document the agent reads steer it. A blocked agent gets the ward id, the numbers, and a seance link, so it can fix the plan and try again.
@@ -22,7 +24,7 @@ flowchart TB
     GR["ghost-runner<br/>Docker box, Plan B"]
     UI["ui<br/>candle, red thread, graveyard"]
     subgraph kiro["Kiro"]
-      HK["hooks<br/>ghost-gate and four more"]
+      HK["hooks<br/>ghost-gate and five more"]
       MCP["MCP server<br/>ghost-run"]
       PW["power"]
     end
@@ -52,11 +54,46 @@ Expected output (exit code 0):
 plan: clear
   blocked by ward keep-todos: the copy lost 3 to-dos
   real list unchanged: true (fingerprint ed34d2240ad1 before and after)
+plan: remove 2
+  blocked by ward keep-todos: the copy lost 1 to-do
+  real list unchanged: true (fingerprint ed34d2240ad1 before and after)
 plan: add "buy candles"
   passed: 1 action, the copy lost 0 to-dos
 ```
 
-The demo runs two plans on a to-do list through the same calls the apps use. `worlds/starter/src/world.ts` (about 70 lines) is the smallest world: read it to see the six functions of `World<S, A>`.
+The demo runs three plans on a to-do list through the same calls the apps use. `worlds/starter/src/world.ts` (about 70 lines) is the smallest world: read it to see the six functions of `World<S, A>`.
+
+### Change a rule
+
+Open `worlds/starter/wards.yaml`. The ward protects every to-do:
+
+```
+    paths: ["todos/*"]
+```
+
+Protect only the first to-do instead:
+
+```
+    paths: ["todos/1"]
+```
+
+Run the demo again:
+
+```
+corepack pnpm --filter @ghost-run/world-starter demo
+```
+
+```
+plan: clear
+  blocked by ward keep-todos: the copy lost 3 to-dos
+  real list unchanged: true (fingerprint ed34d2240ad1 before and after)
+plan: remove 2
+  passed: 1 action, the copy lost 1 to-do
+plan: add "buy candles"
+  passed: 1 action, the copy lost 0 to-dos
+```
+
+`remove 2` now passes, because to-do 2 is no longer protected. `clear` is still blocked, because it deletes to-do 1. Nothing else changed: the plans, the world, and the code are the same. Undo the edit to get the first output back. To try a rule without editing the file, save a copy and run `corepack pnpm --filter @ghost-run/world-starter demo --wards <file>`.
 
 ## Use it in your Kiro
 
@@ -75,6 +112,8 @@ Details, including package-manager commands that cannot be rehearsed faithfully:
 ## One skeleton, two apps
 
 This repository is a Kiroween 2026 entry in the Skeleton Crew category: one reusable skeleton and two apps built on it.
+
+![Ghost Shell and Ghost Hand side by side, with the bonus world Ghost Cloud](docs/images/two-apps.png)
 
 | Part | Where | What it is |
 |---|---|---|
@@ -132,7 +171,7 @@ Some page designs were drafted with Claude Code; the list is in the same documen
 - [Built with Kiro](docs/built-with-kiro.md): specs table, steering, hooks, who wrote what
 - [Dependencies and data](docs/dependencies.md): every library, data file, asset, and license
 - [Measurements](docs/measurements.md), [devlog](docs/devlog.md), and [research notes](docs/research.md)
-- Package READMEs: [ghost-runner](ghost-runner/README.md), [ui](ui/README.md), [Ghost Shell app](apps/ghost-shell/README.md), [hooks](integrations/kiro-hook/README.md), [MCP server](integrations/mcp/README.md), [power](integrations/power/README.md)
+- Package READMEs: [ghost-runner](ghost-runner/README.md), [ui](ui/README.md), [Ghost Shell app](apps/ghost-shell/README.md), [Ghost Hand app](apps/ghost-hand/README.md), [hooks](integrations/kiro-hook/README.md), [MCP server](integrations/mcp/README.md), [power](integrations/power/README.md)
 
 ## License
 
