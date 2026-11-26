@@ -2,7 +2,7 @@
 
 Let your agent's ghost try it first.
 
-**Links:** [live site](https://ghost-run-plus.pages.dev) | [demo video](https://youtu.be/kTymapHaAY4) | [Ghost Shell](https://ghost-run-plus.pages.dev/shell/) | [Ghost Hand](https://ghost-run-plus.pages.dev/hand/) | [UI kit](https://ghost-run-plus.pages.dev/kit/)
+**Links:** [live site](https://ghost-run-plus.pages.dev) | [demo video](https://youtu.be/mH8x6jzWuIQ) | [Ghost Shell](https://ghost-run-plus.pages.dev/shell/) | [Ghost Hand](https://ghost-run-plus.pages.dev/hand/) | [UI kit](https://ghost-run-plus.pages.dev/kit/)
 
 ![Kiro IDE session: the ghost-gate hook blocks a DROP TABLE command after the copy lost 1,206 users](docs/images/kiro-blocked.png)
 
@@ -154,7 +154,7 @@ Some page designs were drafted with Claude Code; the list is in the same documen
 
 ## Measured
 
-- **Full test run:** 4,831 tests passed, 11 skipped, 0 failed in 13 packages, in 877 s on an Apple M1 Mac with Docker (commit `c46d919`, 2026-11-26). Typecheck took 28 s and lint 12 s. [Check A](docs/measurements.md#check-a-at-c46d919-2026-11-26).
+- **Full test run:** 4,839 tests passed, 11 skipped, 0 failed in 13 packages, in 941 s on an Apple M1 Mac with Docker (commit `dad96ee`, 2026-11-27). Typecheck took 29 s and lint 13 s. [Check A](docs/measurements.md#check-a-at-dad96ee-2026-11-27).
 - **The gate on our own work:** the first gated Kiro CLI session asked for approval 21 times, and every first notice named the project's own folder. After two fixes, the next session had 13 asks that named the root until the runner was rebuilt and none after, and 9 asks from `corepack pnpm` network attempts in the box. [Devlog, 2026-11-25](docs/devlog.md#the-gate-on-our-own-work-task-191) and [measurements](docs/measurements.md#gate-switched-on-for-daily-use-task-191-2026-11-25).
 - **Host checks:** exit codes and the `ask` prompt of the gate, checked in Kiro CLI 3.5.0 and Kiro IDE 1.4.236 and 1.5.11 (2026-11-21). `rm -rf data` was blocked by `protect-data` in both. [Host checks](docs/measurements.md#host-checks-before-enabling-the-gate-2026-11-21-kiro-cli-350-docker-2993).
 - **Ghost Hand:** the plan `fast pull` is blocked (2 of 8 ghosts fail: 1 misses the drawer target, 1 exceeds a joint limit; 27.53 N peak force, 0.1216 m drawer opening; re-measured 2026-11-26, seed 42); the revised plan passes (0 of 8). A ghost run of 8 variants has a median of 308 ms in Chrome 157. [Ghost Hand numbers](docs/ghost-hand.md).
