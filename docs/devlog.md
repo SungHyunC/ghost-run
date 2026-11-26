@@ -760,3 +760,11 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
   - README said the probe hook was enabled; every hook file is committed disabled. The site chip said "Built from 6 Kiro specs" while the video says 14; it now reads "Built from 6 of our 14 Kiro specs" (Kiro, site-pages task 16, 1.02 credits).
   - The seance link in block messages (`http://localhost:5317/seance/<id>`) is a placeholder: no seance server exists yet (kiro-integration open item O4). Not fixed.
 - One finding was wrong: the video is not blank at 2:06 (the storyboard sampled a scene change). The Ghost Hand screenshot in gallery image 4 now shows the result cards instead of a still arm.
+
+### The seance link opens a real page (owner's request)
+
+- Every block or ask message ends with `Seance: http://localhost:5317/seance/<id>`, and until now nothing answered there (kiro-integration open item O4). Kiro built a read-only viewer for the workspace's graveyard in four runs (Requirement 26, task group 24; 11.17, 5.22, 1.88 and 2.68 credits):
+  - `/seance/` lists the graves, one row each; `/seance/<id>` shows the command, the gate's decision as a candle, the wards with their numbers, the diff summary, the claims and the red thread. Pages have no client script and a strict CSP.
+  - It listens on 127.0.0.1 only, answers GET only, checks ids against the pattern and the graveyard, and rejects a `Host` other than `localhost:<port>` or `127.0.0.1:<port>` with 421 (DNS rebinding).
+  - The gate starts it in the background after it writes a grave, when the base is local and the port is free; the wait is bounded and never changes the decision. `GHOST_RUN_SEANCE_AUTOSTART=0` turns it off; `corepack pnpm --filter @ghost-run/kiro-hook seance` starts it by hand.
+- **Review:** Claude Code triggered a real ask through the gate: the viewer started and the link opened the grave page in Chrome; a traversal URL gave 404 and a foreign `Host` gave 421. Two findings went back to Kiro: graves with a passing ward verdict showed a "lit" badge although the gate had asked, and the test suite left a real viewer running for a temporary workspace. Both are fixed; after the full gate suite (666 passed, plus the two hook-file checks that expect the committed, disabled hooks), no viewer process is left.
