@@ -749,3 +749,14 @@ Conclusion: **an IDE Pre Tool Use hook can block `rm -rf`.** At first, though, t
 - **README app commands (Kiro, 0.44 credits):** in a fresh clone of `8c31d98`, `corepack pnpm --filter @ghost-run/ghost-shell build` failed, because `core`, `ui` and `wards-config` export `dist` files that are not committed. The README now builds the dependencies first (`--filter "@ghost-run/ghost-shell..."` and `--filter "@ghost-run/ghost-hand^..."`). Claude Code measured both pages at HTTP 200 and the Ghost Hand CLI block (exit 2) in that clone; the starter demo ran right after the install.
 - **Write-up:** the gate claims now state their limits next to the pitch (the hooks ship disabled, writes are judged by path, safe-list commands skip the rehearsal, and an ask can be approved), and the fail-closed result separates the four refused cases from the timeout, which became a request for approval.
 - **Demo video v10:** the closing line now states the measured run ("One full run: 4,580 tests passed, none failed.") instead of "back every claim".
+
+### Publishing, the cover, and a third review
+
+- **Video and write-up (owner's request, through the Aside browser agent):** the English demo v10 is public on YouTube (https://youtu.be/PO4POPsKvXg) with English and Korean subtitle tracks. A Korean-caption copy of the video was made from the same cue times. The Devpost draft is filled from the write-up; the owner answers the personal and eligibility questions and submits.
+- **Both apps on the cover (Kiro, site-pages task 15, 3.48 credits):** the landing cover now links to App 1 Ghost Shell and App 2 Ghost Hand under its two buttons; the nav stays Home, UI Kit, GitHub. Claude Code re-ran the site tests (112 files, 1,007 tests), checked the cover at 1440 px and 390 px (no overflow), and redeployed.
+- **Third review (Antigravity, read-only, on a clean clone of `44a4bc6`):** 7.8 of 10. Checked against the code, four findings were right:
+  - The `blacklight` MCP tool scans files by path, not any text: the write-up now says so.
+  - The deployed `/hand/` page sends no content security policy; the strict policy with the MuJoCo worker is the landing page's. The write-up now says "the landing page's strict policy".
+  - README said the probe hook was enabled; every hook file is committed disabled. The site chip said "Built from 6 Kiro specs" while the video says 14; it now reads "Built from 6 of our 14 Kiro specs" (Kiro, site-pages task 16, 1.02 credits).
+  - The seance link in block messages (`http://localhost:5317/seance/<id>`) is a placeholder: no seance server exists yet (kiro-integration open item O4). Not fixed.
+- One finding was wrong: the video is not blank at 2:06 (the storyboard sampled a scene change). The Ghost Hand screenshot in gallery image 4 now shows the result cards instead of a still arm.
