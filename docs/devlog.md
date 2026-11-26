@@ -798,7 +798,8 @@ The same judge prompt ran on a clean clone of `f1d6a7d`: OpenAI Codex 8.0 (was 7
 - **Findings that were wrong**: Ghost Cloud does run on the landing page; the Kiro footage in the video is readable at 1080p; Ghost Cloud's "about 800 lines" follows the site's stated count (789 non-blank lines).
 - **Write-up fixes** (Devpost): a person, not Kiro, picked the backup and the soft delete; trusted commands also allow `cd <dir> &&`, redirects and four pipes; the starter world runs only in a terminal; the first commit was a snapshot, not one spec.
 - **Reference full run**: Check A at `c46d919` in a fresh clone: 4,831 tests passed, 11 skipped, none failed, in 13 packages (877 s test step). Details in `docs/measurements.md`. The site was rebuilt and deployed twice; every page now sends exactly one policy header.
-- Kiro credits for this round: 30.49 (6.07 + 1.33 + 6.96 + 13.5 + 2.63).
+- Kiro credits for this round: 31.81 (6.07 + 1.33 + 6.96 + 13.5 + 2.63, plus 1.07 for the README numbers and video link and 0.25 for "six hooks" in two docs).
+- Published on 2026-11-27 (KST, through Aside): the new video https://youtu.be/kTymapHaAY4 (public; the first video stays up because older posts link it), and on Devpost the story, the Kiro answer, the testing steps, the video link and gallery image 4. Checked on the public pages afterwards. Devpost's "Save & continue" button sat below the fold, and a scripted click on it saved nothing; submitting the form with `requestSubmit()` worked.
 
 ### Demo video v11 (Claude Code, not in this repository)
 
