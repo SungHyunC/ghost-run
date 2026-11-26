@@ -841,6 +841,11 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Depends on tasks 27.1 to 27.4.**
     - _Requirements: 29.1 to 29.13_
 
+  - [x] 27.6 The `unavailable` line of the installed gate
+    - `lib/hook-io.mjs`: `BUNDLED_UNAVAILABLE_LINE` ("the installed gate is missing or damaged; run the installer again with --force"), chosen only when the build constant `__GHOST_RUN_BUNDLED__` is `true`; `scripts/bundle-gate.mjs` defines it, and `integrations/power/gate/ghost-gate.mjs` is rebuilt with `corepack pnpm --filter @ghost-run/kiro-hook bundle`. `FATAL_LINES.unavailable` (in-repo text) is unchanged.
+    - Tests: `tests/gate-bundle.test.mjs` (the bundled bootstrap prints the new line without and with a broken `gate-main.mjs`; the line has no `pnpm`), `tests/installed-gate.test.mjs` (an installed project whose `gate-main.mjs` is deleted prints it, exit 2), `tests/bootstrap.test.mjs` (in-repo line unchanged).
+    - _Requirements: 29.14_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.
@@ -889,7 +894,7 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     { "id": 25, "tasks": ["22.6"] },
     { "id": 26, "tasks": ["27.1"] },
     { "id": 27, "tasks": ["27.2", "27.3", "27.4"] },
-    { "id": 28, "tasks": ["27.5"] }
+    { "id": 28, "tasks": ["27.5", "27.6"] }
   ]
 }
 ```

@@ -21,6 +21,17 @@ export const FATAL_LINES = Object.freeze({
   timeout: 'GHOST RUN GATE TIMEOUT: no verdict within 50 s; the tool call was not allowed.',
 });
 
+/**
+ * The `unavailable` line of the bundled gate (`scripts/bundle-gate.mjs` defines `__GHOST_RUN_BUNDLED__` as `true`).
+ * The in-repo text, "build the packages first", does not apply to a project set up by `install-gate.mjs`: there
+ * the gate is a copy of the bundle, and a missing or damaged file is fixed by installing again.
+ */
+export const BUNDLED_UNAVAILABLE_LINE =
+  'GHOST RUN GATE UNAVAILABLE: the installed gate is missing or damaged; run the installer again with --force (node <repository>/integrations/power/install-gate.mjs --force).';
+
+/** True only in the bundle: the build replaces the identifier; in the repository it is undeclared. */
+const BUNDLED = typeof __GHOST_RUN_BUNDLED__ !== 'undefined' && __GHOST_RUN_BUNDLED__ === true;
+
 /** @type {HookIo} */
 export const processIo = {
   stdout: (text, cb) => {
@@ -82,7 +93,8 @@ export function finish(outcome, io = processIo) {
  * @returns {void}
  */
 export function fatal(kind, io = processIo) {
-  const line = Object.hasOwn(FATAL_LINES, kind) ? FATAL_LINES[kind] : FATAL_LINES['internal-error'];
+  const known = Object.hasOwn(FATAL_LINES, kind) ? kind : 'internal-error';
+  const line = BUNDLED && known === 'unavailable' ? BUNDLED_UNAVAILABLE_LINE : FATAL_LINES[known];
   finish({ exit: 2, stdout: '', stderr: `${line}\n` }, io);
 }
 

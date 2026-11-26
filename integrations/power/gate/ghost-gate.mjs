@@ -17,6 +17,8 @@ var FATAL_LINES = Object.freeze({
   "internal-error": "GHOST RUN GATE ERROR: internal-error; the tool call was not allowed.",
   timeout: "GHOST RUN GATE TIMEOUT: no verdict within 50 s; the tool call was not allowed."
 });
+var BUNDLED_UNAVAILABLE_LINE = "GHOST RUN GATE UNAVAILABLE: the installed gate is missing or damaged; run the installer again with --force (node <repository>/integrations/power/install-gate.mjs --force).";
+var BUNDLED = true;
 var processIo = {
   stdout: (text, cb) => {
     process.stdout.write(text, cb);
@@ -54,7 +56,8 @@ function finish(outcome, io = processIo) {
   });
 }
 function fatal(kind, io = processIo) {
-  const line = Object.hasOwn(FATAL_LINES, kind) ? FATAL_LINES[kind] : FATAL_LINES["internal-error"];
+  const known = Object.hasOwn(FATAL_LINES, kind) ? kind : "internal-error";
+  const line = BUNDLED && known === "unavailable" ? BUNDLED_UNAVAILABLE_LINE : FATAL_LINES[known];
   finish({ exit: 2, stdout: "", stderr: `${line}
 ` }, io);
 }

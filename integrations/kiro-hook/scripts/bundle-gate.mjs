@@ -67,6 +67,8 @@ export async function buildGate(outDir = DEFAULT_OUT_DIR) {
       platform: 'node',
       target: 'node20',
       format: 'esm',
+      // The bundled gate prints the installer fix for the `unavailable` line (see `lib/hook-io.mjs`).
+      define: { __GHOST_RUN_BUNDLED__: 'true' },
       ...(target.banner ? { banner: { js: BANNER } } : {}),
       plugins: target.plugins,
       sourcemap: false,

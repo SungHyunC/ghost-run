@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
-import { FATAL_LINES } from '../lib/hook-io.mjs';
+import { BUNDLED_UNAVAILABLE_LINE, FATAL_LINES } from '../lib/hook-io.mjs';
 import { GATE_FILES, buildGate } from '../scripts/bundle-gate.mjs';
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -83,7 +83,16 @@ describe('gate bundle', () => {
     const r = await runNode(join(dir, 'ghost-gate.mjs'), dir, event);
     expect(r.code).toBe(2);
     expect(r.stdout).toBe('');
-    expect(r.stderr).toBe(`${FATAL_LINES.unavailable}\n`);
+    expect(r.stderr).toBe(`${BUNDLED_UNAVAILABLE_LINE}\n`);
+  });
+
+  it('the bundled unavailable line names the installer fix and not the repository build', async () => {
+    expect(BUNDLED_UNAVAILABLE_LINE).toContain('GHOST RUN GATE UNAVAILABLE');
+    expect(BUNDLED_UNAVAILABLE_LINE).toContain('install-gate.mjs --force');
+    expect(BUNDLED_UNAVAILABLE_LINE).not.toContain('pnpm');
+    expect(FATAL_LINES.unavailable).toContain('build the packages first (pnpm -r build)');
+    const text = await readFile(join(COMMITTED, 'ghost-gate.mjs'), 'utf8');
+    expect(text).toContain(BUNDLED_UNAVAILABLE_LINE);
   });
 
   it('fails closed: a gate-main.mjs with a syntax error also exits 2', async () => {
@@ -93,7 +102,7 @@ describe('gate bundle', () => {
     const event = JSON.stringify({ hook_event_name: 'PreToolUse', cwd: dir, tool_name: 'execute_bash', tool_input: { command: 'ls' } });
     const r = await runNode(join(dir, 'ghost-gate.mjs'), dir, event);
     expect(r.code).toBe(2);
-    expect(r.stderr).toBe(`${FATAL_LINES.unavailable}\n`);
+    expect(r.stderr).toBe(`${BUNDLED_UNAVAILABLE_LINE}\n`);
   });
 
   it('fails closed on a broken event even with the real gate present', async () => {

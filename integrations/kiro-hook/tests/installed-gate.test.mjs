@@ -140,6 +140,17 @@ describe('installed gate', () => {
     expect(existsSync(join(project, '.ghost-run', 'graveyard.jsonl'))).toBe(true);
   }, 120_000);
 
+  it('prints the installer fix, not the repository build, when the installed gate-main.mjs is gone', async () => {
+    const project = await makeProject();
+    await rm(join(project, '.kiro', 'ghost-run', 'gate', 'gate-main.mjs'));
+    const r = await runGate(project, { tool_name: 'execute_bash', tool_input: { command: 'ls' } }, { noDocker: true });
+    expect(r.code).toBe(2);
+    expect(r.stdout).toBe('');
+    expect(r.stderr).toContain('GHOST RUN GATE UNAVAILABLE');
+    expect(r.stderr).toContain('run the installer again with --force');
+    expect(r.stderr).not.toContain('pnpm');
+  });
+
   it('asks for a write to its own hook file (self-protection)', async () => {
     const project = await makeProject();
     const before = await readFile(join(project, '.kiro', 'hooks', 'ghost-gate.json'), 'utf8');
