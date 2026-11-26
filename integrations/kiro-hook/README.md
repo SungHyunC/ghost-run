@@ -12,6 +12,14 @@ Hook scripts that connect Ghost Run+ to Kiro (IDE and CLI). Each script reads on
 
 State of the hook files in this repository: every file in `.kiro/hooks/` is `enabled: false`, including the probe hook files (task 1.8; `tests/probe-disabled.test.mjs` keeps them off). The gate is switched on by a human in task 19.1 after the checklist there. A human switches it with `corepack pnpm gate:on`, `gate:off`, or `gate:status` from the repository root (`gate-switch.mjs`; it flips `enabled` in both entries of `ghost-gate.json` and in `docker-warmup.json`, and nothing else). The committed files stay `enabled: false`, and `hook-files.test.mjs` and `docker-warmup.test.mjs` expect that, so they fail in a working tree where the gate is on. `tests/gate-switch.test.mjs` runs the script on a temporary folder only. Facts that no probe settled are marked "not confirmed".
 
+## Installing the gate in another project
+
+The gate source imports the workspace packages `core`, `ghost-runner`, and `wards-config`, so copying this folder into another project does not build. `scripts/bundle-gate.mjs` (`corepack pnpm --filter @ghost-run/kiro-hook bundle`) bundles the gate into `integrations/power/gate/`: `ghost-gate.mjs` (this package's bootstrap, same design: the real gate is loaded with a dynamic import inside try/catch, so a missing or broken bundle exits 2, and the watchdog stays), `gate-main.mjs` (`lib/gate/main.mjs` with its packages), `docker-warmup.mjs`, and `seance.mjs`. `tests/gate-bundle.test.mjs` fails when the committed files are not a fresh build.
+
+`node <repository>/integrations/power/install-gate.mjs [--project <dir>] [--force] [--uninstall]` copies that bundle and the box sources to `<project>/.kiro/ghost-run/`, writes the hook files `.kiro/hooks/ghost-gate.json` and `docker-warmup.json` (enabled), a default `wards.yaml` when the project has none, and the `.ghost-run/` line of `.gitignore`. It never overwrites a file without `--force`, and `--uninstall` removes exactly the files of the manifest `.kiro/ghost-run/manifest.json`. See [../power/README.md](../power/README.md). `tests/install-gate.test.mjs` and `tests/installed-gate.test.mjs` run the installer and the installed gate in temporary projects.
+
+Two details differ from running the gate in this repository. The seance auto-start finds `seance.mjs` next to `gate-main.mjs` (`lib/seance/autostart.mjs`). The self-protected paths include `.kiro/ghost-run/**`, so a write to the installed gate asks for approval.
+
 ## Claims and non-claims
 
 P1 to P8 are the properties of the world contract. A component asserts a property only inside the scope in this table.

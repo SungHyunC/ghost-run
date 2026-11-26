@@ -819,6 +819,28 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - `integrations/kiro-hook/gate-switch.mjs` (validates both files before writing, text-level flip of `enabled` lines, `--hooks-dir` option for tests), root scripts in `package.json`, `tests/gate-switch.test.mjs` (temporary folder only), and the commands in the root README and `integrations/kiro-hook/README.md`.
     - _Requirements: 28.1, 28.2, 28.3, 28.4, 28.5, 28.6_
 
+- [x] 27. Installable gate bundle and installer
+  - [x] 27.1 Gate bundle
+    - `integrations/kiro-hook/scripts/bundle-gate.mjs` (`corepack pnpm --filter @ghost-run/kiro-hook bundle`; esbuild is a devDependency of the Hook_Package) writes `integrations/power/gate/` (`ghost-gate.mjs`, `gate-main.mjs`, `docker-warmup.mjs`, `seance.mjs`). The seance auto-start finds `seance.mjs` next to the bundle; `.kiro/ghost-run/**` joins the Self_Protected_Paths. The box lookup needed no change.
+    - _Requirements: 29.1, 29.2, 29.3, 29.4_
+
+  - [x] 27.2 Installer
+    - `integrations/power/install-gate.mjs` with `--project`, `--force`, `--uninstall`, and the manifest `.kiro/ghost-run/manifest.json`.
+    - _Requirements: 29.5, 29.6, 29.7, 29.8, 29.9, 29.10, 29.11_
+
+  - [x] 27.3 Tests
+    - `tests/gate-bundle.test.mjs` (reproducibility, fail-closed bootstrap), `tests/install-gate.test.mjs` (temporary git projects), `tests/installed-gate.test.mjs` (the installed gate end to end; the Docker case is skipped without Docker and the box image).
+    - _Requirements: 29.12_
+
+  - [x] 27.4 Docs
+    - Root README, `integrations/power/README.md`, `integrations/kiro-hook/README.md`.
+    - _Requirements: 29.13_
+
+  - [x] 27.5 Gates
+    - Tests, typecheck, and lint of `kiro-hook` and `mcp`. Expected failures in `kiro-hook`: `hook-files.test.mjs` and `docker-warmup.test.mjs` (the gate is switched on in this working tree).
+    - **Depends on tasks 27.1 to 27.4.**
+    - _Requirements: 29.1 to 29.13_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.
@@ -864,7 +886,10 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     { "id": 22, "tasks": ["22.1", "22.3", "22.4"] },
     { "id": 23, "tasks": ["22.2"] },
     { "id": 24, "tasks": ["22.5"] },
-    { "id": 25, "tasks": ["22.6"] }
+    { "id": 25, "tasks": ["22.6"] },
+    { "id": 26, "tasks": ["27.1"] },
+    { "id": 27, "tasks": ["27.2", "27.3", "27.4"] },
+    { "id": 28, "tasks": ["27.5"] }
   ]
 }
 ```

@@ -12,6 +12,7 @@ export const SELF_PROTECTED = Object.freeze([
   'integrations/kiro-hook/**',
   'integrations/mcp/**',
   '.ghost-run/**',
+  '.kiro/ghost-run/**',
 ]);
 
 const FILE_KINDS = new Set(['file-created', 'file-overwritten', 'file-deleted', 'symlink-changed']);

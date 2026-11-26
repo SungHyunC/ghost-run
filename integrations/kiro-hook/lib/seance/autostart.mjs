@@ -2,13 +2,23 @@
 // background when the seance base is local and nothing answers on its port. Never throws, never
 // changes the gate's decision, and waits at most PROBE_MS.
 import { spawn as nodeSpawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_IDLE_MS, HEALTH_SERVICE, parseSeanceBase } from './server.mjs';
 
 /** Longest wait for the port check (ms). */
 export const PROBE_MS = 300;
-const SCRIPT = fileURLToPath(new URL('../../seance.mjs', import.meta.url));
+/**
+ * The viewer script. In the repository it is `seance.mjs` two levels above this module. In the gate bundle
+ * (`integrations/power/gate/`, installed to `.kiro/ghost-run/gate/`) this module is part of `gate-main.mjs`,
+ * and the viewer bundle `seance.mjs` is its neighbour.
+ */
+const SCRIPT_CANDIDATES = [
+  fileURLToPath(new URL('./seance.mjs', import.meta.url)),
+  fileURLToPath(new URL('../../seance.mjs', import.meta.url)),
+];
+const SCRIPT = SCRIPT_CANDIDATES.find((candidate) => existsSync(candidate)) ?? SCRIPT_CANDIDATES[0];
 
 /**
  * Ask 127.0.0.1:<port> for /seance/health.

@@ -37,7 +37,7 @@ When the project has no wards file (no `wards.yaml` and no `apps/ghost-shell/war
 
 ## What you get
 
-- Advisory tools and the skill only. The power installs no hooks and no steering files, so nothing enforces a verdict. Enforcement needs the Ghost_Gate hook from `integrations/kiro-hook`, which is part of the template's `.kiro/` folder.
+- Advisory tools and the skill only. The power installs no hooks and no steering files, so nothing enforces a verdict. Enforcement needs the Ghost_Gate hook; `install-gate.mjs` (next section) installs it into a project.
 - Without Docker and the built box image, `ghost_run` returns the Plan_B result (static analysis). That result does not claim that the real project was left unchanged.
 
 ## Full rehearsal
@@ -60,6 +60,47 @@ corepack pnpm --filter @ghost-run/mcp bundle
 
 A test fails when the bundle is not a fresh build, or when `box/` differs from `ghost-runner/box`.
 
+## Enforcement: install the gate in a project
+
+The power is advisory. To enforce verdicts in an existing project, install the gate bundle with `install-gate.mjs`. It needs only Node 20 or later and no `node_modules`.
+
+```
+node <power folder>/install-gate.mjs [--project <dir>] [--force] [--uninstall]
+```
+
+`<power folder>` is `integrations/power` in this repository, or `~/.kiro/powers/installed/ghost-run` after a CLI install. `--project` defaults to the current folder. The installer:
+
+- copies `gate/` and `box/` to `<project>/.kiro/ghost-run/gate/` and `.kiro/ghost-run/box/`;
+- writes `<project>/.kiro/hooks/ghost-gate.json` (shell and write entries) and `docker-warmup.json`, running the copied files, with `enabled: true`: running the installer is the opt-in;
+- writes `<project>/wards.yaml` only when the project has neither `wards.yaml` nor `apps/ghost-shell/wards.yaml`: the default wards (`protect-data`, `no-data-loss`, `no-secret-egress`) and a commented `trusted_commands` example;
+- adds `.ghost-run/` to `<project>/.gitignore` (the graveyard, statistics, and run records);
+- overwrites no existing file without `--force`, and changes nothing when it finds a conflict;
+- records every file it wrote, with a hash, in `.kiro/ghost-run/manifest.json`.
+
+`--uninstall` removes exactly the files of that manifest, the `.gitignore` line it added, and the folders it created when they are empty. A file that you changed after the install is kept (use `--uninstall --force` to remove it too). `.ghost-run/` (the graveyard and statistics) is not touched. `--force` on an installed project re-installs: the result is the same files and the same manifest.
+
+Then build the box image once, with the copied sources, and start a new Kiro session:
+
+```
+node .kiro/ghost-run/box/build.mjs
+```
+
+Docker must be running for that. Without Docker or without the image, the gate falls back to static analysis (Plan B), asks before it lets a command run, and does not claim P1 isolation. To switch the gate off, set `enabled` to `false` in both entries of `.kiro/hooks/ghost-gate.json` and in `.kiro/hooks/docker-warmup.json`.
+
+The installed gate behaves like the one in this template: the same verdicts and messages, statistics, graves, trusted commands, and Plan B fallback. It also asks before a write to `.kiro/ghost-run/**`, so an agent cannot edit the installed gate unnoticed. The installer refuses to run against this repository itself.
+
+Trusted commands are not rehearsed. See "Trusted commands" in [../kiro-hook/README.md](../kiro-hook/README.md) before you list any.
+
+### Gate bundle
+
+`gate/` is committed, like `server/`. It holds four ES-module files: `ghost-gate.mjs` (the small bootstrap with the watchdog; it loads the real gate with a dynamic import inside try/catch, so a missing or broken `gate-main.mjs` still exits 2), `gate-main.mjs` (the gate with `core`, `ghost-runner`, and `wards-config` bundled in), `docker-warmup.mjs`, and `seance.mjs` (the viewer that the gate starts after a block, found next to `gate-main.mjs`). The gate finds the box sources in the `box/` folder one level above `gate/`. Build it with:
+
+```
+corepack pnpm --filter @ghost-run/kiro-hook bundle
+```
+
+A test fails when the files are not a fresh build. Build the packages first (`corepack pnpm -r build`), because the bundle reads their build output.
+
 ## Files
 
 - `plugin.json`: plugin metadata.
@@ -67,3 +108,5 @@ A test fails when the bundle is not a fresh build, or when `box/` differs from `
 - `skills/ghost-run/SKILL.md`: when and how to use the tools.
 - `server/ghost-run-mcp.mjs`: the server bundle.
 - `box/`: the box image sources.
+- `gate/`: the gate bundle (see above).
+- `install-gate.mjs`: the installer of the gate bundle.

@@ -11,6 +11,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["*.mjs", "lib/**/*.mjs", "tests/**/*.mjs", "vitest.config.ts"],
+  "include": ["*.mjs", "lib/**/*.mjs", "scripts/**/*.mjs", "../power/install-gate.mjs", "tests/**/*.mjs", "vitest.config.ts"],
   "exclude": ["node_modules", "exp-b-gate.mjs"]
 }

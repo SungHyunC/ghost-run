@@ -297,7 +297,7 @@ For each target (every Target_Path_Field value, strictest verdict wins):
 
 ### Self-protection (`self-protect.mjs`, Requirement 10 criteria 5 to 9)
 
-`SELF_PROTECTED = ['.kiro/hooks/**', 'integrations/kiro-hook/**', 'integrations/mcp/**', '.ghost-run/**', <resolved Wards_File, workspace-relative>]`, compiled with `compilePathSet` (case-insensitive). The floor applies to write-tool targets (above) and to the Changes of a shell ghost run: after `runPlan` returns, any `file-created`, `file-overwritten`, `file-deleted`, or `symlink-changed` Change whose path matches raises the verdict to at least `warn` and adds the fixed notice to the message. Because the ghost runs on a Copy, a shell command that edits the gate is caught by diff and not by shape. The Plan_B case (no Changes) cannot see these edits; it is already `warn`. The Wards_File outside the workspace (`GHOST_RUN_WARDS_FILE` pointing elsewhere) is protected only through the tools the gate judges, as the README states. The `.ghost-run/**` entry is kept even though no approval store exists (D1), so an agent cannot rewrite the graveyard, the stats, or the provenance log without a human seeing a prompt.
+`SELF_PROTECTED = ['.kiro/hooks/**', 'integrations/kiro-hook/**', 'integrations/mcp/**', '.ghost-run/**', '.kiro/ghost-run/**', <resolved Wards_File, workspace-relative>]`, compiled with `compilePathSet` (case-insensitive). The floor applies to write-tool targets (above) and to the Changes of a shell ghost run: after `runPlan` returns, any `file-created`, `file-overwritten`, `file-deleted`, or `symlink-changed` Change whose path matches raises the verdict to at least `warn` and adds the fixed notice to the message. Because the ghost runs on a Copy, a shell command that edits the gate is caught by diff and not by shape. The Plan_B case (no Changes) cannot see these edits; it is already `warn`. The Wards_File outside the workspace (`GHOST_RUN_WARDS_FILE` pointing elsewhere) is protected only through the tools the gate judges, as the README states. The `.ghost-run/**` entry is kept even though no approval store exists (D1), so an agent cannot rewrite the graveyard, the stats, or the provenance log without a human seeing a prompt.
 
 ### Approval channel (D1)
 
@@ -697,7 +697,28 @@ D6, server launch. Options: (a) a relative path to a committed single-file bundl
 
 `scripts/bundle.mjs` exports `buildBundle(outFile)` and `copyBox(destDir, sourceDir)`. `copyBox` removes the destination, then copies `ghost-runner/box` (Dockerfile, BASE_DIGEST, build.mjs, `recorder/`) byte for byte with `fs.cp`, leaving out files that end in `.local`. Running the script without an argument (`corepack pnpm --filter @ghost-run/mcp bundle`) writes the bundle to `integrations/power/server/ghost-run-mcp.mjs` and then calls `copyBox()` for `integrations/power/box/`; with an output argument (the bundle test) only the bundle is written. The image tag is a hash of the box files, so the copy gives the same tag as the template. The copy is committed. `findBoxDir` from the folder of the bundle searches upward and finds `integrations/power/box`.
 
-The Power_Folder contains no hook and no steering file (the template keeps them in its `.kiro/`). The README states that a project with only the power has advisory tools and no enforcement.
+The Power_Folder contains no hook and no steering file (the template keeps them in its `.kiro/`). The README states that a project with only the power has advisory tools and no enforcement; enforcement comes from the installer of the next section.
+
+### Installable gate bundle (`scripts/bundle-gate.mjs`, `integrations/power/gate/`, `integrations/power/install-gate.mjs`, Requirement 29)
+
+**Why a bundle.** The gate source imports `core`, `ghost-runner`, and `wards-config` by workspace name, so it runs only inside this repository. The MCP server solved the same problem with one esbuild bundle. The gate uses the same tool (esbuild 0.28.2, a devDependency of the Hook_Package) with the same options (`platform: node`, `target: node20`, ESM, no minify, `charset: ascii` plus an escape pass, a `createRequire` banner for CommonJS dependencies).
+
+**Four entry points, four files.** `buildGate(outDir)` runs one esbuild build per file:
+
+| Output | Entry | Notes |
+|---|---|---|
+| `ghost-gate.mjs` | `ghost-gate.mjs` | Bootstrap with `hook-io` and `gate-config` inlined. A plugin marks `./lib/gate/main.mjs` external and rewrites it to `./gate-main.mjs`, so the dynamic import stays a runtime import inside the `try/catch` of `runHook`. Missing file or syntax error: the `unavailable` line and exit 2. No banner. |
+| `gate-main.mjs` | `lib/gate/main.mjs` | The real gate (exports `run`, `cleanupOnTimeout`) with all packages. Duplicates a few constants of the bootstrap; both come from the same source. |
+| `docker-warmup.mjs` | `docker-warmup.mjs` | Unchanged behavior. |
+| `seance.mjs` | `seance.mjs` | The viewer. |
+
+The bootstrap stays tiny and has no dependency of its own, so it cannot fail before its `try/catch`. The bundle is committed and a test builds it again into a temporary folder and compares bytes.
+
+**Two source changes.** (1) `lib/seance/autostart.mjs` looked for the viewer at `../../seance.mjs` relative to itself, which is wrong inside `gate-main.mjs`. It now takes the first existing file of `./seance.mjs` (the bundle layout) and `../../seance.mjs` (the repository layout) next to `import.meta.url`. (2) `.kiro/ghost-run/**` joins `SELF_PROTECTED`, so the installed gate is covered like `integrations/kiro-hook/**`. In the repository the folder does not exist, so no verdict there changes.
+
+**Box lookup.** `findBoxDir` of `ghost-runner` already searches `box/` from the folder of the running module, at most 6 levels up. For `gate-main.mjs` in `.kiro/ghost-run/gate/` the first hit is `.kiro/ghost-run/box` (and `integrations/power/box` in the repository). No change was needed. The image tag is a hash of the box files, which the installer copies byte for byte, so the tag equals the template's.
+
+**Installer.** `install-gate.mjs` has no dependency and reads `gate/` and `box/` next to itself, so it also works from `~/.kiro/powers/installed/ghost-run/`. Install builds the full list of files first, checks conflicts, and only then writes, so a refusal changes nothing. Hook files have the format of Requirement 2 (`PreToolUse`, `timeout` 60 and 5, commands `node .kiro/ghost-run/gate/ghost-gate.mjs` and `.../docker-warmup.mjs`, run from the project root as the template's hooks are) and `enabled: true`. The manifest lists each written file with its SHA-256, the folders the installer created, and whether it created or extended `.gitignore`. Uninstall trusts the manifest only for paths under `.kiro/` and `wards.yaml` with no `..`, keeps files whose hash changed unless `--force`, and removes created folders deepest first only when empty. `--force` over an installed project removes files of the old manifest that the new one no longer lists, and keeps a `wards.yaml` that the old manifest lists as the installer's own. The installer refuses a project that holds this installer at `integrations/power/`, because that is the template, which has its own committed hooks and runs the gate from source.
 
 ---
 
@@ -1008,6 +1029,7 @@ Unit tests stay few because the properties cover input space; unit tests pin fix
 | 24 Probe | Probe hook | probe-disabled test, measurements table |
 | 25 Docker wake retry and warm-up | Docker wake retry and warm-up, Hook file format | `gate-wake`, `docker-warmup`, `worlds-config` tests |
 | 27 Trusted commands | Trusted commands, Decision and output | 24, `trusted-commands`, `gate-trusted`, `wards-file`, `store-records` tests |
+| 29 Installable gate bundle | Installable gate bundle, Self-protection | `gate-bundle`, `install-gate`, `installed-gate` tests |
 
 ---
 
