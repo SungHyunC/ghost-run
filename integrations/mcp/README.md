@@ -43,4 +43,8 @@ corepack pnpm --filter @ghost-run/mcp lint
 node integrations/mcp/bin/ghost-run-mcp.mjs     # stdio server; start it from the workspace root
 ```
 
+### Use it in Kiro from this repository
+
+The repository registers this server for its own workspace in `.kiro/settings/mcp.json` (server `ghost-run`, `node integrations/mcp/bin/ghost-run-mcp.mjs`, a path relative to the workspace root). The entry ships with `"disabled": true`, like the hooks. To switch it on, run `corepack pnpm -r build` (the server imports the built `core`, `ghost-runner`, and `wards-config`), set `disabled` to `false` in that file, and reload the MCP servers in Kiro. `gate:on`, `gate:off`, and `gate:status` do not touch the file. The working directory Kiro gives a workspace server was not measured here. If a tool answers "Workspace root unknown", pass `workspace` (the absolute path of the project) or set `GHOST_RUN_WORKSPACE` in the entry's `env`. `tests/workspace-mcp-config.test.mjs` checks that the file parses, names `ghost-run`, is disabled, and points at the package's `bin` entry.
+
 The Kiro power in `integrations/power/` ships a single-file bundle of this server (`corepack pnpm --filter @ghost-run/mcp bundle`). Installing only the power gives these advisory tools and the skill, and not the enforcing gate. See `integrations/power/README.md`.

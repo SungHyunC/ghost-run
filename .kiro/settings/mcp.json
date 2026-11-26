@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ghost-run": {
+      "command": "node",
+      "args": ["integrations/mcp/bin/ghost-run-mcp.mjs"],
+      "env": {},
+      "disabled": true
+    }
+  }
+}
