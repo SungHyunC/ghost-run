@@ -34,11 +34,46 @@ Expected output (exit code 0):
 plan: clear
   blocked by ward keep-todos: the copy lost 3 to-dos
   real list unchanged: true (fingerprint ed34d2240ad1 before and after)
+plan: remove 2
+  blocked by ward keep-todos: the copy lost 1 to-do
+  real list unchanged: true (fingerprint ed34d2240ad1 before and after)
 plan: add "buy candles"
   passed: 1 action, the copy lost 0 to-dos
 ```
 
 The demo runs each plan on a fresh world through `ghostRun` and `WardEngine.evaluate`, the same calls the apps use. Tests: `corepack pnpm --filter @ghost-run/world-starter test`.
+
+### Change a rule
+
+Open `worlds/starter/wards.yaml`. The ward protects every to-do:
+
+```
+    paths: ["todos/*"]
+```
+
+Protect only the first to-do instead:
+
+```
+    paths: ["todos/1"]
+```
+
+Run the demo again:
+
+```
+corepack pnpm --filter @ghost-run/world-starter demo
+```
+
+```
+plan: clear
+  blocked by ward keep-todos: the copy lost 3 to-dos
+  real list unchanged: true (fingerprint ed34d2240ad1 before and after)
+plan: remove 2
+  passed: 1 action, the copy lost 1 to-do
+plan: add "buy candles"
+  passed: 1 action, the copy lost 0 to-dos
+```
+
+`remove 2` now passes, because to-do 2 is no longer protected. `clear` is still blocked, because it deletes to-do 1. Nothing else changed: the plans, the world, and the code are the same. Undo the edit to get the first output back. To try a rule without editing the file, save a copy and run `corepack pnpm --filter @ghost-run/world-starter demo --wards <file>`.
 
 ## Claims
 

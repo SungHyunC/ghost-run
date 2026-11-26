@@ -89,10 +89,12 @@ Safety claims follow the world-contract steering ("Claimed in" column). The scop
 
 #### Acceptance Criteria
 
-1. THE command `corepack pnpm --filter @ghost-run/world-starter demo` SHALL run the plans `clear` and `add "buy candles"` through `ghostRun` and `WardEngine.evaluate`, print plain text, and exit with code 0.
-2. THE output SHALL state, for `clear`, the ward id, the number of to-dos the copy lost, and that the fingerprint of the real list is the same before and after.
+1. THE command `corepack pnpm --filter @ghost-run/world-starter demo` SHALL run the plans `clear`, `remove 2`, and `add "buy candles"` (in this order) through `ghostRun` and `WardEngine.evaluate`, print plain text, and exit with code 0.
+2. THE output SHALL state, for `clear` and for `remove 2`, the ward id, the number of to-dos the copy lost, and that the fingerprint of the real list is the same before and after.
 3. THE output SHALL state, for `add "buy candles"`, that the plan passed.
-4. A test SHALL check the blocked line and the passed line.
+4. A test SHALL check the blocked lines and the passed line.
+5. WITH the shipped `wards.yaml`, `remove 2` SHALL be blocked by `keep-todos` (the copy lost 1 to-do). WITH `paths: ["todos/1"]` in place of `paths: ["todos/*"]`, `remove 2` SHALL pass and `clear` SHALL still be blocked (it deletes to-do 1). The README section "Try it in one minute" and `worlds/starter/README.md` SHALL show both outputs exactly as the program prints them, in a short step "Change a rule".
+6. THE demo SHALL accept the wards text as an input (`runDemo(wardsText)`, and the optional argument `--wards <file>` of the command), so that a test checks both outputs without editing `wards.yaml`. THE plain command SHALL still need no build, browser, Docker, or network. A test SHALL check both outputs and that the output blocks of both READMEs equal them.
 
 ### Requirement 7: Claim Scope
 

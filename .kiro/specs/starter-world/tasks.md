@@ -43,9 +43,16 @@ This plan builds the world `starter` in `worlds/starter/`: the state and actions
   - [x] 5.2 Write `tests/demo.test.ts`
     - _Requirements: 6.4_
 
+  - [x] 5.3 Third plan and a changeable rule
+    - Add the plan `remove 2` between `clear` and `add "buy candles"`; `runDemo(wardsText)` and the optional `--wards <file>` argument; the lost count reads "1 to-do" or "N to-dos". `tests/demo.test.ts` checks both outputs and the README blocks.
+    - _Requirements: 6.1, 6.2, 6.4, 6.5, 6.6_
+
 - [x] 6. Documentation
   - [x] 6.1 Write `worlds/starter/README.md` and update the root `README.md`
     - _Requirements: 7.1_
+
+  - [x] 6.2 "Change a rule" step in `worlds/starter/README.md` and in the root `README.md` section "Try it in one minute", with both outputs
+    - _Requirements: 6.5_
 
 - [x] 7. Final checkpoint
   - Run `test`, `typecheck`, `lint`, and `demo` of `@ghost-run/world-starter`, and the root `test`, `typecheck`, and `lint`.

@@ -32,7 +32,7 @@ worlds/starter/
   README.md
   src/world.ts             state, actions, the six functions
   src/index.ts             public entry
-  scripts/run-demo.ts      the two demo plans, returns the printed text
+  scripts/run-demo.ts      the three demo plans, returns the printed text
   scripts/demo.ts          prints it (the `demo` script)
   tests/contract.test.ts   verifyWorld, registration, invalid action
   tests/demo.test.ts       the blocked line and the passed line
@@ -86,7 +86,7 @@ wards:
 
 ### Component 6: Demo
 
-`scripts/run-demo.ts` runs each plan on a fresh world with `ghostRun` and `WardEngine.evaluate`, counts `file-deleted` changes, and compares the fingerprint before and after. `scripts/demo.ts` prints the text. The `demo` script runs it with `vite-node` and the package's `vitest.config.ts` (which maps the workspace packages to their source).
+`scripts/run-demo.ts` runs each plan on a fresh world with `ghostRun` and `WardEngine.evaluate`, counts `file-deleted` changes, and compares the fingerprint before and after. `scripts/demo.ts` prints the text. `runDemo(wardsText)` takes the wards text (default: the file `wards.yaml`), and `demo.ts` reads it from the optional argument `--wards <file>`. The plans are `clear`, `remove 2`, and `add "buy candles"`. The lost count prints "1 to-do" and "N to-dos". The `demo` script runs it with `vite-node` and the package's `vitest.config.ts` (which maps the workspace packages to their source).
 
 ## Data Models
 
@@ -112,7 +112,7 @@ wards:
 ## Testing Strategy
 
 - `tests/contract.test.ts`: registration, `verifyWorld`, one invalid action.
-- `tests/demo.test.ts`: the demo output has the blocked line for `clear` and the passed line for `add`.
+- `tests/demo.test.ts`: the whole output with the shipped wards (`clear` and `remove 2` blocked, `add` passed), the whole output with `paths: ["todos/1"]` (`remove 2` passes, `clear` blocked), a wards text that does not parse, and that the output blocks of both READMEs equal these two outputs.
 
 Verification commands: `corepack pnpm --filter @ghost-run/world-starter test`, `typecheck`, `lint`, and `demo`.
 
