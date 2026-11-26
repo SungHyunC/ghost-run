@@ -1380,3 +1380,26 @@ No test failed. This entry replaces the unconfirmed Check A of 0372934 above as 
   - "Run the shell command: ls" ran, with no hook message; `.ghost-run/stats.jsonl` recorded `safe-skip`.
   - "Run the shell command: npx ghost-run approve g-1" did not run: "GHOST RUN GATE ERROR: rule approval-command: this command is reserved for humans; the tool call was not allowed."
 - From here on, every Kiro shell and write call in this repository goes through the gate. The daily counts for task 19.2 come from `.ghost-run/stats.jsonl`.
+
+## Check A at c46d919 (2026-11-26)
+
+Run by Claude Code in a fresh clone of commit `c46d919` on an Apple M1 Mac (macOS 27.2.1, Node.js 20.20.2, pnpm 12.21.0, Docker Desktop 29.9.3 running), after the fixes from the third review. Commands, in order: `corepack pnpm install --frozen-lockfile`, `corepack pnpm build`, `corepack pnpm --filter @ghost-run/ghost-runner box:build`, `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test`. Every command exited 0. Build took 12 s, lint 12 s, typecheck 28 s, and the test step 877 s.
+
+| Package | Test files | Tests passed | Skipped |
+|---|---|---|---|
+| `core` | 75 (1 skipped) | 556 | 2 |
+| `ghost-runner` | 59 | 385 | 0 |
+| `ui` | 71 | 701 | 0 |
+| `wards-config` | 16 | 146 | 0 |
+| `worlds/drawer-arm` | 24 | 145 | 0 |
+| `integrations/kiro-hook` | 60 | 767 | 0 |
+| `worlds/ghost-cloud` | 16 | 108 | 0 |
+| `worlds/playground-shell` | 34 | 397 | 0 |
+| `worlds/starter` | 2 | 8 | 0 |
+| `apps/ghost-hand` | 39 | 284 | 0 |
+| `integrations/mcp` | 15 | 93 | 3 |
+| `apps/ghost-shell` | 42 | 236 | 0 |
+| `site` | 112 (1 skipped) | 1,005 | 6 |
+| **Total** | **566** | **4,831** | **11** |
+
+No test failed. The same six commands at `258fa29`, an hour earlier and before the `/hand/` header fix, gave 4,829 passed and 11 skipped. This entry replaces Check A at `7c6e39a` as the reference full run.
