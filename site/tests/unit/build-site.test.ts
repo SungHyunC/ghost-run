@@ -108,7 +108,8 @@ describe('buildSite', () => {
     expect(listAll(dist).some((f) => f.endsWith('.DS_Store'))).toBe(false);
     const headers = readFileSync(join(dist, '_headers'), 'utf8');
     expect(headers).toContain('/shell/*');
-    for (const block of ['/hand/', '/hand/*']) {
+    expect(headers).not.toMatch(/^\/hand\/$/m);
+    for (const block of ['/hand/*']) {
       const text = `${block}\n  Content-Security-Policy: `;
       expect(headers, block).toContain(text);
       const rest = headers.slice(headers.indexOf(text) + text.length).split('\n');

@@ -15,7 +15,7 @@ export const LANDING_HEADERS = Object.freeze([
   'Referrer-Policy: no-referrer',
 ]);
 
-/** The three headers of the `/hand/` blocks, in order. */
+/** The three headers of the `/hand/*` block, in order. */
 export const HAND_HEADERS = Object.freeze([
   `Content-Security-Policy: ${handHeaderPolicy()}`,
   'X-Content-Type-Options: nosniff',
@@ -78,11 +78,12 @@ export function scopeBlocks(blocks, prefix) {
 export function buildRootHeaders(shellHeadersText) {
   const shell = scopeBlocks(parseHeaders(shellHeadersText), '/shell');
   return printHeaders([
+    // Cloudflare Pages applies every block that matches a path, and `*` matches any characters, none included.
+    // So `/hand/*` alone covers `/hand/` and its files with one policy; a second `/hand/` block would double it.
     { path: '/', headers: [...LANDING_HEADERS] },
     { path: '/index.html', headers: [...LANDING_HEADERS] },
     { path: '/kit/', headers: [...LANDING_HEADERS] },
     { path: '/kit/index.html', headers: [...LANDING_HEADERS] },
-    { path: '/hand/', headers: [...HAND_HEADERS] },
     { path: '/hand/*', headers: [...HAND_HEADERS] },
     ...shell,
   ]);

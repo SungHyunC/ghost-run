@@ -67,7 +67,8 @@ describe('Property 11: Headers rewrite', () => {
         const root = parseHeaders(buildRootHeaders(printHeaders(blocks)));
         const paths = root.map((b) => b.path);
         expect(paths).not.toContain('/*');
-        expect(paths.slice(4, 6)).toEqual(['/hand/', '/hand/*']);
+        expect(paths.slice(4, 5)).toEqual(['/hand/*']);
+        expect(paths).not.toContain('/hand/');
         expect(paths).not.toContain('/kit/*');
         expect(paths).not.toContain('/kit/gallery/*');
         expect(new Set(paths).size).toBe(paths.length);
@@ -84,8 +85,7 @@ describe('Property 11: Headers rewrite', () => {
           expect(policy).not.toContain(bad);
         }
         expect(policy).not.toMatch(/'unsafe-eval'/);
-        const hand = root.find((b) => b.path === '/hand/')?.headers;
-        expect(root.find((b) => b.path === '/hand/*')?.headers).toEqual(hand);
+        const hand = root.find((b) => b.path === '/hand/*')?.headers;
         const handPolicy = hand?.find((h) => h.startsWith('Content-Security-Policy:')) ?? '';
         expect(handPolicy.replace(" 'unsafe-eval'", '')).toBe(policy);
         expect(hand?.slice(1)).toEqual(slashHeaders?.slice(1));

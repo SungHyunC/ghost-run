@@ -28,7 +28,7 @@ The plan follows the implementation order of the design:
 2. **The walkthrough is a pure engine plus a thin hook** (design D1, D11). Settling, jumping, and playing all fold the same events.
 3. **The Reality pane takes only its scene as props** (design D2). Property 1 checks it.
 4. **No shared test files across waves.** Each property test lives in its own file. Shared helpers are written by one task and only read by later tasks. Tasks that edit the same file (`App.tsx`, the stylesheets, `README.md`, `docs/measurements.md`) are in different waves.
-5. **Open items taken with the design default.** O1: `REPO_URL` is a fixed constant, `https://github.com/SungHyunC/ghost-run` (the owner's decision). O2: the allowlist gets the entry `https://react.dev/errors/`. O3: no `/kit/*` headers block; the `/hand/` blocks were added later (task 21). O4: the joint-limit report is read from a structured field when the Ghost Hand result has one, else by the pattern of design Component 8. O5 and O9: the edits outside `site/` named above. Where the real repository contradicts an item, the task reports it and follows the repository (Requirement 24).
+5. **Open items taken with the design default.** O1: `REPO_URL` is a fixed constant, `https://github.com/SungHyunC/ghost-run` (the owner's decision). O2: the allowlist gets the entry `https://react.dev/errors/`. O3: no `/kit/*` headers block; the `/hand/*` block was added later (task 21). O4: the joint-limit report is read from a structured field when the Ghost Hand result has one, else by the pattern of design Component 8. O5 and O9: the edits outside `site/` named above. Where the real repository contradicts an item, the task reports it and follows the repository (Requirement 24).
 
 ## Conventions
 
@@ -337,9 +337,10 @@ The plan follows the implementation order of the design:
   - Report the files changed, the test results, the `REPO_URL` value to confirm, any value of the recorded runs that differed from the requirements, and the items left to the owner (see Notes).
 
 - [x] 21. Content-Security-Policy for `/hand/` (open question O3)
-  - Add `handHeaderPolicy()` to `site/scripts/lib/csp.mjs` and the blocks `/hand/` and `/hand/*` to `buildRootHeaders` in `site/scripts/lib/headers.mjs`. The policy is the Landing_Policy plus `'unsafe-eval'` in `script-src`.
-  - In `site/scripts/check-site.mjs`: require both blocks, let `'unsafe-eval'` pass only in `/hand/` blocks, and apply the positive directive rule of `/` to them.
+  - Add `handHeaderPolicy()` to `site/scripts/lib/csp.mjs` and the block `/hand/*` to `buildRootHeaders` (a `/hand/` block was first added too and removed again: both matched `/hand/` and doubled the header on the live site) in `site/scripts/lib/headers.mjs`. The policy is the Landing_Policy plus `'unsafe-eval'` in `script-src`.
+  - In `site/scripts/check-site.mjs`: require `/hand/*`, fail on a `/hand/` block, let `'unsafe-eval'` pass only in `/hand/*`, and apply the positive directive rule of `/` to them.
   - Update `headers.test.ts`, `headers.property.test.ts`, `csp-kit.property.test.ts`, `build-site.test.ts`, and `check-site.test.ts`.
+  - Add a test that no request path of the site matches two blocks that both set `Content-Security-Policy` (Cloudflare matching: a `*` splat matches any characters, none included). `/`, `/index.html`, `/kit/`, and `/kit/index.html` are literal and stay.
   - Browser check: serve `site/dist` with the root `_headers` applied, open `/hand/` in Chrome through Playwright, press `Play demo`; the console shows no violation and the demo reaches step 4 of 4. Without `'unsafe-eval'` the check fails with `script-src eval`.
   - _Requirements: 19.3, 19.5, 19.8_
 

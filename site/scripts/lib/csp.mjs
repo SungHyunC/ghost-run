@@ -33,7 +33,7 @@ export function landingMetaPolicy() {
  */
 export const HAND_CSP_PARTS = LANDING_CSP_PARTS.map((part) => part.startsWith('script-src') ? "script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'" : part);
 
-/** @returns {string} the policy of the `_headers` blocks for `/hand/` and `/hand/*` */
+/** @returns {string} the policy of the `_headers` block `/hand/*` */
 export function handHeaderPolicy() {
   return HAND_CSP_PARTS.join('; ');
 }

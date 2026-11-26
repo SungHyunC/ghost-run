@@ -39,7 +39,7 @@ export const RULE_POLICY_REQUIRED = 'headers-policy: a required directive is mis
 export const RULE_SHOWCASE_ENGINE = 'showcase: the Showcase names an Engine_Bundle, a worker file, or a wasm file';
 export const RULE_LANDING_SHOWCASE = 'showcase: the Landing_Page names an asset with the prefix showcase-';
 export const RULE_SHOWCASE_SIZE = 'showcase: the closure of the Showcase entry is larger than the limit';
-export const RULE_HAND_POLICY = 'headers-policy: /hand/ and /hand/* must each have a Content-Security-Policy block';
+export const RULE_HAND_POLICY = 'headers-policy: /hand/* must have exactly one Content-Security-Policy block (it covers /hand/ and its files)';
 export const RULE_KIT_BLOCK = 'headers-policy: a /kit/ block differs from the block of /';
 export const RULE_NOTICE_LINK = 'structure: index.html has no link to THIRD_PARTY_NOTICES.txt';
 export const RULE_NOTICE_PACKAGE = 'notices: a bundled package has no license section in THIRD_PARTY_NOTICES.txt';
@@ -430,9 +430,9 @@ function checkStructure(distRoot, files, repoUrl, findings, kitLinks) {
       if (fileSet.has('hand/index.html')) {
         const hasPolicy = (scope) =>
           blocks.some((b) => b.path === scope && b.headers.some((h) => /^content-security-policy\s*:/i.test(h)));
-        for (const scope of ['/hand/', '/hand/*']) {
-          if (!hasPolicy(scope)) findings.push({ file: '_headers', reference: scope, rule: RULE_HAND_POLICY });
-        }
+        if (!hasPolicy('/hand/*')) findings.push({ file: '_headers', reference: '/hand/*', rule: RULE_HAND_POLICY });
+        // `/hand/` is matched by `/hand/*` too (a splat matches nothing as well), so its own block would double the header.
+        if (blocks.some((b) => b.path === '/hand/')) findings.push({ file: '_headers', reference: '/hand/', rule: RULE_HAND_POLICY });
       }
     } catch {
       findings.push({ file: '_headers', reference: '(_headers)', rule: RULE_HEADERS_PARSE });
