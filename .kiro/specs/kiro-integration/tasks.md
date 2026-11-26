@@ -757,6 +757,27 @@ This plan edits no other spec. Hand-offs that belong to another spec are recorde
     - **Depends on tasks 23.1, 23.2, and 23.3.**
     - _Requirements: 19.15, 22.5_
 
+- [x] 24. Seance viewer and auto-start 2026-11-30 (resolves O4)
+  - [x] 24.1 Viewer and pages
+    - `integrations/kiro-hook/lib/seance/render.mjs` and `server.mjs`: plain HTML pages, 127.0.0.1 only, GET only, id pattern, security headers, health JSON, friendly empty page.
+    - _Requirements: 26.1, 26.2, 26.3, 26.4_
+
+  - [x] 24.2 Manual command
+    - `integrations/kiro-hook/seance.mjs` and the `seance` script of the package; the port comes from `GHOST_RUN_SEANCE_BASE`.
+    - _Requirements: 26.5_
+
+  - [x] 24.3 Auto-start from the gate
+    - `lib/seance/autostart.mjs`, the `onGrave` dependency of `decide`, and the call in `lib/gate/main.mjs`; `GHOST_RUN_SEANCE_AUTOSTART=0` turns it off; source-scan exemptions for `lib/seance/` and `seance.mjs`.
+    - _Requirements: 26.6, 26.7, 26.8_
+
+  - [x] 24.4 Tests
+    - `integrations/kiro-hook/tests/seance.test.mjs` (21 tests).
+    - _Requirements: 26.9_
+
+  - [x] 24.5 Docs
+    - Section "Seance link" in `integrations/kiro-hook/README.md` and a bullet in "Kiro integration" of the root README.
+    - _Requirements: 26.5, 26.7, 26.8_
+
 ## Notes
 
 - Task 22 (fix round 2, 2026-11-21) removes the `PWD` source, adds the `workspace` input, commits `WARN_MODE = 'ask'`, and records the IDE results. Tasks 17.1, 17.2, 17.4, 19.x, and the parents 17, 19, 20, 1, and 2 stay unticked until the human completes them. Task 17.3 is kept as a record of the decision.

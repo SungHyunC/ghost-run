@@ -380,6 +380,7 @@ The Mirror world hides the value of any field whose key name contains `secret`, 
 Ghost Run+ plugs into Kiro (IDE and CLI) with five hooks, one MCP server, and one power. Details, claims, and limits are in the READMEs of each part:
 
 - [`integrations/kiro-hook/`](integrations/kiro-hook/README.md): the hooks `ghost-gate` (Pre Tool Use), `ghost-log` (Post Tool Use), `contract-pbt`, `world-scaffold`, and `blacklight-steering`. The note on [cross-call exfiltration](integrations/kiro-hook/docs/cross-call-exfiltration.md) states what the records can and cannot do.
+- **Seance link.** The `Seance:` link in a block or ask message opens a local read-only page for that grave (command, candle, wards with numbers, diff, claims, red thread). The gate starts the viewer in the background on `localhost:5317` after a grave; start it by hand with `corepack pnpm --filter @ghost-run/kiro-hook seance`, and switch the auto-start off with `GHOST_RUN_SEANCE_AUTOSTART=0`. See [integrations/kiro-hook/README.md](integrations/kiro-hook/README.md#seance-link).
 - [`integrations/mcp/`](integrations/mcp/README.md): the advisory MCP server `ghost-run` with the tools `ghost_run`, `ghost_diff`, `ghost_trace`, `wards_check`, and `blacklight`.
 - [`integrations/power/`](integrations/power/README.md): the Kiro power (plugin file, skill, and a bundled server). It gives the advisory tools and the skill, not the enforcing gate.
 

@@ -93,6 +93,17 @@ A change under `.kiro/hooks/**`, `integrations/kiro-hook/**`, `integrations/mcp/
 
 **blacklight-steering.** The hook sees only files that the agent saved. The HTML comment category applies to markdown files and flags a comment inside a code fence. It detects no invisible character outside the possession categories, and text analysis does not catch every injection.
 
+## Seance link
+
+Every block or ask message ends with `Seance: <base>/seance/<id>`. The base is `GHOST_RUN_SEANCE_BASE` (default `http://localhost:5317`). The link opens the seance viewer of this package: a read-only page for one grave of `.ghost-run/graveyard.jsonl`. It shows the command, the candle (lit, flickering, or out), each ward with its reason and numbers, the diff summary, the claims (a run without a sealed box says that P1, P5, and P6 are not guaranteed), and the red thread when the run has one. `/seance/` lists all graves, newest first.
+
+- **Plain page.** The pages are plain HTML in the colors of the UI kit, with no script. The kit components are TSX source that this Node package does not build, so they are not used here.
+- **Manual start.** `corepack pnpm --filter @ghost-run/kiro-hook seance`, or `node integrations/kiro-hook/seance.mjs [--root <dir>] [--port <n>]`. The port comes from the seance base.
+- **Auto-start.** After the gate writes a grave and the base is `http://localhost` or an http base on the IPv4 loopback address, the gate checks the port. If the connection is refused, it starts the viewer as a detached background process that exits after 30 minutes without a request. If something answers that is not the viewer (`/seance/health`), the gate starts nothing. The step is bounded (500 ms at most, about 1 ms when the port is free), never changes the decision or the exit code, and never throws.
+- **Turn it off.** Set `GHOST_RUN_SEANCE_AUTOSTART=0`. The manual command still works.
+- **Safety.** The viewer binds `127.0.0.1` only, answers GET only, serves only ids that exist in the graveyard, escapes every value, and sends a Content-Security-Policy without scripts, `nosniff`, and `no-store`.
+- **One workspace per port.** A viewer serves the graveyard of the workspace that started it. If you work in two workspaces, set a different port in `GHOST_RUN_SEANCE_BASE` for each.
+
 ## Docker Desktop Resource Saver
 
 Docker Desktop's Resource Saver stops its VM after five idle minutes. The next engine call has to start the VM again. Measured on 2026-11-21 with the VM stopped, the first `docker info` took 1.88 s and the following calls 0.03 to 0.13 s. The gate's availability check allows 2 s (`AVAILABILITY_LIMIT_MS`), and the first check of an idle session landed just over it. In Kiro IDE it timed out (2010 to 2021 ms in 4 runs) and the gate fell back to static analysis with `NEEDS HUMAN APPROVAL`. Details are in `docs/measurements.md`, heading `Docker Resource Saver wake-up`.

@@ -1,6 +1,6 @@
 // Gate main (Requirement 8, design D3): loaded by the bootstrap `ghost-gate.mjs` through a dynamic import.
 // Wires the real dependencies, calls `decide`, and returns the outcome for the bootstrap to write.
-// It reads no environment variable except GHOST_RUN_WARDS_FILE and GHOST_RUN_SEANCE_BASE, and it reads no
+// It reads no environment variable except GHOST_RUN_WARDS_FILE, GHOST_RUN_SEANCE_BASE, and GHOST_RUN_SEANCE_AUTOSTART, and it reads no
 // variable or workspace file that disables the gate. The semaphore slot and the payload map are released
 // inside `judgeShell` on every path; the watchdog lives in the bootstrap and is ended by the process exit.
 import { randomUUID } from 'node:crypto';
@@ -12,8 +12,12 @@ import { enforceCaps } from '../store/ghost-store.mjs';
 import { createGateStore } from '../store/gate-store.mjs';
 import { loadWardsForHook } from '../wards-file.mjs';
 import { decide } from './decide.mjs';
+import { maybeStartSeance } from '../seance/autostart.mjs';
 import { cleanupRun } from './watchdog.mjs';
 import { createNodeFsView } from './write-judgment.mjs';
+
+/** Longest wait for the seance auto-start (ms). */
+const SEANCE_WAIT_MS = 500;
 
 /** Run id of the ghost run of this process; the watchdog cleanup uses it. */
 let currentRunId = randomUUID();
@@ -53,6 +57,7 @@ export async function run(stdinText) {
     GHOST_RUN_WARDS_FILE: process.env.GHOST_RUN_WARDS_FILE,
     GHOST_RUN_SEANCE_BASE: process.env.GHOST_RUN_SEANCE_BASE,
   };
+  let graveWritten = false;
   const decision = await decide(
     { stdin: stdinText, root, env, elapsedSec: () => process.uptime() - startedSec },
     {
@@ -63,8 +68,27 @@ export async function run(stdinText) {
       uuid,
       warnMode: WARN_MODE,
       store: createGateStore(root),
+      onGrave: () => {
+        graveWritten = true;
+      },
     },
   );
+
+  // Start the seance viewer in the background after a grave. Never changes the decision; bounded wait.
+  if (graveWritten) {
+    try {
+      const seanceEnv = {
+        GHOST_RUN_SEANCE_BASE: process.env.GHOST_RUN_SEANCE_BASE,
+        GHOST_RUN_SEANCE_AUTOSTART: process.env.GHOST_RUN_SEANCE_AUTOSTART,
+      };
+      await Promise.race([
+        maybeStartSeance({ root, env: seanceEnv }),
+        new Promise((resolve) => setTimeout(resolve, SEANCE_WAIT_MS).unref()),
+      ]);
+    } catch {
+      // swallowed
+    }
+  }
 
   // Keep the Ghost_Store inside its caps. A failure here never changes the decision.
   try {

@@ -15,7 +15,8 @@
     "test:nightly": "GHOST_PBT_MODE=nightly vitest --run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "blacklight": "node blacklight-steering.mjs --all"
+    "blacklight": "node blacklight-steering.mjs --all",
+    "seance": "node seance.mjs"
   },
   "license": "MIT",
   "dependencies": {

@@ -42,6 +42,7 @@ import { createNodeFsView, judgeWrite } from './write-judgment.mjs';
  * @property {() => string} [uuid]
  * @property {'exit2' | 'ask'} [warnMode]
  * @property {GateStore} store
+ * @property {() => void} [onGrave] Called after a Grave_Entry was written. Its failure is ignored.
  */
 
 /** Fixed deny line for a failed Run_Record or Grave_Entry write. */
@@ -201,6 +202,11 @@ async function conclude(c) {
       if (entry === null) return deny(STORE_FAILED_LINE, c.stats);
       const w = await deps.store.writeGrave(graveLine(entry, canaries));
       if (!w.ok) return deny(STORE_FAILED_LINE, c.stats);
+      try {
+        deps.onGrave?.();
+      } catch {
+        // swallowed: the seance viewer never changes the decision
+      }
     }
   }
 

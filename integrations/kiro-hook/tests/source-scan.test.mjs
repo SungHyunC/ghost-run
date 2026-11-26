@@ -25,14 +25,21 @@ const GATE_DIR = `${HOOK}lib/gate/`;
 const MCP_SERVER = 'integrations/mcp/src/server.mjs';
 const MCP_GHOST_RUN = 'integrations/mcp/src/tools/ghost_run.mjs';
 const MCP_POWER_LINK = 'integrations/mcp/scripts/power-link.mjs';
-const ALLOWED_ENV = new Set(['GHOST_RUN_WARDS_FILE', 'GHOST_RUN_SEANCE_BASE']);
+const ALLOWED_ENV = new Set(['GHOST_RUN_WARDS_FILE', 'GHOST_RUN_SEANCE_BASE', 'GHOST_RUN_SEANCE_AUTOSTART']);
+const SEANCE_DIR = `${HOOK}lib/seance/`;
+const SEANCE_AUTOSTART = `${SEANCE_DIR}autostart.mjs`;
+const SEANCE_CLI = `${HOOK}seance.mjs`;
 
 /** Exemptions. The probe is exempt from the Date and child_process checks
  *  per task 2.5. It is also exempt from the .ghost-run write check because
  *  it legitimately writes its events under .ghost-run/probe. exp-b-gate.mjs
  *  is retired and only the "nobody imports it" rule applies to it. */
 const EXEMPT = {
-  child_process: (/** @type {string} */ p) => p === PBT_RUN || p === PROBE || p === WATCHDOG || p === WARMUP,
+  child_process: (/** @type {string} */ p) => p === PBT_RUN || p === PROBE || p === WATCHDOG || p === WARMUP || p === SEANCE_AUTOSTART,
+  // The seance viewer and its loopback probe (Requirement 26): 127.0.0.1 only.
+  network: (/** @type {string} */ p) => p.startsWith(SEANCE_DIR) || p === SEANCE_CLI,
+  // The seance command learns the folder pnpm was started from.
+  initCwd: (/** @type {string} */ p) => p === SEANCE_CLI,
   date: (/** @type {string} */ p) => p.startsWith(STORE_DIR) || p === GATE_MAIN || p === PROBE || p === MCP_GHOST_RUN,
   bareEnv: (/** @type {string} */ p) => p === PBT_RUN || p === MCP_SERVER,
   ghostRunWrite: (/** @type {string} */ p) => p === GHOST_STORE || p === PROBE || p === MCP_POWER_LINK,
@@ -138,7 +145,7 @@ export function scanSource({ path, text }) {
   if (EXEMPT.wholeFile(path)) return found;
 
   if (/\bfetch\s*\(/.test(code)) add('network', 'fetch(');
-  if (/(['"`])(?:node:)?(?:http|https|http2|net|dgram|tls)\1/.test(code)) add('network', 'network module import');
+  if (!EXEMPT.network(path) && /(['"`])(?:node:)?(?:http|https|http2|net|dgram|tls)\1/.test(code)) add('network', 'network module import');
   if (/\bWebSocket\b/.test(code)) add('network', 'WebSocket');
   if (/\bXMLHttpRequest\b/.test(code)) add('network', 'XMLHttpRequest');
 
@@ -162,7 +169,7 @@ export function scanSource({ path, text }) {
     const name = m[1] ?? m[3];
     if (name === undefined) {
       if (!EXEMPT.bareEnv(path)) add('process-env', 'bare process.env');
-    } else if (!ALLOWED_ENV.has(name)) add('process-env', `process.env.${name}`);
+    } else if (!ALLOWED_ENV.has(name) && !(name === 'INIT_CWD' && EXEMPT.initCwd(path))) add('process-env', `process.env.${name}`);
   }
 
   if (!EXEMPT.date(path) && /\bDate\b/.test(code)) add('date', 'Date outside lib/store, gate main, probe');
