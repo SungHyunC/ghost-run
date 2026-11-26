@@ -35,6 +35,8 @@ export const REFERENCE_INITIAL_TEXT = 'Reference arm at its initial state.';
 export const REFERENCE_MOVED_PREFIX = 'Final drawer displacement (m): ';
 export const REFERENCE_MOVED_NOTE =
   'The reference arm has moved. Later ghost runs start from this state until you reset it.';
+export const EXECUTE_STALE_ARM_TEXT = 'Run the ghosts again: the arm has moved since the last rehearsal.';
+export const EXECUTE_STALE_SEED_TEXT = 'Run the ghosts again: the seed changed since the last rehearsal.';
 export const REFERENCE_FAILED_PREFIX = 'The reference execution could not finish: ';
 
 export const OVERLAY_HEADING = 'Ghost arms';
@@ -78,6 +80,36 @@ export const RESULT_HEADING = 'What the ghosts did';
 export const NO_GHOSTS_TEXT = 'Play the demo or run a plan to see the ghosts.';
 export function failedSummaryText(failed: number, total: number): string {
   return `${failed} of ${total} ghosts failed`;
+}
+/** The facts of a row that the reason line reads (a VariantRow satisfies it). */
+export interface FailureFacts {
+  readonly status: 'passed' | 'failed';
+  readonly drawerDisplacementM: number;
+  readonly maxContactForceN: number;
+  readonly vaseTouched: boolean;
+  readonly jointLimitExceeded: boolean;
+  readonly selfCollisionOccurred: boolean;
+}
+
+/**
+ * Reasons of the failed ghosts with counts, for example "1 missed the drawer target · 1 hit a joint
+ * limit". A ghost with two reasons counts under both. Null when no failed ghost has a known reason.
+ */
+export function failureReasonsText(
+  failedRows: readonly FailureFacts[],
+  targetOpeningM: number,
+  forceLimitN: number | null,
+): string | null {
+  const failed = failedRows.filter((r) => r.status === 'failed');
+  const reasons: readonly (readonly [string, number])[] = [
+    ['missed the drawer target', failed.filter((r) => targetOpeningM > 0 && r.drawerDisplacementM < targetOpeningM).length],
+    ['hit a joint limit', failed.filter((r) => r.jointLimitExceeded).length],
+    ['touched the vase', failed.filter((r) => r.vaseTouched).length],
+    ['went over the force limit', failed.filter((r) => forceLimitN !== null && r.maxContactForceN > forceLimitN).length],
+    ['collided with itself', failed.filter((r) => r.selfCollisionOccurred).length],
+  ];
+  const parts = reasons.filter(([, n]) => n > 0).map(([text, n]) => `${n} ${text}`);
+  return parts.length === 0 ? null : parts.join(' \u00B7 ');
 }
 export const FAILED_SUMMARY_NOTE = 'Every ghost must pass before the arm may move.';
 export const LINEUP_TITLE = 'Ghost lineup';

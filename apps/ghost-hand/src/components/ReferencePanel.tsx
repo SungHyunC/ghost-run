@@ -14,6 +14,8 @@ import {
 export interface ReferencePanelProps {
   readonly canExecute: boolean;
   readonly canReset: boolean;
+  /** Short reason shown when a pass was used or went stale; null otherwise. */
+  readonly staleReason?: string | null;
   /** Final drawer displacement in meters once the reference arm has moved, otherwise null. */
   readonly displacementM: number | null;
   /** Lines of the P2 check; null while the P2 text is off or no check applies. */
@@ -39,6 +41,7 @@ export function ReferencePanel(props: ReferencePanelProps) {
           {RESET_REFERENCE_LABEL}
         </button>
       </div>
+      {props.staleReason === undefined || props.staleReason === null ? null : <p>{props.staleReason}</p>}
       <div role="status">
         {props.displacementM === null ? (
           <p>{REFERENCE_INITIAL_TEXT}</p>

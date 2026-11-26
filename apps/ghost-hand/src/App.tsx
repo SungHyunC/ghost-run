@@ -28,7 +28,7 @@ import { parsePlanFile, printPlanFile } from './plan/plan-file';
 import type { PlanFile } from './plan/plan-file';
 import { FIRST_SCENARIO, REVISED_SCENARIO, SCENARIOS } from './plan/scenarios';
 import { diffsMatch, drawerDisplacementOf, p2CheckLines, referenceOverlayInput } from './reference';
-import { INITIAL_STATE, canExecuteReference, reducer } from './reducer';
+import { INITIAL_STATE, canExecuteReference, executeStaleReason, reducer } from './reducer';
 import { runSelfCheck } from './self-check';
 import type { SelfCheckResult } from './self-check';
 import { parseSeedInput } from './inputs';
@@ -52,6 +52,7 @@ import {
   TOOLS_INTRO,
   TOOLS_LABEL,
   failedSummaryText,
+  failureReasonsText,
   DEMO_STEP_DONE,
   DEMO_STEP_RUN_FIRST,
   DEMO_STEP_RUN_REVISED,
@@ -351,6 +352,8 @@ function Screen({ services }: { readonly services: AppServices }) {
     const limits = wardSet.wards.flatMap((w) => (w.kind === 'physics' ? [w.max_contact_force_n] : []));
     return limits.length === 0 ? null : Math.min(...limits);
   }, [wardSet]);
+  const failureReasons =
+    run === null ? null : failureReasonsText(run.rows.slice(1), WORLD_CONFIG.targetOpeningM, forceLimitN);
   const selectedScenarioId = SCENARIOS.find((s) => s.plan === state.plan)?.id ?? null;
   const planSeed = { text: seedText, error: seedResult.ok ? null : seedResult.error, onChange: onSeedText };
   const canPlayDemo = engine.status === 'ready' && configReady && seedResult.ok;
@@ -442,7 +445,7 @@ function Screen({ services }: { readonly services: AppServices }) {
           demoActive={demoActive}
           demoStatus={demoStatus}
           canRun={canRun}
-          busy={state.running}
+          busy={state.running || referenceBusy}
           onRun={onRun}
           seed={planSeed}
         />
@@ -467,6 +470,7 @@ function Screen({ services }: { readonly services: AppServices }) {
             ) : (
               <>
                 <p className="gh-summary-big">{failedSummaryText(failedCount, variantTotal)}</p>
+                {failureReasons === null ? null : <p className="gh-summary-note">{failureReasons}</p>}
                 <p className="gh-summary-note">{FAILED_SUMMARY_NOTE}</p>
               </>
             )}
@@ -489,6 +493,7 @@ function Screen({ services }: { readonly services: AppServices }) {
         <div className="gh-two">
           <ReferencePanel
             canExecute={engine.status === 'ready' && canExecuteReference(state) && !referenceBusy && !demoActive}
+            staleReason={executeStaleReason(state)}
             canReset={engine.status === 'ready' && referenceDrawerM !== null && !referenceBusy && !state.running}
             displacementM={referenceDrawerM}
             p2Lines={referenceDrawerM === null ? null : p2CheckLines(P2_TEXT_ENABLED, selfCheck, state.p2Match)}
@@ -515,7 +520,7 @@ function Screen({ services }: { readonly services: AppServices }) {
           errors={state.planError}
           seed={planSeed}
           canRun={canRun}
-          busy={state.running}
+          busy={state.running || referenceBusy}
           onLoadText={onLoadText}
           onDownload={() => {
             if (state.plan !== null) services.download(PLAN_DOWNLOAD_NAME, printPlanFile(state.plan));

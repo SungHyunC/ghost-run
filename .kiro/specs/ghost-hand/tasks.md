@@ -474,6 +474,12 @@ Decisions reflected in this plan:
 - [x] 20. Final checkpoint
   - Run `pnpm --filter @ghost-run/drawer-arm test`, `pnpm --filter @ghost-run/ghost-hand test`, `typecheck`, `lint`, `build`, `test:dist`, and `pnpm lint` for the workspace. Confirm: every property of the design (1 to 23) has a test with at least 100 examples in a Short_Run (engine-bound properties use `shortRuns`, with the written rationale if it is below 100); the Nightly_Run command was run at least once for the world contract tests, or the reason it was not is recorded in `docs/measurements.md`; `docs/measurements.md` has no `unmeasured` section left; the possession scan of the three folders is `clean`; the README license table lists every dependency with its license; the Ghost Hand claims match the landed prerequisites and the steering state; no task wrote to `docs/devlog.md`. Ensure all tests pass, ask the user if questions arise.
 
+- [x] 20.1 A pass authorizes one execution, and the result panel says why ghosts failed
+  - `apps/ghost-hand/src/reducer.ts`: `referenceEpoch` grows on each reference execution and each reset; a run keeps the epoch and the seed it started with; `canExecuteReference` also requires both to equal the current ones. `executeStaleReason` gives the text shown next to the disabled control (`ReferencePanel`). `reference-executed` always grows the epoch, even when the seed or plan changed while the execution ran; the seed input and plan controls are disabled while the reference arm executes or resets; the race and a late completion are covered in `execute-authorization.test.ts`.
+  - `failureReasonsText` in `ui-text.ts` lists the reasons of the failed ghosts with counts under `failedSummaryText`.
+  - Tests: `tests/model/execute-authorization.test.ts` (execute twice, reset, seed change, and a property against an independent model) and `tests/model/failure-reasons.test.ts`.
+  - _Requirements: 12.7_
+
 - [ ] 21. Optional: forbidden-contact red thread (last task)
   - Optional, not done.
   - [ ]* 21.1 Implement the possession red thread for a forbidden contact

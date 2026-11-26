@@ -88,6 +88,7 @@ export function PlanPanel(props: PlanPanelProps) {
           ref={fileRef}
           className="gk-input"
           type="file"
+          disabled={busy}
           accept=".json,application/json"
           onChange={(e) => {
             const file = e.target.files?.[0];
