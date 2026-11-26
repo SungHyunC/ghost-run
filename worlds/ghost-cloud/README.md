@@ -75,7 +75,7 @@ About the P1 notice: `core` has no P1 notice kind. When the P1 check in the Pipe
 | Environment | Result |
 |---|---|
 | Node | v20.20.2 (macOS, Apple Silicon), vitest 3.2.7 |
-| browser | not run yet |
+| browser | The P2 property tests were not run in a browser. The landing site runs this world live in the visitor's browser (spec `site-live`); its parity test (`site/tests/unit/live-parity.test.ts`) runs in Node only. No browser load time or browser run of the Ghost Cloud preset has been measured (see "Browser load times" in `docs/measurements.md`). |
 
 ## Measurements
 

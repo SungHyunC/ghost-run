@@ -70,12 +70,12 @@ The shipped seed is 42 and the default count is 8 (`worlds/drawer-arm/variant-co
 
 ### Measured numbers of the demo runs
 
-All numbers below were measured on 2026-11-18 on an Apple M1 Mac (macOS). Plan results and timing: Node.js 20.20.2, seed 42, 8 variants, the shipped `wards.yaml` (ward `gentle-hands`: success rate at least 0.95, contact force at most 30 N, no contact with the vase). Browser numbers: Chrome 157.0.8103.79, headless, real time. The machine was not idle, so timings are indicative. The full records are in `docs/measurements.md`.
+All numbers below were measured on 2026-11-18 on an Apple M1 Mac (macOS). Plan results and timing: Node.js 20.20.2, seed 42, 8 variants, the shipped `wards.yaml` (ward `gentle-hands`: success rate at least 0.95, contact force at most 30 N, no contact with the vase). "Ghosts that fail" counts variants whose row status is failed (the drawer stays below the target opening, or a joint limit is exceeded); this is the "2 of 8 ghosts failed" the app shows. "Variants with success:false" counts only the Variant_Results with `success: false`, which is what the ward's success rate uses. The `fast pull` counts were re-measured on 2026-11-26 (seed 42, `scripts/measure-demo.mjs`); the force, drawer and timing numbers are from 2026-11-18. Browser numbers: Chrome 157.0.8103.79, headless, real time. The machine was not idle, so timings are indicative. The full records are in `docs/measurements.md`.
 
-| Plan | Verdict | Variants with success:false | Max contact force | Base_World drawer opening |
-|---|---|---|---|---|
-| `fast pull` | block (ward `gentle-hands`) | 1 of 8 | 27.53 N (limit 30 N) | 0.1216 m (target 0.12 m) |
-| `slow pull, gentle grip` (recorded) | pass | 0 of 8 | 29.24 N (limit 30 N) | 0.1276 m (target 0.12 m) |
+| Plan | Verdict | Ghosts that fail | Variants with success:false | Max contact force | Base_World drawer opening |
+|---|---|---|---|---|---|
+| `fast pull` | block (ward `gentle-hands`) | 2 of 8 (variant-3 misses the drawer target, variant-6 exceeds a joint limit) | 1 of 8 (variant-3; the ward reports success rate 7/8) | 27.53 N (limit 30 N) | 0.1216 m (target 0.12 m) |
+| `slow pull, gentle grip` (recorded) | pass | 0 of 8 | 0 of 8 | 29.24 N (limit 30 N) | 0.1276 m (target 0.12 m) |
 
 Browser timings (the page-ready number is of the test harness page, not of the app page, which also runs the Determinism_Self_Check; the 3D overlay number is of the real overlay renderer):
 

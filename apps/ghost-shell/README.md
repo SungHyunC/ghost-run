@@ -7,9 +7,11 @@ Tagline: let your agent's ghost try it first.
 ## Run it
 
 ```
-corepack pnpm --filter @ghost-run/ghost-shell build
+corepack pnpm --filter "@ghost-run/ghost-shell..." build
 corepack pnpm --filter @ghost-run/ghost-shell preview
 ```
+
+The first command builds the app and every workspace package it imports (`core`, `ui`, `wards-config`, and the worlds), whose `dist` files are not committed. `corepack pnpm install --frozen-lockfile` comes first in a fresh clone.
 
 `preview` serves the built `dist/` folder from a local static server. The page needs no response headers beyond ordinary static hosting, and it does not use `SharedArrayBuffer`.
 
